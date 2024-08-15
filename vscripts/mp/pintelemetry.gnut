@@ -939,18 +939,18 @@ void function INIT_BATCH_FETCH()
 	
 	foreach ( player in GetPlayerArray() )
 	{
-		bool next_player = false;
+		bool next_player = false
 
         while ( IsDisconnected( player ) ) 
 		{
+			wait 0.01
+			//sqprint("waiting for connection")
+			
             if ( !IsValid( player ) ) 
 			{
                 next_player = true
-                break;
+                break
             }
-			
-			wait 0.01
-			//sqprint("waiting for connection")
         }
 
         if ( next_player )
@@ -2269,7 +2269,10 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			victimName = "worldspawn"
 			string msg = "Victimname was null during endfight id " + string( id )
 			
-			sqerror( msg )
+			#if DEVELOPER
+				sqerror( msg )
+			#endif 
+			
 			LogError( msg )
 		}
 		
@@ -3405,6 +3408,10 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 	
 	void function Player_EA_Verify (entity player, string token, string OID, string ea_acc)
 	{	
+		// Todo: To avoid net process budgets, and avoid hanging the server thread, 
+		// Move this information relay to a CodeCallback 
+		// This wont need threaded at that point either. 
+		
 		SetConVarInt( "net_processTimeBudget", 5100 )
 		WaitFrame()
 		int VERIFY = EA_Verify__internal( token, OID, ea_acc )
@@ -3710,7 +3717,6 @@ void function Tracker_SavePlayerData( string UID, string setting, ... )
 	}
 	
 	ThrowValidSaveType( vargv[0] )
-	//Assert( ValidSaveType( vargv[0] ), "Invalid variable type passed to Tracker_SavePlayerData()" )
 
 	string value = "";
 	
@@ -3725,12 +3731,12 @@ void function Tracker_SavePlayerData( string UID, string setting, ... )
 			#if DEVELOPER 
 				//sqprint( format( "Converting SavePlayerData for setting: %s to string from type %s", setting, typeof( vargc ) ) )
 			#endif
-			value = string(vargv[0])
+			value = string( vargv[0] )
 		}
 	}
 	else 
 	{
-		value = string(vargv[0])
+		value = string( vargv[0] )
 	}
 	
 	#if DEVELOPER
@@ -3746,32 +3752,6 @@ void function Tracker_SavePlayerData( string UID, string setting, ... )
 		file.PlayerData[ UID ][ setting ] = value
 
 
-}
-
-bool function ValidSaveType( ... )
-{	
-	if( !vargv[0] )
-	{
-		return false
-	}
-	
-	string type = typeof( vargv[0] )
-	
-	switch( type )
-	{
-		case "string":
-		case "bool":
-		case "int":
-		case "float":
-			
-			return true 
-			
-		default:
-			
-			return false
-	}
-	
-	unreachable
 }
 
 void function ThrowValidSaveType( ... )
@@ -3801,9 +3781,9 @@ string function Tracker_FetchPlayerData( string UID, string setting )
 	
 	if ( UID in file.PlayerData )
 	{
-		if ( setting in file.PlayerData[UID] )
+		if ( setting in file.PlayerData[ UID ] )
 		{
-			return file.PlayerData[UID][setting]
+			return file.PlayerData[ UID ][ setting ]
 		}
 	}
 	
@@ -3853,13 +3833,13 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 
 		if( UIDisWorldSpawn( int( UID ) ) )
 		{
-			UID = _GetHardcodedWorldspawnRef( int( UID ) )
+			UID = _GetHardcodedWorldspawnRef( int( UID ) ) //assign UID with hardcoded worldspawn ref for backend
 			isWorldspawn = true
 		}
 		
 		//start building
         json += "{";	
-        json += format( "\"player\": \"%s\", ", UID ) //assign UID with hardcoded worldspawn ref for backend
+        json += format( "\"player\": \"%s\", ", UID ) 
 
 		if( isWorldspawn )
 			UID = metrics.playerID //reassign to slot value
@@ -3882,7 +3862,7 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 			bool first = true	
 			if( UID in file.PlayerData )
 			{
-				foreach ( setting,value in file.PlayerData[UID] )
+				foreach ( setting,value in file.PlayerData[ UID ] )
 				{
 					if (!first) 
 					{
@@ -3982,15 +3962,16 @@ void function SetIgnoreSyncFlag( entity player )
 {
 	int index = GetPlayerMetricsIndex( player )
 	
-	if (index == -1) 
+	if( index == -1 ) 
 	{
-      index = InitializePlayerMetricsStructForPlayer( player )
+		index = InitializePlayerMetricsStructForPlayer( player )
     } 
 	
 	try
 	{
-		PlayerMetricsArray[index].ignore_sync_flag = true;
-	}catch(e){}
+		PlayerMetricsArray[ index ].ignore_sync_flag = true;
+	}
+	catch(e){}
 }
 
 
@@ -4022,7 +4003,7 @@ void function SetPlayerLeftFlag( entity player )
 	
 	if ( index != -1 ) 
 	{
-		PlayerMetricsArray[index].playerleft = true;
+		PlayerMetricsArray[ index ].playerleft = true;
 	}
 }
 
@@ -4194,7 +4175,7 @@ void function UpdateStartInRestSetting( entity player, string data )
 {	
 	if ( empty( data ) ) 
 	{ 
-		player.p.lock1v1_setting = GetDefaultLock1v1Setting()
+		player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
 		return 
 	}
 
@@ -4251,7 +4232,7 @@ int function GetPlayerKills( entity player )
 	
     if ( index != -1 ) 
 	{
-        return PlayerMetricsArray[index].kills
+        return PlayerMetricsArray[ index ].kills
     }
 	
     return 0
@@ -4264,7 +4245,7 @@ float function GetPlayerDamage( entity player )
 	
     if ( index != -1 ) 
 	{
-        return PlayerMetricsArray[index].damage
+        return PlayerMetricsArray[ index ].damage
     }
 	
     return 0
@@ -4520,8 +4501,8 @@ bool function RegisterDamageDef( string weaponName, entity weapon )
 	LogError( errorString )
 	printt( errorString )
 	
-	TrackerWepTable()[weaponName] <- newIndex
-	DamageSourceIDToStringTable()[newIndex] <- weaponName
+	TrackerWepTable()[ weaponName ] <- newIndex
+	DamageSourceIDToStringTable()[ newIndex ] <- weaponName
 	
 	return true
 }

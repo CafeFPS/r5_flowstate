@@ -1284,7 +1284,7 @@ struct {
 						
 						try 
 						{	
-							if( !SendServerMessage( param ))
+							if( !SendServerMessage( param ) )
 							{
 								Message( player, "Error", "Message was truncated")
 							}
@@ -1361,6 +1361,8 @@ struct {
 							Message( player, "Failed", "Command failed because of: \n\n " + errvc)
 							return true		
 						}
+						
+					break
 				
 				
 			case "startbr":
@@ -1837,9 +1839,6 @@ void function update()
 
 bool function EnableVoice()
 {
-	#if DEVELOPER 
-		printt("voice enabled")
-	#endif 
 	if ( !GetConVarBool( "sv_voiceenable" ) || !GetConVarBool( "sv_alltalk" ) )
 	{
 		SetConVarBool( "sv_voiceenable", true )
@@ -1847,6 +1846,10 @@ bool function EnableVoice()
 		
 		if ( GetConVarBool( "sv_voiceenable" ) && GetConVarBool( "sv_alltalk" ) )
 		{
+			#if DEVELOPER 
+				printt("voice enabled")
+			#endif 
+			
 			return true
 		}
 	}
@@ -2176,7 +2179,7 @@ string function ReturnValue( string str )
 	catch (err)
 	{
 		#if DEVELOPER 
-			sqerror( "ReturnValue() failed for key " + str )
+			sqerror( "ReturnValue() failed for key:value " + str )
 		#endif 
 		return "";
 	}		

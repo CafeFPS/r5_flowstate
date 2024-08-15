@@ -999,6 +999,12 @@ Scripts:
 	gamemodes/global/_gamemode_spawn_system.nut
 ]
 
+When: "UI"
+Scripts:
+[
+	ui/fs_scenarios/scenarios_ui.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [

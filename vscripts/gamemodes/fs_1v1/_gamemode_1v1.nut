@@ -3295,10 +3295,11 @@ void function Gamemode1v1_Init( int eMap )
 	
 	}
 
-	foreach(weapon in Weapons)
+	foreach( weapon in Weapons )
 	{
 		array<string> weaponfullstring = split( weapon , " ")
 		string weaponName = weaponfullstring[0]
+		
 		if(GetBlackListedWeapons().find(weaponName) != -1)
 				Weapons.removebyvalue(weapon)
 	}
@@ -3334,6 +3335,7 @@ void function Gamemode1v1_Init( int eMap )
 	{
 		array<string> weaponfullstring = split( weapon , " ")
 		string weaponName = weaponfullstring[0]
+		
 		if(GetBlackListedWeapons().find(weaponName) != -1)
 				WeaponsSecondary.removebyvalue(weapon)
 	}

@@ -102,9 +102,9 @@ void function SetupPlayerNotificationTable( entity player )
 
 void function CleanupPlayerNotifications( entity player )
 {
-	if( !( player.p.handle in file.playerActiveNotifications ) )
+	if( ( player.p.handle in file.playerActiveNotifications ) )
 		file.playerActiveNotifications[ player.p.handle ].clear()
-} 
+}
 
 array<int> function GetPlayerActiveNotifications( entity player )
 {
@@ -117,7 +117,7 @@ array<int> function GetPlayerActiveNotifications( entity player )
 
 bool function NotificationIsActive( entity player, int notificationID )
 {
-	if( GetPlayerActiveNotifications( player ).contains( notificationID) )
+	if( GetPlayerActiveNotifications( player ).contains( notificationID ) )
 		return true
 		
 	return false
@@ -252,7 +252,10 @@ void function __UpdateNotificationText( entity player, string token, string subT
 		
 		if( result.panelID == panelID || result.destroyAll == true )
 		{	
-			printt( result.panelID, result.destroyAll ) 
+			#if DEVELOPER
+				printt( result.panelID, result.destroyAll ) 
+			#endif 
+			
 			break
 		}
 	}

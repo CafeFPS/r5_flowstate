@@ -1,8 +1,10 @@
-// Made by @CafeFPS
-// mkos - multiplayer compatibility overhaul, code improvements
+// Made by @CafeFPS ( original idea and code template )
+// mkos - multiplayer compatibility overhaul, code refactor, features
+// Todo: QOL Update-- Allow each slot to have a set playback rate per player, with a ui slider/input field to modify per-slot. 0 for inf or frozen. ~mkos
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
+	global function MovementRecorder_SetPlaybackRate
 #endif
 
 #if CLIENT
@@ -19,50 +21,54 @@ struct RecordingAnimation
 	var anim
 }
 
-const int MAX_SLOT = 10
-const int MAX_NPC_BUDGET = 120
+const int MAX_SLOT = 5
+const int MAX_NPC_BUDGET = 120 //dirty cap
+const int DUMMY_MAX_HEALTH = 100
 
 struct
 {
-	#if SERVER
-	//movido a la estructura de server player
-	#endif
-
 	#if CLIENT
-	array<var> inputHintLines
+		array<var> inputHintLines
+		table<string,string> playerOriginalBindings
 	#endif
 	
-	int playbackLimit = -1	
-	table<int, table<int, array<entity> > > playerDummyMaps //[ehandle][slot] = dummy
-	table<int, table<int,int> > playerPlaybackAmounts = {} //[ehandle][slot] = amount
+	#if SERVER
+		int playbackLimit = -1	
+		table<int, table<int, array<entity> > > playerDummyMaps //[ehandle][slot] = dummy
+		table<int, table<int,int> > playerPlaybackAmounts = {} //[ehandle][slot] = amount
+		//table<int, table<int,float> > playerPlaybackDurations = {} //[ehandle][slot] = duration
+		
+		float helmet_lv4 = 0.65
+		float adminSetPlaybackRate = 1.0
+		bool bDummyDeathNotifications = true
+		bool bAutoRefilAmmoOnHit
+		float randomPlaybackDelay = 0.2
+		
+		table<int, array<entity> > _dummyMaps__Template = {
+			[ 0 ] = [ null ],
+			[ 1 ] = [ null ],
+			[ 2 ] = [ null ],
+			[ 3 ] = [ null ],
+			[ 4 ] = [ null ]
+		}
+		
+		table <int, int> _playbackAmounts__Template = {
+			[ 0 ] = 0,
+			[ 1 ] = 0,
+			[ 2 ] = 0,
+			[ 3 ] = 0,
+			[ 4 ] = 0
+		}
+		
+		// table <int, float> _playbackDuration__Template = {
+			// [ 0 ] = 1.0,
+			// [ 1 ] = 1.0,
+			// [ 2 ] = 1.0,
+			// [ 3 ] = 1.0,
+			// [ 4 ] = 1.0
+		// }
 	
-	table<int, array<entity> > _dummyMaps__Template = {
-		[ 0 ] = [ null ],
-		[ 1 ] = [ null ],
-		[ 2 ] = [ null ],
-		[ 3 ] = [ null ],
-		[ 4 ] = [ null ],
-		[ 5 ] = [ null ],
-		[ 6 ] = [ null ],
-		[ 7 ] = [ null ],
-		[ 8 ] = [ null ],
-		[ 9 ] = [ null ]	
-	}
-	
-	table <int, int> _playbackAmounts__Template = {
-		[ 0 ] = 0,
-		[ 1 ] = 0,
-		[ 2 ] = 0,
-		[ 3 ] = 0,
-		[ 4 ] = 0,
-		[ 5 ] = 0,
-		[ 6 ] = 0,
-		[ 7 ] = 0,
-		[ 8 ] = 0,
-		[ 9 ] = 0
-	}
-	
-	float helmet_lv4 = 0.65
+	#endif
 	
 } file
 
@@ -74,8 +80,10 @@ void function Sh_FS_MovementRecorder_Init()
 	#endif
 	
 	#if SERVER
+		//Todo: Dynmaically create all templates from one source
 		disableoverwrite( file._playbackAmounts__Template ) //prevent modifying template ~mkos
 		disableoverwrite( file._dummyMaps__Template )
+		//disableoverwrite( file._playbackDuration__Template )
 		
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		
@@ -97,8 +105,11 @@ void function Sh_FS_MovementRecorder_Init()
 			RegisterSignal( "EndDummyThread_Slot_" + k.tostring() )
 		}
 		
-		file.playbackLimit = GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
-		file.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+		file.playbackLimit 				= GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
+		file.helmet_lv4 				= GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+		file.bDummyDeathNotifications 	= GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )
+		file.bAutoRefilAmmoOnHit		= GetCurrentPlaylistVarBool( "auto_refill_ammo_on_hit", false )
+		file.randomPlaybackDelay		= GetCurrentPlaylistVarFloat( "delay_between_random_playback", 0.2 )
 		
 		if( !FlowState_AdminTgive() )
 			INIT_WeaponsMenu()
@@ -148,8 +159,14 @@ void function MovementRecorder_SetupWeapons( entity player, array<string> args )
 			SetupInfiniteAmmoForWeapon( player, secondary )
 	}
 }
+
+void function MovementRecorder_SetPlaybackRate( float value )
+{
+	file.adminSetPlaybackRate = value
+}
 #endif
 
+//shared
 string function slotname( int slot )
 {
 	switch( slot )
@@ -159,12 +176,6 @@ string function slotname( int slot )
 		case 3: return "[F5]";
 		case 4: return "[F6]";
 		case 5: return "[F7]";
-		
-		case 6: return "[6]";
-		case 7: return "[7]";
-		case 8: return "[8]";
-		case 9: return "[9]";
-		case 10: return "[0]";
 		default: return "";
 	}
 	
@@ -172,32 +183,66 @@ string function slotname( int slot )
 }
 
 #if CLIENT
+
+// Todo: Create BindSystem_ framework for any game mode to use during development for client scripts, 
+// saves current bindings, adds a disconnect callback to restore binds, proper checking.. etc 
+// will need to handle gamepad as well as various bind types (held) etc. 
+// save for next release, for now, this recorder specific logic. ~mkos
+
+const table<string,string> RECORDER_BINDINGS = 
+{
+	["F2"] = "toggleMovementRecorder",
+	["F3"] = "\"PlayAnimInSlot 0\"",
+	["F4"] = "\"PlayAnimInSlot 1\"",
+	["F5"] = "\"PlayAnimInSlot 2\"",
+	["F6"] = "\"PlayAnimInSlot 3\"",
+	["F7"] = "\"PlayAnimInSlot 4\"",
+	["F8"] = "PlayAllAnims",
+	["F11"] = "recorder_switchCharacter",
+	["F12"] = "recorder_toggleContinueLoop"
+}
+
 void function FS_MovementRecorder_SetBindings( entity player )
 {
-	// no puedo bindear argumentos? Xd
-	//mkos~ :D
-	player.ClientCommand( "bind_US_standard F2 toggleMovementRecorder" )
-	player.ClientCommand( "bind_US_standard F3 \"PlayAnimInSlot 0\"" )
-	player.ClientCommand( "bind_US_standard F4 \"PlayAnimInSlot 1\"" )
-	player.ClientCommand( "bind_US_standard F5 \"PlayAnimInSlot 2\"" )
-	player.ClientCommand( "bind_US_standard F6 \"PlayAnimInSlot 3\"" )
-	player.ClientCommand( "bind_US_standard F7 \"PlayAnimInSlot 4\"" )
-
-	player.ClientCommand( "bind_US_standard 6 \"PlayAnimInSlot 5\"" )
-	player.ClientCommand( "bind_US_standard 7 \"PlayAnimInSlot 6\"" )
-	player.ClientCommand( "bind_US_standard 8 \"PlayAnimInSlot 7\"" )
-	player.ClientCommand( "bind_US_standard 9 \"PlayAnimInSlot 8\"" )
-	player.ClientCommand( "bind_US_standard 0 \"PlayAnimInSlot 9\"" )
-
-	player.ClientCommand( "bind_US_standard F8 PlayAllAnims" )
+	MovementRecorder_SaveCurrentBindings()
+	AddCallback_OnPlayerDisconnected( FS_MovementRecorder_ResetAllBindings )
 	
-	player.ClientCommand( "unbind_US_standard F11" )
-	player.ClientCommand( "unbind_US_standard F12" )
-
-	player.ClientCommand( "bind_US_standard F11 recorder_switchCharacter" )
-	player.ClientCommand( "bind_US_standard F12 recorder_toggleContinueLoop" )
+	foreach( key, command in RECORDER_BINDINGS )
+		player.ClientCommand( "bind_US_standard " + key + " " + command )
 
 	FS_MovementRecorder_CreateInputHintsRUI( false )
+}
+
+void function MovementRecorder_SaveCurrentBindings()
+{
+	foreach( keyName, _ in RECORDER_BINDINGS )
+	{
+		int keyCode 	= KeyNameToKeyCode( keyName ) 
+		string command 	= GetKeyTappedBinding( keyCode )
+		
+		file.playerOriginalBindings[ keyName ] <- command
+	}
+}
+
+string function MovementRecorder_GetSavedBindCommand( string keyName )
+{
+	if( keyName in file.playerOriginalBindings )
+		return file.playerOriginalBindings[ keyName ]
+		
+	return ""
+}
+
+void function FS_MovementRecorder_ResetAllBindings( entity player )
+{
+	foreach( keyName, _ in RECORDER_BINDINGS )
+	{
+		string commandToRestore = MovementRecorder_GetSavedBindCommand( keyName )
+		
+		if( commandToRestore == "" )
+			player.ClientCommand( "unbind " + keyName )
+		else
+			player.ClientCommand( "bind_US_standard " + keyName + " " + commandToRestore )
+	}
 }
 
 void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
@@ -213,9 +258,8 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	if( state )
 		return
 
-	//I hate this. Cafe
 	UISize screenSize = GetScreenSize()
-	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0.140),( screenSize.height * -0.065 ), 0>, <float( screenSize.width ) * 0.9, 0, 0>, <0, float( screenSize.height ) * 0.9, 0>, false )
+	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0.070),( screenSize.height * 0 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
 	var hintRui = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
 	RuiSetString( hintRui, "buttonText", "%F2%" )
 	RuiSetString( hintRui, "gamepadButtonText", "%F2%" )
@@ -270,68 +314,21 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetBool( hintRui6, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui6 )
 
-// __
-	var hintRui13 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui13, "buttonText", "%6%" )
-	RuiSetString( hintRui13, "gamepadButtonText", "%6%" )
-	RuiSetString( hintRui13, "hintText", "Slot [6] - Empty" )
-	RuiSetString( hintRui13, "altHintText", "" )
-	RuiSetInt( hintRui13, "hintOffset", 6 )
-	RuiSetBool( hintRui13, "hideWithMenus", false )
-	file.inputHintLines.append( hintRui13 )
-
-	var hintRui14 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui14, "buttonText", "%7%" )
-	RuiSetString( hintRui14, "gamepadButtonText", "%7%" )
-	RuiSetString( hintRui14, "hintText", "Slot [7] - Empty" )
-	RuiSetString( hintRui14, "altHintText", "" )
-	RuiSetInt( hintRui14, "hintOffset", 7 )
-	RuiSetBool( hintRui14, "hideWithMenus", false )
-	file.inputHintLines.append( hintRui14 )
-
-	var hintRui15 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui15, "buttonText", "%8%" )
-	RuiSetString( hintRui15, "gamepadButtonText", "%8%" )
-	RuiSetString( hintRui15, "hintText", "Slot [8] - Empty" )
-	RuiSetString( hintRui15, "altHintText", "" )
-	RuiSetInt( hintRui15, "hintOffset", 8 )
-	RuiSetBool( hintRui15, "hideWithMenus", false )
-	file.inputHintLines.append( hintRui15 )
-
-	var hintRui16 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui16, "buttonText", "%9%" )
-	RuiSetString( hintRui16, "gamepadButtonText", "%9%" )
-	RuiSetString( hintRui16, "hintText", "Slot [9] - Empty" )
-	RuiSetString( hintRui16, "altHintText", "" )
-	RuiSetInt( hintRui16, "hintOffset", 9 )
-	RuiSetBool( hintRui16, "hideWithMenus", false )
-	file.inputHintLines.append( hintRui16 )
-
-	var hintRui17 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui17, "buttonText", "%0%" )
-	RuiSetString( hintRui17, "gamepadButtonText", "%0%" )
-	RuiSetString( hintRui17, "hintText", "Slot [0] - Empty" )
-	RuiSetString( hintRui17, "altHintText", "" )
-	RuiSetInt( hintRui17, "hintOffset", 10 )
-	RuiSetBool( hintRui17, "hideWithMenus", false )
-	file.inputHintLines.append( hintRui17 )
-
-// __
 	var hintRui7 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
 	RuiSetString( hintRui7, "buttonText", "%F8%" )
 	RuiSetString( hintRui7, "gamepadButtonText", "%F8%" )
 	RuiSetString( hintRui7, "hintText", "Play All Anims" )
 	RuiSetString( hintRui7, "altHintText", "" )
-	RuiSetInt( hintRui7, "hintOffset", 11 )
+	RuiSetInt( hintRui7, "hintOffset", 6 )
 	RuiSetBool( hintRui7, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui7 )
 
 	var hintRui8 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
 	RuiSetString( hintRui8, "buttonText", "%F11%" )
 	RuiSetString( hintRui8, "gamepadButtonText", "%F11%" )
-	RuiSetString( hintRui8, "hintText", "Character: Bangalore" )
+	RuiSetString( hintRui8, "hintText", "Character: Wraith" )
 	RuiSetString( hintRui8, "altHintText", "" )
-	RuiSetInt( hintRui8, "hintOffset", 12 )
+	RuiSetInt( hintRui8, "hintOffset", 7 )
 	RuiSetBool( hintRui8, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui8 )
 
@@ -340,7 +337,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetString( hintRui9, "gamepadButtonText", "%F12%" )
 	RuiSetString( hintRui9, "hintText", "Loop Anim: ON" )
 	RuiSetString( hintRui9, "altHintText", "" )
-	RuiSetInt( hintRui9, "hintOffset", 13 )
+	RuiSetInt( hintRui9, "hintOffset", 8 )
 	RuiSetBool( hintRui9, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui9 )
 
@@ -349,7 +346,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetString( hintRui10, "gamepadButtonText", "%$rui/menu/buttons/tip%" )
 	RuiSetString( hintRui10, "hintText", "Crouch + Slot to clear" )
 	RuiSetString( hintRui10, "altHintText", "" )
-	RuiSetInt( hintRui10, "hintOffset", 14 )
+	RuiSetInt( hintRui10, "hintOffset", 9 )
 	RuiSetBool( hintRui10, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui10 )
 	
@@ -358,7 +355,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetString( hintRui11, "gamepadButtonText", "%$rui/menu/buttons/tip%" )
 	RuiSetString( hintRui11, "hintText", "Crouch + %F8% = clearall" )
 	RuiSetString( hintRui11, "altHintText", "" )
-	RuiSetInt( hintRui11, "hintOffset", 15 )
+	RuiSetInt( hintRui11, "hintOffset", 10 )
 	RuiSetBool( hintRui11, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui11 )
 	
@@ -367,7 +364,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetString( hintRui12, "gamepadButtonText", "%$rui/menu/buttons/tip%" )
 	RuiSetString( hintRui12, "hintText", "Crouch + %F2% = random" )
 	RuiSetString( hintRui12, "altHintText", "" )
-	RuiSetInt( hintRui12, "hintOffset", 16 )
+	RuiSetInt( hintRui12, "hintOffset", 11 )
 	RuiSetBool( hintRui12, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui12 )
 }
@@ -386,98 +383,42 @@ void function FS_MovementRecorder_UpdateHints( int hint, bool state, float durat
 		RuiSetString( file.inputHintLines[0], "hintText", "Start Recording" )
 		return
 	}
-	//// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
-	if( hint == 12 )
+
+	if( hint == 7 )
 	{
 		string characterToUse
 		switch( duration.tointeger() )
 		{
 			case 0:
-			characterToUse = "Bangalore"
+			characterToUse = "Wraith"
 			break
 			
 			case 1:
-			characterToUse = "Bloodhound"
+			characterToUse = "Pathfinder"
 			break
 			
 			case 2:
-			characterToUse = "Caustic"
+			characterToUse = "Bangalore"
 			break
 			
 			case 3:
-			characterToUse = "Gibby"
-			break
-
-			case 4:
-			characterToUse = "Lifeline"
-			break
-
-			case 5:
-			characterToUse = "Mirage"
-			break
-
-			case 6:
 			characterToUse = "Octane"
 			break
 
-			case 7:
-			characterToUse = "Pathfinder"
-			break
-
-			case 8:
-			characterToUse = "Wraith"
-			break
-
-			case 9:
-			characterToUse = "Wattson"
-			break
-
-			case 10:
-			characterToUse = "Crypto"
-			break
-
-			case 11:
-			characterToUse = "Loba"
-			break
-
-			case 12:
-			characterToUse = "Ballistic"
-			break
-
-			case 13:
-			characterToUse = "Ash"
-			break
-
-			case 14:
-			characterToUse = "Catalyst"
-			break
-
-			case 15:
-			characterToUse = "Valk"
-			break
-
-			case 16:
-			characterToUse = "Horizon"
-			break
-
-			case 17:
-			characterToUse = "Rampart"
-			break
-
 			default:
-			characterToUse = "Lifeline"
+			characterToUse = "Wraith"
 			break
 		}
 		RuiSetString( file.inputHintLines[hint], "hintText", "Character: " + characterToUse )
 		return
 	}
 
-	if( hint == 13 && state )
+	if( hint == 8 && state )
 	{
 		RuiSetString( file.inputHintLines[hint], "hintText", "Loop Anim: ON" )
 		return
 	}
-	else if( hint == 13 && !state )
+	else if( hint == 8 && !state )
 	{
 		RuiSetString( file.inputHintLines[hint], "hintText", "Loop Anim: OFF" )
 		return
@@ -513,16 +454,8 @@ void function _HandlePlayerDisconnect( entity player )
 
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
 {
-	for( int i = 0; i < MAX_SLOT; i++ )
-	{
-		player.p.recordingAnims[i] <- []
-	}
-
-	for( int i = 0; i < MAX_SLOT; i++ )
-	{
-		player.p.recordingAnimsCoordinates[i] <- []
-	}
-
+	player.p.recordingAnims.resize( MAX_SLOT )
+	player.p.recordingAnimsCoordinates.resize( MAX_SLOT )
 	player.p.recordingAnimsChosenCharacters.resize( MAX_SLOT )
 	
 	FS_MovementRecorder_PlayerInit( player )
@@ -537,10 +470,12 @@ void function FS_MovementRecorder_PlayerInit( entity player )
 	int playerHandle = player.p.handle
 	
 	table<int, array<entity> > init_playerDummyMap 	= clone file._dummyMaps__Template
-	table<int,int> init_playerPlaybackAmounts 		= clone file._playbackAmounts__Template
+	table<int,int> init_playerPlaybackAmounts 		= clone file._playbackAmounts__Template	
+	//table<int,float> init_playerPlaybackDurations	= clone file._playbackDuration__Template
 	
 	file.playerPlaybackAmounts[ playerHandle ] <- init_playerPlaybackAmounts
 	file.playerDummyMaps[ playerHandle ] <- init_playerDummyMap
+	//file.playerPlaybackDurations[ playerHandle ] <- init_playerPlaybackDurations
 	
 	//PrintMovementRecorderTable( file.playerPlaybackAmounts )
 }
@@ -570,8 +505,7 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 
 	if( player.p.isRecording )
 	{
-		player.Signal( "FinishedRecording" )
-		player.p.isRecording = false
+		thread StopRecordingAnimation( player )
 	} 
 	else
 	{
@@ -648,7 +582,7 @@ bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
 	}
 	
 
-	for(int i = 0; i < MAX_SLOT ; i++ )
+	for( int i = 0; i < MAX_SLOT ; i++ )
 		thread PlayAnimInSlot( player, 	i, remove, removeAll )
 
 	return true
@@ -667,7 +601,7 @@ bool function ClientCommand_SwitchCharacter( entity player, array<string> args )
 		return false
 	}
 
-	if( player.p.movementRecorderCharacter + 1 > 17 )
+	if( player.p.movementRecorderCharacter + 1 > 3 )
 	{ 
 		player.p.movementRecorderCharacter = 0
 	} 
@@ -676,10 +610,9 @@ bool function ClientCommand_SwitchCharacter( entity player, array<string> args )
 		player.p.movementRecorderCharacter++
 	}
 
-	Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 12, true, player.p.movementRecorderCharacter )
+	Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 7, true, player.p.movementRecorderCharacter )
 	
-	if( player.p.movementRecorderCharacter <= 10 )
-		AssignCharacter( player, player.p.movementRecorderCharacter )
+	AssignCharacter( player, PlayerSavedCharacter_To_ItemFlavorIndex( player.p.movementRecorderCharacter ) )
 	
 	return true
 }
@@ -710,14 +643,27 @@ bool function ClientCommand_ToggleContinueLoop(entity player, array<string> args
 	if( player.p.continueLoop )
 	{
 		player.p.continueLoop = false
-		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 13, false, -1 )
+		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, false, -1 )
 	} 
 	else if( !player.p.continueLoop )
 	{
 		player.p.continueLoop = true
-		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 13, true, -1 )
+		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, true, -1 )
 	}
 	return true
+}
+
+int function PlayerSavedCharacter_To_ItemFlavorIndex( int switchcase )
+{
+	switch( switchcase )
+	{
+		case 0: return 8;
+		case 1: return 7;
+		case 2: return 0;
+		case 3: return 6;
+		default: return 0;	
+	}
+	unreachable
 }
 
 void function StartRecordingAnimation( entity player )
@@ -727,113 +673,28 @@ void function StartRecordingAnimation( entity player )
 	
 	string msg1
 
-	//// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 	switch( player.p.movementRecorderCharacter )
 	{
 		case 0:
+			msg1 = "RECORDING MOVEMENT AS WRAITH"
+			AssignCharacter(player, 8)
+		break
+		
+		case 1:
+			msg1 = "RECORDING MOVEMENT AS PATHFINDER"
+			AssignCharacter(player, 7)
+		break
+		
+		case 2:
 			msg1 = "RECORDING MOVEMENT AS BANGALORE"
 			AssignCharacter(player, 0)
 		break
 		
-		case 1:
-			msg1 = "RECORDING MOVEMENT AS BLOODHOUND"
-			AssignCharacter(player, 1)
-		break
-		
-		case 2:
-			msg1 = "RECORDING MOVEMENT AS CAUSTIC"
-			AssignCharacter(player, 2)
-		break
-		
 		case 3:
-			msg1 = "RECORDING MOVEMENT AS GIBBY"
-			AssignCharacter(player, 3)
-		break
-
-		case 4:
-			msg1 = "RECORDING MOVEMENT AS LIFELINE"
-			AssignCharacter(player, 4)
-		break
-
-		case 5:
-			msg1 = "RECORDING MOVEMENT AS MIRAGE"
-			AssignCharacter(player, 5)
-		break
-
-		case 6:
 			msg1 = "RECORDING MOVEMENT AS OCTANE"
 			AssignCharacter(player, 6)
 		break
-
-		case 7:
-			msg1 = "RECORDING MOVEMENT AS PATHFINDER"
-			AssignCharacter(player, 7)
-		break
-
-		case 8:
-			msg1 = "RECORDING MOVEMENT AS WRAITH"
-			AssignCharacter(player, 8)
-		break
-
-		case 9:
-			msg1 = "RECORDING MOVEMENT AS WATTSON"
-			AssignCharacter(player, 9)
-		break
-
-		case 10:
-			msg1 = "RECORDING MOVEMENT AS CRYPTO"
-			AssignCharacter(player, 10)
-		break
-
-		case 11:
-			msg1 = "RECORDING MOVEMENT AS LOBA"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
-		break
-
-		case 12:
-			msg1 = "RECORDING MOVEMENT AS BALLISTIC"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
-		break
-
-		case 13:
-			msg1 = "RECORDING MOVEMENT AS ASH"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/techart/mshop/characters/legends/ash/ash_base_w.rmdl" )
-			player.SetArmsModelOverride( $"mdl/techart/mshop/characters/legends/ash/ash_base_v.rmdl" )
-		break
-
-		case 14:
-			msg1 = "RECORDING MOVEMENT AS CATALYST"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_w.rmdl" )
-			player.SetArmsModelOverride( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_v.rmdl" )
-		break
-
-		case 15:
-			msg1 = "RECORDING MOVEMENT AS VALK"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/Humans/class/medium/pilot_medium_valkyrie.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Weapons/arms/pov_pilot_medium_valkyrie.rmdl" )
-		break
-
-		case 16:
-			msg1 = "RECORDING MOVEMENT AS HORIZON"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/Humans/class/medium/pilot_medium_nova_01.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Weapons/arms/pov_pilot_medium_nova_base_01.rmdl" )
-		break
 		
-		case 17:
-			msg1 = "RECORDING MOVEMENT AS RAMPART"
-			AssignCharacter(player, 5)
-			player.SetBodyModelOverride( $"mdl/Humans/class/medium/pilot_medium_rampart.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Weapons/arms/pov_pilot_medium_rampart.rmdl" )
-		break
-
 		default:
 			msg1 = "RECORDING MOVEMENT"
 			AssignCharacter(player, 0)
@@ -847,9 +708,52 @@ void function StartRecordingAnimation( entity player )
 	}
 	
 	asset playermodel = player.GetModelName() //?
+	
+	//MovementRecorder_SetStartRecordingTime( player, Time() )
 	player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
 	player.p.isRecording = true
+	
+	OnThreadEnd
+	(
+		void function() : ( player )
+		{
+			if( IsValid( player ) )
+			{
+				if( player.p.isRecording )
+					StopRecordingAnimation( player )
+			}
+		}
+	)
+	
+	// Recording animations disappear after 2:30, hard-set limit of 3000 frames. ~mkos
+	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
+}
 
+// void function MovementRecorder_SetStartRecordingTime( entity player, float time )
+// {
+	// player.p.recordingStartTime = time
+// }
+
+// float function MovementRecorder_GetStartRecordingTime( entity player )
+// {
+	// return player.p.recordingStartTime
+// }
+
+int function FS_MovementRecorder_GetEmptySlotForPlayer( entity player )
+{
+	foreach( int i, var anim in player.p.recordingAnims )
+	{
+		if( anim == null )
+			return i
+	}
+	
+	return -1
+}
+void function StopRecordingAnimation( entity player )
+{
+	if( !player.p.isRecording )
+		return
+	
 	int slot = FS_MovementRecorder_GetEmptySlotForPlayer( player )
 	
 	if( slot == -1 )
@@ -859,98 +763,31 @@ void function StartRecordingAnimation( entity player )
 			
 		return
 	}
-	
-	OnThreadEnd
-	(
-		void function() : ( player, slot )
-		{
-			if( IsValid( player ) )
-			{
-				if( player.p.isRecording )
-					StopRecordingAnimation( player, slot, true )
-			}
-		}
-	)
-	
-	float endtime = Time() + 149
-	// Recording animations disappear after 2:30, hard-set limit.
-
-	EndSignal( player, "OnDestroy", "OnDisconnected", "FinishedRecording" )
-
-	while( true )
-	{
-		// printt( Time(), endtime )
-		if( Time() > endtime )
-		{
-			StopRecordingAnimation( player, slot )
-			player.p.currentOrigin = player.GetOrigin()
-			player.p.currentAngles = player.GetAngles()
-			player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
-			// printt( "started new anim recording internal for same slot", slot )
-			endtime = Time() + 149
-		}
-		WaitFrame()
-	}
-	
-}
-
-int function FS_MovementRecorder_GetEmptySlotForPlayer( entity player )
-{
-	foreach( int i, array< var > anims in player.p.recordingAnims )
-	{
-		if( anims.len() == 0 )
-			return i
-	}
-	
-	return -1
-}
-void function StopRecordingAnimation( entity player, int forcedSlot = -1, bool actuallyEnded = false )
-{
-	if( !player.p.isRecording )
-		return
-	
-	int slot = FS_MovementRecorder_GetEmptySlotForPlayer( player )
-	
-	if( slot == -1 && forcedSlot == -1 )
-	{
-		if( !player.p.recorderHideHud )
-			LocalEventMsg( player, "#FS_NO_SLOTS" )
-			
-		return
-	}
-
-	if( forcedSlot != -1 )
-		slot = forcedSlot 
 
 	LocPair animData
 	animData.origin = player.p.currentOrigin
 	animData.angles = player.p.currentAngles
 
-	player.p.recordingAnims[ slot ].append( player.StopRecordingAnimation() )
-	player.p.recordingAnimsCoordinates[ slot ].append( animData )
+	player.p.recordingAnims[ slot ] = player.StopRecordingAnimation()
+	player.p.recordingAnimsCoordinates[ slot ] = animData
 	player.p.recordingAnimsChosenCharacters[ slot ] = player.p.movementRecorderCharacter
+	
+	// float endTime = Time()
+	// float startTime = MovementRecorder_GetStartRecordingTime( player )
+	// float slotDuration = endTime - startTime
+	
+	// MovementRecorder_SetSlotDuration( player, slot, slotDuration )
 
-	Assert( file.recordingAnims.len() == file.recordingAnimsCoordinates.len() )
-
-	if( forcedSlot == -1 && player.p.isRecording )
-	{
-		player.p.isRecording = false
-		player.Signal( "FinishedRecording" )
-	}
+	player.p.isRecording = false
+	player.Signal( "FinishedRecording" )
 
 	if( !player.p.recorderHideHud )
 	{
-		if( actuallyEnded )
-		{
-			LocalEventMsg( player, "#FS_MOVEMENT_SAVED", slotname( slot + 1 ) )
-			Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, false, -1 )
-		}
-		
-		float duration
-		foreach( anim in player.p.recordingAnims[ slot ] )
-		{
-			duration += GetRecordedAnimationDuration( anim )
-		}
+		LocalEventMsg( player, "#FS_MOVEMENT_SAVED", slotname( slot + 1 ) )
+		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, false, -1 )
+
+		var anim = player.p.recordingAnims[ slot ]
+		float duration = GetRecordedAnimationDuration( anim )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", slot + 1, true, duration )
 	}
 }
@@ -984,8 +821,8 @@ bool function bDoesAnyAnimationExist( entity player )
 		
 	foreach( slot, dummyArray in file._dummyMaps__Template )
 	{
-		if ( player.p.recordingAnims[ slot ].len() > 0 )
-			return true	
+		if ( player.p.recordingAnims[ slot ] != null )
+			return true
 	}
 	
 	return false
@@ -1027,12 +864,11 @@ void function PlayRandomAnimation( entity player )
 		if( !( playerHandle in file.playerDummyMaps ) )
 			return 
 			
-			
 		array<int> randomSlots = []
 	
 		for( int i = 0; i < file._dummyMaps__Template.len(); i++ )
 		{
-			if( player.p.recordingAnims[i].len() > 0 )
+			if( player.p.recordingAnims[i] != null )
 				randomSlots.append( i )
 		}
 		
@@ -1043,9 +879,9 @@ void function PlayRandomAnimation( entity player )
 			
 			return
 		}
-			
+		
 		slot = randomSlots.getrandom()
-		var anim = player.p.recordingAnims[slot][0]
+		var anim = player.p.recordingAnims[slot]
 		
 		if( anim == null )
 			continue
@@ -1055,18 +891,15 @@ void function PlayRandomAnimation( entity player )
 			
 		PlayAnimInSlot( player, slot, false, false, true )
 		
-		float duration
-		foreach( anims in player.p.recordingAnims[ slot ] )
-		{
-			duration += GetRecordedAnimationDuration( anims )
-		}
-
-		wait duration + 0.1
+		//No need to wait, PlayAnimInSlot() will wait this thread as well. ~mkos
+		//MovementRecorder_WaitForAnimToFinish( anim ) 
+		
+		wait 0.1
 		
 		if( !IsValid( player ) || !player.p.continueLoop )
 			return
 			
-		wait 0.2
+		wait file.randomPlaybackDelay
 	}
 }
 
@@ -1090,13 +923,9 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 	#if DEVELOPER
 		printt( "playaniminslot", slot )
 	#endif
-	
-	int currentAnimFromSlot = 0
-	
-	var anim
-	if( player.p.recordingAnims[slot].len() > 0 )
-		anim = player.p.recordingAnims[slot][currentAnimFromSlot]
 
+	var anim = player.p.recordingAnims[slot]
+	
 	if( !remove && anim == null )
 	{
 		if( !player.p.recorderHideHud )
@@ -1107,8 +936,7 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 
 	if( remove && anim != null )
 	{
-		player.p.recordingAnims[ slot ] = []
-		player.p.recordingAnimsCoordinates[ slot ] = []
+		player.p.recordingAnims[ slot ] = null
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", slot + 1, false, -1 )
 
 		if( !player.p.recorderHideHud && !removeAll )
@@ -1128,157 +956,87 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 		return
 	}
 
-	vector initialpos = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].origin
-	vector initialang = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].angles
+	vector initialpos = player.p.recordingAnimsCoordinates[ slot ].origin
+	vector initialang = player.p.recordingAnimsCoordinates[ slot ].angles
 
-	//// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 	string aiFileToUse
 	switch( player.p.recordingAnimsChosenCharacters[ slot ] )
 	{
 		case 0:
-			aiFileToUse = "npc_dummie_bangalore"
+			aiFileToUse = "npc_dummie_wraith"
 		break
 		
 		case 1:
-			aiFileToUse = "npc_dummie_bloodhound"
+			aiFileToUse = "npc_dummie_pathfinder"
 		break
 		
 		case 2:
-			aiFileToUse = "npc_dummie_caustic"
+			aiFileToUse = "npc_dummie_bangalore"
 		break
 		
 		case 3:
-			aiFileToUse = "npc_dummie_gibby"
-		break
-
-		case 4:
-			aiFileToUse = "npc_dummie_lifeline"
-		break
-
-		case 5:
-			aiFileToUse = "npc_dummie_mirage"
-		break
-
-		case 6:
 			aiFileToUse = "npc_dummie_octane"
-		break
-
-		case 7:
-			aiFileToUse = "npc_dummie_pathfinder"
-		break
-
-		case 8:
-			aiFileToUse = "npc_dummie_wraith"
-		break
-
-		case 9:
-			aiFileToUse = "npc_dummie_wattson"
-		break
-
-		case 10:
-			aiFileToUse = "npc_dummie_crypto"
-		break
-
-		case 11:
-			aiFileToUse = "npc_dummie_loba"
-		break
-
-		case 12:
-			aiFileToUse = "npc_dummie_ballistic"
-		break
-
-		case 13:
-			aiFileToUse = "npc_dummie_ash"
-		break
-
-		case 14:
-			aiFileToUse = "npc_dummie_catalyst"
-		break
-
-		case 15:
-			aiFileToUse = "npc_dummie_valk"
-		break
-
-		case 16:
-			aiFileToUse = "npc_dummie_horizon"
-		break
-
-		case 17:
-			aiFileToUse = "npc_dummie_rampart"
 		break
 		
 		default:
 			aiFileToUse = "npc_dummie_wraith"
 		break
 	}
+	
 
-	entity dummy 
 	while( true )
 	{
-		if( !IsValid( dummy ) )
-		{
-			dummy = CreateDummy( 99, initialpos, initialang )
-			file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
-			
-				// EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
-				// EndSignal( svGlobal.levelEnt, "EndDummyThread" )
+		entity dummy = CreateDummy( 99, initialpos, initialang )
+		file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
+		
+			EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
+			EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 
-				// OnThreadEnd( function() : ( player, dummy, slot )
-				// {
-					// if( IsValid( dummy ) )
-						// RemoveDummyForPlayer( player, dummy, slot )			
-				// })
-			
-			vector pos = dummy.GetOrigin()
-			vector angles = dummy.GetAngles()
-			// StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
-			SetSpawnOption_AISettings( dummy, aiFileToUse )
+			OnThreadEnd
+			( 
+				void function() : ( player, dummy, slot )
+				{
+					if( IsValid( dummy ) )
+						RemoveDummyForPlayer( player, dummy, slot )			
+				}
+			)
+		
+		vector pos = dummy.GetOrigin()
+		vector angles = dummy.GetAngles()
+		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
+		SetSpawnOption_AISettings( dummy, aiFileToUse )
 
-			dummy.Hide()
+		dummy.Hide()
 
-			// dummy.SetBehaviorSelector( "behavior_dummy_empty" )
-			// dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
-			// dummy.EnableNPCFlag( NPC_IGNORE_ALL )
+		DispatchSpawn( dummy )
+		SetDummyProperties( dummy, 2 )
+		
+		WaitFrame()
+		
+		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
+		dummy.SetRecordedAnimationPlaybackRate( file.adminSetPlaybackRate )
+		dummy.Show()
 
-			DispatchSpawn( dummy )
-			dummy.SetTitle( r5rDevs.getrandom() )
-			SetDummyProperties(dummy, 2)
-			
-			// WaitFrame()
-			
-			dummy.PlayRecordedAnimation( anim, initialpos, initialang )
-			// dummy.SetRecordedAnimationPlaybackRate( 1.0 )
-			dummy.Show()
-
-			file.playerDummyMaps[ playerHandle ][ slot ].append(dummy)
-		}
-
-		if( !IsValid( player ) || !IsValid( dummy ) )
+		file.playerDummyMaps[ playerHandle ][ slot ].append(dummy)
+		
+		if( !IsValid( player ) )
 			return
 
-		dummy.PlayRecordedAnimation( anim, initialpos, initialang )
+		waitthread function () : ( player, anim, dummy, slot )
+		{
+			EndSignal( dummy, "OnDeath", "OnDestroy" )
+			EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
+			EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 
-		wait GetRecordedAnimationDuration( anim )
-
-		if( IsValid( player ) && currentAnimFromSlot + 1 < player.p.recordingAnims[slot].len() )
-		{
-			currentAnimFromSlot++
-			anim = player.p.recordingAnims[slot][currentAnimFromSlot]
-			initialpos = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].origin
-			initialang = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].angles
-			continue
-		} else if( IsValid( player ) && player.p.continueLoop )
-		{
-			currentAnimFromSlot = 0
-			anim = player.p.recordingAnims[slot][currentAnimFromSlot]
-			initialpos = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].origin
-			initialang = player.p.recordingAnimsCoordinates[ slot ][currentAnimFromSlot].angles
-			continue
-		} else
-		{
-			RemoveDummyForPlayer( player, dummy, slot )
-			break
-		}
+			OnThreadEnd( function() : ( player, dummy, slot )
+			{
+				RemoveDummyForPlayer( player, dummy, slot )			
+			})
+			
+			MovementRecorder_WaitForAnimToFinish( anim ) //this can be long
+			 
+			//wait MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate )
+		}()
 
 		if( IsValid( player ) && !player.p.continueLoop || bIsPlayingRandomSlot )
 		{	
@@ -1287,15 +1045,23 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 	}
 }
 
+void function MovementRecorder_WaitForAnimToFinish( var anim )
+{
+	Assert( IsThreadTop(), "not thread top" )
+	//Todo: Implement wait based on playback rate setting for this player, for this slot. (currently global setting) ~mkos
+	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate )
+}
+
 void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 {	
-	if( !IsValid( dummy ) ) 
+	if( !IsValid( dummy ) )
 		return
 			
 	if( IsValid( player ) && file.playerDummyMaps[ player.p.handle ][ slot ].contains( dummy ) )
 		file.playerDummyMaps[ player.p.handle ][ slot ].removebyvalue( dummy )
-	
-	dummy.Destroy()
+
+	if( dummy.IsEntAlive() ) //only destroy if dummy was still alive, else let damagecode handle ~mkos
+		dummy.Destroy()
 	
 	file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
 }
@@ -1323,7 +1089,7 @@ void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -
 			{
 				continue
 			}
-					
+			
 			slotDummy.Destroy()
 			
 			#if DEVELOPER
@@ -1378,14 +1144,18 @@ int function ReturnShieldAmountForDesiredLevel( int shield )
 
 void function SetDummyProperties( entity dummy, int shield )
 {
+	dummy.SetTitle( r5rDevs.getrandom() )
 	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel( shield ) )
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel( shield ) )
-	dummy.SetMaxHealth( 100 )
-	dummy.SetHealth( 100 )
+	dummy.SetMaxHealth( DUMMY_MAX_HEALTH )
+	dummy.SetHealth( DUMMY_MAX_HEALTH )
 	dummy.SetDamageNotifications( true )
 	dummy.SetTakeDamageType( DAMAGE_YES )
 	dummy.SetCanBeMeleed( true )
 	AddEntityCallback_OnDamaged( dummy, RecordingAnimationDummy_OnDamaged )
+	
+	if( file.bDummyDeathNotifications )
+		dummy.SetDeathNotifications( true )
 
 	dummy.SetForceVisibleInPhaseShift( true )
 }
@@ -1410,8 +1180,8 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, headshot)
 	}
 
-	// if(!attacker.IsPlayer() ) return
-	// attacker.RefillAllAmmo()
+	if( file.bAutoRefilAmmoOnHit && attacker.IsPlayer() )
+		attacker.RefillAllAmmo()
 }
 
 
@@ -1519,6 +1289,30 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 	return true
 }
 
+// void function MovementRecorder_SetSlotDuration( entity player, int slot, float duration )
+// {
+	// if( !IsValid( player ) )
+		// return 
+		
+	// int playerHandle = player.p.handle 
+	
+	// if( playerHandle in file.playerPlaybackDurations )
+		// file.playerPlaybackDurations[ playerHandle ][ slot ] = duration
+// }
+
+// float function MovementRecorder_GetSlotDuration( entity player, int slot )
+// {
+	// int playerHandle = player.p.handle 
+	
+	// if( playerHandle in file.playerPlaybackDurations )
+	// {
+		// if( slot in file.playerPlaybackDurations[ playerHandle ] )
+			// return file.playerPlaybackDurations[ playerHandle ][ slot ]
+	// }
+	
+	// return 0.0
+// }
+
 //////////////////////
 //		  DEV		//
 //////////////////////
@@ -1551,7 +1345,6 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 		printt("\n\n")
 	}
 
-
 	void function PrintNestedTableTyped( int indent, int depth, int maxDepth, table< int, int > tbl )
 	{
 		if ( depth >= maxDepth )
@@ -1566,7 +1359,7 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 			printt( TableIndent( indent + 2 ) + k + " = " + v )
 		}
 		printt( TableIndent( indent ) + "}" )
-	}
+	}	
 #endif //DEVELOPER
 
 

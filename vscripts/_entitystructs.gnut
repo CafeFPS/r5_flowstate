@@ -1334,6 +1334,8 @@ global struct ServerProjectileStruct
 	bool dontbouncethistime = false
 	entity weapon
 	array<entity> healWeaponEffects
+	
+	float lastVortexBounceTime = 0.0
 }
 
 // hooked up to entity.soul in code

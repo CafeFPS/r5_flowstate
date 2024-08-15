@@ -51,6 +51,7 @@ struct
 	table<var, ButtonData > DestroyDummiesAdmin
 	table<var, ButtonData > OpenWeaponsMenu
 	table<var, ButtonData > OpenMOTD
+	table<var, ButtonData > OpenScenariosStandings
 
 	InputDef& qaFooter
 	
@@ -174,6 +175,7 @@ void function InitSystemPanel( var panel )
 	file.DestroyDummiesAdmin[ panel ] <- clone data
 	file.OpenWeaponsMenu[ panel ] <- clone data
 	file.OpenMOTD[ panel ] <- clone data
+	file.OpenScenariosStandings[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "#FS_FINISH_CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -255,6 +257,9 @@ void function InitSystemPanel( var panel )
 	
 	file.OpenMOTD[ panel ].label = "#FS_SERVER_MOTD"
 	file.OpenMOTD[ panel ].activateFunc = OpenMOTD	
+	
+	file.OpenScenariosStandings[ panel ].label = "#FS_SCENARIOS_STANDINGS"
+	file.OpenScenariosStandings[ panel ].activateFunc = UI_OpenScenariosStandingsMenu	
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -346,6 +351,10 @@ void function UpdateSystemPanel( var panel )
 			{	
 				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
 			}
+		}
+		if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			SetButtonData( panel, buttonIndex++, file.OpenScenariosStandings[ panel ] )
 		}
 		
 		SetButtonData( panel, buttonIndex++, file.OpenMOTD[ panel ] )
@@ -580,10 +589,13 @@ void function SetMotdText( string text )
 	
 	// auto-opening motd disabled as per amos request
 	
-	// if( !("server" in file.seenMotdForServer) )
-	// {
-		// OpenMOTD()
-	// }
+	string server = GetServerID()
+	
+	if( !( server in file.seenMotdForServer ) )
+	{
+		OpenMOTD()
+		file.seenMotdForServer[ server ] <- true
+	}
 }
 
 void function OpenMOTD()
@@ -592,7 +604,7 @@ void function OpenMOTD()
 		return
 		
 	string motd = ""
-	string motdLocalized = Localize("#FS_PLAYLIST_MOTD")
+	string motdLocalized = Localize( "#FS_PLAYLIST_MOTD" )
 	
 	if ( file.motdText != "" )
 	{ 
@@ -604,14 +616,6 @@ void function OpenMOTD()
 	}
 	
 	OpenServerMOTD( motd )
-	
-	// DialogData dialog
-	// dialog.header = "Server Message of the Day"
-	// dialog.message = motd
-	// dialog.darkenBackground = true
-	// dialog.showPCBackButton = true
-	// dialog.useFullMessageHeight = true
-	// OpenDialog( dialog )
 }
 
 void function UpdateOptInFooter()

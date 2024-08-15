@@ -98,6 +98,7 @@ struct {
 
 	array<entity> aliveDropships
 	array<entity> aliveDeathboxes
+	array<entity> aliveItemDrops
 } file
 
 struct {
@@ -172,6 +173,7 @@ void function Init_FS_Scenarios()
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
 
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+	AddSpawnCallback( "prop_survival", FS_Scenarios_StoreAliveDrops )
 
 	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
@@ -611,14 +613,46 @@ void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
 	#endif
 }
 
+void function FS_Scenarios_StoreAliveDrops( entity prop )
+{
+	if( !IsValid( prop ) )
+		return
+
+	file.aliveItemDrops.append( prop )
+	
+	#if DEVELOPER
+		printt( "added prop to alive aliveItemDrops array", prop )
+	#endif
+}
+
+void function FS_Scenarios_CleanupDrops()
+{
+	int maxIter = file.aliveItemDrops.len() - 1
+	
+	for( int i = maxIter; i > 0; i-- )
+	{
+		if( !IsValid( file.aliveItemDrops[ i ] ) )
+			file.aliveItemDrops.remove( i )
+	}
+}
+
 void function FS_Scenarios_CleanupDeathboxes()
 {
-	foreach( i, deathbox in file.aliveDeathboxes )
+	// foreach( i, deathbox in file.aliveDeathboxes )
+	// {
+		// if( !IsValid( deathbox ) )
+		// {
+			// file.aliveDeathboxes.removebyvalue( deathbox )
+		// }
+	// }
+	
+	// don't remove multiple items from an array while iterating sequentially ~mkos
+	int maxIter = file.aliveDeathboxes.len() - 1
+	
+	for( int i = maxIter; i > 0; i-- )
 	{
-		if( !IsValid( deathbox ) )
-		{
-			file.aliveDeathboxes.removebyvalue( deathbox )
-		}
+		if( !IsValid( file.aliveDeathboxes[ i ] ) )
+			file.aliveDeathboxes.remove( i )
 	}
 }
 
@@ -626,17 +660,45 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 {
 	int count = 0
 	foreach( deathbox in file.aliveDeathboxes )
-		if( IsValid( deathbox ) && realm == -1 || IsValid( deathbox ) && deathbox.IsInRealm( realm )  )
+	{
+		if( IsValid( deathbox ) )
 		{
-			if( IsValid( deathbox.GetParent() ) )
-				deathbox.GetParent().Destroy() // Destroy physics
+			if( realm == -1 || deathbox.IsInRealm( realm )  )
+			{
+				if( IsValid( deathbox.GetParent() ) )
+					deathbox.GetParent().Destroy() // Destroy physics
 
-			deathbox.Destroy()
-			
-			count++
+				deathbox.Destroy()
+				
+				count++
+			}
 		}
+	}
 	#if DEVELOPER
 		printt( "removed", count, "deathboxes for realm", realm )
+	#endif
+}
+
+void function FS_Scenarios_DestroyAllAliveDroppedLootForRealm( int realm = -1 )
+{
+	int count = 0
+	foreach( drop in file.aliveItemDrops )
+	{
+		if( IsValid( drop ) )
+		{
+			if( realm == -1 || drop.IsInRealm( realm )  )
+			{
+				if( IsValid( drop.GetParent() ) )
+					drop.GetParent().Destroy() // Destroy physics
+
+				drop.Destroy()
+				
+				count++
+			}
+		}
+	}
+	#if DEVELOPER
+		printt( "removed", count, "itemdrops for realm", realm )
 	#endif
 }
 
@@ -654,12 +716,21 @@ void function FS_Scenarios_StoreAliveDropship( entity dropship )
 
 void function FS_Scenarios_CleanupDropships()
 {
-	foreach( i, dropship in file.aliveDropships )
+	// foreach( i, dropship in file.aliveDropships )
+	// {
+		// if( !IsValid( dropship ) )
+		// {
+			// file.aliveDropships.removebyvalue( dropship )
+		// }
+	// }
+	
+	// don't remove multiple items from an array while iterating sequentially ~mkos
+	int maxIter = file.aliveDropships.len() - 1
+	
+	for( int i = maxIter; i > 0; i-- )
 	{
-		if( !IsValid( dropship ) )
-		{
-			file.aliveDropships.removebyvalue( dropship )
-		}
+		if( !IsValid( file.aliveDropships[ i ] ) )
+			file.aliveDropships.remove( i )
 	}
 }
 
@@ -1239,12 +1310,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 	)
 
-	while(true)
+	for( ; ; )
 	{
 		wait 0.1
 
 		FS_Scenarios_CleanupDropships()
 		FS_Scenarios_CleanupDeathboxes()
+		FS_Scenarios_CleanupDrops()
 
 		// Recién conectados
 		foreach ( player in GetPlayerArray() )
@@ -1336,15 +1408,14 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 						} else
 							player.p.InDeathRecap = false
+							
+						Scenarios_SendStandingsToClient( player )
 
 						#if DEVELOPER
 							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
 						#endif
 						continue
 					}
-					
-					// removed this, as it interferes with core mechanics ~mkos 
-					//player.p.lastDamageTime = Time() //avoid player regen health
 
 					if ( player.IsPhaseShifted() )
 						continue
@@ -1369,6 +1440,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				group.IsFinished = true
 				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
+				thread FS_Scenarios_SendRecapData( group )
+
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -1378,6 +1451,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					FS_Scenarios_DestroyLootbinsForGroup( group )
 				}
 
+				FS_Scenarios_DestroyAllAliveDroppedLootForRealm( group.slotIndex )
 				FS_Scenarios_DestroyAllAliveDeathboxesForRealm( group.slotIndex )
 				ClearActiveProjectilesForRealm( group.slotIndex )
 
@@ -1649,13 +1723,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				if( !IsValid( player ) )
 					return
-
-				// player.p.notify = false
-				// player.p.destroynotify = true
-				//TODO: use new notify system if using in your mode; these entity struct vars were removed
 				
-				FS_SetRealmForPlayer( player, newGroup.slotIndex )
-				
+				FS_SetRealmForPlayer( player, newGroup.slotIndex )			
 				
 				int amountPlayersPerTeam
 
@@ -2371,4 +2440,32 @@ LocPairData function CustomSpawns()
 		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
 
 	return SpawnSystem_CreateLocPairObject( spawns, true, null, null, metaData )
+}
+
+
+void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
+{
+	foreach( Team1Player in group.team1Players )
+	{
+		if( !IsValid( Team1Player ) )
+			continue 
+			
+		Scenarios_SendStandingsToClient( Team1Player )
+	}
+	
+	foreach( Team2Player in group.team2Players )
+	{
+		if( !IsValid( Team2Player ) )
+			continue 
+			
+		Scenarios_SendStandingsToClient( Team2Player )
+	}
+	
+	foreach( Team3Player in group.team3Players )
+	{
+		if( !IsValid( Team3Player ) )
+			continue
+			
+		Scenarios_SendStandingsToClient( Team3Player )
+	}
 }

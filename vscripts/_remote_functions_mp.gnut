@@ -10,13 +10,21 @@ global function FindFuncID_ByRef
 
 #if CLIENT
 	global function Remote_CallFunction_ByRef_internal
-#endif 
+	global function FS_ByRef_ConsistencyCheck
+#endif
 
 struct 
 {
 	table<string, void functionref()> functionrefs	//the actual func ref
 	table<int, string> intToFunctionRef				//for client to map int to func name
 	table<string, int> functionrefsToInt 			//for server to call by func name
+	
+	int iConsistencyCheck
+	
+	#if CLIENT 
+		bool bConsistencyCheckComplete = false
+	#endif
+	
 } file
 
 // Do not include any aliased funcs that CAN BE exploited. 
@@ -108,8 +116,7 @@ void function SetupRemoteFuncAliases()
 			"ServerCallback_FSDM_CoolCamera",
 			"SND_ForceUpdatePlayerCount",
 			"Consumable_UseBomb",
-			"ServerCallback_CTF_HideCustomUI",
-			"CloseCTFRespawnMenu"
+			"ServerCallback_CTF_HideCustomUI"
 		]
 	#endif
 	
@@ -178,7 +185,9 @@ void function RemoteFunctions_Init_Begin()
 
 	SetupRemoteFuncAliases()
 	Remote_RegisterClientFunction( "Remote_CallFunction_ByRef_internal", "int", INT_MIN, INT_MAX )
-	Remote_RegisterClientFunction( "FS_CheckForConsistency_Client" )
+	Remote_RegisterClientFunction( "FS_LocalizationConsistencyCheck" )
+	Remote_RegisterClientFunction( "FS_ByRef_ConsistencyCheck" )
+	AddCallback_OnNetworkRegistration( ByRef_ConsistencyCheck )
 
 	//Minimap Toggle
 	//Remote_RegisterClientFunction("Minimap_EnableDraw_Internal") //moved to byRef ~mkos
@@ -289,6 +298,8 @@ void function RemoteFunctions_Init_Begin()
 				RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_gameStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+			
+				Scenarios_RegisterNetworking() //mkos
 			}
 			
 			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
@@ -681,7 +692,8 @@ void function RemoteFunctions_Init_Begin()
 		RegisterNetworkedVariable( "championSquadPresentationStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 		RegisterNetworkedVariable( "pickLoadoutGamestateEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 		RegisterNetworkedVariable( "pickLoadoutGamestateStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	} else // cafe was here
+	} 
+	else // cafe was here
 	{
 		RegisterNetworkedVariable( "characterSelectionReady", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 		RegisterNetworkedVariable( "characterSelectLockstepIndex", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, -1 )
@@ -1114,3 +1126,71 @@ bool function GetNV_FreefallIsFromPlane( entity player )
 {
 	return player.GetPlayerNetBool( "freefallIsFromPlane" )
 }
+
+void function ByRef_ConsistencyCheck()
+{
+	#if SERVER	
+		file.iConsistencyCheck = file.intToFunctionRef.len()
+		
+		AddClientCommandCallback( "byRefIntegrityCheck", ClientCommand_CheckByRefConsistency )
+		AddCallback_OnClientConnected
+		( 
+			void function( entity player )
+			{
+				if( IsValid( player ) )
+					Remote_CallFunction_NonReplay( player, "FS_ByRef_ConsistencyCheck" )
+			}
+		)
+	#endif
+	
+	#if CLIENT	
+		file.iConsistencyCheck = file.functionrefs.len()
+		
+		AddCallback_OnPlayerDisconnected
+		(
+			void function( entity player )
+			{
+				file.bConsistencyCheckComplete = false
+			}
+		)
+	#endif
+}
+
+#if CLIENT 
+	void function FS_ByRef_ConsistencyCheck()
+	{
+		if( !file.bConsistencyCheckComplete )
+		{
+			entity player = GetLocalClientPlayer()
+			
+			if( IsValid( player ) )
+			{
+				player.ClientCommand( "byRefIntegrityCheck " + string( file.iConsistencyCheck ) )
+				file.bConsistencyCheckComplete = true
+			}
+		}
+	}	
+#endif
+
+#if SERVER 
+	bool function ClientCommand_CheckByRefConsistency( entity player, array<string> args )
+	{
+		if( args.len() < 1 )
+			return true
+			
+		string param = args[ 0 ]
+		
+		if( !IsNumeric( param ) )
+			return true
+			
+		int clientCount = int( param )
+		
+		if ( clientCount != file.iConsistencyCheck )
+		{
+			const string info = "Your remote integrity check byref does not match the server."
+			KickPlayerById( player.GetPlatformUID(), info )
+		}
+		
+		return true
+	}	
+#endif 

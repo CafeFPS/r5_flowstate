@@ -1104,7 +1104,9 @@ void function ClearActiveProjectilesForTeam( int team, vector searchOrigin = <0,
 {
 	array<entity> projectiles = GetProjectileArrayEx( "any", team, TEAM_ANY, searchOrigin, searchDist )
 
-	printt( "cleaning up", projectiles.len(), "weapon projectiles for team", team )
+	#if DEVELOPER
+		printt( "cleaning up", projectiles.len(), "weapon projectiles for team", team )
+	#endif
 
 	foreach ( proj in projectiles )
 	{
@@ -1128,7 +1130,9 @@ void function ClearActiveProjectilesForRealm( int realm )
 		count++
 	}
 
-	printt( "cleaning up", count, "weapon projectiles for realm", realm )
+	#if DEVELOPER
+		printt( "cleaning up", count, "weapon projectiles for realm", realm )
+	#endif
 }
 
 void function RestockPlayerAmmo_Silent( entity player = null )

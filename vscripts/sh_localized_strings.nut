@@ -24,7 +24,7 @@ global function StringReplaceLimited
 	global function FS_BuildLocalizedMultiVarString
 	global function FS_CreateTextInfoPanelWithID_Localized
 	global function FS_BuildLocalizedVariable_InfoPanel
-	global function FS_CheckForConsistency_Client
+	global function FS_LocalizationConsistencyCheck
 #endif
 
 #if DEVELOPER 
@@ -379,7 +379,7 @@ void function Localization_ConsistencyCheck()
 			void function( entity player )
 			{
 				if( IsValid( player ) )
-					Remote_CallFunction_NonReplay( player, "FS_CheckForConsistency_Client" )
+					Remote_CallFunction_NonReplay( player, "FS_LocalizationConsistencyCheck" )
 			}
 		)
 	#endif
@@ -747,7 +747,7 @@ void function CreatePanelText_Localized( entity player, string ref, string subRe
 //########################################################
 
 #if CLIENT
-void function FS_CheckForConsistency_Client()
+void function FS_LocalizationConsistencyCheck()
 {
 	if( !file.bConsistencyCheckComplete )
 	{

@@ -515,7 +515,7 @@ bool function IsPVEMode()
 	#if UI
 		{
 			string playlistName = GetCurrentPlaylistName()
-			if ( playlistName.find( "freelance" ) == 0 ) //wtf ~mkos
+			if ( playlistName.find( "freelance" ) == 0 )
 				return true
 
 			return false

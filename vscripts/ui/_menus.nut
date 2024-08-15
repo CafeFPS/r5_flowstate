@@ -1825,6 +1825,8 @@ void function InitMenus()
 	
 	AddMenu( "SERVER_MOTD", $"platform/scripts/resource/ui/menus/dialogs/server_motd.menu", Init_Server_MOTD, "Server MOTD" )
 
+	AddMenu( "ScenariosStandingsMenu", $"platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu", InitScenariosMenu, "Match Standings" )
+
 	InitTabs()
 	InitSurveys()
 	ShMenuModels_UIInit()

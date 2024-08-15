@@ -134,6 +134,8 @@ void function SetPlayerStatFloat( string player_oid, string statname, float valu
 	}
 }
 
+// These are not handled by script registered stats and it is futile to send out, 
+// as they will be dropped in the backend.
 const array<string> IGNORE_STATS = 
 [
 	"player",

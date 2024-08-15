@@ -48,10 +48,10 @@ void function Script_RegisterAllStats()
 	// They can all be fetched when stats for a player loads,
 	// see: AddCallback_PlayerDataFullyLoaded below.
 	//
-	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [int,bool,float,string]
+	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [Int,Bool,Float,String]
 	// Each stat will only load in if they get registered here.
 	// AddCallback_PlayerDataFullyLoaded callbackFunc will get called when 
-	// stats finish loading for player.
+	// stats finish loading for a player.
 	//
 	// Additionally, an api constant REGISTER_ALL will trigger the return of the entire 
 	// script-registered live-table stats.
