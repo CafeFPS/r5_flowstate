@@ -497,7 +497,7 @@ playlists
 			inherit fs_survival
 			vars
 			{
-				name                                           "Survival Dev"
+				name                                           "Movement Recorder"
 				visible                                        1
 
 				// Skip intros:
