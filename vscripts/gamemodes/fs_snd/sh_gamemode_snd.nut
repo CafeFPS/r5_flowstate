@@ -909,6 +909,10 @@ void function AnotherBombTimer(var elem)
 	if(elapsedtime == 0) return
 	
 	entity player = GetLocalClientPlayer()
+	
+	if( !IsValid( file.bombEntity ) )
+		return
+
 	EndSignal(file.bombEntity, "OnDestroy")
 	string oldendtime
 	

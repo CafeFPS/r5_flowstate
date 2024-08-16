@@ -62,6 +62,8 @@ global array<int> snd_allowedCharacters = [8, 7, 4, 9, 1]
 const bool SND_GIVE_BODY_SHIELD_BASED_ON_ROUND = false
 const bool SND_ECONOMY_SYSTEM = true
 const int SND_GRENADES_LIMIT = 5
+const int SND_MAX_MAPS = 5 //increment this 
+
 bool debugdebug = false
 
 void function _GamemodeSND_Init()
@@ -114,6 +116,9 @@ void function _GamemodeSND_Init()
 	PrecacheModel($"mdl/Weapons/bomb/w_bomb.rmdl")
 	
 	FS_SND.currentLocation = GetCurrentPlaylistVarInt( "SND_force_initial_map", 0 )
+	
+	if( GetCurrentPlaylistVarInt( "SND_force_initial_map", 0 ) == SND_MAX_MAPS + 1 )
+		FS_SND.currentLocation = RandomInt( SND_MAX_MAPS + 1 )
 
 	PrecacheDust2()
 	PrecacheDefuseMapProps()
@@ -128,19 +133,24 @@ void function Sv_EntitiesDidLoad()
 {
 	switch( MapName() )
 	{
-		case eMaps.mp_rr_olympus_mu1:
-			FS_SND.lobbyLocation = <-6940.96924, 21153.9219, -6147.95166>
-			FS_SND.lobbyAngles = <0, -101.100929, 0>
+		// case eMaps.mp_rr_olympus_mu1:
+			// FS_SND.lobbyLocation = <-6940.96924, 21153.9219, -6147.95166>
+			// FS_SND.lobbyAngles = <0, -101.100929, 0>
 			
-			SpawnVotePhaseCustomMaps()
-			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-			break
+			// SpawnVotePhaseCustomMaps()
+			// AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+			// break
 		case eMaps.mp_rr_arena_empty:
+			SpawnFlowstateLobbyProps( <0,0,5000> )
 			SpawnVotePhaseCustomMaps()
+
+			FS_SND.lobbyLocation = <0,0,5072>
+			FS_SND.lobbyAngles = <0,0,0>
+
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 			DestroyPlayerProps()
-		case eMaps.mp_flowstate:
-		case eMaps.mp_rr_arena_phase_runner:
+		break
+
 		case eMaps.mp_rr_arena_composite:
 			entity startEnt = GetEnt( "info_player_start" )
 			
@@ -148,24 +158,24 @@ void function Sv_EntitiesDidLoad()
 			FS_SND.lobbyAngles = startEnt.GetAngles()
 		break
 
-		case eMaps.mp_rr_desertlands_64k_x_64k:
-			FS_SND.lobbyLocation = <17791.3203, 10835.2314, -2985.83618>
-			FS_SND.lobbyAngles = <0, -114.427933, 0>
-		break
+		// case eMaps.mp_rr_desertlands_64k_x_64k:
+			// FS_SND.lobbyLocation = <17791.3203, 10835.2314, -2985.83618>
+			// FS_SND.lobbyAngles = <0, -114.427933, 0>
+		// break
 
 		// case "mp_rr_arena_skygarden":
 			// FS_SND.lobbyLocation = <-208.090103, 6830.30225, 3138.40137>
 			// FS_SND.lobbyAngles = <0, 122, 0>
 		// break
 
-		case eMaps.mp_rr_party_crasher_new:
-			FS_SND.lobbyLocation = <-1399.06775, 427.32309, 1298.39697>
-			FS_SND.lobbyAngles = <0, 22, 0>
+		// case eMaps.mp_rr_party_crasher_new:
+			// FS_SND.lobbyLocation = <-1399.06775, 427.32309, 1298.39697>
+			// FS_SND.lobbyAngles = <0, 22, 0>
 			
-			SpawnVotePhaseCustomMaps()
-			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-			DestroyPlayerProps()
-		break
+			// SpawnVotePhaseCustomMaps()
+			// AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+			// DestroyPlayerProps()
+		// break
 		
 	}
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
@@ -246,9 +256,11 @@ void function _OnPlayerConnectedSND(entity player)
 
 			TakeLoadoutRelatedWeapons(player)
 
-			player.SetOrigin(FS_SND.lobbyLocation)
-			player.SetAngles(FS_SND.lobbyAngles)
-
+			// player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetAngles(FS_SND.lobbyAngles)
+			player.SnapToAbsOrigin( FS_SND.lobbyLocation )
+			player.SnapEyeAngles( FS_SND.lobbyAngles )
+			player.SnapFeetToEyes()
 			break
 		case eGameState.Playing:
 			thread StartSpectatingSND(player)
@@ -266,8 +278,11 @@ void function _OnPlayerConnectedSND(entity player)
 			
 			break
 		default:
-			player.SetOrigin(FS_SND.lobbyLocation)
-			player.SetAngles(FS_SND.lobbyAngles)
+			// player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetAngles(FS_SND.lobbyAngles)
+			player.SnapToAbsOrigin( FS_SND.lobbyLocation )
+			player.SnapEyeAngles( FS_SND.lobbyAngles )
+			player.SnapFeetToEyes()
 			break
 	}
 
@@ -848,15 +863,18 @@ void function SND_GameLoop()
 		if( player.GetTeam() == Sh_GetAttackerTeam() )
 		{
 			float r = float(i) / float( GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ).len() ) * 2 * PI
-			player.SetOrigin(pos + 100.0 * <sin( r ), cos( r ), 0.0>)
+			// player.SetOrigin(pos + 100.0 * <sin( r ), cos( r ), 0.0>)
+			player.SnapToAbsOrigin( pos + 100.0 * <sin( r ), cos( r ), 0.0> )
 			i++
-			player.SetAngles( VectorToAngles( pos - player.GetOrigin() ) ) //Make them look to the bomb
+			player.SnapEyeAngles( VectorToAngles( pos - player.GetOrigin() ) ) //Make them look to the bomb
+			player.SnapFeetToEyes()
 		} else if ( player.GetTeam() == Sh_GetDefenderTeam() )
 		{
 			float r = float(j) / float( GetPlayerArrayOfTeam( Sh_GetDefenderTeam() ).len() ) * 2 * PI
-			player.SetOrigin(pos2 + 100.0 * <sin( r ), cos( r ), 0.0>)
+			player.SnapToAbsOrigin( pos2 + 100.0 * <sin( r ), cos( r ), 0.0> )
 			j++
-			player.SetAngles( VectorToAngles( pos2 - player.GetOrigin() ) ) //Make them look to the bomb
+			player.SnapEyeAngles( VectorToAngles( pos2 - player.GetOrigin() ) ) //Make them look to the bomb
+			player.SnapFeetToEyes()
 		}
 		Remote_CallFunction_NonReplay( player, "SND_HintCatalog", 5, 0)
 
@@ -1420,8 +1438,11 @@ void function SND_GameLoop()
 			StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), player.GetOrigin(), Vector(0,0,0) )
 			EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 			EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-			player.SetOrigin(FS_SND.lobbyLocation)
-			player.SetAngles(FS_SND.lobbyAngles)
+			// player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetAngles(FS_SND.lobbyAngles)
+			player.SnapToAbsOrigin( FS_SND.lobbyLocation )
+			player.SnapEyeAngles( FS_SND.lobbyAngles )
+			player.SnapFeetToEyes()
 			if( player.GetTeam() == TEAM_IMC )
 				Message(player, "IMC WON THE MATCH", "You won" )
 			else
@@ -1487,8 +1508,11 @@ void function SND_GameLoop()
 			StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), player.GetOrigin(), Vector(0,0,0) )
 			EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 			EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-			player.SetOrigin(FS_SND.lobbyLocation) //change to a circle instead
-			player.SetAngles(FS_SND.lobbyAngles)
+			// player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetAngles(FS_SND.lobbyAngles)
+			player.SnapToAbsOrigin( FS_SND.lobbyLocation )
+			player.SnapEyeAngles( FS_SND.lobbyAngles )
+			player.SnapFeetToEyes()
 			if( player.GetTeam() == TEAM_MILITIA )
 				Message(player, "MILITIA WON THE MATCH", "You won" )
 			else
@@ -1790,7 +1814,11 @@ void function CheckDistanceWhileInLobby(entity player)
 		if(Distance(player.GetOrigin(),FS_SND.lobbyLocation)>2000)
 		{
 			player.SetVelocity(Vector(0,0,0))
-			player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetOrigin(FS_SND.lobbyLocation)
+			// player.SetAngles(FS_SND.lobbyAngles)
+			player.SnapToAbsOrigin( FS_SND.lobbyLocation )
+			player.SnapEyeAngles( FS_SND.lobbyAngles )
+			player.SnapFeetToEyes()
 		}
 		WaitFrame()
 	}	
@@ -2460,7 +2488,7 @@ bool function ClientCommand_SND_AskForTeam(entity player, array < string > args)
 
 bool function ClientCommand_OpenBuyMenu(entity player, array<string> args)
 {
-	if( !IsValid(player) || player.GetPlayerName() != FlowState_Hoster() ) return false
+	if( !IsValid(player) ) return false
 	
 	FS_SND.buyAllowed = true
 

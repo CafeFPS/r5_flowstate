@@ -179,10 +179,21 @@ void function Init_FS_Scenarios()
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
+	AddCallback_EntitiesDidLoad( Scenarios_EntitiesDidLoad )
 
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
 	FS_Scenarios_Score_System_Init()
+}
+
+void function Scenarios_EntitiesDidLoad()
+{
+	switch( MapName() )
+	{	
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		SpawnFlowstateLobbyProps( SURVIVAL_GetMapCenter() + <0,0,50000> )
+		break
+	}
 }
 
 bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
@@ -1778,7 +1789,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					} else
 						circledPos = result.endPos
 
-					player.SetOrigin( circledPos )
+					// player.SetOrigin( circledPos )
+					player.SnapToAbsOrigin( circledPos )
+					player.SnapEyeAngles( location.angles )
+					player.SnapFeetToEyes()
 					j++
 				}
 				oldSpawnSlot = spawnSlot
