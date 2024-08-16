@@ -2472,7 +2472,18 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	if ( ent.IsPlayer() && Gamemode() == eGamemodes.fs_snd ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
+	if ( ent.IsPlayer() ) //Colombia
+	{
+		foreach(player, savedRui in file.playerArrows)
+		{
+			if(ent == player)
+				return
+		}
+		
+		file.playerArrows[ent] <- rui
+	}
+	
+	if ( ent.IsPlayer() && Gamemode() == eGamemodes.fs_snd || ent.IsPlayer() && Flowstate_IsHaloMode() ) //add enabled var and refresh funct so if we change location to a map one it works
 	{
 		foreach(player, savedRui in file.playerArrows)
 		{
@@ -2485,7 +2496,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
 		file.mapCornerX = 0
 		file.mapCornerY = 0
-	} else if( Gamemode() != eGamemodes.fs_snd ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	} else if( Gamemode() != eGamemodes.fs_snd )
 	{
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )

@@ -60,6 +60,7 @@ struct{
 
 global array<int> snd_allowedCharacters = [8, 7, 4, 9, 1]
 const bool SND_GIVE_BODY_SHIELD_BASED_ON_ROUND = false
+const bool SND_GIVE_BODY_SHIELD_BASIC = true
 const bool SND_ECONOMY_SYSTEM = true
 const int SND_GRENADES_LIMIT = 5
 const int SND_MAX_MAPS = 5 //increment this 
@@ -234,7 +235,6 @@ void function _OnPlayerConnectedSND(entity player)
 	ValidateDataTable( player, "datatable/flowstate_snd_buy_menu_data.rpak" )
 	
 	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
-	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 	
 	player.SetPlayerGameStat( PGS_DEATHS, 0)
 
@@ -286,6 +286,8 @@ void function _OnPlayerConnectedSND(entity player)
 			break
 	}
 
+	player.SetMinimapZoomScale( 0.4, 0.0 )
+
 	SetTeam( player, 99 )
 	Remote_CallFunction_Replay( player, "Sh_SetAttackingLocations", FS_SND.currentLocation)
 	// Remote_CallFunction_Replay( player, "SetCustomLightning", FS_SND.currentLocation)
@@ -293,7 +295,8 @@ void function _OnPlayerConnectedSND(entity player)
 	
 	//Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 	Remote_CallFunction_ByRef( player, "RefreshImageAndScaleOnMinimapAndFullmap" )
-	
+	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+
 	UpdatePlayerCounts()
 }
 
@@ -608,6 +611,7 @@ void function SND_Lobby()
 				
 				TakeAllWeapons(player)
 				thread CheckDistanceWhileInLobby(player)
+				Remote_CallFunction_ByRef(player, "Minimap_DisableDraw_Internal")
 			}
 			
 			while( GetPlayerArray().len() < GetCurrentPlaylistVarInt( "max_players", 0 ) && !FS_SND.forceGameStart )
@@ -850,8 +854,6 @@ void function SND_GameLoop()
 	
 		player.p.playerHasBomb = false
 		_HandleRespawn(player)
-		Survival_SetInventoryEnabled( player, false )
-		SetPlayerInventory( player, [] )
 
 		Inventory_SetPlayerEquipment(player, "", "armor")
 		player.SetShieldHealth( 0 )
@@ -883,7 +885,7 @@ void function SND_GameLoop()
 		player.HolsterWeapon()
 		player.Server_TurnOffhandWeaponsDisabledOn()
 		
-		Survival_SetInventoryEnabled( player, false ) // true )
+		Survival_SetInventoryEnabled( player, true )
 		
 		player.SetThirdPersonShoulderModeOff()
 		
@@ -904,6 +906,10 @@ void function SND_GameLoop()
 				Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 				player.SetShieldHealth( 100 )
 			}
+		} else if( SND_GIVE_BODY_SHIELD_BASIC )
+		{
+			Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+			player.SetShieldHealth( 50 )
 		}
 		
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")		
@@ -952,8 +958,8 @@ void function SND_GameLoop()
 	
 	ToggleBuyMenuBackgroundProps(true)
 	
-	// if(!debugdebug)
-	// {
+	if(!debugdebug)
+	{
 		FS_SND.buyAllowed = true
 		foreach(player in GetPlayerArray())
 		{
@@ -1010,7 +1016,7 @@ void function SND_GameLoop()
 			wait 25
 		
 		FS_SND.buyAllowed = false
-	// }
+	}
 	
 	
 	//Spawning bomb

@@ -889,10 +889,8 @@ void function UpdateImageAndScaleOnMinimapRUI(asset image, float scale)
 	try{
 		if(file.minimap_base != null)
 		{
-			RuiSetFloat3( file.minimap_base, "mapCorner", <0.0, 0.0, 0.0> )
 			RuiSetImage( file.minimap_base, "mapImage", image )
 			RuiSetFloat( file.minimap_base, "mapScale", scale )
-			RuiSetFloat( file.minimap_base, "minimapZoomScale", 0.3 )
 			
 			//RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
 			
@@ -924,8 +922,10 @@ void function UpdatePlayerRuiTracking( entity player )
 	{
 		RuiTrackFloat3( file.minimap_base, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )		
-		RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
+		
 	}
+
+	RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
 

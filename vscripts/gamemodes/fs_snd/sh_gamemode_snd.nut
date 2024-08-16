@@ -306,7 +306,7 @@ void function Sh_SetAttackingLocations(int map)
 					thisMapPlantingLocations.B = <-1292.87451, -1283.91162, 9059.0625>
 					
 					#if CLIENT
-					SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstatecustom/de_dust2_map", 1.15, 1700, -2200 )
+					SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstatecustom/de_dust2_map", 1.2, 1700, -2200 )
 					#endif
 					break
 					
