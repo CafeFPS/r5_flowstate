@@ -594,7 +594,7 @@ playlists
 				sur_circle_start_paused                        0
 				match_ending_enabled                           0
 				
-				SND_force_initial_map							1 // 0 dust2, 1 shoothouse, 2 de_cache, 3, nuketown, 4 dncanals, 5 killyard
+				SND_force_initial_map							6 // 0 dust2, 1 shoothouse, 2 de_cache, 3, nuketown, 4 dncanals, 5 killyard, 6 random
 				SND_change_to_next_map_when_game_finishes		1
 				SND_Round_LimitTime								150
 				second_scorebar_enabled							0
@@ -652,6 +652,7 @@ playlists
 				match_ending_enabled                           0
 
 				ground_loot_enable								0
+				lootbin_loot_enable                            0
 
 				max_teams                                      3
 				max_players                                    9
@@ -2604,7 +2605,7 @@ playlists
 				
 				max_team_size									2
 				max_players                                    60
-				min_players                                    1 //15
+				min_players                                    16
 				survival_shields                               1
 				is_ranked_game                                 0
 				player_revive_enabled                          1
@@ -3247,6 +3248,7 @@ playlists
 				mp_rr_desertlands_64k_x_64k_nx                 	1
 				mp_rr_desertlands_64k_x_64k_tt                 	1
 				mp_rr_arena_skygarden                          	1
+				mp_rr_arena_phase_runner						1
 				mp_rr_aqueduct_night                           	1
 				mp_rr_ashs_redemption                          	1
 				mp_rr_olympus_mu1 1
