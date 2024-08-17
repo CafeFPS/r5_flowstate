@@ -441,7 +441,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("SND_ToggleMoneyUI", "bool")
 			//Remote_RegisterClientFunction("SND_ForceUpdatePlayerCount")	//moved to byRef ~mkos
 			//Remote_RegisterClientFunction("Consumable_UseBomb") //temp test (also not used)
-			Remote_RegisterUIFunction("Open_FSSND_BuyMenu", "int", INT_MIN, INT_MAX)
+			Remote_RegisterUIFunction("Open_FSSND_BuyMenu", "float", -1.0, 99999.0, 32 )
 			Remote_RegisterUIFunction("SND_UpdateVotesForTeam", "int", 0, 2, "int", INT_MIN, INT_MAX)
 			Remote_RegisterUIFunction("Close_FSSND_BuyMenu")
 			Remote_RegisterUIFunction("SND_Disable_IMCButton")

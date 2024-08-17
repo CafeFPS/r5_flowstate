@@ -74,13 +74,6 @@ void function _GamemodeSND_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 
-	try{
-	if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) ) // if you want to avoid cfg abusers
-		SetConVarInt( "sv_quota_scriptExecsPerSecond", 20 )
-	else
-		SetConVarInt( "sv_quota_scriptExecsPerSecond", 1 )
-	}catch(e)
-
 	AddCallback_OnClientDisconnected( void function(entity player) { 
 		SND_OnPlayerDisconnected( player )
 	})
@@ -636,10 +629,10 @@ void function SND_Lobby()
 				Message(player, "SEARCH AND DESTROY", "STARTING - Get six points to win", 3, "")
 			}
 			
-			wait 5
+			wait 3
 		}
 		
-		int endtime = GetUnixTimestamp() + 10
+		float endtime = Time() + 10
 		
 		FS_SND.maxvotesallowedforTeamIMC = int(min(ceil(float(GetPlayerArray().len()) / float(2)), 5.0))
 		FS_SND.maxvotesallowedforTeamMILITIA = GetPlayerArray().len() - FS_SND.maxvotesallowedforTeamIMC
@@ -658,25 +651,24 @@ void function SND_Lobby()
 				player.p.teamasked = -1
 				Remote_CallFunction_UI( player, "Open_FSSND_BuyMenu", endtime)	//Team select menu
 			}
-		
-		if(debugdebug)
-			wait 4
-		else
-			wait 10
+
+			wait 10.5
 		}
 		GiveTeamToSNDPlayer()
 
 		FS_SND.selectTeamMenuOpened = false
-		
+
+		DestroyPlayerProps()
+		SND_DestroyCircleFXEntity()
+
 		foreach ( player in GetPlayerArray() )
 		{
 			if(!IsValid(player)) continue
-			
-			Remote_CallFunction_UI( player, "Close_FSSND_BuyMenu")
+
+			ScreenCoverTransition_Player(player, Time() + 4)
 		}
-		
-		DestroyPlayerProps()
-		SND_DestroyCircleFXEntity()
+
+		wait 1
 		
 		//add check for map
 		if( MapName() == eMaps.mp_rr_arena_empty )
@@ -709,7 +701,14 @@ void function SND_Lobby()
 				break
 			}
 		}
-		
+
+		foreach ( player in GetPlayerArray() )
+		{
+			if(!IsValid(player)) continue
+
+			Remote_CallFunction_UI( player, "Close_FSSND_BuyMenu")
+		}
+
 		SND_SUDDEN_DEATH_ROUND = false
 
 		if(IsValid(FS_SND.ringBoundary))
@@ -737,24 +736,27 @@ void function SND_Lobby()
 			
 			Remote_CallFunction_NonReplay( player, "Sh_SetAttackingLocations", FS_SND.currentLocation)
 		}
+		
+		int startTeam = CoinFlip() == true ? TEAM_IMC : TEAM_MILITIA 
+		int theOtherOne = startTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
 
-		Sh_SetAttackerTeam(TEAM_IMC, FS_SND.currentRound) //IMC will be always first attacker
+		Sh_SetAttackerTeam( startTeam, FS_SND.currentRound)
 		
 		foreach(player in GetPlayerArray())
 		{
 			if(!IsValid(player)) continue
 			
-			Remote_CallFunction_NonReplay( player, "Sh_SetAttackerTeam", TEAM_IMC, FS_SND.currentRound)
+			Remote_CallFunction_NonReplay( player, "Sh_SetAttackerTeam", startTeam, FS_SND.currentRound)
 		}
 
-		foreach(player in GetPlayerArrayOfTeam( TEAM_IMC ))
+		foreach(player in GetPlayerArrayOfTeam( startTeam ))
 		{
 			if(!IsValid(player)) continue
 			
 			player.p.isSNDAttackerPlayer = true
 		}	
 
-		foreach(player in GetPlayerArrayOfTeam( TEAM_MILITIA ))
+		foreach(player in GetPlayerArrayOfTeam( theOtherOne ))
 		{
 			if(!IsValid(player)) continue
 			
@@ -792,10 +794,8 @@ void function SND_Lobby()
 			player.p.playerIsPlantingBomb = false
 			player.p.availableMoney = 500
 			Remote_CallFunction_NonReplay(player, "ServerCallback_OnMoneyAdded", player.p.availableMoney)
-			
-			ScreenCoverTransition_Player(player, Time() + 1)
+
 		}
-		wait 1
 	}
 }
 
@@ -854,9 +854,6 @@ void function SND_GameLoop()
 	
 		player.p.playerHasBomb = false
 		_HandleRespawn(player)
-
-		Inventory_SetPlayerEquipment(player, "", "armor")
-		player.SetShieldHealth( 0 )
 
 		player.SetVelocity(Vector(0,0,0))
 		player.MovementDisable()
@@ -1603,7 +1600,7 @@ void function SND_GameLoop()
 			//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
 			Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 			Remote_CallFunction_NonReplay(player, "SND_ToggleScoreboardVisibility", false)
-			ScreenCoverTransition_Player(player, Time() + 1)
+			ScreenCoverTransition_Player(player, Time() + 2)
 		}
 		wait 1
 		foreach( player in GetPlayerArray() )
@@ -2395,7 +2392,7 @@ bool function ClientCommand_OpenSelectTeamMenu(entity player, array<string> args
 {
 	if( !IsValid(player) || player.GetPlayerName() != FlowState_Hoster() ) return false
 	
-	int endtime = GetUnixTimestamp() + 15
+	int endtime = int( Time() ) + 15
 
 	if(!FS_SND.selectTeamMenuOpened)
 	{

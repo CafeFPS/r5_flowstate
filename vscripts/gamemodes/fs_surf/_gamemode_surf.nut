@@ -55,6 +55,9 @@ void function _OnPlayerConnectedSURF(entity player)
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     TakeAllWeapons( player )
     SetPlayerSettings(player, SURF_SETTINGS)
+	player.kv.airSpeed = 60
+	player.kv.airAcceleration = 6000
+	// player.kv.gravity = 0.8
     MakeInvincible(player)
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
@@ -130,6 +133,10 @@ void function _HandleRespawnSURF(entity player, bool forceGive = false)
 		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 		TakeAllWeapons( player )
 		SetPlayerSettings(player, SURF_SETTINGS)
+		player.kv.airSpeed = 60
+		player.kv.airAcceleration = 6000
+		// player.kv.gravity = 0.8
+			
 		MakeInvincible(player)
 
 		player.TakeOffhandWeapon(OFFHAND_MELEE)

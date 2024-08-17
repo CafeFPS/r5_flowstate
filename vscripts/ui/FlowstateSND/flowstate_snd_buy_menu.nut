@@ -29,7 +29,8 @@ void function Init_FSSND_BuyMenu( var newMenuArg )
 	RuiSetInt( Hud_GetRui( Hud_GetChild( file.menu, "TeamMILITIAButton")), "status", eFriendStatus.ONLINE_AWAY )
 }
 
-void function Open_FSSND_BuyMenu(int endtime)
+void function Open_FSSND_BuyMenu( float
+ endtime)
 {
 	CloseAllMenus()
 	
@@ -80,19 +81,20 @@ void function Close_FSSND_BuyMenu()
 	CloseAllMenus()
 }
 
-void function ThreadTest_Timer(int endtime)
+void function ThreadTest_Timer( float endtime )
 {
-	while ( GetUnixTimestamp() <= endtime )
+	endtime = Time() + 10
+	while ( Time() <= endtime )
 	{
 		if(endtime == 0) break
 		
-		int elapsedtime = endtime - GetUnixTimestamp()
+		int elapsedtime = fabs( endtime - Time() ).tointeger()
 
 		//DisplayTime dt = SecondsToDHMS( elapsedtime )
 		Hud_SetText( Hud_GetChild( file.menu, "RemainingTimeToSelectTeamText"), elapsedtime.tostring() )
 		
 		wait 1
-		printt("should update timer")
+		// printt("should update timer")
 	}	
 }
 

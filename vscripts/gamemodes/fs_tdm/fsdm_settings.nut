@@ -185,9 +185,9 @@ global const table HL1_MOVEMENT = {
 }
 
 global const table SURF_SETTINGS = {
-	["airacceleration"] = 3000,
+	["airacceleration"] = 6000,
 	["acceleration"] = 550,
-	["airspeed"] = 30
+	["airspeed"] = 60
 }
 
 global const table SUPERGLIDE_BOOST_SETTINGS = {
