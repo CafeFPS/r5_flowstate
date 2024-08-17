@@ -3225,10 +3225,10 @@ entity function Survival_CreateDeathBox_Retail( vector origin, entity playerOwne
 	box.e.blockActive = true
 	box.NotSolid()
 
-	// foreach ( func in file.onDeathboxSpawnedCallbacks )
-	// {
-		// func( box, attacker, damageSourceId )
-	// }
+	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )
+	{
+		func( box, attacker, damageSourceId )
+	}
 
 	bool doFakePhysicsThrow = !fallOrCrushDeath
 
