@@ -305,10 +305,6 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
     return dropshiplocations
 }
 
-
-
-
-
 void function PrecacheCustomMapsProps()
 {
 if( MapName() == eMaps.mp_rr_canyonlands_64k_x_64k ){

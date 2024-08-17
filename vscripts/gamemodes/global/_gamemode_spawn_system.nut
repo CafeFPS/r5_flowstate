@@ -499,7 +499,7 @@ array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 
-			defaultWaitingRoom = NewLocPair( SURVIVAL_GetMapCenter() + <0,0,50072>, < 0, -83.0441132, 0 > ) //NewLocPair( < -19830.3633, 14081.7314, -3759.98901 >, < 0, -83.0441132, 0 > )
+			defaultWaitingRoom = NewLocPair( < -19830.3633, 14081.7314, -3759.98901 >, < 0, -83.0441132, 0 > )
 			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )	
 		
 		break ////////////////////////////////////////////////////////////////////////////

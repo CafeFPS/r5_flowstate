@@ -155,6 +155,8 @@ global function OpenModelMenu
 
 global function UILevelLoadCallback
 
+global function CloseAllMenusExcept
+
 struct
 {
 	array<void functionref()>                   partyUpdatedCallbacks
@@ -1047,6 +1049,37 @@ void function CloseAllToTargetMenu( var targetMenu )
 		CloseActiveMenu( true, false )
 }
 
+// void function CloseAllMenusExcept( array<var> targetMenus )
+// {
+	// int breakPoint = targetMenus.len()
+	// var currentMenu = GetActiveMenu()
+	
+	// if( !currentMenu )
+		// return
+	
+	// for( ; ; )
+	// {
+		// if( !targetMenus.contains( currentMenu ) )
+			// CloseActiveMenu( true, false )
+		
+		// if( uiGlobal.menuStack.len() == breakPoint )
+			// break
+		
+		// currentMenu = GetActiveMenu()
+		
+		// if( !currentMenu )
+			// break
+	// }
+// }
+
+void function CloseAllMenusExcept( array<var> targetMenus)
+{
+	foreach( var menu in uiGlobal.menuStack )
+	{
+		if( !targetMenus.contains( menu ) )
+			CloseMenuWrapper( menu )
+	}
+}
 
 void function PrintMenuStack()
 {

@@ -201,7 +201,11 @@ bool function isMuted()
 void function FS_Scenarios_OnClientScriptInit( entity player ) 
 {
 	FS_Scenarios_InitPlayersCards()
-
+	
+	#if DEVELOPER && MKOS
+		return //mkos: I need my debugs lol -.-
+	#endif
+	
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
@@ -993,7 +997,7 @@ void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 		RunUIScript( "Open_FSDM_VotingPhase" )
 	}
 	else
-		thread FSDM_CloseVotingPhase()
+		FSDM_CloseVotingPhase()
 	
 }
 

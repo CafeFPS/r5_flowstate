@@ -589,6 +589,9 @@ void function SetMotdText( string text )
 	
 	// auto-opening motd disabled as per amos request
 	
+	if( !GetConVarInt( "show_motd_on_server_first_join" ) )
+		return
+
 	string server = GetServerID()
 	
 	if( !( server in file.seenMotdForServer ) )

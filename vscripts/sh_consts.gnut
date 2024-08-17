@@ -8,13 +8,14 @@ global string FLOWSTATE_VERSION = "v4.5"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
 global const int BOOSTZONE_ALIVE_TIME = 15
 
-global const SCRIPT_GAME_VERSION__RELEASE = false
+global const SCRIPT_GAME_VERSION__RELEASE = false //not used yet...
 
 //r5r.dev
-global const bool TRACKER 				= false
-global const bool HAS_TRACKER_DLL 		= false
-global const MULTIPLAYER_DEBUG_PRINTS 	= false
-global const NOTIFY_RATELIMIT_FAILED	= false
+global const bool TRACKER 					= false
+global const bool HAS_TRACKER_DLL 			= false
+global const bool MULTIPLAYER_DEBUG_PRINTS 	= false
+global const bool NOTIFY_RATELIMIT_FAILED	= false
+global const bool MKOS						= false
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1

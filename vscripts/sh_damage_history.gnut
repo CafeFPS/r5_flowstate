@@ -247,6 +247,21 @@ entity function GetLastBleedoutAttackerFromDamageHistory( entity player )
 	{
 		if ( history.damageType & DF_KNOCKDOWN )
 			return history.attacker
+		// #if DEVELOPER
+		// else 
+		// {	
+			// string info
+			
+			// Warning( "--- Damage bleedout DEBUG from history " )
+			
+			// info += "Type: " + history.damageType + "\n"
+			// info += "victimEHandle: " + history.victimEHandle + "\n"
+			// info += "was bleeding?: " + history.wasBleedingOut + "\n"
+			// info += "victimEHandle: " + history.victimEHandle + "\n"	
+
+			// printt( info )
+		// }
+		// #endif
 	}
 
 	//no history found

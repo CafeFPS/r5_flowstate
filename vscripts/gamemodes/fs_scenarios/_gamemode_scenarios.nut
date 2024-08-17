@@ -53,6 +53,7 @@ global struct scenariosGroupStruct
 	float endTime
 	bool showedEndMsg = false
 	bool isReady = false
+	bool isValid = false
 
 	// realm based ground loot system
 	array<entity> groundLoot
@@ -127,6 +128,8 @@ struct {
 	float fs_scenarios_characterselect_time_per_player = 3.5
 	bool fs_scenarios_characterselect_enabled = true
 	float fs_scenarios_ringclosing_maxtime = 120
+	
+	int waitingRoomRadius = 600
 } settings
 
 array< bool > teamSlots
@@ -179,21 +182,10 @@ void function Init_FS_Scenarios()
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
-	AddCallback_EntitiesDidLoad( Scenarios_EntitiesDidLoad )
 
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
 	FS_Scenarios_Score_System_Init()
-}
-
-void function Scenarios_EntitiesDidLoad()
-{
-	switch( MapName() )
-	{	
-		case eMaps.mp_rr_desertlands_64k_x_64k:
-		SpawnFlowstateLobbyProps( SURVIVAL_GetMapCenter() + <0,0,50000> )
-		break
-	}
 }
 
 bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
@@ -230,20 +222,19 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
 	float elapsedTime = Time() - group.startTime
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
-
+	
 	if ( victim.GetTeam() != attacker.GetTeam() && attacker.IsPlayer() )
 	{
-		// todo fix bleedout signaling
-		// if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
-		// {
-			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
-		// } else if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
-		// {
-			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
-		// } else
-		// {
-			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
-		// }
+		if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
+		{
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
+		} 
+		else if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
+		{
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+		}
+		
+		FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
 	}
 
 	FS_Scenarios_HandleGroupIsFinished( victim, damageInfo )
@@ -1214,7 +1205,8 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
 {
 	scenariosGroupStruct group;	
-	if(!IsValid (player) )
+	
+	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
 			sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
@@ -1229,6 +1221,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 		{	
 			if( IsValid( file.scenariosPlayerToGroupMap[player.p.handle] ) )
 			{
+				
 				return file.scenariosPlayerToGroupMap[ player.p.handle ]
 			}
 		}
@@ -1239,6 +1232,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 			sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
+	
 	return group;
 }
 
@@ -1335,7 +1329,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( !IsValid( player ) ) 
 				continue
 
-			// New player connected
+			// New player connected //this should really just be a callback...?
 			if( player.p.isConnected && !isPlayerInWaitingList( player) && !isPlayerInRestingList( player ) && !FS_Scenarios_IsPlayerIn3v3Mode( player ) )
 			{
 				soloModePlayerToWaitingList(player)
@@ -1360,9 +1354,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				player.SetShieldHealth( player.GetShieldHealthMax() )
 			}
 
-			float t_radius = 600;
-
-			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
+			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin ) > settings.waitingRoomRadius ) //waiting player should be in waiting room,not battle area
 			{
 				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
 				HolsterAndDisableWeapons( player )
@@ -1402,7 +1394,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				foreach( player in players )
 				{
-					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) 
+						continue
 					
 					//Se murió, a la sala de espera
 					if( !IsAlive( player ) )
@@ -1554,6 +1547,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			
 			if( !IsValid( player ) )
 				continue
+				
+			if( IsBotEnt( player ) ) //temporary messagebot bullcrap hack ( all of these need removed )
+				continue
 
 			if( Time() < eachPlayerStruct.waitingTime )
 				continue
@@ -1617,6 +1613,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 			continue
 		}
+		else
+			newGroup.isValid = true
 
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
@@ -1631,6 +1629,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		#if DEVELOPER
 			printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
 		#endif
+		
+		//Scenarios_CleanupMiscProperties( [ newGroup.team1Players, newGroup.team2Players, newGroup.team3Players ] )
 
 		// Setup HUD
 		foreach( player in newGroup.team1Players )
@@ -2452,8 +2452,15 @@ LocPairData function CustomSpawns()
 	
 	foreach( spawn in spawns )
 		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
-
-	return SpawnSystem_CreateLocPairObject( spawns, true, null, null, metaData )
+	
+	vector mapCenter = SURVIVAL_GetMapCenter()
+	
+	Scenarios_SetWaitingRoomRadius( 1650 )
+	SpawnFlowstateLobbyProps( mapCenter + <0,0,50000> )
+	
+	LocPair waitingRoom = NewLocPair( mapCenter + <0,0,50072>, < 0, -83.0441132, 0 > ) 
+	
+	return SpawnSystem_CreateLocPairObject( spawns, true, waitingRoom, null, metaData )
 }
 
 
@@ -2483,3 +2490,20 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 		Scenarios_SendStandingsToClient( Team3Player )
 	}
 }
+
+void function Scenarios_SetWaitingRoomRadius( int radius )
+{
+	settings.waitingRoomRadius = radius
+}
+
+// void function Scenarios_CleanupMiscProperties( array< array<entity> > allPlayersInRound )
+// {
+	// foreach( array<entity> playerArrays in allPlayersInRound )
+	// {
+		// foreach( player in playerArrays )
+		// {
+			// ClearLastAttacker( player )
+			// ...
+		// }
+	// }
+// }

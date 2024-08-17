@@ -75,6 +75,10 @@ struct
 	string fs_variableSubString = ""
 	string fs_variableString_InfoPanel = ""
 	string fs_variableSubString_InfoPanel = ""
+	
+	string motd_text = ""
+	string motd_text2 = ""
+	
 	table<int, string> variableVars = {}
 	bool bConsistencyCheckComplete = false
 #endif
@@ -268,7 +272,8 @@ struct
 		"#FS_CHALLENGE_WAITING_FOR",
 		"#FS_WAITING_PANEL",
 		"#FS_STATS_SHIPPED",
-		"#FS_STATS_SHIPPED_MSG"
+		"#FS_STATS_SHIPPED_MSG",
+		"#FS_TRACKER_CREDIT"
 	]
 	
 } file
@@ -489,6 +494,10 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	string appendString;
 	bool uiTypeValidLong;
 	string sendMessage;
+	bool isMotd
+	
+	if( uiType == eMsgUI.VAR_MOTD )
+		isMotd = true
 	
 	if ( ( datalen ) >= 599 )
 	{
@@ -544,7 +553,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 
 			for ( int i = 0; i < sendMessage.len(); i++ )
 			{
-				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedTokenWithVariableString", textType, sendMessage[i] )
+				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedTokenWithVariableString", textType, isMotd, sendMessage[i] )
 			}
 		}
 	}
@@ -599,7 +608,7 @@ void function LocalVarMsg( entity player, string ref, int uiType = 2, float dura
 	
 	int tokenID = Flowstate_FetchTokenID( ref )
 	
-	int vargCount = expect int( vargc );
+	int vargCount = expect int( vargc )
 	
 	for ( int i = 0; i <= vargCount - 1; i++ )
 	{
@@ -761,20 +770,26 @@ void function FS_LocalizationConsistencyCheck()
 	}
 }
 
-void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
+void function FS_BuildLocalizedTokenWithVariableString( int Type, bool isMotd, ... )
 {
 	if ( Type == 0 )
 	{
 		for ( int i = 0; i < vargc; i++ )
 		{
-			file.fs_variableString += format( "%c", vargv[i] )
+			if( isMotd )
+				file.motd_text += format( "%c", vargv[i] )
+			else
+				file.fs_variableString += format( "%c", vargv[i] )
 		}
 	}
-	else 
+	else
 	{
 		for ( int i = 0; i < vargc; i++ )
 		{
-			file.fs_variableSubString += format( "%c", vargv[i] )
+			if( isMotd )
+				file.motd_text2 += format( "%c", vargv[i] )
+			else
+				file.fs_variableSubString += format( "%c", vargv[i] )
 		}
 	}
 }
@@ -811,8 +826,20 @@ int function countStringArgs( string str )
 
 void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, float duration )
 {
-	string S = file.fs_variableString
-	string SubS = file.fs_variableSubString
+	string S 
+	string SubS 
+	
+	if( uiType != eMsgUI.VAR_MOTD )
+	{
+		S = file.fs_variableString
+		SubS = file.fs_variableSubString
+	}
+	else 
+	{	//I really hate this.
+		S = file.motd_text
+		SubS = file.motd_text2 
+	}
+	
 	string localToken = Flowstate_FetchToken( token )
 	string localSubToken = Flowstate_FetchToken( subtoken )
 

@@ -81,6 +81,7 @@ global function SetAfkToRest
 	
 	//shared
 	global function bBotEnabled
+	global function IsBotEnt //needs to go
 	global function SendServerMessage
 	global function Tracker_GetCurrentEventByPlayerHandle_expensive
 	global function Tracker_GetCurrentEventForAttackerOnVictim
@@ -177,6 +178,7 @@ global function Tracker_ReturnKills
 global function Tracker_ReturnDeaths
 global function Tracker_SetPlayerAsChampion
 global function Tracker_GetMaxWaitForBatchLoad
+global function Tracker_Credits
 global function Pin_Query_Init
 
 global function bAfkToRest
@@ -925,7 +927,7 @@ void function INIT_BATCH_FETCH()
 	array<string> oids
 	string oid_list = "";
 	
-	wait 2 //hardset 2 second wait for players to connect. 
+	wait 5 //hardset 5 second wait for players to connect. 
 	
 	int timerCount = 0
 	while( GetPendingClientsCount() > 0 )
@@ -1412,12 +1414,12 @@ void function Tracker_SettingsInit()
 {
 	settings.host_autoReloadRate 		= GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
-	file.LogOn 							= GetCurrentPlaylistVarBool("logging_enabled", false)
-	file.LogE 							= GetCurrentPlaylistVarBool("logging_encryption", false)
+	file.LogOn 							= GetCurrentPlaylistVarBool( "logging_enabled", false)
+	file.LogE 							= GetCurrentPlaylistVarBool( "logging_encryption", false)
 	file.bChatbotEnabled				= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
-	file.flowstateRoundtime 			= FS_RoundTime()
+	file.flowstateRoundtime 			= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
 	file.afk_to_rest_enabled 			= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
-	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
+	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool( "stats_discord_webhook_player_count", false )
 	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	file.bBotAllowed 					= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
 	file.gamemode_type_1v1 				= g_is1v1GameType() //returns true if mode is confifugred as 1v1 type
@@ -1649,10 +1651,11 @@ void function Init_NewGame()
 	(
 		format
 		( 
-			"|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n|#AA_VALUE " + string( GetCurrentPlaylistVarFloat("aimassist_magnet_pc", -1.0 ) ),
+			"|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n|#AA_VALUE %d",
 			TRACKER_VERSION,
 			GetCurrentRound(), 
-			GetUnixTimestamp() 
+			GetUnixTimestamp(),
+			GetCurrentPlaylistVarFloat( "aimassist_magnet_pc", -1.0 )
 		),
 		
 		file.LogE
@@ -1690,7 +1693,7 @@ void function Init_NewGame()
 			}
 			catch(err)
 			{
-				sqerror("Error: " + err)
+				sqerror( "Error: " + err )
 			}
 		}
 	}
@@ -1699,7 +1702,7 @@ void function Init_NewGame()
 	{	
 		string player_UID = player.GetPlatformUID()
 		
-		if ( whitelist.contains( player_UID ))
+		if ( whitelist.contains( player_UID ) )
 		{
 			return 8
 		}
@@ -1709,7 +1712,7 @@ void function Init_NewGame()
 			return 7
 		}
 		
-		if ( player.p.season_score < Tracker_GetIntSetting("restricted_rank") )
+		if ( player.p.season_score < Tracker_GetIntSetting( "restricted_rank" ) )
 		{
 			return 6
 		}
@@ -1764,7 +1767,7 @@ void function Init_NewGame()
 				return "Your K/D ratio is too low to play on this server. \n Your K/D: " + getkd( player.p.season_kills, player.p.season_deaths ) + " \n Server required minimum: " + file.restricted_kd.tostring() + "\n You need to increase your K/D ratio by:  " + ( file.restricted_kd - getkd( player.p.season_kills, player.p.season_deaths )).tostring() + " to play on this server.";
 				
 			case 1:
-				return "Your play time does not meet this server's required minimum play time of: " + PlayTime( file.restricted_playtime ) + "\n Your playtime: " + PlayTime(player.p.season_playtime) + "\n\n You need to play for at least: " + PlayTime(( file.restricted_playtime - player.p.season_playtime)) + " more time.";
+				return "Your play time does not meet this server's required minimum play time of: " + PlayTime( file.restricted_playtime ) + "\n Your playtime: " + PlayTime( player.p.season_playtime ) + "\n\n You need to play for at least: " + PlayTime(( file.restricted_playtime - player.p.season_playtime)) + " more time.";
 			
 			default:
 				return "Error 404";
@@ -1834,9 +1837,9 @@ void function Init_NewGame()
 					KickPlayerById( player.GetPlatformUID(), Player_Access_Message( player, access_status ) )
 					UpdatePlayerCounts()
 					
-					if( GetCurrentPlaylistVarBool("restricted_kick_log",false) )
+					if( GetCurrentPlaylistVarBool( "restricted_kick_log", false ) )
 					{
-						sqprint(format("\n\n Player: %s, Kick msg: %s",player.GetPlayerName(), Player_Access_Message( player, access_status )))
+						sqprint( format( "\n\n Player: %s, Kick msg: %s", player.GetPlayerName(), Player_Access_Message( player, access_status ) ) )
 					}
 				}
 			}
@@ -2290,7 +2293,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 				Warning( "fetching last attacker for " + string( victim ) )
 			#endif 
 			
-			entity potentialAttacker = GetLastBleedoutAttackerFromDamageHistory( victim )
+			entity potentialAttacker = Bleedout_GetCreditedKiller( victim )
 			
 			#if DEVELOPER
 				Warning( "last attacker = " + string( potentialAttacker ) )
@@ -2707,36 +2710,8 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		//////////////////////////// 			LOG THE data			/////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////
 
-			//todo: universal current round time var ( not based on Time() )
-			
-            float timeRemaining = 0;
-            if ( file.gamemode_type_1v1 ) 
-			{
-                const int INITIAL_DELAY = 7;
-                const int DELAY_BETWEEN_ROUNDS = 13;
 
-                int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-                timeRemaining = FlowState_RoundTime() - (Time() - totalDelay)
-            } 
-			else if ( Gamemode() == eGamemodes.fs_dm ) 
-			{
-                const int INITIAL_DELAY = 8;
-                int DELAY_BETWEEN_ROUNDS;
-
-                if (VOTING_PHASE_ENABLE) {
-                    DELAY_BETWEEN_ROUNDS = 32;
-                } else {
-                    DELAY_BETWEEN_ROUNDS = 13;
-                }
-
-                int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-                timeRemaining = FlowState_RoundTime() - (Time() - totalDelay)
-            }
-			else
-			{
-				//add timeRemaining for survival etc
-			}
-
+            float timeRemaining = g_fCurrentRoundEndTime - Time()
             int placeM = GetNumTeamsRemaining() //ty ida
 
 			string attName = "";
@@ -3820,7 +3795,7 @@ bool function UIDisWorldSpawn( int uid )
 // Stats__RegisterStatOutboundData() for the stat ( param 3 of Tracker_RegisterStat() ), your stat will output 
 // based on the defined functions return data at the time of this function call
 string function Tracker_PrintAllPlayerMetrics( bool trigger = false ) 
-{	
+{
     string json = "[";
     foreach ( index, metrics in PlayerMetricsArray ) 
 	{
@@ -4650,9 +4625,6 @@ void function PIN_GameEnd()
 	}
 }
 
-
-int function FS_RoundTime(){ return GetCurrentPlaylistVarInt("flowstateRoundtime", 1800) }
-
 void function PIN_AddPlayer( entity player )
 {	
 	if( !IsValid( player ) ) 
@@ -4738,52 +4710,27 @@ void function PIN_AddPlayer( entity player )
 	
 	if( file.LogOn && isLogging__internal() && IsValid( player ) )
 	{	
-		string p_ea_name = player.GetPlayerName();
-		Message( player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10 )
+		string p_ea_name = player.GetPlayerName()
 		
-			try
-			{
-				float timeRemaining;
-
-				if( file.gamemode_type_1v1 ) 
-				{
-					const int INITIAL_DELAY = 7;
-					const int DELAY_BETWEEN_ROUNDS = 13;
-
-					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
-				} 
-				else if( Gamemode() == eGamemodes.fs_dm ) 
-				{
-					const int INITIAL_DELAY = 8;
-					int DELAY_BETWEEN_ROUNDS;
-
-					if (VOTING_PHASE_ENABLE) {
-						DELAY_BETWEEN_ROUNDS = 32;
-					} else {
-						DELAY_BETWEEN_ROUNDS = 13;
-					}
-
-					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
-				}
+		float timeRemaining = g_fCurrentRoundEndTime - Time()
+		
+		if( IsValid( player ) ) 
+		{
+			LogEvent__internal
+			(
+				format
+				( 
+					"^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
+					UID,
+					GetNumTeamsRemaining().tostring(),
+					GetUnixTimestamp(),
+					timeRemaining,
+					p_ea_name
+				),
 				
-				if( IsValid( player ) ) 
-				{
-					LogEvent__internal(format("^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
-					   UID,
-					   GetNumTeamsRemaining().tostring(),
-					   GetUnixTimestamp(),
-					   timeRemaining,
-					   p_ea_name
-					   ),
-					file.LogE
-					);
-				}
-
-			} 
-			catch (error) 
-			{}		
+				file.LogE
+			)
+		}	
 	}	
 }
 
@@ -4817,40 +4764,21 @@ void function PIN_PlayerLeft( entity player, string reason )
 				thread PlayerCounts("Left", p_ea_name, OID, count );		
 			}
 	
-			float timeRemaining;
+			float timeRemaining = g_fCurrentRoundEndTime - Time()
 
-			if ( file.gamemode_type_1v1 ) 
-			{
-				const int INITIAL_DELAY = 7;
-				const int DELAY_BETWEEN_ROUNDS = 13;
-
-				int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
-			} 
-			else if ( Gamemode() == eGamemodes.fs_dm ) 
-			{
-				const int INITIAL_DELAY = 8;
-				int DELAY_BETWEEN_ROUNDS;
-
-				if (VOTING_PHASE_ENABLE) {
-					DELAY_BETWEEN_ROUNDS = 32;
-				} else {
-					DELAY_BETWEEN_ROUNDS = 13;
-				}
-
-				int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
-				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
-			}
-
-			LogEvent__internal(
-				format("|&,%s,%i,%d,%s",
-					   OID,
-					   timeRemaining,
-					   GetUnixTimestamp(),
-					   p_ea_name
-					   ),
+			LogEvent__internal
+			(
+				format
+				(
+					"|&,%s,%i,%d,%s",
+					OID,
+					timeRemaining,
+					GetUnixTimestamp(),
+					p_ea_name
+					),
+					
 				file.LogE
-			);
+			)
 		}
 	}
 }
@@ -5165,6 +5093,15 @@ void function PIN_Training( entity player, string status, string trainingStatus 
 
 }
 
+void function Tracker_Credits()
+{
+	if( Flowstate_IsTrackerSupportedMode() && isLogging__internal() )
+	{
+		foreach( player in GetPlayerArray() )
+			LocalMsg( player, "#FS_SPACE", "#FS_TRACKER_CREDIT", eMsgUI.DEFAULT, 10 )
+	}
+}
+
 #endif //END TRACKER DEFINE
 
 
@@ -5309,6 +5246,7 @@ void function Tracker_SavePlayerData( string UID, string setting, ... ){}
 void function SavePlayerData( entity player, string setting, ... ){}
 
 //utility
+bool function IsBotEnt( entity _ ){ return false } //needs to go immediately... 
 void function SendServerMessage( string _ ){}
 DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int attackerHandle, bool attacker = true ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }
 DamageEvent function Tracker_GetCurrentEventForAttackerOnVictim( int attackerHandle, int victimHandle ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }

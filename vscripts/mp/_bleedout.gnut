@@ -13,6 +13,8 @@ global function Bleedout_CheckForTeamBleedout
 global function Bleedout_AreThereAlivingMates
 global function PlayerDiesFromBleedout
 
+global function Bleedout_GetCreditedKiller
+
 global table<string, string> EliminatedPlayers = {}
 
 //CONFIGS
@@ -883,4 +885,12 @@ ScriptDamageInfoClone function Bleedout_GetBleedoutDamageInfo( entity victim )
 {
 	ScriptDamageInfoClone damageInfo
 	return damageInfo
+}
+
+entity function Bleedout_GetCreditedKiller( entity victim )
+{
+	if( victim in file.lastAttacker )
+		return file.lastAttacker[ victim ]
+	
+	return GetEnt( "worldspawn" )
 }

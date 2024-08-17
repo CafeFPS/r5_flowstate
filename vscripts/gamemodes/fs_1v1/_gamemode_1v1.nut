@@ -2570,6 +2570,7 @@ void function soloModePlayerToWaitingList( entity player )
 		
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
+		
 		TakeAllPassives( player )
 		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", 0 )
 		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
@@ -3340,7 +3341,7 @@ void function Gamemode1v1_Init( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	FlagWait( "EntitiesDidLoad" )
+	//FlagWait( "EntitiesDidLoad" )
 	
 	if( Playlist() == ePlaylists.fs_vamp_1v1 )
 	{
@@ -3486,7 +3487,7 @@ void function Gamemode1v1_Init( int eMap )
 		void function( entity player )
 		{
 			#if TRACKER 
-				if( !IsBotEnt( player ) )
+				if( IsBotEnt( player ) )
 					return
 			#endif 
 			// init for IBMM
@@ -4586,6 +4587,10 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		return
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( players[0] ) 
+	
+	if( !group.isValid )
+		return
+		
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
 	foreach( player in players )

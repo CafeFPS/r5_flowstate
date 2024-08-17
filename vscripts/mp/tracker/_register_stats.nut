@@ -1,4 +1,4 @@
-untyped
+//untyped
 globalize_all_functions
 #if TRACKER && HAS_TRACKER_DLL
 

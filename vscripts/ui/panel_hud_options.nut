@@ -48,10 +48,13 @@ void function InitHudOptionsPanel( var panel )
 
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), "#MENU_CHAT_SPEECH_TO_TEXT", "#OPTIONS_MENU_CHAT_SPEECH_TO_TEXT_DESC", $"rui/menu/settings/settings_hud" )
 	Hud_SetVisible( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), IsAccessibilityAvailable() )
+	
 	#if PC_PROG
 		SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchChatMessages" ), "#MENU_CHAT_TEXT_TO_SPEECH", "#OPTIONS_MENU_CHAT_TEXT_TO_SPEECH_DESC", $"rui/menu/settings/settings_hud" )
 		Hud_SetVisible( Hud_GetChild( contentPanel, "SwitchChatMessages" ), IsAccessibilityAvailable() )
 	#endif //PC_PROG
+	
+	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchShowMotd" ), "#HUD_SHOW_MOTD", "#HUD_SHOW_MOTD_DESC", $"rui/menu/settings/settings_hud" )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_BACK, true, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESTORE_DEFAULTS", OpenConfirmRestoreHUDDefaultsDialog )
@@ -83,6 +86,8 @@ void function InitHudOptionsPanel( var panel )
 	#if PC_PROG
 		file.conVarDataList.append( CreateSettingsConVarData( "hudchat_play_text_to_speech", eConVarType.INT ) )
 	#endif
+	
+	file.conVarDataList.append( CreateSettingsConVarData( "show_motd_on_server_first_join", eConVarType.INT ) )
 }
 
 void function OpenConfirmRestoreHUDDefaultsDialog( var button )
@@ -133,6 +138,8 @@ void function RestoreHUDDefaults()
 	#if PC_PROG
 		SetConVarToDefault( "hudchat_visibility" )
 	#endif //PC_PROG
+	
+	SetConVarToDefault( "show_motd_on_server_first_join" )
 
 	SaveSettingsConVars( file.conVarDataList )
 

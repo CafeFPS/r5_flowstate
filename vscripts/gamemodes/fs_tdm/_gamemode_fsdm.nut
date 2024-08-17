@@ -72,6 +72,7 @@ global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function RotateMap
 global function FS_SetChampionOnPersistenceLoad
+global float g_fCurrentRoundEndTime
 
 //Beginning of refactor( supposed to be for next, next release.. )
 global function AddCallback_OnTdmStateEnter_InProgress
@@ -136,7 +137,7 @@ const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
-const int Flowstate_StartTimeDelay = 5
+global const int FLOWSTATE_START_TIME_DELAY = 5
 bool debugging = false
 global bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
@@ -864,9 +865,23 @@ void function DissolveItem( entity prop )
 
 void function _OnPlayerConnected(entity player)
 {
-	while(IsDisconnected( player )) WaitFrame()
+	float startTime = Time()
+	
+	while( IsDisconnected( player ) ) //defensive break
+	{
+		WaitFrame()
+		
+		if( Time() - startTime >= 3 )
+		{
+			#if DEVELOPER 
+				Warning( "PLAYER DISCONNECTED BREAK LOOP" )
+			#endif
+			break
+		}
+	}
 
-    if ( !IsValid( player ) ) return
+    if ( !IsValid( player ) ) 
+		return
 
 	if( flowstateSettings.hackersVsPros )
 	{
@@ -2956,7 +2971,7 @@ void function SimpleChampionUI()
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
 
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
-		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
+		SetGlobalNetTime( "flowstate_DMStartTime", Time() + FLOWSTATE_START_TIME_DELAY )
 	
 	if( Flowstate_IsMovementGym() )
 	{
@@ -3008,6 +3023,7 @@ void function SimpleChampionUI()
 				player.HolsterWeapon()
 				player.Server_TurnOffhandWeaponsDisabledOn()
 				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+						
 				ClearInvincible(player)
 
 				thread function () : ( player )
@@ -3022,7 +3038,7 @@ void function SimpleChampionUI()
 
 					// #if !DEVELOPER
 					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
-						wait Flowstate_StartTimeDelay
+						wait FLOWSTATE_START_TIME_DELAY
 					// #endif
 
 					if( flowstateSettings.enable_oddball_gamemode )
@@ -3120,7 +3136,7 @@ void function SimpleChampionUI()
 		// else if( GetBestPlayerName() != "-still nobody-" )
 			// subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
 	// } else
-		subtext = "Starting in " + Flowstate_StartTimeDelay + " seconds."
+		subtext = "Starting in " + FLOWSTATE_START_TIME_DELAY + " seconds."
 
 	////////////////////////////////
 	///// 		SET CHAMPION 	////
@@ -3149,7 +3165,7 @@ void function SimpleChampionUI()
 		if( !IsValid( player ) ) 
 			continue
 			
-		if( bClearChampion )
+		if( bClearChampion ) //Todo: verify..
 			SetPlayerStatBool( player.GetPlatformUID(), "previous_champion", false )
 
 		GameRules_SetTeamScore( player.GetTeam(), 0 )
@@ -3271,7 +3287,7 @@ void function SimpleChampionUI()
 	////////////////////////////////
 	
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
-		wait Flowstate_StartTimeDelay
+		wait FLOWSTATE_START_TIME_DELAY
 	
 	////////////////////////////////
 	//////// 	SET STATE 	////////
@@ -3293,12 +3309,13 @@ void function SimpleChampionUI()
 	{
 		SpawnBallSpawnerAtMapLocation( file.selectedLocation.name )
 	}
-
-	float endTime = Time() + FlowState_RoundTime()
-
+	
 	////////////////////////////////
 	//////// 	TIMER BEGIN 	////
 	////////////////////////////////
+
+	float endTime = Time() + FlowState_RoundTime()
+	g_fCurrentRoundEndTime = endTime //set global for server
 
 	if( flowstateSettings.EndlessFFAorTDM )
 	{
@@ -3437,7 +3454,6 @@ void function SimpleChampionUI()
 				break
 			}
 
-			//WaitFrame()
 			wait 1
 		}
 	}
