@@ -128,7 +128,10 @@ const int OF_NO_TEAM_COLOR = 1 << 9
 
 void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
-	if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
+	//if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
+
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	Assert( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
 
@@ -1402,7 +1405,10 @@ void function Minimap_SetBlankBackground( bool doBlank )
 
 void function Minimap_SetSizeScale( float scale )
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+	//if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	file.minimapSizeScale = scale
 
@@ -1504,7 +1510,10 @@ void function Minimap_EnableDraw()
 
 void function Minimap_DisableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+	//if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	file.minimapEnabled = false
 
@@ -1512,22 +1521,36 @@ void function Minimap_DisableDraw_Internal()
 	RuiSetVisible( file.minimap_frame, false )
 	RuiSetVisible( file.minimap_you, false )
 
-	foreach ( var rui in file.minimapOtherRuis )
+	// foreach ( var rui in file.minimapOtherRuis )
+	// {
+		// try
+		// {
+			// RuiSetVisible( rui, false )
+		// }catch(e)
+		// {
+			// file.minimapOtherRuis.removebyvalue(rui)
+		// }
+	// }
+	
+	//R5RDEV-1
+	int maxIter = file.minimapOtherRuis.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		try
-		{
-			RuiSetVisible( rui, false )
-		}catch(e420)
-		{
-			file.minimapOtherRuis.removebyvalue(rui)
-		}
+		if( file.minimapOtherRuis[ i ] == null )		
+			file.minimapOtherRuis.remove( i )
+		else
+			RuiSetVisible( file.minimapOtherRuis[ i ], false )
 	}
 }
 
 
 void function Minimap_EnableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+	//if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
+	
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	file.minimapEnabled = true
 

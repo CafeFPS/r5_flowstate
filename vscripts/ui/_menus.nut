@@ -1072,12 +1072,15 @@ void function CloseAllToTargetMenu( var targetMenu )
 	// }
 // }
 
-void function CloseAllMenusExcept( array<var> targetMenus)
+void function CloseAllMenusExcept( array<var> targetMenus )
 {
-	foreach( var menu in uiGlobal.menuStack )
+	foreach( MenuDef menuDef in uiGlobal.menuStack )
 	{
-		if( !targetMenus.contains( menu ) )
-			CloseMenuWrapper( menu )
+		if ( menuDef.menu )
+		{
+			if( !targetMenus.contains( menuDef.menu ) )	
+				CloseMenuWrapper( menuDef.menu )
+		}
 	}
 }
 

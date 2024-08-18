@@ -2827,7 +2827,7 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 			camera.e.scanSoundPlaying = true
 		}
 
-		//CLEAN THIS UP - For loop with index to not use fastremovebyvalue. One iteration probably all that's necessary.
+		//CLEAN THIS UP - For loop with index to not use fastremovebyvalue. One iteration probably all that's necessary. //---- To whom it may concern.. DONE ~mkos
 		float now = Time()
 
 		foreach ( nearbyEnt in nearbyEntities )
@@ -2881,11 +2881,50 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 		}
 
 		//check for all currently-detected entities to see if they need to be removed
-		foreach ( sonarEnt in sonarEnts )
+		
+		//R5RDEV-1
+		// foreach ( sonarEnt in sonarEnts )
+		// {
+			// if ( !IsValid( sonarEnt ) )
+			// {
+				// sonarEnts.fastremovebyvalue( sonarEnt )
+				// continue
+			// }
+
+			// if ( nearbyEntities.contains( sonarEnt ) )
+			// {
+				// bool flagForRemoval = false
+
+				// if( !flagForRemoval )
+					// continue
+			// }
+
+			// if ( sonarEnt in lastTimeScannedEntity )
+			// {
+				// float scanDuration = CryptoDrone_GetScanLingerTime( sonarEnt, cameraOwner )
+				// bool scanLingerTimeExpired = IsValid( sonarEnt ) ? lastTimeScannedEntity[sonarEnt] + scanDuration < now : true
+
+				// if ( scanLingerTimeExpired && HUDWarningEnts.contains( sonarEnt ) )
+					// HUDWarningEnts = RemoveEntityFromWarningEntitiesArray( sonarEnt, HUDWarningEnts )
+
+				// if ( scanLingerTimeExpired )
+          
+				// {
+					// SonarEnd( sonarEnt, file.cameraSonarTeamID[cameraOwner], cameraOwner )
+					// sonarEnts.fastremovebyvalue( sonarEnt )
+				// }
+			// }
+		// }
+		
+		int maxIter = sonarEnts.len() - 1
+		
+		for( int i = maxIter; i >= 0; i-- )
 		{
+			entity sonarEnt = sonarEnts[ i ] 
+			
 			if ( !IsValid( sonarEnt ) )
 			{
-				sonarEnts.fastremovebyvalue( sonarEnt )
+				sonarEnts.remove( i )
 				continue
 			}
 
@@ -2909,7 +2948,7 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
           
 				{
 					SonarEnd( sonarEnt, file.cameraSonarTeamID[cameraOwner], cameraOwner )
-					sonarEnts.fastremovebyvalue( sonarEnt )
+					sonarEnts.remove( i )
 				}
 			}
 		}

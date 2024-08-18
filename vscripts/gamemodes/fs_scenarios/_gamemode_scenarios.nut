@@ -631,7 +631,7 @@ void function FS_Scenarios_CleanupDrops()
 {
 	int maxIter = file.aliveItemDrops.len() - 1
 	
-	for( int i = maxIter; i > 0; i-- )
+	for( int i = maxIter; i >= 0; i-- )
 	{
 		if( !IsValid( file.aliveItemDrops[ i ] ) )
 			file.aliveItemDrops.remove( i )
@@ -651,7 +651,7 @@ void function FS_Scenarios_CleanupDeathboxes()
 	// don't remove multiple items from an array while iterating sequentially ~mkos
 	int maxIter = file.aliveDeathboxes.len() - 1
 	
-	for( int i = maxIter; i > 0; i-- )
+	for( int i = maxIter; i >= 0; i-- )
 	{
 		if( !IsValid( file.aliveDeathboxes[ i ] ) )
 			file.aliveDeathboxes.remove( i )
@@ -729,7 +729,7 @@ void function FS_Scenarios_CleanupDropships()
 	// don't remove multiple items from an array while iterating sequentially ~mkos
 	int maxIter = file.aliveDropships.len() - 1
 	
-	for( int i = maxIter; i > 0; i-- )
+	for( int i = maxIter; i >= 0; i-- )
 	{
 		if( !IsValid( file.aliveDropships[ i ] ) )
 			file.aliveDropships.remove( i )

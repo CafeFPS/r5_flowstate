@@ -2009,13 +2009,17 @@ void function GiveRandomPrimaryWeaponHalo(entity player)
 		"mp_weapon_halomagnum"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2024,19 +2028,23 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
+	//todo: init outside func..
     array<string> Weapons = [
 		"mp_weapon_halosmg",
 		"mp_weapon_haloassaultrifle",
 		"mp_weapon_halobattlerifle"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2082,6 +2090,8 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 		return
 	}
 
+	//todo: init outside func
+
     array<string> Weapons = [
 		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
@@ -2092,13 +2102,16 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2109,6 +2122,7 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 
 	if( Flowstate_IsFastInstaGib() )
 	{
+		//todo: init outside func..
 		array<string> Weapons = [
 			"mp_weapon_lightninggun"
 		]
@@ -2116,7 +2130,8 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 		return
 	}
-
+	
+	//todo: init outside func..
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
 		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
@@ -2127,13 +2142,16 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2142,6 +2160,7 @@ void function GiveRandomPrimaryWeapon(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
+	//todo: init outside func..
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
 		"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2",
@@ -2154,13 +2173,16 @@ void function GiveRandomPrimaryWeapon(entity player)
         "mp_weapon_rspn101 stock_tactical_l2 bullets_mag_l2 barrel_stabilizer_l1"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2169,6 +2191,8 @@ void function GiveRandomSecondaryWeapon( entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
+	//todo: init outside func..
+	
     array<string> Weapons = [
 		"mp_weapon_r97 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
 		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
@@ -2176,13 +2200,16 @@ void function GiveRandomSecondaryWeapon( entity player)
 		"mp_weapon_energy_ar optic_cq_hcog_classic hopup_turbocharger",
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
@@ -2191,6 +2218,8 @@ void function GiveActualGungameWeapon(int index, entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
+	//todo: init outside func..
+	
     array<string> Weapons = [
 		"mp_weapon_r97 optic_cq_hcog_classicstock_tactical_l3 bullets_mag_l2",
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l1",
@@ -2224,19 +2253,23 @@ void function GiveActualGungameWeapon(int index, entity player)
 		//"mp_weapon_semipistol bullets_mag_l2"
 	]
 
-	foreach(weapon in Weapons)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		if(file.blacklistedWeapons.find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
+	// foreach(weapon in Weapons)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		// if(file.blacklistedWeapons.find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 
 	__GiveWeapon( player, Weapons, slot, index, true)
 }
 
 void function GiveRandomTac(entity player)
 {
+	//todo: init outside func..
     array<string> Weapons = [
 		"mp_ability_grapple",
 		"mp_ability_phase_walk",

@@ -63,8 +63,9 @@ void function InitHudOptionsPanel( var panel )
 	#if CONSOLE_PROG
 		AddPanelFooterOption( panel, RIGHT, BUTTON_Y, true, "#BUTTON_REVIEW_TERMS", "#REVIEW_TERMS", OpenEULAReviewFromFooter, IsLobbyAndEULAAccepted )
 	#endif // CONSOLE_PROG
+	
 	//#if DURANGO_PROG
-	//AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
+		//AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
 	//#endif // DURANGO_PROG
 
 	ScrollPanel_InitPanel( panel )
@@ -87,7 +88,7 @@ void function InitHudOptionsPanel( var panel )
 		file.conVarDataList.append( CreateSettingsConVarData( "hudchat_play_text_to_speech", eConVarType.INT ) )
 	#endif
 	
-	// file.conVarDataList.append( CreateSettingsConVarData( "show_motd_on_server_first_join", eConVarType.INT ) )
+	file.conVarDataList.append( CreateSettingsConVarData( "show_motd_on_server_first_join", eConVarType.INT ) )
 }
 
 void function OpenConfirmRestoreHUDDefaultsDialog( var button )
@@ -139,7 +140,7 @@ void function RestoreHUDDefaults()
 		SetConVarToDefault( "hudchat_visibility" )
 	#endif //PC_PROG
 	
-	// SetConVarToDefault( "show_motd_on_server_first_join" )
+	SetConVarToDefault( "show_motd_on_server_first_join" )
 
 	SaveSettingsConVars( file.conVarDataList )
 

@@ -403,14 +403,27 @@ array<entity> function Flowstate_GenerateWarpBasePathForTrigger( entity ent )
 			break
 	}
 
-	nodes.removebyvalue( nodes[0] ) //Eliminar el nodo verde del comienzo, no es necesario
+	// nodes.removebyvalue( nodes[0] ) //Eliminar el nodo verde del comienzo, no es necesario
 	
+	//R5RDEV-1
 	//Eliminar los trigger multiple que se hayan agregado
-	foreach( node in nodes )
+	// foreach( node in nodes )
+	// {
+		// if( node.GetClassName() != "info_target" )
+		// {
+			// nodes.removebyvalue( node )
+		// }
+	// }
+	
+	nodes.remove( 0 )
+	
+	int maxIter = nodes.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if( node.GetClassName() != "info_target" )
+		if( node[i].GetClassName() != "info_target" )
 		{
-			nodes.removebyvalue( node )
+			nodes.remove( i )
 		}
 	}
 

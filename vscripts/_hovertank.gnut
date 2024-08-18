@@ -1560,7 +1560,7 @@ void function DeleteHoverTank( HoverTank hoverTank )
 	foreach ( hoverTankCandidate in file.allHoverTanks )
 	{
 		if ( hoverTank == hoverTankCandidate)
-			file.allHoverTanks.fastremovebyvalue( hoverTank )
+			file.allHoverTanks.fastremovebyvalue( hoverTank ) //only trying to find one
 	}
 
 	DestroyArray( hoverTank.alarmEnts )

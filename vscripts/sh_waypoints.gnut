@@ -472,11 +472,29 @@ bool function Waypoint_LootItemIsBeingPingedByAnyone( entity item )
 {
 	Assert( IsValid( item ) )
 
-	foreach( entity lootWp in s_activeLootPings )
+	//R5RDEV-1
+	// foreach( entity lootWp in s_activeLootPings )
+	// {
+		// if ( !IsValid( lootWp ) )
+		// {
+			// s_activeLootPings.fastremovebyvalue( lootWp )
+			// continue
+		// }
+
+		// entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		// if ( thisLootItem == item )
+			// return true
+	// }
+	
+	int maxIter = s_activeLootPings.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
+		entity lootWp = s_activeLootPings[ i ]
+		
 		if ( !IsValid( lootWp ) )
 		{
-			s_activeLootPings.fastremovebyvalue( lootWp )
+			s_activeLootPings.remove( i )
 			continue
 		}
 
@@ -494,21 +512,43 @@ entity function Waypoint_GetWaypointForLootItemPingedBy( entity item, entity pla
 	Assert( IsValid( item ) )
 	Assert( IsValid( player ) )
 
-	foreach( entity lootWp in s_activeLootPings )
+	//R5RDEV-1
+	// foreach( entity lootWp in s_activeLootPings )
+	// {
+		// if ( !IsValid( lootWp ) )
+		// {
+			// s_activeLootPings.fastremovebyvalue( lootWp )
+			// continue
+		// }
+
+		// entity owner = lootWp.GetOwner()
+		// if ( owner != player )
+			// continue
+
+		// entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		// if ( thisLootItem == item )
+			// return lootWp
+	// }
+	
+	int maxIter = s_activeLootPings.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !IsValid( lootWp ) )
+		if( !IsValid( s_activeLootPings[ i ] ) )
 		{
-			s_activeLootPings.fastremovebyvalue( lootWp )
+			s_activeLootPings.remove( i )
 			continue
 		}
-
-		entity owner = lootWp.GetOwner()
-		if ( owner != player )
+		
+		entity owner = s_activeLootPings[ i ].GetOwner()
+		
+		if( owner!= player )
 			continue
-
-		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
-		if ( thisLootItem == item )
-			return lootWp
+			
+		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( s_activeLootPings[ i ] )
+		
+		if( thisLootItem == item )
+			return s_activeLootPings[ i ]
 	}
 
 	return null
@@ -537,20 +577,81 @@ bool function Waypoint_IsPOI( entity wp )
 }
 
 
+//R5RDEV-1
+// entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
+// {
+// #if SERVER
+	// foreach ( entity wp in owner.p.pings.locations )
+// #else
+	// foreach ( entity wp in s_activeLocationPings )
+// #endif
+	// {
+		// if ( !IsValid( wp ) )
+		// {
+// #if SERVER
+			// owner.p.pings.locations.fastremovebyvalue( wp )
+// #else
+			// s_activeLootPings.fastremovebyvalue( wp )
+// #endif
+			// continue
+		// }
+
+		// if ( owner != wp.GetOwner() )
+			// continue
+		// if ( ticketID == GetTicketIDForWaypoint( wp ) )
+			// return wp
+	// }
+
+// #if SERVER
+	// foreach ( entity wp in owner.p.pings.loots )
+// #else
+	// foreach ( entity wp in s_activeLootPings )
+// #endif
+	// {
+		// if ( !IsValid( wp ) )
+		// {
+// #if SERVER
+			// owner.p.pings.loots.fastremovebyvalue( wp )
+// #else
+			// s_activeLootPings.fastremovebyvalue( wp )
+// #endif
+			// continue
+		// }
+
+		// if ( owner != wp.GetOwner() )
+			// continue
+		// if ( ticketID == GetTicketIDForWaypoint( wp ) )
+			// return wp
+	// }
+
+	// return null
+// }
+
+
+//this is convulted as fuck ~mkos ( need to just write two Waypoint_FindPingByTicketID(), for client/server respectively )
 entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 {
+
 #if SERVER
-	foreach ( entity wp in owner.p.pings.locations )
+	int maxIter = owner.p.pings.locations.len() - 1	
+	for ( int i = maxIter; i >= 0; i-- )
 #else
-	foreach ( entity wp in s_activeLocationPings )
+	int maxIter = s_activeLocationPings.len() - 1 //client
+	for ( int i = maxIter; i >= 0; i-- ) //client
 #endif
 	{
+#if SERVER 
+		entity wp = owner.p.pings.locations[ i ]
+#else 
+		entity wp = s_activeLocationPings[ i ] //client
+#endif
+		
 		if ( !IsValid( wp ) )
 		{
 #if SERVER
-			owner.p.pings.locations.fastremovebyvalue( wp )
+			owner.p.pings.locations.remove( i )
 #else
-			s_activeLootPings.fastremovebyvalue( wp )
+			s_activeLootPings.remove( i )
 #endif
 			continue
 		}
@@ -562,17 +663,24 @@ entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 	}
 
 #if SERVER
-	foreach ( entity wp in owner.p.pings.loots )
+	maxIter = owner.p.pings.loots.len() - 1
+	for ( int i = maxIter; i >= 0; i-- )
 #else
-	foreach ( entity wp in s_activeLootPings )
+	maxIter = s_activeLootPings.len() - 1 //client
+	for ( int i = maxIter; i >= 0; i-- ) //client	
 #endif
 	{
+#if SERVER 
+		entity wp = owner.p.pings.loots[ i ]
+#else 
+		entity wp = s_activeLootPings[ i ] //client
+#endif
 		if ( !IsValid( wp ) )
 		{
 #if SERVER
-			owner.p.pings.loots.fastremovebyvalue( wp )
+			owner.p.pings.loots.remove( i )
 #else
-			s_activeLootPings.fastremovebyvalue( wp )
+			s_activeLootPings.remove( i ) //client
 #endif
 			continue
 		}
@@ -1926,39 +2034,108 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 		foreach( entity teamPlayer in teamPlayers )
 		{
 			bool thisIsUs = (player == teamPlayer)
-			foreach( entity wp in teamPlayer.p.pings.locations )
+			
+			//R5RDEV-1
+			// foreach( entity wp in teamPlayer.p.pings.locations )
+			// {
+				// if ( !IsValid( wp ) )
+				// {
+					// teamPlayer.p.pings.locations.fastremovebyvalue( wp )
+					// continue
+				// }
+
+				// int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
+				// if ( wpPingType == ePingType.ENEMY_SPECIFIC )
+				// {
+					// entity target = GetPingedEntForLocWaypoint( wp )
+					// if ( target == pingEnt )
+						// deadPings.append( wp )
+				// }
+
+				// if ( thisIsUs && (wpPingType == ePingType.ENEMY_GENERAL) )
+					// deadPings.append( wp )
+			// }
+			
+			int maxIter = teamPlayer.p.pings.locations.len() - 1
+			
+			for( int i = maxIter; i >= 0; i-- )
 			{
-				if ( !IsValid( wp ) )
+				if( !IsValid( teamPlayer.p.pings.locations[ i ] ) )
 				{
-					teamPlayer.p.pings.locations.fastremovebyvalue( wp )
+					teamPlayer.p.pings.locations.remove( i )
 					continue
 				}
-
-				int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
-				if ( wpPingType == ePingType.ENEMY_SPECIFIC )
+				
+				int wpPingType = Waypoint_GetPingTypeForWaypoint( teamPlayer.p.pings.locations[ i ] )
+				
+				if( wpPingType == ePingType.ENEMY_SPECIFIC )
 				{
-					entity target = GetPingedEntForLocWaypoint( wp )
-					if ( target == pingEnt )
-						deadPings.append( wp )
+					entity target = GetPingedEntForLocWaypoint( teamPlayer.p.pings.locations[ i ] )
+					if( target == pingEnt )
+						deadPings.append( teamPlayer.p.pings.locations[ i ] )
 				}
-
-				if ( thisIsUs && (wpPingType == ePingType.ENEMY_GENERAL) )
-					deadPings.append( wp )
+				
+				if ( thisIsUs && ( wpPingType == ePingType.ENEMY_GENERAL ) )
+					deadPings.append( teamPlayer.p.pings.locations[ i ] )
 			}
 		}
 	}
 	else
 	{
-		foreach( entity wp in player.p.pings.locations )
+		//R5RDEV-1
+		// foreach( entity wp in player.p.pings.locations )
+		// {
+			// if ( !IsValid( wp ) )
+			// {
+				// player.p.pings.locations.fastremovebyvalue( wp )
+				// continue
+			// }
+
+			// int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
+			// if ( (wpPingType == pingType) )
+			// {
+				// if ( !MultiplePingsAllowed( pingType ) )
+				// {
+					// deadPings.append( wp )
+					// continue
+				// }
+
+				//still clean it up if we're re-pinging the same ent:
+				// entity target = GetPingedEntForLocWaypoint( wp )
+				// if ( IsValid( target ) && (target == pingEnt) )
+				// {
+					// deadPings.append( wp )
+					// continue
+				// }
+			// }
+
+			// if ( ((wpPingType == ePingType.WE_GO) || (wpPingType == ePingType.MAP_WAYPOINT)) && ((pingType == ePingType.WE_GO) || (pingType == ePingType.MAP_WAYPOINT)) )
+			// {
+				// deadPings.append( wp )
+				// continue
+			// }
+
+			// if ( wpPingType == ePingType.LOCATION )    // always clear out the generic "goto" pings when we ping something new
+			// {
+				// deadPings.append( wp )
+				// continue
+			// }
+		// }
+		
+		int maxIter = player.p.pings.locations.len() - 1
+		
+		for( int i = maxIter; i >= 0; i-- )
 		{
+			entity wp = player.p.pings.locations[ i ]
+			
 			if ( !IsValid( wp ) )
 			{
-				player.p.pings.locations.fastremovebyvalue( wp )
+				player.p.pings.locations.remove( i )
 				continue
 			}
 
 			int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
-			if ( (wpPingType == pingType) )
+			if ( ( wpPingType == pingType ) )
 			{
 				if ( !MultiplePingsAllowed( pingType ) )
 				{
@@ -1966,16 +2143,16 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 					continue
 				}
 
-				// still clean it up if we're re-pinging the same ent:
+				//still clean it up if we're re-pinging the same ent:
 				entity target = GetPingedEntForLocWaypoint( wp )
-				if ( IsValid( target ) && (target == pingEnt) )
+				if ( IsValid( target ) && ( target == pingEnt ) )
 				{
 					deadPings.append( wp )
 					continue
 				}
 			}
 
-			if ( ((wpPingType == ePingType.WE_GO) || (wpPingType == ePingType.MAP_WAYPOINT)) && ((pingType == ePingType.WE_GO) || (pingType == ePingType.MAP_WAYPOINT)) )
+			if ( (( wpPingType == ePingType.WE_GO) || ( wpPingType == ePingType.MAP_WAYPOINT )) && (( pingType == ePingType.WE_GO) || ( pingType == ePingType.MAP_WAYPOINT )) )
 			{
 				deadPings.append( wp )
 				continue
@@ -2003,25 +2180,48 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 
 void function Waypoints_DestroyPingsForSkydiveEnding( entity player )
 {
-	if( Gamemode() == eGamemodes.flowstate_pkknockback ) return
+	if( Gamemode() == eGamemodes.flowstate_pkknockback ) 
+		return
 	
 	array<entity> deadPings
 
-	foreach( entity wp in player.p.pings.locations )
+	//R5RDEV-1
+	// foreach( entity wp in player.p.pings.locations )
+	// {
+		// if ( !IsValid( wp ) )
+		// {
+			// player.p.pings.locations.fastremovebyvalue( wp )
+			// continue
+		// }
+
+		// int pingType = Waypoint_GetPingTypeForWaypoint( wp )
+		// switch( pingType )
+		// {
+			// case ePingType.MAP_WAYPOINT:
+				// continue
+		// }
+		// deadPings.append( wp )
+	// }
+	
+	int maxIter = player.p.pings.locations.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !IsValid( wp ) )
+		if( !IsValid( player.p.pings.locations[ i ] ) )
 		{
-			player.p.pings.locations.fastremovebyvalue( wp )
+			player.p.pings.locations.remove( i )
 			continue
 		}
-
-		int pingType = Waypoint_GetPingTypeForWaypoint( wp )
+		
+		int pingType = Waypoint_GetPingTypeForWaypoint( player.p.pings.locations[ i ] )
+		
 		switch( pingType )
 		{
 			case ePingType.MAP_WAYPOINT:
 				continue
 		}
-		deadPings.append( wp )
+		
+		deadPings.append( player.p.pings.locations[ i ] )
 	}
 
 	foreach( entity deadPing in deadPings )
@@ -2254,17 +2454,34 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 	const int MAX_LOOT_PINGS_PER_PLAYER = 3
 
 	// Don't re-ping:
-	foreach ( entity lootWp in player.p.pings.loots )
+	
+	//R5RDEV-1
+	// foreach ( entity lootWp in player.p.pings.loots )
+	// {
+		// if ( !IsValid( lootWp ) )
+		// {
+			// player.p.pings.loots.fastremovebyvalue( lootWp )
+			// continue
+		// }
+
+		// entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		// if ( item == lootItem )
+			// return lootWp
+	// }
+	
+	int maxIter = player.p.pings.loots.len()
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !IsValid( lootWp ) )
+		if( !IsValid( player.p.pings.loots[ i ] ) )
 		{
-			player.p.pings.loots.fastremovebyvalue( lootWp )
+			player.p.pings.loots.remove( i )
 			continue
 		}
-
-		entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
-		if ( item == lootItem )
-			return lootWp
+		
+		entity item = Waypoint_GetItemEntForLootWaypoint( player.p.pings.loots[ i ] )
+		if( item == lootItem )
+			return player.p.pings.loots[ i ]
 	}
 
 	// Make room:
@@ -2308,24 +2525,49 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 
 void function DeleteWaypoint_Ping_Loot( entity player, entity lootItem )
 {
-	foreach ( entity lootWp in player.p.pings.loots )
+	//R5RDEV-1
+	// foreach ( entity lootWp in player.p.pings.loots )
+	// {
+		// if ( !IsValid( lootWp ) )
+		// {
+			// player.p.pings.loots.fastremovebyvalue( lootWp )
+			// continue
+		// }
+
+		// entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		// if ( item == lootItem )
+		// {
+			// Ensure this entity is network culled once the ping is cleared.
+			// if ( IsValid( item ) && item.GetClassName() == "prop_survival" )
+				// SURVIVAL_Loot_EnableNetworkDistanceCullingManaged( item )
+
+			// player.p.pings.loots.fastremovebyvalue( lootWp )
+
+			// lootWp.Destroy()
+			// return
+		// }
+	// }
+	
+	int maxIter = player.p.pings.loots.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !IsValid( lootWp ) )
+		if( !IsValid( player.p.pings.loots[ i ] ) )
 		{
-			player.p.pings.loots.fastremovebyvalue( lootWp )
+			player.p.pings.loots.remove( i )
 			continue
 		}
-
-		entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
-		if ( item == lootItem )
+		
+		entity item = Waypoint_GetItemEntForLootWaypoint( player.p.pings.loots[ i ] )
+		
+		if( item == lootItem )
 		{
-			// Ensure this entity is network culled once the ping is cleared.
-			if ( IsValid( item ) && item.GetClassName() == "prop_survival" )
+			if( IsValid( item ) && item.GetClassName() == "prop_survival" )
 				SURVIVAL_Loot_EnableNetworkDistanceCullingManaged( item )
-
-			player.p.pings.loots.fastremovebyvalue( lootWp )
-
-			lootWp.Destroy()
+				
+			player.p.pings.loots.remove( i )
+			
+			player.p.pings.loots[ i ].Destroy()
 			return
 		}
 	}
@@ -2434,7 +2676,7 @@ void function Waypoint_ClearPlayerSimilarPingsForReply( entity player, entity wp
 			continue
 			
 		if ( !IsValid( wp ) )
-			return
+			return //should this really return here??
 
 		int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
 		if ( (wpPingType == pingType) )

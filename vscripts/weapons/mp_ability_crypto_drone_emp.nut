@@ -504,14 +504,32 @@ void function EMP_WarningFX( entity sourceEnt, float waitDuration, array<int> ba
        
 
 		ArrayRemoveInvalid( warningFXPlayers )
-		foreach ( player in warningFXPlayers )
-		{
-			if ( nearbyTargets.contains( player ) )
-				continue
+		
+		//R5RDEV-1
+		// foreach ( player in warningFXPlayers )
+		// {
+			// if ( nearbyTargets.contains( player ) )
+				// continue
 
-			StatusEffect_StopAllOfType( player, eStatusEffect.crypto_emp_warning )
-			warningFXPlayers.fastremovebyvalue( player )
-			thirdPersonFXs[player].Destroy()
+			// StatusEffect_StopAllOfType( player, eStatusEffect.crypto_emp_warning )
+			// warningFXPlayers.fastremovebyvalue( player )
+			// thirdPersonFXs[player].Destroy()
+		// }
+		
+		int maxIter = warningFXPlayers.len() - 1
+		
+		for( int i = maxIter; i >= 0; i-- )
+		{
+			entity warnPlayer = warningFXPlayers[ i ]
+
+			if ( nearbyTargets.contains( warnPlayer ) )
+				continue 
+			
+			{
+				StatusEffect_StopAllOfType( warnPlayer, eStatusEffect.crypto_emp_warning )		
+				warningFXPlayers.remove( i )		
+				thirdPersonFXs[ warnPlayer ].Destroy()
+			}
 		}
 
 		foreach ( target in nearbyTargets )

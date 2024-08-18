@@ -385,11 +385,24 @@ void function CreateTurretTrigger(entity turret, entity pc1)
 			
 			if(!DAMAGEOWNER)
 			{
-				foreach(entity ent in touchingEntsFinal)
+				//R5RDEV-1
+				// foreach(entity ent in touchingEntsFinal)
+				// {
+					// if(ent == turret.e.turretowner || ent.GetTeam() == ownerteam)
+					// {
+						// touchingEntsFinal.removebyvalue(ent)
+					// }
+				// }
+				
+				int maxIter = touchingEntsFinal.len() - 1
+				
+				for( int i = maxIter; i >= 0; i-- )
 				{
-					if(ent == turret.e.turretowner || ent.GetTeam() == ownerteam)
+					entity ent = touchingEntsFinal[ i ]
+					
+					if( ent == turret.e.turretowner || ent.GetTeam() == ownerteam )
 					{
-						touchingEntsFinal.removebyvalue(ent)
+						touchingEntsFinal.remove( i )
 					}
 				}
 			}

@@ -900,55 +900,6 @@ struct {
 						}
 						
 			//for testing
-			
-			case "zero":
-			#if DEVELOPER && TRACKER && HAS_TRACKER_DLL
-						
-						if ( args.len() < 1)
-						{
-							Message( player, "Failed", "Param 1 of command 'zero' requires playername string.")
-							return false;	
-						}
-			
-						try 
-						{		
-							entity z_player = GetPlayerEntityByName(args[1])
-							
-							if ( !IsValid(z_player) )
-							{
-								Message( player, "Failed", "Player: " + args[1] + " - is invalid. ")
-								return true;
-							}
-							
-							string playeroid = z_player.GetPlatformUID()
-							
-							int index = DEV_GetPlayerMetricsIndexByUID( playeroid )
-							
-							if ( index != -1 )
-							{	
-								foreach ( playerMetrics in Tracker_GetPlayerMetricsArray() ) 
-								{
-									if ( playerMetrics.playerID == args[1] ) 
-									{	
-										Tracker_GetPlayerMetricsArray().removebyvalue(playerMetrics);					
-									}
-								}
-								
-								Message( player, "Success", "Player " + args[1] + " stats were zeroed. Does not effect kill/death/damage. ")
-								return true;	
-							}
-						
-						} 
-						catch (errg) 
-						{	
-							Message( player, "Failed", "Command failed because of: \n\n " + errg )
-							return true;	
-						}
-			#endif
-			
-			Message( player, "Command only allowed in devmode with tracker" )
-					return false
-						
 			case "playerinput":
 						
 						if ( args.len() < 1)

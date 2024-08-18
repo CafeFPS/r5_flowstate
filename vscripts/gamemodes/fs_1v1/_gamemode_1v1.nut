@@ -58,6 +58,9 @@ global function is3v3Mode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
 
+//utility
+global function ValidateBlacklistedWeapons
+
 const bool TEST_WORLDDRAW = false
 
 //DEV 
@@ -3296,15 +3299,18 @@ void function Gamemode1v1_Init( int eMap )
 	
 	}
 
-	foreach( weapon in Weapons )
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
-		
-		if(GetBlackListedWeapons().find(weaponName) != -1)
-				Weapons.removebyvalue(weapon)
-	}
+	//R5RDEV-1
 	
+	// foreach( weapon in Weapons )
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
+		
+		// if(GetBlackListedWeapons().find(weaponName) != -1)
+				// Weapons.removebyvalue(weapon)
+	// }
+	
+	Weapons = ValidateBlacklistedWeapons( Weapons )
 	
 	//INIT SECONDARY WEAPON SELECTION	
 	if ( Flowstate_IsLGDuels() ) 
@@ -5609,4 +5615,29 @@ void function Gamemode1v1_DissolveDropable( entity prop )
 				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
 		}
 	)()
+}
+
+array<string> function ValidateBlacklistedWeapons( array<string> Weapons )
+{
+	int maxIter = Weapons.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
+	{
+		int sliceIndex = Weapons[ i ].find( " " )
+		
+		if( sliceIndex )
+		{	
+			string weaponName = Weapons[ i ].slice( 0, sliceIndex )
+			
+			if( GetBlackListedWeapons().find( weaponName ) != -1 )
+				Weapons.remove( i )
+		}
+		else 
+		{
+			if( GetBlackListedWeapons().contains( Weapons[ i ] ) )
+				Weapons.remove( i )
+		}
+	}
+	
+	return Weapons
 }
