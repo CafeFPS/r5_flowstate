@@ -1589,23 +1589,19 @@ void function DM_HintCatalog(int index, int eHandle)
 		switch( Playlist() )
 		{
 			case ePlaylists.fs_movementrecorder:
-			Obituary_Print_Localized( "mkos - fixes for multiplayer, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Movement Recorder v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Movement Recorder - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 
 			case ePlaylists.fs_lgduels_1v1:
-			Obituary_Print_Localized( "mkos - settings persistance, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS LG Duels - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_scenarios:
-			Obituary_Print_Localized( "mkos - code improvements, spawns system", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_1v1:
-			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS and mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS 1V1 - Made by __makimakima__ - Maintained by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 		}
 		break
