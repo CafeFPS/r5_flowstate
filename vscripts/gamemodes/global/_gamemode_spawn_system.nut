@@ -2690,6 +2690,17 @@ RingInfo function SearchForRingInfo( entity ring )
 	return nullRingInfo
 }
 
+string function GetRingIdentifierBySpawnSet( int findSpawnSet )
+{
+	foreach( string ringIdentifier, RingInfo ringInfo in GetRings() )
+	{
+		if( ringInfo.spawnSet == findSpawnSet )
+			return ringIdentifier
+	}
+	
+	return "_invalid"
+}
+
 bool function DoesRingSettingsExist( string ringIdentifier )
 {
 	return ( ringIdentifier in GetRings() )
@@ -2757,6 +2768,22 @@ void function CreateRingSettings( string ringIdentifier, entity ring, int spawnS
 		GetRings()[ ringIdentifier ] = ringInfo
 }
 
+bool function IsRingInfoValid( string identifier )
+{
+	RingInfo ringInfo = GetRingInfoByRef( identifier )	
+	return ringInfo.identifier != "_invalid"
+}
+
+RingInfo function GetRingInfoByRef( string identifier )
+{	
+	if( identifier in GetRings() )
+		return GetRings()[ identifier ]
+	
+	RingInfo ringInfo
+	
+	return ringInfo
+}
+
 array<entity> function GetRingArray()
 {
 	return clonedSettings.ringArray
@@ -2783,12 +2810,20 @@ string function GetRingIdentifier( int spawnSet )
 
 void function DEV_KillRing( int spawnSet = -1, bool instantly = true, bool keepLooping = false )
 {
-	string ringIdentifier = GetRingIdentifier( spawnSet )
-	string msg = ""
-
 	if( spawnSet == -1 )
 	{
 		KillAllRings()
+		return
+	}
+	
+	string ringIdentifier = GetRingIdentifier( spawnSet )
+	string msg = ""
+	
+	if( !IsRingInfoValid( ringIdentifier ) )
+	{
+		msg = "Ring info was invalid";
+		printt( msg )
+		printm( msg )
 		return
 	}
 	
@@ -2841,6 +2876,11 @@ void function KillAllRings()
 	
 	foreach( string identifier, RingInfo ringInfo in GetRings() )
 	{
+		printt( "Table- Ring: ", identifier )
+		
+		if( empty( identifier ) )
+			continue 
+			
 		LoopRing( identifier, false )
 		Signal( file.dummyEnt, identifier )
 	}
@@ -3247,6 +3287,9 @@ void function FS_Scenarios_CreateCustomDeathfield_clone( int spawnSet, string ri
 	DispatchSpawn(smallcircle)
 
 	entity ring = smallcircle
+	
+	if( empty( ringIdentifier ) )
+		ringIdentifier = GetRingIdentifierBySpawnSet( spawnSet )
 	
 	CreateRingSettings
 	(
