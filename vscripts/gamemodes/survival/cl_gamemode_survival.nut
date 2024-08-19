@@ -1405,7 +1405,7 @@ void function AddCallback_OnVictoryCharacterModelSpawned( void functionref( enti
 
 void function OnResolutionChanged_FixRuiSize()
 {
-	if( GetGameState() < eGameState.Playing )
+	if( GetGameState() == eGameState.WaitingForPlayers )
 	{
 		UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true, true )
 		UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true, true )

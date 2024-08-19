@@ -4128,4 +4128,95 @@ Resource/UI/flowstate_customhudvgui.res
 		pin_corner_to_sibling   CENTER
 		pin_to_sibling_corner   CENTER
 	}
+
+	//Winter express custom score hud. Cafe
+	WinterExpress_FlowstateScoreBox_Local
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					40
+		xpos 					-180
+		zpos 10
+		pin_to_sibling          SafeArea
+		pin_corner_to_sibling   TOP_RIGHT
+		pin_to_sibling_corner   TOP_RIGHT
+	}
+
+	WinterExpress_FlowstateScoreBox_LocalScore
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					0
+		zpos 15
+		pin_to_sibling          WinterExpress_FlowstateScoreBox_Local
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
+	
+	WinterExpress_FlowstateScoreBox_Enemy1
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					110
+		zpos 10
+		pin_to_sibling          WinterExpress_FlowstateScoreBox_Local
+		pin_corner_to_sibling   RIGHT
+		pin_to_sibling_corner   RIGHT
+	}
+
+	WinterExpress_FlowstateScoreBox_Enemy1Score
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					0
+		zpos 15
+		pin_to_sibling          WinterExpress_FlowstateScoreBox_Enemy1
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
+	
+	WinterExpress_FlowstateScoreBox_Enemy2
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					110
+		zpos 10
+		pin_to_sibling          WinterExpress_FlowstateScoreBox_Enemy1
+		pin_corner_to_sibling   RIGHT
+		pin_to_sibling_corner   RIGHT
+	}
+
+	WinterExpress_FlowstateScoreBox_Enemy2Score
+	{
+		ControlName				RuiPanel
+		wide					100
+		tall					91
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					0
+		zpos 15
+		pin_to_sibling          WinterExpress_FlowstateScoreBox_Enemy2
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
 }

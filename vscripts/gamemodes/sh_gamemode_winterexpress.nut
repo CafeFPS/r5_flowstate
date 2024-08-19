@@ -2,7 +2,6 @@
 // ported by @CafeFPS
 // mp_rr_desertlands_holiday map by zee_x64
 
-// todo: make own ui for team points
 // fix custom waypoint for train
 
 global function WinterExpress_Init
@@ -34,6 +33,9 @@ global function ServerCallback_CL_UpdateCurrentLoadoutHUD
 
 global function WinterExpress_GetTeamScore
 global function WinterExpress_IsTeamWinning
+
+global function FS_CreateScoreHUD
+global function FS_UpdateScoreForTeam
 #endif
 
 #if UI
@@ -169,8 +171,11 @@ const asset RESPAWN_BEACON_MOBILE_MODEL = $"mdl/props/pathfinder_beacon_radar/pa
 const float  HOLIDAY_HOVERTANK_ALT_CHECK 	= 0
 
 struct {
+	//settings
 	int           scoreLimit
 	int           roundLimit
+	bool		openFlowstateWeaponsOnRespawn
+
 	entity        trainRef
 	array<entity> trainTriggers
 
@@ -249,6 +254,22 @@ struct {
 		bool OpenMenuGameplayButtonCallbackRegistered = false
 		var legendSelectMenuPromptRui = null
 		var customCaptureProgressRui = null
+
+		//By @CafeFPS
+		var localTeam
+		var localTeamScore
+		int localTeamScoreValue
+		
+		var enemyTeam
+		var enemyTeamScore
+		int enemyTeamScoreValue
+		
+		var enemyTeam2
+		var enemyTeam2Score
+		int enemyTeam2ScoreValue
+	
+		int currentEnemy1
+		int currentEnemy2
 	#endif
 } file
 
@@ -256,6 +277,7 @@ void function WinterExpress_Init()
 {
 	file.scoreLimit = GetCurrentPlaylistVarInt( "winter_express_score_limit", 3 )
 	file.roundLimit = GetCurrentPlaylistVarInt( "winter_express_round_limit", 30 )
+	file.openFlowstateWeaponsOnRespawn = GetCurrentPlaylistVarBool( "winter_express_open_weapons_buy_menu", true )
 
 	#if SERVER
 		//Cafe was here
@@ -356,6 +378,11 @@ void function WinterExpress_Init()
 		ClUnitFrames_Init()
 		Cl_SquadDisplay_Init()
 
+		if( file.scoreLimit == 3 )
+			Obituary_SetHorizontalOffset( 40 )
+
+		AddClientCallback_OnResolutionChanged( FS_ReloadScoreHUD )
+
 		CircleAnnouncementsEnable( false )
 		SetMapFeatureItem( 300, "#WINTER_EXPRESS_TRAIN_OBJECTIVE", "#WINTER_EXPRESS_TRAIN_DESC", $"rui/hud/gametype_icons/sur_train_minimap" ) //$"rui/hud/gametype_icons/survival/objective_icon" )
 
@@ -379,6 +406,7 @@ void function WinterExpress_Init()
 
 		FlagInit( "WinterExpress_ObjectiveStateUpdated", false )
 		FlagInit( "WinterExpress_ObjectiveOwnerUpdated", false )
+
 	#endif
 
 	WinterExpress_RegisterNetworking()
@@ -566,6 +594,9 @@ void function OnEntitiesDidLoad_Client()
 	// }
 
 	SurvivalCommentary_SetHost( eSurvivalHostType.MIRAGE )
+	
+	if( GetGameState() == eGameState.Playing )
+		FS_CreateScoreHUD()
 }
 
 void function FinishGamestateRui()
@@ -1534,10 +1565,6 @@ void function ProcessLastSquadAlive( entity victim, entity attacker )
 //win checking for round/match
 void function TryDetermineRoundWinner( int team, int endCondition )
 {
-	#if DEVELOPER
-	// DumpStack()
-	#endif
-
 	if ( GetGlobalNetInt( "WinterExpress_RoundState" ) != eWinterExpressRoundState.OBJECTIVE_ACTIVE &&
 	!(endCondition == eWinterExpressRoundEndCondition.NO_SQUADS_ALIVE || endCondition == eWinterExpressRoundEndCondition.LAST_SQUAD_ALIVE) )
 		return
@@ -1553,7 +1580,7 @@ void function TryDetermineRoundWinner( int team, int endCondition )
 		file.objectiveScore[team]++
 	else
 		file.objectiveScore[team] <- 1
-
+ 
 	//updating match point state
 	if ( team in file.objectiveScore && file.objectiveScore[team] == file.scoreLimit - 1 )
 		file.isTeamOnMatchPoint[team] <- true
@@ -3562,6 +3589,7 @@ int function GetTeamRemappedForRui( int rawIndex )
 void function ServerCallback_CL_GameStartAnnouncement()
 {
 	AnnouncementMessageSweepWinterExpress( GetLocalClientPlayer(), Localize( GAME_START_ANNOUNCEMENT ), Localize( GAME_START_ANNOUNCEMENT_SUB ), < 214, 214, 214 >, "WXpress_Train_Update", 7.0, $"", $"", $"", true, false )
+	FS_CreateScoreHUD()
 }
 
 void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, int newScore )
@@ -3578,6 +3606,7 @@ void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, i
 		squadWinningIndex  = Squads_GetSquadUIIndex( winningTeam )
 	}
 
+	FS_UpdateScoreForTeam( squadWinningIndex, newScore ) //Cafe was here
 
 	asset borderIcon         = $""
 	string soundAlias        = "WXpress_Train_Update"
@@ -3645,7 +3674,6 @@ void function CL_ScoreUpdate( int team, int score )
 
 	// RuiSetInt( file.scoreElements[uiTeam], "score", score )
 	// RuiSetInt( file.scoreElementsFullmap[uiTeam], "score", score )
-
 }
 
 int function WinterExpress_GetTeamScore( int uiTeam )
@@ -3904,6 +3932,15 @@ void function ServerCallback_CL_WinnerDetermined( int team )
 	StopSoundOnEntity( GetLocalClientPlayer(), "Music_LTM32_SpectateCam" )
 	// SetSummaryDataDisplayStringsCallback( WinterExpress_PopulateSummaryDataStrings )
 	CL_ScoreUpdate( team, 3 )
+
+	int uiWinningTeam     = Squads_GetTeamsUIId( team )
+	int squadWinningIndex = -1
+	if	(team >= TEAM_IMC)
+	{
+		squadWinningIndex  = Squads_GetSquadUIIndex( team )
+	}
+
+	FS_UpdateScoreForTeam( squadWinningIndex, 3 ) //Cafe was here
 }
 
 
@@ -4509,6 +4546,198 @@ void function FS_CaptureProgressUI( float starttime, float endtime )
 	RuiSetString( file.customCaptureProgressRui, "hintController", "Train is being captured" )	
 }
 
+void function FS_ReloadScoreHUD()
+{
+	if( file.scoreLimit != 3 )
+		return
+
+	if( GetGameState() != eGameState.Playing )
+		return
+	printt( "FS_ReloadScoreHUD()", file.enemyTeamScoreValue, file.enemyTeam2ScoreValue )
+
+	FS_CreateScoreHUD()
+
+	
+	if( file.localTeamScoreValue > 0 && file.enemyTeamScoreValue <= 3 )
+		FS_UpdateScoreForTeam( TEAM_IMC, file.localTeamScoreValue )
+
+	if( file.enemyTeamScoreValue > 0 && file.currentEnemy1 != -1 && file.enemyTeamScoreValue <= 3 )
+		FS_UpdateScoreForTeam( file.currentEnemy1, file.enemyTeamScoreValue )
+
+	if( file.enemyTeam2ScoreValue > 0 && file.currentEnemy2 != -1 && file.enemyTeam2ScoreValue <= 3 )
+		FS_UpdateScoreForTeam( file.currentEnemy2, file.enemyTeam2ScoreValue )	
+}
+
+void function FS_CreateScoreHUD()
+{
+	if( file.scoreLimit != 3 )
+		return
+
+	int localteam = GetLocalClientPlayer().GetTeam()
+	int localIndex = Squads_GetSquadUIIndex( localteam )
+	string name = Localize( Squads_GetSquadName( localIndex, true ) ).tolower()
+
+	array<int> teams = GetTeamsForPlayers( GetPlayerArray() )
+
+	// foreach( team in teams )
+	// {
+		// printt( "WEHUD", Squads_GetSquadUIIndex( team ), Localize( Squads_GetSquadName( Squads_GetSquadUIIndex( team ), true ) ).tolower() )
+	// }
+
+	if( teams.contains( localteam ) )
+		teams.removebyvalue( localteam )
+
+	//Local team
+	file.localTeam = HudElement( "WinterExpress_FlowstateScoreBox_Local" )
+	file.localTeamScore = HudElement( "WinterExpress_FlowstateScoreBox_LocalScore" )
+
+	Hud_SetVisible( file.localTeam, true)
+	Hud_SetVisible( file.localTeamScore, false)
+
+	string teamPic = "rui/flowstatecustom/winterexpress/local_" + name
+	
+	if( IsValidName( name ) )
+		RuiSetImage( Hud_GetRui( file.localTeam ), "basicImage", CastStringToAsset( teamPic ) )
+
+	//Enemy 1
+	file.enemyTeam = HudElement( "WinterExpress_FlowstateScoreBox_Enemy1" )
+	file.enemyTeamScore = HudElement( "WinterExpress_FlowstateScoreBox_Enemy1Score" )
+	//Enemy 2
+	file.enemyTeam2 = HudElement( "WinterExpress_FlowstateScoreBox_Enemy2" )
+	file.enemyTeam2Score = HudElement( "WinterExpress_FlowstateScoreBox_Enemy2Score" )
+
+	int enemy1 = -1
+	int enemy2 = -1
+
+	if( teams.len() > 0 )
+	{
+		Hud_SetVisible( file.enemyTeam, true)
+		Hud_SetVisible( file.enemyTeamScore, false)
+		enemy1 = teams[0]
+
+		if( file.currentEnemy1 == -1 )
+			file.currentEnemy1 = Squads_GetSquadUIIndex( enemy1 )
+	} else
+	{
+		Hud_SetVisible( file.enemyTeam2, false)
+		Hud_SetVisible( file.enemyTeam2Score, false)
+	}
+	
+	if( teams.len() > 1 )
+	{
+		Hud_SetVisible( file.enemyTeam2, true)
+		Hud_SetVisible( file.enemyTeam2Score, false)
+		enemy2 = teams[1]
+
+		if( file.currentEnemy2 == -1 )
+			file.currentEnemy2 = Squads_GetSquadUIIndex( enemy2 )
+	} else
+	{
+		Hud_SetVisible( file.enemyTeam2, false)
+		Hud_SetVisible( file.enemyTeam2Score, false)
+		
+		//todo fix pos of the other elements if there are less than 3 teams. Cafe
+	}
+
+	if( enemy1 != -1 )
+	{
+		int enemy1Index = Squads_GetSquadUIIndex( enemy1 )
+		string enemy1name = Localize( Squads_GetSquadName( enemy1Index, true ) ).tolower()
+	
+		teamPic = "rui/flowstatecustom/winterexpress/enemy_" + enemy1name
+		
+		if( IsValidName( enemy1name ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeam ), "basicImage", CastStringToAsset( teamPic ) )
+	}
+
+	if( enemy2 != -1 )
+	{
+		int enemy2Index = Squads_GetSquadUIIndex( enemy2 )
+		string enemy2name = Localize( Squads_GetSquadName( enemy2Index, true ) ).tolower()
+	
+		teamPic = "rui/flowstatecustom/winterexpress/enemy_" + enemy2name
+		
+		if( IsValidName( enemy2name ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeam2 ), "basicImage", CastStringToAsset( teamPic ) )
+	}
+}
+
+void function FS_ToggleVisibilityScoreHUD( bool visible )
+{
+	if( file.localTeam != null )
+		Hud_SetVisible( file.localTeam, visible)
+	
+	if( file.localTeamScore != null )
+		Hud_SetVisible( file.localTeamScore, visible)
+	
+	if( file.enemyTeam != null )
+		Hud_SetVisible( file.enemyTeam, visible)
+	
+	if( file.enemyTeamScore != null )
+		Hud_SetVisible( file.enemyTeamScore, visible)
+	
+	if( file.enemyTeam2 != null )
+		Hud_SetVisible( file.enemyTeam2, visible)
+
+	if( file.enemyTeam2Score != null )
+		Hud_SetVisible( file.enemyTeam2Score, visible)
+}
+
+bool function IsValidName( string name ) 
+{
+	if( name == "condor" || name == "coffee" || name == "orchid" ) //Fix me D: this doesn't work with other languages I suppose. Cafe
+		return true
+	
+	return false
+}
+void function FS_UpdateScoreForTeam( int team, int score )
+{
+	if( team < 0 || score < 0 )
+		return
+
+	if( file.scoreLimit != 3 )
+		return
+
+	string name = Localize( Squads_GetSquadName( team, true ) ).tolower()
+
+	if( !IsValidName( name ) )
+		return
+
+	bool isLocalTeam = team == TEAM_IMC
+	printt( "FS_UpdateScoreForTeam", team, score, name, isLocalTeam )
+
+	var teamScoreElement
+	string toconvert
+	score = minint( 3, score )
+
+	if( isLocalTeam )
+	{
+		teamScoreElement = file.localTeamScore
+		toconvert = "rui/flowstatecustom/winterexpress/local_score_" + score
+		file.localTeamScoreValue = score
+	} else if( team == file.currentEnemy1 )
+	{
+		teamScoreElement = file.enemyTeamScore
+		toconvert = "rui/flowstatecustom/winterexpress/enemy_score_" + score
+		file.enemyTeamScoreValue = score
+	} else if( team == file.currentEnemy2 )
+	{
+		teamScoreElement = file.enemyTeam2Score
+		toconvert = "rui/flowstatecustom/winterexpress/enemy_score_" + score
+		file.enemyTeam2ScoreValue = score
+	}
+
+	if( teamScoreElement == null )
+	{
+		printt( "FS_UpdateScoreForTeam BUGTHIS" )
+		return
+	}
+
+	Hud_SetVisible( teamScoreElement, true )
+	RuiSetImage( Hud_GetRui( teamScoreElement ), "basicImage", CastStringToAsset( toconvert ) )
+	printt( "FS_UpdateScoreForTeam END" )
+}
+
 void function ServerCallback_CL_CameraLerpFromStationToHoverTank( entity player, entity stationNode, entity hoverTankMover, entity trainMover, bool isGameStartLerp )
 {
 	vector stationLookPosition = stationNode.GetOrigin() + <1500, 1500, 2000>
@@ -4565,6 +4794,17 @@ void function CameraLerpHovertankThread( entity player, vector stationPos, vecto
 				camera.Destroy()
 				cameraMover.Destroy()
 			}
+	
+			if( file.openFlowstateWeaponsOnRespawn )
+				thread function() : ( player )
+				{
+					player.EndSignal( "OnDestroy" )
+					player.EndSignal( "OnDeath" )
+		
+					wait 1
+					
+					OpenFRChallengesSettingsWpnSelector()
+				}()
 		}
 	)
 
@@ -4643,6 +4883,17 @@ void function CameraLerpTrainThread( entity player, vector estimatedCameraStart,
 				camera.Destroy()
 				cameraMover.Destroy()
 			}
+
+			if( file.openFlowstateWeaponsOnRespawn )
+				thread function() : ( player )
+				{
+					player.EndSignal( "OnDestroy" )
+					player.EndSignal( "OnDeath" )
+		
+					wait 1
+					
+					OpenFRChallengesSettingsWpnSelector()
+				}()
 		}
 	)
 
