@@ -1405,7 +1405,13 @@ void function AddCallback_OnVictoryCharacterModelSpawned( void functionref( enti
 
 void function OnResolutionChanged_FixRuiSize()
 {
-	
+	if( GetGameState() < eGameState.Playing )
+	{
+		UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true, true )
+		UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true, true )
+		UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
+		FS_GamemodeHudSetup()
+	}
 }
 
 bool s_didScorebarSetup = false
@@ -3410,6 +3416,11 @@ void function WaitingForPlayers_CreateCustomCameras()
 	player.SetMenuCameraEntityWithAudio( camera )
 	camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 
+	FS_GamemodeHudSetup()
+}
+
+void function FS_GamemodeHudSetup()
+{
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 
 	if( Gamemode() == eGamemodes.SURVIVAL )
