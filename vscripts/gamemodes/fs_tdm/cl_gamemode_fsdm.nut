@@ -67,6 +67,7 @@ global function FS_Show1v1Banner
 global function FS_SetHideEndTimeUI
 
 global function Gamemode1v1_ForceLegendSelector_Deprecated
+global function Tracker_ShowChampion
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -2191,5 +2192,13 @@ void function FS_CreateTeleportFirstPersonEffectOnPlayer()
 	{
 		int fxHandle = StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_training_teleport_FP" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 		EffectSetIsWithCockpit( fxHandle, true )
+	}
+}
+
+void function Tracker_ShowChampion()
+{
+	if ( GetCurrentPlaylistVarBool( "show_short_champion_screen", true ) )
+	{
+		thread DoChampionSquadCardsPresentation()
 	}
 }

@@ -2876,7 +2876,7 @@ void function KillAllRings()
 	
 	foreach( string identifier, RingInfo ringInfo in GetRings() )
 	{
-		printt( "Table- Ring: ", identifier )
+		//printt( "Table- Ring: ", identifier )
 		
 		if( empty( identifier ) )
 			continue 

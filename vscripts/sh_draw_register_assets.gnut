@@ -23,7 +23,9 @@ struct
 		"rui/flowstate_custom/mkos/1v1banner",
 		"rui/world/flowstate1v1_banner01",
 		"rui/world/flowstate1v1_banner02",
-		"rui/world/flowstate1v1_rdiffs"
+		"rui/world/flowstate1v1_rdiffs",
+		"rui/world/flowstate1v1_banner03",
+		"rui/world/karma_banner_01"
 	]
 	
 	#if CLIENT

@@ -74,7 +74,8 @@ void function SetupRemoteFuncAliases()
 			ServerCallback_FSDM_CoolCamera,
 			SND_ForceUpdatePlayerCount,
 			Consumable_UseBomb,
-			ServerCallback_CTF_HideCustomUI
+			ServerCallback_CTF_HideCustomUI,
+			Tracker_ShowChampion
 		]
 	#endif
 	
@@ -116,7 +117,8 @@ void function SetupRemoteFuncAliases()
 			"ServerCallback_FSDM_CoolCamera",
 			"SND_ForceUpdatePlayerCount",
 			"Consumable_UseBomb",
-			"ServerCallback_CTF_HideCustomUI"
+			"ServerCallback_CTF_HideCustomUI",
+			"Tracker_ShowChampion"
 		]
 	#endif
 	
@@ -310,7 +312,8 @@ void function RemoteFunctions_Init_Begin()
 				//offset, r, g, b | enemy offset, r, g, b ~mkos
 				Remote_RegisterClientFunction( "ServerCallback_SetLGDuelPesistenceSettings", "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999 )
 			}
-
+			
+			RegisterNetworkedVariable( "championDisplayEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "flowstate_DMStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "flowstate_DMRoundEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "FSDM_GameState", SNDC_GLOBAL, SNVT_INT, -1 )

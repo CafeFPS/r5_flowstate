@@ -3179,7 +3179,7 @@ void function BannerImages_1v1Init()
 		}
 	)
 	
-	BannerImages_SetAllImagesFunc
+	BannerImages_SetAllImagesFunc //test - REMOVE BEFORE SHIPPING
 	(
 		void function()
 		{
@@ -3192,13 +3192,19 @@ void function BannerImages_1v1Init()
 			BannerImages_GroupAppendImage
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
+				WorldDrawImg_AssetRefToID( "rui/world/karma_banner_01" )
 			)
-
-			BannerImages_GroupAppendImage //test - REMOVE BEFORE SHIPPING
+			
+			BannerImages_GroupAppendImage
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_rdiffs" )
+				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner03" )
+			)
+			
+			BannerImages_GroupAppendImage
+			(
+				"main_banner",
+				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
 			)
 		}
 	)
@@ -3447,7 +3453,7 @@ void function Gamemode1v1_Init( int eMap )
 
 	forbiddenZoneInit( GetMapName() )
 	
-	thread soloModeThread( getWaitingRoomLocation() )
+	thread Gamemode1v1_soloModeThread( getWaitingRoomLocation() )
 	
 	#if TEST_WORLDDRAW
 	AddCallback_OnClientConnected
@@ -3509,6 +3515,19 @@ void function Gamemode1v1_Init( int eMap )
 	
 	AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
 	file.bRestEnabled = true
+}
+
+void function Gamemode1v1_soloModeThread( LocPair waitingRoom )
+{
+	FlagWait( "EntitiesDidLoad" )
+	
+	#if DEVELOPER 
+		printt( "Time():", Time(), "championDisplayEndTime:", GetGlobalNetTime( "championDisplayEndTime" ) )
+	#endif 
+	
+	WaitForChampionToFinish()
+		
+	thread soloModeThread( waitingRoom )
 }
 
 void function OnWeaponAttachmentChanged( entity player, entity weapon, string modToAdd, string modToRemove )
@@ -3805,6 +3824,9 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		WaitFrame()
 		
 		if( GetScoreboardShowingState() )
+			continue
+			
+		if( GetChampionShowingState() )
 			continue
 		
 		//遍历等待队列 - cycle waiting queue (mkos version)

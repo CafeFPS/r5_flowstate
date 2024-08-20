@@ -253,7 +253,9 @@ void function __RunThreads()
 
 void function __Singlethread( entity player, BannerGroupData groupData )
 {
-	mAssert( IsNewThread(), "Must be threaded off." )
+	#if DEVELOPER
+		mAssert( IsNewThread(), "Must be threaded off." )
+	#endif
 	
 	array<BannerImageData> banners = groupData.groupBanners
 	

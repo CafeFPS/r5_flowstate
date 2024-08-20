@@ -37,6 +37,11 @@ struct {
 	entity currentKillLeader = null
 	array<int>                     disabledCommentaryEvents
 	table<entity, table<string, float> > battleChatterDebounceTimes
+	
+	int survival_commentary_kill_leader_min_kills
+	bool survival_commentary_kill_leader_enabled
+	bool survival_commentary_champion_enabled
+	bool survival_commentary_first_blood_enabled
 } file
 
 void function SurvivalCommentary_Init()
@@ -47,6 +52,11 @@ void function SurvivalCommentary_Init()
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
+	
+	file.survival_commentary_kill_leader_min_kills = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	file.survival_commentary_kill_leader_enabled = GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true )
+	file.survival_commentary_champion_enabled = GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true )
+	file.survival_commentary_first_blood_enabled = GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true )
 }
 
 int function SurvivalCommentary_GetKillLeaderEEH()
@@ -229,7 +239,7 @@ entity function GetChampion()
 
 int function GetMinKillsForKillLeader()
 {
-	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	int minKill = file.survival_commentary_kill_leader_min_kills
 	if( Gamemode() == eGamemodes.fs_dm )
 		minKill = 2
 	else if( minKill < 1 )
@@ -297,6 +307,9 @@ bool function ShouldStompConAltForLine( string conversationType, entity speaking
 }
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
+	if( DamageInfo_GetDamage( damageInfo ) == 0 )
+		return
+	
 	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )
 		return
 
@@ -307,7 +320,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( !IsValid( victim ) || !IsValid( attacker ) )
 			return
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+		if ( file.survival_commentary_kill_leader_enabled )
 		{
 			if ( victim == file.currentKillLeader && victim != GetChampion() )
 			{
@@ -330,7 +343,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			}
 		}
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
+		if ( file.survival_commentary_champion_enabled )
 		{
 			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 			if( victim == champion )
@@ -342,7 +355,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			}
 		}
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
+		if ( file.survival_commentary_first_blood_enabled )
 		{
 			if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
 			{
@@ -395,7 +408,10 @@ void function AddSurvivalCommentaryEvent( int event, entity attacker = null, ent
 	// Determine if event is currently enabled
 	if ( !IsCommentaryEventEnabled( event ) )
 	{
-		printf( "Event type: " + event + " is disabled" )
+		#if DEVELOPER
+			printf( "Event type: " + event + " is disabled" )
+		#endif
+		
 		return
 	}
 
@@ -557,8 +573,11 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 				responseName = "bc_insideNextCircle"
 		}
 
-		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
-		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
+		#if DEVELOPER 
+			printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+			printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
+		#endif 
+		
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
@@ -587,7 +606,11 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 			else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
 				responseName = "bc_circleMoving_allOutside"
 		}
-		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		
+		#if DEVELOPER 
+			printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		#endif
+		
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
@@ -646,12 +669,18 @@ void function SurvivalCommentary_SetEventEnabled( int eventType, bool value )
 {
 	if ( value == true )
 	{
-		Assert( !IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( true ) on a commentary event that is already enabled" )
+		#if DEVELOPER 
+			mAssert( !IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( true ) on a commentary event that is already enabled" )
+		#endif
+		
 		file.disabledCommentaryEvents.fastremovebyvalue( eventType )
 	}
 	else
 	{
-		Assert( IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( false ) on a commentary event that is already disabled" )
+		#if DEVELOPER 
+			mAssert( IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( false ) on a commentary event that is already disabled" )
+		#endif
+		
 		file.disabledCommentaryEvents.append( eventType )
 	}
 }

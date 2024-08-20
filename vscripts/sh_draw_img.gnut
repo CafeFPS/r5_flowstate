@@ -346,9 +346,14 @@ void function WorldDrawImg_Init()
 			}
 			catch( e )
 			{
-				printt( "Error: " + e )
+				#if DEVELOPER
+					printt( "Error: " + e )
+				#endif 
+				
 				return
 			}
+			
+			file.worldImgAssetRef = ""
 		}
 		else 
 		{
@@ -371,8 +376,6 @@ void function WorldDrawImg_Init()
 				Warning( "Asset was null" )
 			#endif
 		}
-		
-		file.worldImgAssetRef = ""
 	}
 	
 	void function ServerCallback_ModifyWorldImg( int id, vector org, vector ang, float width, float height, float alpha, int newImgRefID )

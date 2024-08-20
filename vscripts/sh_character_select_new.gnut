@@ -838,7 +838,9 @@ void function DoAnimatedChampionSquadCardsPresentation()
 
 void function DoChampionSquadCardsPresentation()
 {
-	printt( "CHARACTER SELECT: DoChampionSquadCardsPresentation" )
+	#if DEVELOPER
+		printt( "CHARACTER SELECT: DoChampionSquadCardsPresentation" )
+	#endif
 
 	PauseMainDialogueQueue()
 
@@ -880,10 +882,17 @@ void function DoChampionSquadCardsPresentation()
 	else
 		topHeader = "#GLADIATOR_CARD_INTRO_CHAMPION_SQUAD"
 
+	float stopShowingCardAt
+	
+	if( Gamemode() == eGamemodes.fs_dm )
+		stopShowingCardAt = GetGlobalNetTime( "championDisplayEndTime" )
+	else stopShowingCardAt = GetGlobalNetTime( "pickLoadoutGamestateEndTime" )
+		
+		
 
 	RuiSetString( rui, "topHeader", topHeader )
 	RuiSetGameTime( rui, "transitionInAt", Time() )
-	RuiSetGameTime( rui, "transitionOutAt", GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
+	RuiSetGameTime( rui, "transitionOutAt", stopShowingCardAt )
 	RuiSetFloat( rui, "xpBonusAmount", 420 ) //XpEventTypeData_GetAmount( XP_TYPE.KILL_CHAMPION_MEMBER )
 	RuiSetBool( rui, "isDuoMode", GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
 
@@ -932,9 +941,10 @@ void function DoChampionSquadCardsPresentation()
 		nestedGCHandles.append( handle )
 	}
 
-	OnThreadEnd(
+	OnThreadEnd
+	(
 		void function() : ( rui, nestedGCHandles )
-		{
+		{		
 			ResumeMainDialogueQueue()
 			foreach ( NestedGladiatorCardHandle ngch in nestedGCHandles )
 				CleanupNestedGladiatorCard( ngch )
@@ -953,9 +963,17 @@ void function DoChampionSquadCardsPresentation()
 	wait 1.5
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_BannerChampion" )
-
-	while( Time() < GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
-		WaitFrame()
+	
+	if( Gamemode() == eGamemodes.fs_dm )
+	{
+		while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
+			WaitFrame()
+	}
+	else 
+	{
+		while( Time() < GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
+			WaitFrame()
+	}
 }
 
 bool function ShouldPlayIntroQuip()

@@ -67,7 +67,17 @@ struct
 	int                              numLootBins
 	
 	array<OnLootBinOpenedCallbackType> onLootBinOpenedCallbacks
+	
+	bool returnFromModesForRefreshBinBool
 } file
+
+const array<int> returnFromModesForRefreshBin = 
+[
+	eGamemodes.fs_snd,
+	eGamemodes.fs_prophunt,
+	eGamemodes.fs_duckhunt,
+	eGamemodes.flowstate_pkknockback
+]
 
 void function ShLootBin_Init()
 {
@@ -81,12 +91,24 @@ void function ShLootBin_Init()
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		PrecacheParticleSystem( $"P_impact_exp_artillery" )
+		SetupLootbinPlaylistSettings()
 	#endif
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 		AddDestroyCallback( "prop_dynamic", OnPropDynamicDestroyed )
 	#endif
 }
+
+#if SERVER
+	void function SetupLootbinPlaylistSettings()
+	{
+		if( returnFromModesForRefreshBin.contains( Gamemode() ) 
+		|| GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) )
+		{
+			file.returnFromModesForRefreshBinBool = true
+		}
+	}
+#endif 
 
 // These callbacks are called before loot is spawned in a lootbin
 #if SERVER
@@ -232,14 +254,8 @@ void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems
 	if ( LootBin_IsOpen( lootBin ) )
 		waitthread LootBin_PlayCloseSequence( lootBin )
 
-	//todo: change to array.contains( Gamemode() ) ~mkos
-	array<int> returnFromModes = [
-		eGamemodes.fs_snd,
-		eGamemodes.fs_prophunt,
-		eGamemodes.fs_duckhunt,
-		eGamemodes.flowstate_pkknockback
-	]
-	if( returnFromModes.contains( Gamemode() ) || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
+	if( file.returnFromModesForRefreshBinBool ) 
+		return
 	
 	// New refs
 	file.lootBinsLootInside[ lootBin ] = []

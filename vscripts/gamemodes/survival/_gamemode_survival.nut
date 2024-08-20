@@ -147,20 +147,19 @@ void function GamemodeSurvival_Init()
 	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
 
-	// #if DEVELOPER
-	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
-	AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
-	AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
-	AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
-	AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
+	#if DEVELOPER //uncommented dev defines
+		AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+		AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
+		AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
+		AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
+		AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
 
-	AddClientCommandCallback("forceChampionScreen", ClientCommand_ForceChampionScreen)
-	AddClientCommandCallback("forceGameOverScreen", ClientCommand_ForceGameOverScreen)
-	AddClientCommandCallback("forceRingMovement", ClientCommand_ForceRingMovement )
-	
-	AddClientCommandCallback("destroyEndScreen", ClientCommand_DestroyEndScreen)
-	
-	// #endif
+		AddClientCommandCallback("forceChampionScreen", ClientCommand_ForceChampionScreen)
+		AddClientCommandCallback("forceGameOverScreen", ClientCommand_ForceGameOverScreen)
+		AddClientCommandCallback("forceRingMovement", ClientCommand_ForceRingMovement )
+		
+		AddClientCommandCallback("destroyEndScreen", ClientCommand_DestroyEndScreen)
+	#endif
 
 	FillSkyWithClouds()
 
@@ -1027,7 +1026,9 @@ void function Sequence_Epilogue()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
 	
-	WaitForever()
+	
+	//WaitForever() //There's really no reason to keep this thread alive, as it does nothing more and nothing when it closes (no OnThreadEnd ) ~mkos
+	
 	// if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
 		// wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
 	// else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )

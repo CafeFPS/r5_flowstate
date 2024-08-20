@@ -110,7 +110,7 @@ void function SV_CL_Onboarding_Init()
 		AddCallback_OnClientConnected( OnClientConnected )
 		
 		#if TRACKER
-			AddCallback_OnBatchStatsLoaded( FS_SetChampionOnPersistenceLoad )
+			AddCallback_OnBatchStatsLoaded( Tracker_SetChampionOnPersistenceLoad )
 		#endif
 
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )

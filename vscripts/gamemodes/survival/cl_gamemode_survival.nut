@@ -4318,7 +4318,7 @@ bool function IsSquadDataPersistenceEmpty()
 	{
 		int eHandle = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].eHandle" )
 
-		//
+		//This will only check one player's data and not necessesarily check the entire squad... will need modified before proper usage ~mkos
 		if ( eHandle > 0 )
 			return false
 	}

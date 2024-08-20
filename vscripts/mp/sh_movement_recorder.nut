@@ -87,7 +87,7 @@ void function Sh_FS_MovementRecorder_Init()
 		
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		
-		AddClientCommandCallback( "toggleMovementRecorder", ClientCommand_ToggleMovementRecorder )
+		AddClientCommandCallback( "recorder_toggleRecorder", ClientCommand_ToggleMovementRecorder )
 		AddClientCommandCallback( "PlayAnimInSlot", ClientCommand_PlayAnimInSlot )
 		AddClientCommandCallback( "PlayAllAnims", ClientCommand_PlayAllAnims )
 		AddClientCommandCallback( "recorder_switchCharacter", ClientCommand_SwitchCharacter )
@@ -191,7 +191,7 @@ string function slotname( int slot )
 
 const table<string,string> RECORDER_BINDINGS = 
 {
-	["F2"] = "toggleMovementRecorder",
+	["F2"] = "recorder_toggleRecorder",
 	["F3"] = "\"PlayAnimInSlot 0\"",
 	["F4"] = "\"PlayAnimInSlot 1\"",
 	["F5"] = "\"PlayAnimInSlot 2\"",

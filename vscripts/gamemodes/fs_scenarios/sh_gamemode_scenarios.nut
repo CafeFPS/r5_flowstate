@@ -434,21 +434,11 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		switch( standingType )
 		{
 			case STANDINGS_GLOBAL:
-			
-				#if DEVELOPER
-					mAssert( scoreType in file.localPlayerGlobalStandings )
-				#endif
-					return file.localPlayerGlobalStandings[ scoreType ]
-				
+				return file.localPlayerGlobalStandings[ scoreType ]			
 				break 
 				
 			case STANDINGS_ROUND:
-				
-				#if DEVELOPER
-					mAssert( scoreType in file.localPlayerRoundSettings )
-				#endif
-					return file.localPlayerRoundSettings[ scoreType ]
-			
+				return file.localPlayerRoundSettings[ scoreType ]
 				break
 				
 			default:

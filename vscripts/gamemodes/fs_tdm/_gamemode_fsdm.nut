@@ -71,8 +71,12 @@ global function DissolveItem
 global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function RotateMap
-global function FS_SetChampionOnPersistenceLoad
+global function Tracker_SetChampionOnPersistenceLoad
 global float g_fCurrentRoundEndTime
+global function GetChampionShowingState
+global function SetChampionShowingState
+global function WaitForChampionToFinish
+global const float SHORT_CHAMPION_CARD_TIME = 7.0
 
 //Beginning of refactor( supposed to be for next, next release.. )
 global function AddCallback_OnTdmStateEnter_InProgress
@@ -197,6 +201,7 @@ struct {
 	int winnerTeam
 	
 	array< void functionref() > tdmStateInProgressCallbacks
+	bool bIsChampionShowing
 	
 } file
 
@@ -247,7 +252,8 @@ struct
 	bool allow_cfgs
 	bool fs_lgduels_1v1
 	bool give_random_custom_models_toall
-	bool IS_1V1_MODE_ENABLED
+	bool bIs1v1ModeEnabled
+	bool show_short_champion_screen
 	
 	//string settings 
 	string custom_match_ending_title
@@ -265,6 +271,13 @@ struct
 
 } flowstateSettings
 
+struct TrackerRecap
+{
+	string uid
+	int kills 
+	int damage 
+	//int survivalTime
+}
 
 void function InitializePlaylistSettings()
 {
@@ -300,6 +313,7 @@ void function InitializePlaylistSettings()
 	flowstateSettings.enable_global_chat 					= GetCurrentPlaylistVarBool( "enable_global_chat", true)
 	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )					
 	flowstateSettings.give_random_custom_models_toall		= GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false )
+	flowstateSettings.show_short_champion_screen			= GetCurrentPlaylistVarBool( "show_short_champion_screen", true )
 }
 
 void function ResetLoadedWeapons( entity player )
@@ -373,7 +387,12 @@ void function _CustomTDM_Init()
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
 	
-	flowstateSettings.IS_1V1_MODE_ENABLED = bIs1v1Mode()
+	#if TRACKER 
+		FlagInit( "DeterminePreviousChampion", false )
+		FlagInit( "PreviousChampionDetermined", false )
+	#endif
+	
+	flowstateSettings.bIs1v1ModeEnabled = bIs1v1Mode()
 	if( flowstateSettings.enable_global_chat )
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
@@ -1048,7 +1067,7 @@ void function _OnPlayerConnected(entity player)
 
 bool function is1v1EnabledAndAllowed()
 {
-	return flowstateSettings.IS_1V1_MODE_ENABLED
+	return flowstateSettings.bIs1v1ModeEnabled
 }
 
 void function __HighPingCheck(entity player)
@@ -2783,7 +2802,7 @@ void function GiveGungameWeapon(entity player)
 // ██   ███ ███████ ██ ████ ██ █████       ██      ██    ██ ██    ██ ██████
 // ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
 //  ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
-
+//gameloop
 
 void function RunTDM()
 {
@@ -2811,6 +2830,15 @@ void function RunTDM()
 	
     WaitForever()
 }
+
+const array<int> FALL_TRIGGERS_ENABLED_FOR_MAPS = 
+[
+	eMaps.mp_rr_desertlands_64k_x_64k,
+	eMaps.mp_rr_desertlands_64k_x_64k_nx,
+	eMaps.mp_rr_canyonlands_mu1,
+	eMaps.mp_rr_canyonlands_mu1_night,
+	eMaps.mp_rr_canyonlands_64k_x_64k
+]
 
 /////////////@CafeFPS CafeFPS///////////////////
 void function SimpleChampionUI()
@@ -2874,15 +2902,7 @@ void function SimpleChampionUI()
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
 	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
-	array<int> fallTriggersEnabledForMaps = [
-		eMaps.mp_rr_desertlands_64k_x_64k,
-		eMaps.mp_rr_desertlands_64k_x_64k_nx,
-		eMaps.mp_rr_canyonlands_mu1,
-		eMaps.mp_rr_canyonlands_mu1_night,
-		eMaps.mp_rr_canyonlands_64k_x_64k
-	];
-
-	if( fallTriggersEnabledForMaps.contains( MapName() ) )
+	if( FALL_TRIGGERS_ENABLED_FOR_MAPS.contains( MapName() ) )
 	{
 		thread CreateShipRoomFallTriggers()
 	}
@@ -3096,9 +3116,9 @@ void function SimpleChampionUI()
 						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
 						thread function ( ) : ( player )
 						{
-							wait 6
+							wait 6 // -.-
 
-							if( GetGameState() != eGameState.Playing )
+							if( GetGameState() != eGameState.Playing ) // O.O
 								return
 
 							thread ResetBallInBallSpawner()
@@ -3161,15 +3181,7 @@ void function SimpleChampionUI()
 		break
 	}
 
-	string subtext = ""
-	// if( !flowstateSettings.is_halo_gamemode )
-	// {
-		// if( GetBestPlayer() == PlayerWithMostDamage() && GetBestPlayerName() != "-still nobody-" )
-			// subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
-		// else if( GetBestPlayerName() != "-still nobody-" )
-			// subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
-	// } else
-		subtext = "Starting in " + FLOWSTATE_START_TIME_DELAY + " seconds."
+	string subtext = "Starting in " + FLOWSTATE_START_TIME_DELAY + " seconds."
 
 	////////////////////////////////
 	///// 		SET CHAMPION 	////
@@ -3178,12 +3190,45 @@ void function SimpleChampionUI()
 	entity bestPlayer = GetBestPlayer()
 	bool bClearChampion
 	
-	if( bestPlayer != null ) //onboarding handles persistence based winner
+	if( bestPlayer != null ) // wont be null if this is another flowstate round.
 	{
 		SetChampion( bestPlayer ) //round based
 		file.previousChampion = bestPlayer
 		file.previousChallenger = PlayerWithMostDamage()
 		bClearChampion = true
+	}
+	else
+	{
+		#if TRACKER //onboarding handles tracker persistence multi-server based winner
+			FlagSet( "DeterminePreviousChampion" )
+			FlagWait( "PreviousChampionDetermined" )
+		#else
+			FSDM_ReturnBestPlayers_FromChampions( GetPlayerArray() )
+		#endif
+	}
+	
+	bool presentChampion = false
+	
+	if( flowstateSettings.show_short_champion_screen && GetChampion() )
+	{
+		presentChampion = true
+		thread
+		(
+			void function()
+			{
+				SetChampionShowingState( true, Time() + SHORT_CHAMPION_CARD_TIME )
+				
+				OnThreadEnd
+				(
+					void function()
+					{
+						SetChampionShowingState( false )
+					}
+				)
+				
+				WaitForChampionToFinish()
+			}
+		)()
 	}
 	
 	////////////////////////////////
@@ -3197,9 +3242,13 @@ void function SimpleChampionUI()
 	{
 		if( !IsValid( player ) ) 
 			continue
+		
+		if( presentChampion )
+			Remote_CallFunction_ByRef( player, "Tracker_ShowChampion" )
 			
-		if( bClearChampion ) //Todo: verify..
-			SetPlayerStatBool( player.GetPlatformUID(), "previous_champion", false )
+		FSDM_SetMatchPersistentVarsForPlayer( player ) //sets current round stats since we are about to clear that data. ~mkos
+			
+		SetPlayerStatBool( player.GetPlatformUID(), "previous_champion", false )
 
 		GameRules_SetTeamScore( player.GetTeam(), 0 )
 
@@ -3635,6 +3684,9 @@ void function SimpleChampionUI()
 			Tracker_SetPlayerAsChampion( champion )
 		#endif
 	}
+	
+	foreach( roundPlayer in GetPlayerArray() )
+		FSDM_SetMatchPersistentVarsForPlayer( roundPlayer )
 
 	PIN_RoundEnd( file.currentRound ) //must be after champion determined.
 	wait (2)
@@ -6584,36 +6636,358 @@ void function Vamp_OnWeaponAttack( entity player, entity weapon, string weaponNa
 	player.RefillAllAmmo()
 }
 
-void function FS_SetChampionOnPersistenceLoad()
+void function Tracker_SetChampionOnPersistenceLoad()
 {
+	if( !bLog() || !Flowstate_IsTrackerSupportedMode() )
+	{
+		FlagSet( "PreviousChampionDetermined" )
+		return
+	}
+		
 	thread
-	(		
-		void function() : ()
+	(	
+		void function() : () 
 		{
-			wait 3
+			FlagWait( "DeterminePreviousChampion" )
+			
 			array<entity> championCandidates
 			
 			foreach( player in GetPlayerArray() )
 			{
 				string uid = player.GetPlatformUID()
 				
-				//printt( player, GetPlayerStatBool( uid, "previous_champion" ) )
+				#if DEVELOPER
+					printt( player, GetPlayerStatBool( uid, "previous_champion" ) )
+				#endif
 				
 				if( GetPlayerStatBool( uid, "previous_champion" ) )
 					championCandidates.append( player )
-					
-				SetPlayerStatBool( uid, "previous_champion", false ) // set everyone to false
 			}
-		
-			if( championCandidates.len() )
+
+			if( championCandidates.len() > 0 )
 			{							
-				entity champion = championCandidates.getrandom() //not the best determinate ( needs a struct of winning data ) 
-				SetChampion( champion ) 
-				//Warning( "Champion set as: " + string( champion ) )
+				array<entity> bestChampions = Tracker_DetermineBestChampions( championCandidates ) // FSDM_ReturnBestPlayers_FromChampions( championCandidates ) //TEMP_HACK - using local server persistence wont make sense if other champions come from other servers. will want to use tracker persistence data for last match. ~mkos	
 				
-				file.previousChampion = champion
-				file.previousChallenger = null
+				bool bFoundChampion = false
+				if( !bestChampions.len() )
+				{
+					file.previousChampion = null
+					file.previousChallenger = null
+				}
+				else 
+				{
+					if( bestChampions.len() == 1 )
+						file.previousChallenger = null
+						
+					foreach( champion in bestChampions )
+					{
+						if( !IsValid( champion ) )
+							continue
+						
+						if( !bFoundChampion )
+						{
+							SetChampion( champion )
+							#if DEVELOPER 
+								Warning( "Champion set from tracker as: " + string( champion ) )
+							#endif
+							
+							file.previousChampion = champion
+							bFoundChampion = true
+						}
+						else 
+						{
+							file.previousChallenger = champion //if there is a champ from another server they will be set to this even if they did better than already set champion, unless they were the only champion flagged, as tracker doesn't have struct data sent for them yet, only a bool that they were a champion.
+							break
+						}
+					}
+				}	
 			}
+			
+			FlagSet( "PreviousChampionDetermined" ) //let waiting tdm loop know to proceed
 		}
 	)()
+}
+
+//Todo: Probably use better or custom new pdef fields. ~mkos
+void function FSDM_SetMatchPersistentVarsForPlayer( entity player )
+{
+	GameSummarySquadData statSummaryData = GameSummary_GetPlayerData( player )
+	
+	int i = 0
+	
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].platformUid", player.GetPlatformUID() )
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].kills", statSummaryData.kills )
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].damageDealt", statSummaryData.damageDealt )
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].survivalTime", statSummaryData.survivalTime )
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].revivesGiven", statSummaryData.revivesGiven )
+	player.SetPersistentVar( "lastGameSquadStats[" + i + "].respawnsGiven", statSummaryData.respawnsGiven )
+	
+	#if DEVELOPER 
+		printt( "\n\n\n" )
+		printt( "-------- SAVING DATA ----------" )
+		printt( "player", player )
+		printt( "uid", player.GetPlatformUID() )
+		printt( "kills", statSummaryData.kills )
+		printt( "damageDealt", statSummaryData.damageDealt )
+		printt( "survivalTime", statSummaryData.survivalTime )
+		printt( "revivesGiven", statSummaryData.revivesGiven )
+		printt( "respawnsGiven", statSummaryData.respawnsGiven )
+		printt( "\n\n\n" )
+	#endif 
+}
+
+GameSummarySquadData function FSDM_GetPreivousMatch_PersistentData( entity player )
+{
+	GameSummarySquadData statsSummaryData
+	
+	int i = 0 
+	
+	statsSummaryData.uid = expect string( player.GetPersistentVar( "lastGameSquadStats[" + i + "].platformUid" ) )
+	statsSummaryData.kills = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].kills" )
+	statsSummaryData.damageDealt = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].damageDealt" )
+	statsSummaryData.survivalTime = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].survivalTime" )
+	statsSummaryData.revivesGiven = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].revivesGiven" )
+	statsSummaryData.respawnsGiven = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].respawnsGiven" )
+
+	#if DEVELOPER 
+		printt( "\n\n\n" )
+		printt( "-------- READING PLAYERS ----------" )
+		printt( "player", player )
+		printt( "uid", statsSummaryData.uid )
+		printt( "kills", statsSummaryData.kills )
+		printt( "damageDealt", statsSummaryData.damageDealt )
+		printt( "survivalTime", statsSummaryData.survivalTime )
+		printt( "revivesGiven", statsSummaryData.revivesGiven )
+		printt( "respawnsGiven", statsSummaryData.respawnsGiven )
+		printt( "\n\n\n" )
+	#endif
+
+	return statsSummaryData
+}
+
+array<entity> function FSDM_ReturnBestPlayers_FromChampions( array<entity> champions )
+{
+	array<GameSummarySquadData> allSummaryData
+	
+	ArrayRemoveInvalid( champions )
+	
+	foreach( player in champions )
+		allSummaryData.append( FSDM_GetPreivousMatch_PersistentData( player ) )	
+		
+	#if DEVELOPER 
+		foreach( GameSummarySquadData data in allSummaryData )
+		{
+			printt( "\n\n\n" )
+			printt( "-------- SHOWING CHAMPIONS ----------" )
+			printt( "uid", data.uid )
+			printt( "kills", data.kills )
+			printt( "damageDealt", data.damageDealt )
+			printt( "survivalTime", data.survivalTime )
+			printt( "revivesGiven", data.revivesGiven )
+			printt( "respawnsGiven", data.respawnsGiven )
+			printt( "\n\n\n" )
+		}
+	#endif
+		
+	//determine champion based on current mode. //Todo: Make better sorts for various modes + utilize more data
+	
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_survival:
+		case ePlaylists.fs_survival_solos:
+		case ePlaylists.fs_survival_duos:
+		case ePlaylists.fs_survival_trios:
+		case ePlaylists.SURVIVAL:
+			
+			allSummaryData.sort( FS_SortSurvival )
+			break 
+			
+		case ePlaylists.fs_dm:
+		case ePlaylists.fs_1v1:
+		case ePlaylists.fs_tdm:
+		case ePlaylists.fs_lgduels_1v1:
+		case ePlaylists.winterexpress:
+		case ePlaylists.fs_vamp_1v1:
+		case ePlaylists.fs_1v1_headshots_only:
+		case ePlaylists.fs_scenarios:
+		
+			allSummaryData.sort( FS_SortDM )
+			break
+			
+		default:
+			#if DEVELOPER 
+				Warning( "No sort method provided for playlist, using DM" )
+			#endif
+			
+			allSummaryData.sort( FS_SortDM )
+			break
+	}
+	
+	array<entity> players
+	
+	foreach( GameSummarySquadData data in allSummaryData )
+	{
+		players.append( GetPlayerEntityByUID( data.uid ) )
+	}
+	
+	return players
+}
+
+int function FS_SortSurvival( GameSummarySquadData a, GameSummarySquadData b )
+{
+	if ( a.survivalTime > b.survivalTime )
+		return -1
+	if ( a.survivalTime < b.survivalTime )
+		return 1
+	if ( a.kills > b.kills )
+		return -1
+	if ( a.kills < b.kills )
+		return 1
+	if ( a.damageDealt > b.damageDealt )
+		return -1
+	if ( a.damageDealt < b.damageDealt )
+		return 1
+	return 0
+}
+
+int function FS_SortDM( GameSummarySquadData a, GameSummarySquadData b )
+{
+	if ( a.kills > b.kills )
+		return -1
+	if ( a.kills < b.kills )
+		return 1
+	if ( a.damageDealt > b.damageDealt )
+		return -1
+	if ( a.damageDealt < b.damageDealt )
+		return 1
+		
+	return 0
+}
+
+TrackerRecap function Tracker_GetChampionRecap( entity player )
+{
+	string uid = player.GetPlatformUID()
+	
+	TrackerRecap recap
+	
+	recap.uid = uid
+	recap.kills = GetPlayerStatInt( uid, "previous_kills" )
+	recap.damage = GetPlayerStatInt( uid, "previous_damage" )
+	//recap.survivalTime = GetPlayerStatInt( uid, "previous_survival_time" )
+	
+	return recap
+}
+
+array<entity> function Tracker_DetermineBestChampions( array<entity> championCandidates )
+{
+	array<TrackerRecap> allSummaryData
+	
+	ArrayRemoveInvalid( championCandidates )
+	
+	foreach( player in championCandidates )
+		allSummaryData.append( Tracker_GetChampionRecap( player ) )	
+		
+	#if DEVELOPER 
+		foreach( TrackerRecap data in allSummaryData )
+		{
+			printt( "\n\n\n" )
+			printt( "-------- SHOWING TRACKER CHAMPIONS ----------" )
+			printt( "uid", data.uid )
+			printt( "kills", data.kills )
+			printt( "damage", data.damage )
+			//printt( "survivalTime", data.survivalTime )
+			printt( "\n\n\n" )
+		}
+	#endif
+		
+	//determine champion based on current mode. //Todo: Make better sorts for various modes + utilize more data
+	
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_survival:
+		case ePlaylists.fs_survival_solos:
+		case ePlaylists.fs_survival_duos:
+		case ePlaylists.fs_survival_trios:
+		case ePlaylists.SURVIVAL:
+			
+			allSummaryData.sort( FS_SortSurvival_Tracker )
+			break
+			
+		case ePlaylists.fs_dm:
+		case ePlaylists.fs_1v1:
+		case ePlaylists.fs_tdm:
+		case ePlaylists.fs_lgduels_1v1:
+		case ePlaylists.winterexpress:
+		case ePlaylists.fs_vamp_1v1:
+		case ePlaylists.fs_1v1_headshots_only:
+		case ePlaylists.fs_scenarios:
+		
+			allSummaryData.sort( FS_SortDM_Tracker )
+			break
+			
+		default:
+			#if DEVELOPER 
+				Warning( "No sort method provided for playlist, using DM" )
+			#endif
+			
+			allSummaryData.sort( FS_SortDM_Tracker )
+			break
+	}
+	
+	array<entity> players
+	
+	foreach( TrackerRecap data in allSummaryData )
+	{
+		players.append( GetPlayerEntityByUID( data.uid ) )
+	}
+	
+	return players
+}
+
+int function FS_SortSurvival_Tracker( TrackerRecap a, TrackerRecap b )
+{
+	// if ( a.survivalTime > b.survivalTime )
+		// return -1
+	// if ( a.survivalTime < b.survivalTime )
+		// return 1
+	if ( a.kills > b.kills )
+		return -1
+	if ( a.kills < b.kills )
+		return 1
+	if ( a.damage > b.damage )
+		return -1
+	if ( a.damage < b.damage )
+		return 1
+	return 0
+}
+
+int function FS_SortDM_Tracker( TrackerRecap a, TrackerRecap b )
+{
+	if ( a.kills > b.kills )
+		return -1
+	if ( a.kills < b.kills )
+		return 1
+	if ( a.damage > b.damage )
+		return -1
+	if ( a.damage < b.damage )
+		return 1
+		
+	return 0
+}
+
+bool function GetChampionShowingState()
+{
+	return file.bIsChampionShowing
+}
+
+void function SetChampionShowingState( bool setting, float newTime = -1.0 )
+{
+	SetGlobalNetTime( "championDisplayEndTime", newTime )
+	file.bIsChampionShowing = setting
+}
+
+void function WaitForChampionToFinish()
+{
+	while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
+		WaitFrame()
 }

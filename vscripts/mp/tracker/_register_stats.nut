@@ -75,6 +75,9 @@ void function Script_RegisterAllStats()
 		Tracker_RegisterStat( "total_matches" )
 		Tracker_RegisterStat( "score" )
 		Tracker_RegisterStat( "previous_champion", null, Tracker_ReturnChampion )
+		Tracker_RegisterStat( "previous_kills", null, Tracker_RecentKills )
+		Tracker_RegisterStat( "previous_damage", null, Tracker_RecentDamage )
+		//Tracker_RegisterStat( "previous_survival_time", null,  )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
@@ -96,11 +99,6 @@ void function Script_RegisterAllStats()
 ////////////////////
 // STAT FUNCTIONS //
 ////////////////////
-
-void function Callback_HandleScenariosStats( entity player )
-{
-	//do something, set netints etc
-}
 
 void function Callback_CoreStatInit( entity player )
 {
@@ -129,9 +127,24 @@ void function Callback_CoreStatInit( entity player )
 	player.SetPlayerNetInt( "SeasonScore", player_season_score )
 }
 
+void function Callback_HandleScenariosStats( entity player )
+{
+	//do something, set netints etc
+}
+
 var function Tracker_ReturnChampion( string uid )
 {
 	return Tracker_StatsMetricsByUID( uid ).previous_champion
+}
+
+var function Tracker_RecentKills( string uid )
+{
+	return Tracker_StatsMetricsByUID( uid ).kills
+}
+
+var function Tracker_RecentDamage( string uid )
+{
+	return Tracker_StatsMetricsByUID( uid ).damage
 }
 
 //////////////////////////////////////////////////////////

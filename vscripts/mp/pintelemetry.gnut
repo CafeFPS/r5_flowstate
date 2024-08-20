@@ -71,6 +71,7 @@ global function SetAfkToRest
 	
 	global struct GameSummarySquadData 
 	{
+		string uid
 		int kills
 		int damageDealt
 		int survivalTime
@@ -240,6 +241,7 @@ const array<string> SERVER_MSG_EVENT_TYPES =
 //(respawns) game summary
 global struct GameSummarySquadData
 {
+	string uid
 	int kills
 	int damageDealt
 	int survivalTime
@@ -1007,8 +1009,10 @@ void function Tracker_RegisterStat( string statname, void functionref( entity ) 
 		{
 			sqerror("Tried to addcallback with " + FUNC_NAME() + " but callbackFunc " + string( inboundCallbackFunc ) + " already exists")
 		}
-		
-		file.registeredStatCallbackFuncs[ statname ].append( inboundCallbackFunc )
+		else
+		{	
+			file.registeredStatCallbackFuncs[ statname ].append( inboundCallbackFunc )
+		}
 	}
 
 	if( outboundCallbackFuncOrNull == null )
@@ -1113,9 +1117,7 @@ void function __SetPlayerSyncData( entity player )
 	}
 	
 	if( !IsValid( player ) ) 
-	{
 		return
-	}
 			
 	string OID = player.GetPlatformUID()	
 
@@ -4955,18 +4957,20 @@ GameSummarySquadData function GameSummary_GetPlayerData( entity player )
 	if ( !IsValid( player ) )
 		return data
 
+	data.uid = player.GetPlatformUID()
 	data.kills = player.GetPlayerNetInt( "kills" )
 	data.deaths = player.p.numberOfDeaths
-	data.survivalTime = int( GetUnixTimestamp() - player.p.lastRespawnTime )
+	data.survivalTime = int( Time() - player.p.lastRespawnTime )
 	data.damageDealt = int( player.p.playerDamageDealt )
 	data.revivesGiven = player.p.revivesGiven
 	data.respawnsGiven = player.p.respawnsGiven
 
-
+	/*
     string metrics = format("Player Stats - Kills: %d, Deaths: %d, Survival Time: %d seconds, Damage Dealt: %d, Revives Given: %d, Respawns Given: %d",
                                  data.kills, data.deaths, data.survivalTime, data.damageDealt, data.revivesGiven, data.respawnsGiven);
-    //sqprint(metrics);
-
+    sqprint( metrics )
+	*/
+	
 	return data
 }
 
@@ -5320,6 +5324,7 @@ GameSummarySquadData function GameSummary_GetPlayerData( entity player )
 	if ( !IsValid( player ) )
 		return data
 
+	data.uid = player.GetPlatformUID()
 	data.kills = player.GetPlayerNetInt( "kills" )
 	data.deaths = player.p.numberOfDeaths
 	data.survivalTime = int( Time() - player.p.lastRespawnTime )
