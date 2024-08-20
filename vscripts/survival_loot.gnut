@@ -58,6 +58,9 @@ global function ShouldForceUseSafeSpotForDeathBox_RemovePlayer
 global function AddCallback_LootPhysicsParented
 global function RemoveCallback_LootPhysicsParented
 
+global function Dev_ForceDropDeathbox
+global function SURVIVAL_Death_DropLoot_Internal
+
 //added 8/8/2024 ~mkos
 global function AddCallback_OnPlayerWeaponAttachmentChanged
 global function RemoveCallback_OnPlayerWeaponAttachmentChanged 
@@ -107,17 +110,6 @@ global struct ThrowLootParams
 	entity   deathBox = null
 	vector   spawnAngles = <-1, -1, -1>
 	float[2] throwVelocityRange = [150.0, 250.0]
-}
-
-struct DropWeaponData
-{
-	string        name
-	array<string> mods
-	int           stockpile
-	int           ammo
-	entity        originalOwner
-	int           charmItemFlavorGUID = -1
-	int 		  skinItemFlavorGUID  = -1
 }
 
 struct PlayerLootThrowData
@@ -3724,7 +3716,8 @@ void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, b
 	}
 
 	physicsEnt.e.lastAttacker = drop
-	AddEntityCallback_OnPhysicsDisabled( physicsEnt, SurvivalLoot_OnPhysicsDisabled )
+	if( Gamemode() != eGamemodes.fs_snd )
+		AddEntityCallback_OnPhysicsDisabled( physicsEnt, SurvivalLoot_OnPhysicsDisabled )
 	thread PhysicsEntCleanup( physicsEnt, drop )
 }
 
@@ -4787,10 +4780,17 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		ammoLeftInWeapons[ ammoRef ] <- 0 //player.AmmoPool_GetCount( value )
 	}
 	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-	array<DropWeaponData> playerWeaponData         = []
-	array<string> playerWeapons                    = []
+	array<DropWeaponData> playerWeaponData         = player.p.weaponsToDropData
+	array<string> playerWeapons                    = player.p.weaponsToDropRefs
 	array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
 	LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
+
+	if( mainWeapons.len() > 0 )
+	{
+		printt( "weapons to drop overriden") 
+		playerWeapons = []
+		mainWeapons = []
+	}
 
 	foreach ( w in mainWeapons )
 	{
@@ -4985,20 +4985,18 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		}
 
 		entity itemEnt
-		// if ( data.lootType == eLootType.ARMOR )
-		// {
-			// itemEnt = GamemodeUtility_SpawnArmor( player, armorData, 0.0, eSpawnSource.PLAYER_DEATH )
-			// SpawnGenericLoot( armorData.ref, armorSpawnOrigin )
-			// SetItemSpawnSource( armorLoot, spawnSource, armorSource )
-		// }
-		// else 
-		// if ( data.lootType != eLootType.ARMOR )
-		// {
+		if ( data.lootType == eLootType.ARMOR )
+		{
+			array< entity > spawnedLoot = SpawnAndThrowItems_ReturnItems( player, itemName, 1, 1.0, eSpawnSource.PLAYER_DEATH )
+			itemEnt = spawnedLoot[0]
+		}
+		else if ( data.lootType != eLootType.ARMOR )
+		{
 			savedOrigin = IsValid( player ) ? player.GetOrigin() + vOffset : savedOrigin
 			itemEnt = SpawnGenericLoot( itemName, savedOrigin )
 
 			SetItemSpawnSource( itemEnt, eSpawnSource.PLAYER_DEATH, player )
-		// }
+		}
 
 
 		if ( IsValid( itemEnt ) && IsValid( box ) )

@@ -40,7 +40,7 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	if( scoreEventName == "Sur_DownedPilot" )
 		ownValue = GetTotalDamageTakenByPlayer( associatedEnt, targetPlayer )
 
-	if ( Playlist() == ePlaylists.fs_scenarios && ownValueOverride != -1 || Playlist() == ePlaylists.fs_scenarios && ownValueOverride == -1 && scoreEventName == "FS_Scenarios_PenaltyRing") //point value is unused in r5, gonna use own value for scenarios. Cafe
+	if ( Playlist() == ePlaylists.fs_scenarios && ownValueOverride != -1 || Playlist() == ePlaylists.fs_scenarios && ownValueOverride == -1 && scoreEventName == "FS_Scenarios_PenaltyRing" || Gamemode() == eGamemodes.fs_snd && ownValueOverride != -1 ) //point value is unused in r5, gonna use own value for scenarios. Cafe
 		ownValue = float( ownValueOverride )
 
 	//PlayerEarnMeter_AddEarnedAndOwned( targetPlayer, earnValue * scale, ownValue * scale )
@@ -77,7 +77,7 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 			return
 	}
 	
-	if( is3v3Mode() )
+	if( is3v3Mode() || Gamemode() == eGamemodes.fs_snd )
 		return
 
 	if ( downed && GetGameState() >= eGameState.Playing)

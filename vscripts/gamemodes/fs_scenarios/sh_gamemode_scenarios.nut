@@ -40,6 +40,11 @@ global function Scenarios_RegisterNetworking
 
 const int STANDINGS_GLOBAL	= 0
 const int STANDINGS_ROUND 	= 1
+global const int SCORE_BOMBPLANTED_REWARD = 500
+global const int SCORE_BOMBCARRIERKILLED_BONUS = 100
+global const int SCORE_BOMBCARRIERKILLED = 100
+
+
 typedef ScenariosStructType table<string, table<int, int> > 
 
 struct

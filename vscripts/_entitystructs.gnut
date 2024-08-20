@@ -501,6 +501,17 @@ global struct MeritData
 	int happyHourMeritState
 }
 
+global struct DropWeaponData
+{
+	string        name
+	array<string> mods
+	int           stockpile
+	int           ammo
+	entity        originalOwner
+	int           charmItemFlavorGUID = -1
+	int 		  skinItemFlavorGUID  = -1
+}
+
 // This struct is hooked up to entity.p in code
 global struct ServerPlayerStruct
 {
@@ -1093,6 +1104,8 @@ global struct ServerPlayerStruct
 	int    respawnCount = 0
 	int  holsterAndDisableWeaponCount
 	int assignedMasterChief = -1
+	array<string> weaponsToDropRefs
+	array<DropWeaponData> weaponsToDropData
 }
 
 global struct ChallengeScore

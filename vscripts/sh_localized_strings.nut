@@ -266,6 +266,8 @@ struct
 		"#SCORE_EVENT_FS_Scenarios_PenaltyRing",
 		"#SCORE_EVENT_FS_Scenarios_BecomesSoloPlayer",
 		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer",
+		"#SCORE_EVENT_FS_SND_BombPlanted",
+		"#SCORE_EVENT_FS_SND_Player_Killed",
 		"#FS_MATCHING_FOR",
 		"#FS_CHALLENGE_STARTED",
 		"#FS_JOIN_QUEUE",

@@ -3,7 +3,7 @@
 
 // Aeon#0236 - Playtests and ideas
 // AyeZee#6969 - Some of the economy system logic from his arenas mode draft - stamina
-// @DEAFPS - Shoothouse, de_cache and NCanals maps
+// @dea_bb - Shoothouse, de_cache and NCanals maps
 // @CafeFPS and Darkes#8647 - de_dust2 map model port and fake collision
 // VishnuRajan in https://sketchfab.com/3d-models/time-bomb-efb2e079c31349c1b2bd072f00d8fe79 - Bomb model and textures
 

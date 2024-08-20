@@ -1606,6 +1606,36 @@ entity function CreatePropPhysics( asset model, vector origin, vector angles, in
 	return prop_physics
 }
 
+// Spawn loot on an entity and return an array of the loot that got spawned
+array <entity> function SpawnAndThrowItems_ReturnItems( entity itemSource, string itemName, int itemCount, float throwStrength, int spawnSource, vector throwOriginOffset = < 0, 0, 0 > )
+{
+	array < entity > spawnedItems = []
+	if ( !IsValid( itemSource ) )
+		return spawnedItems
+
+	LootThrowData throwData
+	throwData.throwAngle = 0
+	throwData.throwScale = 1
+	vector throwOrigin = itemSource.GetOrigin() + throwOriginOffset
+
+	int countPerDrop = int( floor( SURVIVAL_Loot_GetLootDataByRef( itemName ).countPerDrop ) )
+	for ( int i = 0; i < itemCount; i++ )
+	{
+		entity itemEnt = SpawnGenericLoot( itemName, throwOrigin, < -1, -1, -1 >, countPerDrop )
+
+		SetItemSpawnSource( itemEnt, spawnSource, itemSource )
+		throwData.throwAngle = RandomFloatRange( 0.0, 360.0 )
+		vector throwDir = <sin( throwData.throwAngle ), cos( throwData.throwAngle ), 0>
+		float speed     = throwData.throwScale * sqrt( RandomFloatRange( 0.75, 1.0 ) ) * throwStrength
+		vector vel      = throwDir * speed
+		thread FakePhysicsThrow_Retail( itemSource, itemEnt, <vel.x, vel.y, 200>, true )
+		throwData = SURVIVAL_DropLoot_IncrementThrowAngle( throwData )
+		spawnedItems.append( itemEnt )
+	}
+
+	return spawnedItems
+}
+
 //-----------------------------------------------------------
 // SpawnBullseye() - creates a npc_bullseye and attaches it to an entity
 //------------------------------------------------------------

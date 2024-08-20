@@ -3,7 +3,7 @@
 
 // Aeon#0236 - Playtests and ideas
 // AyeZee#6969 - Some of the economy system logic from his arenas mode draft - stamina
-// @DEAFPS - Shoothouse, de_cache and NCanals maps
+// @dea_bb - Shoothouse, de_cache and NCanals maps
 // @CafeFPS and Darkes#8647 - de_dust2 map model port and fake collision
 // VishnuRajan in https://sketchfab.com/3d-models/time-bomb-efb2e079c31349c1b2bd072f00d8fe79 - Bomb model and textures
 
@@ -136,6 +136,8 @@ struct
 	array<entity> visualsPlantingLocations
 	array<entity> propsToHide
 	int currentLocation = -1
+	
+	entity bombWaypoint
 	#endif
 	
 	#if CLIENT
@@ -1003,15 +1005,26 @@ void function AddHintInPlantZone()
 void function AddBombToMinimap( entity mover )
 {
 	if(!IsValid(mover)) return
-	
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			if( IsValid( file.bombWaypoint ) )
+				file.bombWaypoint.Destroy()
+		}
+	)
+
 	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )
 	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.BOMB )
 	minimapObj.SetParent( mover )
-	SetTargetName( minimapObj, "hotZone" )
 	foreach ( player in GetPlayerArray() )
 	{
 		minimapObj.Minimap_AlwaysShow( 0, player )
 	}
+	file.bombWaypoint = minimapObj
+
+	mover.EndSignal( "OnDestroy" )
+	WaitForever()
 }
 
 void function AddLocationAToMinimap( entity mover )
@@ -1299,7 +1312,7 @@ void function SND_HintCatalog(int index, int eHandle)
 
 		case 5:
 		Obituary_Print_Localized( "Bomb model and textures by VishnuRajan in Sketchfab.com", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "Shoothouse, de_cache and NCanals maps by @DEAFPS_", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "Shoothouse, de_cache and NCanals maps by @dea_bb", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "de_dust2 map by @CafeFPS and Darkes", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		break

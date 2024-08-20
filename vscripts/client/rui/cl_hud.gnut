@@ -566,7 +566,8 @@ void function AddScoreEventMessage( ScoreEvent scoreEvent, EHI associatedEHI, in
 	if( ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_SoloWin" || 
 		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_TeamWin" ||
 		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_PenaltyDeath" ||
-		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_SurvivalTime"
+		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_SurvivalTime" || 
+		ScoreEvent_GetEventName( scoreEvent ) == "FS_SND_BombPlanted"
 		)
 	{
 		messageData.messageScale = 1.5

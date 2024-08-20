@@ -3,7 +3,7 @@
 
 // Aeon#0236 - Playtests and ideas
 // AyeZee#6969 - Some of the economy system logic from his arenas mode draft - stamina
-// @DEAFPS - Shoothouse, de_cache and NCanals maps
+// @dea_bb - Shoothouse, de_cache and NCanals maps
 // @CafeFPS and Darkes#8647 - de_dust2 map model port and fake collision
 // VishnuRajan in https://sketchfab.com/3d-models/time-bomb-efb2e079c31349c1b2bd072f00d8fe79 - Bomb model and textures
 
@@ -175,6 +175,58 @@ void function Sv_EntitiesDidLoad()
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 }
 
+void function FS_SND_SaveWeaponToDrop( entity victim, var damageInfo )
+{
+	if ( !IsValid( victim ) || !victim.IsPlayer() )
+		return
+	
+	array<string> weaponsToDropRefs
+	array<entity> mainWeapons = SURVIVAL_GetPrimaryWeapons( victim )
+	array<DropWeaponData> playerWeaponData = []
+
+	foreach ( w in mainWeapons )
+	{
+		LootData wData = SURVIVAL_GetLootDataFromWeapon( w )
+		if ( SURVIVAL_Loot_IsRefValid( wData.ref ) )
+		{
+			weaponsToDropRefs.append( wData.ref )
+
+			DropWeaponData weaponData
+			weaponData.name                = wData.ref
+			weaponData.skinItemFlavorGUID  = w.e.skinItemFlavorGUID
+			weaponData.charmItemFlavorGUID = w.e.charmItemFlavorGUID
+			weaponData.mods                = w.GetMods()
+			weaponData.originalOwner       = w.e.firstOwner
+			weaponData.stockpile           = 0
+
+			if ( w.GetActiveAmmoSource() == AMMOSOURCE_POOL )
+			{
+				int ammoInWeapon = w.GetWeaponPrimaryClipCount()
+				int ammoToDrop   = 0
+
+				weaponData.ammo = ammoInWeapon
+
+				LootData data  = SURVIVAL_Loot_GetLootDataByRef( w.GetWeaponClassName() )
+				string ammoRef = data.ammoType
+			}
+			else if ( w.GetLifetimeShotsRemaining() != -1 )
+			{
+				weaponData.ammo = w.GetLifetimeShotsRemaining()
+			}
+			else
+			{
+				weaponData.ammo = w.GetWeaponPrimaryClipCount()
+				weaponData.stockpile = w.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE )
+			}
+
+			playerWeaponData.append( weaponData )
+		}
+	}
+
+	victim.p.weaponsToDropRefs = weaponsToDropRefs
+	victim.p.weaponsToDropData = playerWeaponData
+}
+
 void function SND_StartGameThread()
 {
     WaitForGameState(eGameState.Playing)
@@ -227,6 +279,7 @@ void function _OnPlayerConnectedSND(entity player)
 	
 	ValidateDataTable( player, "datatable/flowstate_snd_buy_menu_data.rpak" )
 	
+	AddEntityCallback_OnDamaged( player, FS_SND_SaveWeaponToDrop )
 	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	
 	player.SetPlayerGameStat( PGS_DEATHS, 0)
@@ -258,7 +311,7 @@ void function _OnPlayerConnectedSND(entity player)
 		case eGameState.Playing:
 			thread StartSpectatingSND(player)
 			player.UnfreezeControlsOnServer()
-			
+			Remote_CallFunction_NonReplay( player, "ServerCallback_SetBombState", GetBombState() )
 			//todo give team properly
 			//spawn back in map if round is in progress
 			
@@ -324,19 +377,18 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1)
 	victim.p.survivedShouldSaveWeapons = false
 	TakeAllWeapons(victim)
-	
-	entity weapon = DamageInfo_GetWeapon( damageInfo )
-	
+
 	switch(GetGameState())
     {
 		case eGameState.Playing:
 			if(IsValid(attacker) && attacker.IsPlayer()) 
 			{
+				int moneytoGive
+				bool victimWasBombCarrier = victim.p.playerHasBomb
+				entity weapon = DamageInfo_GetWeapon( damageInfo )
+
 				if ( IsValid( weapon ) )
 				{
-					int moneytoGive
-					bool victimWasBombCarrier = victim.p.playerHasBomb
-					
 					switch(weapon.GetWeaponClassName())
 					{
 						case "mp_weapon_sniper":
@@ -345,7 +397,7 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 						break
 						
 						case "mp_weapon_wingman":
-							moneytoGive = 200
+							moneytoGive = 150
 							
 						break
 						
@@ -354,23 +406,25 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 							
 						break							
 					}
-					
-					attacker.p.availableMoney += moneytoGive
-					
-					if(victimWasBombCarrier)
-					{
-						moneytoGive += 100
-						Remote_CallFunction_NonReplay( attacker, "ServerCallback_OnMoneyAdded", moneytoGive)	
-						Remote_CallFunction_NonReplay( attacker, "SND_HintCatalog", 12, moneytoGive)
-					}
-					else
-					{
-						Remote_CallFunction_NonReplay( attacker, "ServerCallback_OnMoneyAdded", moneytoGive)	
-						Remote_CallFunction_NonReplay( attacker, "SND_HintCatalog", 8, moneytoGive)
-					}
-					
-					// thread SND_KillStreakAnnounce(attacker)
 				}
+				
+				attacker.p.availableMoney += moneytoGive
+				
+				if(victimWasBombCarrier)
+				{
+					moneytoGive += 100
+					Remote_CallFunction_NonReplay( attacker, "ServerCallback_OnMoneyAdded", moneytoGive)	
+					// Remote_CallFunction_NonReplay( attacker, "SND_HintCatalog", 12, moneytoGive)
+					AddPlayerScore( attacker, "FS_SND_EnemyKilled", victim, "", moneytoGive )
+				}
+				else
+				{
+					Remote_CallFunction_NonReplay( attacker, "ServerCallback_OnMoneyAdded", moneytoGive)	
+					// Remote_CallFunction_NonReplay( attacker, "SND_HintCatalog", 8, moneytoGive)
+					AddPlayerScore( attacker, "FS_SND_EnemyKilled", victim, "", moneytoGive )
+				}
+				
+				// thread SND_KillStreakAnnounce(attacker)
 			}
 			
 			if( victim.p.playerHasBomb && victim.p.isSNDAttackerPlayer )
@@ -384,8 +438,9 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 				Remote_CallFunction_NonReplay( attacker, "SND_HintCatalog", 13, 0)
 			}
 			
-			CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
-		
+			// CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+			thread SURVIVAL_Death_DropLoot_Internal( victim, attacker, DamageInfo_GetDamageSourceIdentifier( damageInfo ), true )
+
 			thread function() : (victim, attacker, damageInfo) 
 			{
 				Remote_CallFunction_NonReplay(victim, "SND_ToggleMoneyUI", false)
@@ -909,13 +964,13 @@ void function SND_GameLoop()
 			player.SetShieldHealth( 50 )
 		}
 		
-		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")		
+		// Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")		
 		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")	
 		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 		
-		array<string> loot = [ "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large" ] //, "health_pickup_combo_full"]
-			foreach(item in loot)
-				SURVIVAL_AddToPlayerInventory(player, item)
+		// array<string> loot = [ "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large" ] //, "health_pickup_combo_full"]
+			// foreach(item in loot)
+				// SURVIVAL_AddToPlayerInventory(player, item)
 	}
 	
 	if(FS_SND.currentRound == 1 )
@@ -1904,7 +1959,7 @@ void function SetBombEntity(entity bomb)
 	
 	FS_SND.bomb = bomb
 	
-	AddBombToMinimap( FS_SND.bomb )
+	thread AddBombToMinimap( FS_SND.bomb )
 }
 
 entity function GetBombEntity()
@@ -1919,7 +1974,7 @@ void function SetPlantedBombEntity(entity bomb)
 	
 	FS_SND.plantedBomb = bomb
 	
-	AddBombToMinimap( FS_SND.plantedBomb )
+	thread AddBombToMinimap( FS_SND.plantedBomb )
 }
 
 entity function GetPlantedBombEntity()
@@ -2990,7 +3045,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "bullets_mag_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l1"]
 				break
 				
 				case 1:
@@ -3007,15 +3062,15 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "shotgun_bolt_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l1", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2", "stock_tactical_l2"]
 				break
 				
 				case 2:
-					modsToAttach = ["optic_cq_hcog_bruiser", "shotgun_bolt_l3", "hopup_unshielded_dmg"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "shotgun_bolt_l3", "hopup_unshielded_dmg", "stock_tactical_l3"]
 				break
 			}
 		break
@@ -3024,7 +3079,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "highcal_mag_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "highcal_mag_l1"]
 				break
 				
 				case 1:
@@ -3045,7 +3100,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l2", "barrel_stabilizer_l3"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "bullets_mag_l2", "barrel_stabilizer_l3"]
 				break
 				
 				case 2:
@@ -3058,15 +3113,15 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "bullets_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
 				break
 				
 				case 2:
-					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"]
 				break
 			}
 		break
@@ -3075,11 +3130,11 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "bullets_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
 				break
 				
 				case 2:
@@ -3092,11 +3147,11 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "energy_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "energy_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "energy_mag_l2", "barrel_stabilizer_l3", "stock_tactical_l2"]
 				break
 				
 				case 2:
@@ -3109,11 +3164,11 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_holosight", "highcal_mag_l1", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_hcog_classic", "highcal_mag_l1", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_holosight", "highcal_mag_l2", "stock_tactical_l2"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "highcal_mag_l2", "stock_tactical_l2"]
 				break
 				
 				case 2:
@@ -3126,15 +3181,15 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["shotgun_bolt_l1"]
+					modsToAttach = ["optic_cq_hcog_classic","shotgun_bolt_l1", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2", "stock_tactical_l2"]
 				break
 				
 				case 2:
-					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l3"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l3", "stock_tactical_l3"]
 				break
 			}
 		break
@@ -3143,15 +3198,15 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["shotgun_bolt_l1"]
+					modsToAttach = ["optic_cq_hcog_classic","shotgun_bolt_l1", "stock_tactical_l1"]
 				break
 				
 				case 1:
-					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l2", "stock_tactical_l2"]
 				break
 				
 				case 2:
-					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l3"]
+					modsToAttach = ["optic_cq_hcog_classic", "shotgun_bolt_l3", "stock_tactical_l3"]
 				break
 			}
 		break
@@ -3177,7 +3232,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_hcog_classic", "highcal_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_holosight", "highcal_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
@@ -3194,7 +3249,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_hcog_classic", "highcal_mag_l1", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_holosight", "highcal_mag_l1", "stock_tactical_l1"]
 				break
 				
 				case 1:
@@ -3211,7 +3266,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_hcog_classic", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_holosight", "bullets_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
@@ -3228,7 +3283,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 			switch(currentupgradelevel)
 			{
 				case 0:
-					modsToAttach = ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
+					modsToAttach = ["optic_cq_holosight", "energy_mag_l1", "barrel_stabilizer_l2", "stock_tactical_l1"]
 				break
 				
 				case 1:
@@ -3408,7 +3463,7 @@ void function OnPlayerMantleStamina(entity player)
 {
 	if ( player.GetPlayerNetInt( "playerStamina" ) > 0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0.0)
 	{
-		int newvalue = player.GetPlayerNetInt( "playerStamina" ) - 5
+		int newvalue = player.GetPlayerNetInt( "playerStamina" ) - 2
 		if(newvalue < 0)
 			newvalue = 0
 		
@@ -3420,7 +3475,7 @@ void function OnPlayerJumpedStamina(entity player)
 {
 	if ( player.GetPlayerNetInt( "playerStamina" ) > 0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0.0)
 	{
-		int newvalue = player.GetPlayerNetInt( "playerStamina" ) - 15
+		int newvalue = player.GetPlayerNetInt( "playerStamina" ) - 5
 		if(newvalue < 0)
 			newvalue = 0
 		
