@@ -160,6 +160,8 @@ global struct BurnCardPhaseRewindStruct
 global struct ServerEntityStruct
 {
 	array<void functionref( entity ent )>                                                                                  onPhysicsDisabledCallbacks
+	array<void functionref( entity, entity, entity, int )>                                                                 onPingedCallbacks
+
 	entity repairSoul // repair drones
 	array<void functionref( entity, var )> entKilledCallbacks
 	array<entity> fxArray
@@ -486,6 +488,7 @@ global struct ServerEntityStruct
 	
 	array<void functionref( entity player, int state )> onPlayerGamestateChangedCallbacks
 	int gamemode1v1State = -1
+	array<entity> myWaypoints
 }
 
 global struct MeritData
@@ -1120,7 +1123,9 @@ global struct ChallengeScore
 
 global struct ServerPlayerWaypoint
 {
-	float waypointCreatedTime
+	float  waypointCreatedTime
+	entity oldOwner
+	bool   highlightWaypoint
 }
 
 global struct TitanSettings

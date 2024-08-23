@@ -189,7 +189,9 @@ global function IsPlayerCloseEnoughToDeathBoxToLoot
 global function IsPlayerWithinStandardDeathBoxUseDistance
 global function IsValidAndUsableDeathBoxEnt
 global function IsLootEntAccessibleViaDeathBox
+global function IsValidAndStandardGrabbableLootEnt
 #endif
+
 
 global function GetNameOfTeammateWithVaultKey
 global const string WEAPON_LOCKEDSET_SUFFIX_GOLD = "_gold"
