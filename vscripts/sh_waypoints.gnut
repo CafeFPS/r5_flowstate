@@ -5,6 +5,7 @@ global function PlayerWaypoints_Init
 global function CreateWaypointRui
 global function Waypoint_LootItemIsBeingPingedByAnyone
 global function Waypoint_GetWaypointForLootItemPingedBy
+global function Waypoint_GetWaypointsForLootItemPingedByTeam
 global function Waypoint_AnyEnemySpottedNearPoint
 global function Waypoint_FindPingByTicketID
 global function Waypoint_HideOnLocalHud
@@ -504,32 +505,8 @@ bool function Waypoint_LootItemIsBeingPingedByAnyone( entity item )
 {
 	Assert( IsValid( item ) )
 
-	//R5RDEV-1
-	// foreach( entity lootWp in s_activeLootPings )
-	// {
-		// if ( !IsValid( lootWp ) )
-		// {
-			// s_activeLootPings.fastremovebyvalue( lootWp )
-			// continue
-		// }
-
-		// entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
-		// if ( thisLootItem == item )
-			// return true
-	// }
-	
-	int maxIter = s_activeLootPings.len() - 1
-	
-	for( int i = maxIter; i >= 0; i-- )
+	foreach ( entity lootWp in s_activeLootPings )
 	{
-		entity lootWp = s_activeLootPings[ i ]
-		
-		if ( !IsValid( lootWp ) )
-		{
-			s_activeLootPings.remove( i )
-			continue
-		}
-
 		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
 		if ( thisLootItem == item )
 			return true
@@ -544,46 +521,34 @@ entity function Waypoint_GetWaypointForLootItemPingedBy( entity item, entity pla
 	Assert( IsValid( item ) )
 	Assert( IsValid( player ) )
 
-	//R5RDEV-1
-	// foreach( entity lootWp in s_activeLootPings )
-	// {
-		// if ( !IsValid( lootWp ) )
-		// {
-			// s_activeLootPings.fastremovebyvalue( lootWp )
-			// continue
-		// }
-
-		// entity owner = lootWp.GetOwner()
-		// if ( owner != player )
-			// continue
-
-		// entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
-		// if ( thisLootItem == item )
-			// return lootWp
-	// }
-	
-	int maxIter = s_activeLootPings.len() - 1
-	
-	for( int i = maxIter; i >= 0; i-- )
+	foreach ( entity lootWp in s_activeLootPings )
 	{
-		if( !IsValid( s_activeLootPings[ i ] ) )
-		{
-			s_activeLootPings.remove( i )
+		entity owner = lootWp.GetOwner()
+		if ( owner != player )
 			continue
-		}
-		
-		entity owner = s_activeLootPings[ i ].GetOwner()
-		
-		if( owner!= player )
-			continue
-			
-		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( s_activeLootPings[ i ] )
-		
-		if( thisLootItem == item )
-			return s_activeLootPings[ i ]
+
+		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		if ( thisLootItem == item )
+			return lootWp
 	}
 
 	return null
+}
+
+array<entity> function Waypoint_GetWaypointsForLootItemPingedByTeam( entity item, int team, bool indirectMode = false )
+{
+	Assert( IsValid( item ) )
+	array<entity> out = []
+	foreach ( entity lootWp in s_activeLootPings )
+	{
+		if ( lootWp.GetTeam() != team )
+			continue
+
+		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
+		if ( thisLootItem == item && ((lootWp.GetParent() == thisLootItem) != indirectMode) )
+			out.append( lootWp )
+	}
+	return out
 }
 
 bool function Waypoint_AnyEnemySpottedNearPoint( vector origin, float range )
