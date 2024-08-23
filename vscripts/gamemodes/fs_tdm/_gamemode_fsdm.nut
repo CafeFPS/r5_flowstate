@@ -3236,6 +3236,9 @@ void function SimpleChampionUI()
 	////////////////////////////////
 
 	SurvivalCommentary_ResetAllData()
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+		Scenarios_ClearAllData()
 
 	//printt("Flowstate DEBUG - Clearing last round stats.")
 	foreach( player in GetPlayerArray() )
@@ -5107,7 +5110,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	}
 	
 	#if DEVELOPER 
-		printarray( args )
+		print_string_array( args )
 	#endif
 
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
@@ -6696,7 +6699,7 @@ void function Tracker_SetChampionOnPersistenceLoad()
 						}
 						else 
 						{
-							file.previousChallenger = champion //if there is a champ from another server they will be set to this even if they did better than already set champion, unless they were the only champion flagged, as tracker doesn't have struct data sent for them yet, only a bool that they were a champion.
+							file.previousChallenger = champion
 							break
 						}
 					}

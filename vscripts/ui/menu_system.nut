@@ -589,8 +589,8 @@ void function SetMotdText( string text )
 	
 	// auto-opening motd disabled as per amos request
 	
-	// if( !GetConVarInt( "show_motd_on_server_first_join" ) )
-		// return
+	if( !GetConVarInt( "show_motd_on_server_first_join" ) )
+		return
 
 	string server = GetServerID()
 	
@@ -606,16 +606,26 @@ void function OpenMOTD()
 	if ( IsLobby() )
 		return
 		
-	string motd = ""
-	string motdLocalized = Localize( "#FS_PLAYLIST_MOTD" )
-	
 	if ( file.motdText != "" )
 	{ 
-		motd = file.motdText
-	} 
-	else if( motdLocalized != "" && motdLocalized != "#FS_PLAYLIST_MOTD" )
+		OpenServerMOTD( file.motdText )
+		return
+	}
+	
+	string motd = ""
+	string motdLocalized = Localize( "#FS_PLAYLIST_MOTD" )
+	string motdLocaliziedContinue = Localize( "#FS_PLAYLIST_MOTD_CONTINUE" )
+	
+	if( motdLocalized != "" && motdLocalized != "#FS_PLAYLIST_MOTD" )
 	{
 		motd = motdLocalized
+		
+		if( motdLocaliziedContinue != "" && motdLocaliziedContinue != "#FS_PLAYLIST_MOTD_CONTINUE" )
+		{
+			motd = motd + motdLocaliziedContinue	
+		}
+		
+		file.motdText = motd //save for repeat opens
 	}
 	
 	OpenServerMOTD( motd )

@@ -3529,7 +3529,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 			{
 				player.p.ratelimit = 0.0;				
 			
-					wep1Array[0] = "wepmenu"; printarray( wep1Array )
+					wep1Array[0] = "wepmenu"; //print_string_array( wep1Array )
 				
 						ClientCommand_GiveWeapon( player, wep1Array )
 							
@@ -3543,7 +3543,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 					{
 						player.p.ratelimit = 0;	
 					
-							wep2Array[0] = "wepmenu"; printarray( wep2Array )	
+							wep2Array[0] = "wepmenu"; //print_string_array( wep2Array )	
 						
 								ClientCommand_GiveWeapon( player, wep2Array )	
 									

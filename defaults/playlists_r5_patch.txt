@@ -43,6 +43,9 @@ playlists
 				//custom_grenade_list "mp_weapon_decoy_grenade"
 				//custom_weapon_list "mp_weapon_flamethrower mp_weapon_epg sp_weapon_arc_tool mp_weapon_wingman_n" //mp_weapon_smart_pistol mp_weapon_heatwave mp_weapon_guidedmissile"
 
+
+
+
 				//////////////////////////////////////////////////////////////
 				// THE FOLLOWING SETTINGS REQUIRES TRACKER DLL (add-on mod)	//
 				//////////////////////////////////////////////////////////////
@@ -53,6 +56,13 @@ playlists
 				cc_administration								1
 				ea_verify_server								1
 				use_global_stats								1
+				
+				enable_motd 		1  
+				use_online_motd 	0  // 1 for online, 0 for local	 //for online, must have tracker dll	
+				
+				// for local motd: [ NOT RECCOMENDED (leave blank) ] - This will create unncessary remote calls on client connect, preferably use FS_PLAYLIST_MOTD at the bottom of this file.
+				custom_MOTD "var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
+				
 
 				// restricted servers	
 				restricted_server 				0			// 1 = restrictions enabled
@@ -1627,18 +1637,13 @@ playlists
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall			1
 				
-				flowstateRoundtime 						600 //800
+				flowstateRoundtime 						30 //800
 				
 				/////////////////////////
 				// mkos added features //
 				/////////////////////////
 				
-				enable_motd 		1  
-				use_online_motd 	0  // 1 for online, 0 for local	 //for online, must have tracker dll	
-				
-				// for local motd:
-				custom_MOTD "var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
-				
+
 				
 				COMMAND_RATE_LIMIT						0.200 //Rate limiting for custom client commands
 				
@@ -3349,7 +3354,8 @@ playlists
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
 				"BETA_BUILD_WATERMARK" 				  ""
-				"FS_PLAYLIST_MOTD"					  "Flowstate x R5Reloaded"
+				"FS_PLAYLIST_MOTD"					  "Flowstate x R5Reloaded" //1000 char max [dev-note: DO NOT SHIP WITH THIS FILLED]
+				"FS_PLAYLIST_MOTD_CONTINUE"			  "" //append to first - 1000 char limit
 			}
 		}
 	}

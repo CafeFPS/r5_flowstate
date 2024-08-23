@@ -13,7 +13,7 @@ global function IsValidOID
 global function Is_Bool
 global function sanitize
 global function LineBreak
-global function printarray
+global function print_string_array
 global function CheckRate
 global function ParseWeapon
 global function IsWeaponValid
@@ -1618,7 +1618,7 @@ void function ClientCommand_ParseSay( entity player, array<string> args )
 void function Commands( entity player, array<string> args )
 {	
 	#if DEVELOPER
-		//printarray( args )
+		//print_string_array( args )
 	#endif 
 	
 	switch( args[0].tolower() )
@@ -2319,7 +2319,7 @@ string function truncate( string str, int limit )
     return str;
 }
 
-void function printarray( array<string> args )
+void function print_string_array( array<string> args )
 {
 	string test = "\n\n------ PRINT ARRAY ------\n\n"
 	

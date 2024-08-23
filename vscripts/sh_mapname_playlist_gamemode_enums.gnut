@@ -17,6 +17,7 @@ global const PRINT_GAMEMODE_DEBUGS = true
 
 //mode functions:
 global function g_is1v1GameType
+global function g_bSinglePlayerChampion
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
@@ -260,7 +261,7 @@ int function getMapEnumFromName( string mapString )
 {
 	string mapStringLower = mapString.tolower()
 	
-	for ( int i = 0; i < eMaps._MAP_COUNT; ++i ) 
+	for ( int i = 0; i < eMaps._MAP_COUNT; i++ ) 
 	{
 		if ( SH_globals.mapNames[i].tolower() == mapStringLower ) 
 		{
@@ -275,7 +276,7 @@ int function getPlaylistEnumFromName( string playlistString )
 {
 	string playlistStringLower = playlistString.tolower()
 	
-	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; ++i ) 
+	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; i++ ) 
 	{
 		if ( SH_globals.playlists[i].tolower() == playlistStringLower ) 
 		{
@@ -288,7 +289,7 @@ int function getPlaylistEnumFromName( string playlistString )
 
 int function getGamemodeEnumFromName( string gamemodeString ) 
 {
-	for ( int i = 0; i < eGamemodes._GAMEMODES_COUNT; ++i ) 
+	for ( int i = 0; i < eGamemodes._GAMEMODES_COUNT; i++ ) 
 	{
 		if ( SH_globals.gamemodes[i] == gamemodeString ) 
 		{
@@ -359,6 +360,7 @@ void function AllModeConditionals_Init()
 	PassivesAllowed_Init()
 	PlayerRespawnModes_Init()
 	MapHasTrain_Init()
+	GamemodeHasSinglePlayerChampion()
 }
 
 
@@ -372,6 +374,7 @@ struct
 	bool trackerSupportedMode	= false
 	bool playerDoesRespawn		= false
 	bool mapHasTrain			= false
+	bool bSinglePlayerChampion	= false
 	
 } modeSettings
 
@@ -476,6 +479,17 @@ void function MapHasTrain_Init()
 	modeSettings.mapHasTrain = trainEnabledMaps.contains( MapName() )
 }
 
+void function GamemodeHasSinglePlayerChampion()
+{
+	array<int> singlePlayerChampionPlaylists =
+	[
+		ePlaylists.fs_scenarios,
+		ePlaylists.fs_1v1
+	]
+	
+	modeSettings.bSinglePlayerChampion = singlePlayerChampionPlaylists.contains( Playlist() )
+}
+
 //////////////////////////////////////////
 //	 gamemode conditional functions		//
 //////////////////////////////////////////
@@ -505,4 +519,9 @@ bool function Flowstate_PlayerDoesRespawn()
 bool function Flowstate_MapHasTrain()
 {
 	return modeSettings.mapHasTrain
+}
+
+bool function g_bSinglePlayerChampion()
+{
+	return modeSettings.bSinglePlayerChampion
 }

@@ -2081,7 +2081,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	{	
 		errors.insert( 0, "=== THE FOLLOWING SPAWNS HAD AN ISSUE ===" )
 		
-		printarray( errors )
+		print_string_array( errors )
 		
 		#if MULTIPLAYER_DEBUG_PRINTS
 			foreach( error in errors )

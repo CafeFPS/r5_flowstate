@@ -4,18 +4,21 @@
 global function FS_Scenarios_Score_System_Init
 global function FS_Scenarios_GetEventScoreFromDatatable
 global function Scenarios_RegisterNetworking
-
+	
 #if CLIENT 
-	global function ServerCallback_SendScenariosStandings
-	global function ServerCallback_SignalScenariosStandings
+	global function UpdateStandingsScriptsFromClient
+	global function Scenarios_SendPlayerScoreLeaders
 #endif
 	
 #if SERVER
 
 	global function FS_Scenarios_UpdatePlayerScore
+	
 	global function ScenariosPersistence_GetScore
 	global function ScenariosPersistence_FetchPlayerScoreTable
+	
 	global function Scenarios_SendStandingsToClient
+	global function Scenarios_ClearAllData
 	
 	//Fetcher functions for backend
 	#if TRACKER 
@@ -38,8 +41,8 @@ global function Scenarios_RegisterNetworking
 	}
 #endif //CLIENT
 
-const int STANDINGS_GLOBAL	= 0
-const int STANDINGS_ROUND 	= 1
+const int STANDINGS_GLOBAL	= 1
+const int STANDINGS_ROUND 	= 2
 global const int SCORE_BOMBPLANTED_REWARD = 500
 global const int SCORE_BOMBCARRIERKILLED_BONUS = 100
 global const int SCORE_BOMBCARRIERKILLED = 100
@@ -58,8 +61,6 @@ struct
 	#endif 
 	
 	#if CLIENT 
-		table<int,ClientRecapStruct> localPlayerGlobalStandings
-		table<int,ClientRecapStruct> localPlayerRoundSettings
 		bool isTransmitting
 	#endif
 	
@@ -67,19 +68,19 @@ struct
 
 global enum FS_ScoreType { //change datatable if you change this
 	PLAYERSCORE = -1,
-	SURVIVAL_TIME,
-	DOWNED,
-	KILL,
-	BONUS_DOUBLE_DOWNED,
-	BONUS_TRIPLE_DOWNED,
-	BONUS_TEAM_WIPE,
-	TEAM_WIN,
-	SOLO_WIN,
-	PENALTY_DEATH,
-	PENALTY_RING,
-	PENALTY_DESERTER,
-	BONUS_BECOMES_SOLO_PLAYER,
-	BONUS_KILLED_SOLO_PLAYER,
+	SURVIVAL_TIME, /* 0 */
+	DOWNED, /* 1 */
+	KILL, /* 2 */
+	BONUS_DOUBLE_DOWNED, /* 3 */
+	BONUS_TRIPLE_DOWNED, /* 4 */
+	BONUS_TEAM_WIPE, /* 5 */
+	TEAM_WIN, /* 6 */
+	SOLO_WIN, /* 7 */
+	PENALTY_DEATH, /* 8 */
+	PENALTY_RING, /* 9 */
+	PENALTY_DESERTER, /* 10 */
+	BONUS_BECOMES_SOLO_PLAYER, /* 11 */
+	BONUS_KILLED_SOLO_PLAYER, /* 12 */
 }
 
 #if SERVER 
@@ -112,12 +113,16 @@ void function FS_Scenarios_Score_System_Init()
 			file.scores[event] <- points
 	}
 	
+	#if CLIENT
+		AddCallback_UIScriptReset( _UpdateStandingsScriptsFromClient )
+	#endif
+	
 	#if SERVER
 		ScenariosPersistence_GenerateTemplate()
 		AddCallback_OnClientConnected( ScenariosPersistence_SetupPlayer )
+		AddClientCommandCallback( "requestStandings", ClientCommand_ScenariosRequestStandings )
 	#endif
 }
-
 
 int function FS_Scenarios_GetEventScoreFromDatatable( int event )
 {
@@ -132,7 +137,7 @@ int function FS_Scenarios_GetEventScoreFromDatatable( int event )
 #if SERVER
 void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity victim = null, float value0 = -1 )
 {
-	if( !IsValid( player ) )
+	if( !IsValid( player ) || GetGameState() != eGameState.Playing ) //todo, scenarios based gamestate exclusive ~mkos
 		return
 
 	int score = player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
@@ -217,9 +222,9 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 
 	void function Scenarios_RegisterNetworking()
 	{
-		//type, value, count
-		Remote_RegisterClientFunction( "ServerCallback_SendScenariosStandings", "int", -1, 2, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
-		Remote_RegisterClientFunction( "ServerCallback_SignalScenariosStandings" )
+		//recap type, stat type, value, count
+		Remote_RegisterUIFunction( "ServerCallback_SendScenariosStandings", "int", 0, 3, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
+		Remote_RegisterUIFunction( "ServerCallback_SignalScenariosStandings" )
 	}
 	
 #endif //SERVER || CLIENT
@@ -272,7 +277,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		file.scenariosPlayerScorePersistence[ uid ][ type ] = value
 	}
 	
-	void function ScenariosPersistence_SetRoundScore( string uid, int type, int value )
+	void function ScenariosPersistence_AddRoundScore( string uid, int type, int value )
 	{
 		file.scenariosPlayerRoundStandings[ uid ][ type ] += value
 	}
@@ -281,7 +286,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	{
 		string uid = player.p.UID
 		
-		ScenariosPersistence_SetRoundScore( uid, type, value )
+		ScenariosPersistence_AddRoundScore( uid, type, value )
 		
 		int currentScore = ScenariosPersistence_GetScore( uid, type )
 		ScenariosPersistence_SetScore( uid, type, currentScore + value )
@@ -296,27 +301,28 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		return file.scenariosPlayerScorePersistence[ uid ]
 	}
 	
-	table<int,ScenariosRecapData> function Scenarios_FetchStandings( string uid, int standingType = STANDINGS_GLOBAL )
+	table<int,ScenariosRecapData> function Scenarios_FetchStandings( string uid, int standingType )
 	{		
-		table<int,ScenariosRecapData> recapStruct
-		
-		ScenariosStructType structRef
-		
 		switch( standingType )
 		{
 			case STANDINGS_GLOBAL:
-				structRef = file.scenariosPlayerScorePersistence
-				break 
+				return Scenarios_FetchStandings_internal( file.scenariosPlayerScorePersistence[ uid ] )
 				
 			case STANDINGS_ROUND:
-				structRef = file.scenariosPlayerRoundStandings
-				break 
+				return Scenarios_FetchStandings_internal( file.scenariosPlayerRoundStandings[ uid ] )
 				
 			default:
 				mAssert( false, "Invalid standings type." )
 		}
 		
-		foreach( int type, int statValue in structRef[ uid ] )
+		unreachable
+	}
+	
+	table<int,ScenariosRecapData> function Scenarios_FetchStandings_internal( table<int,int> recapInfo )
+	{
+		table<int,ScenariosRecapData> recapStruct
+		
+		foreach( int type, int statValue in recapInfo )
 		{
 			ScenariosRecapData recapData
 			
@@ -353,7 +359,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 				mAssert( recapStruct.isValid, "Invalid struct data for player " + string( player ) + " was invalid for statType: " + string( statType ) + " ENUMFIELD: " + GetEnumString( "FS_ScoreType", statType )  )
 			#endif
 				
-			Remote_CallFunction_NonReplay( player, "ServerCallback_SendScenariosStandings", STANDINGS_GLOBAL, statType, recapStruct.value, recapStruct.count )
+			Remote_CallFunction_UI( player, "ServerCallback_SendScenariosStandings", STANDINGS_GLOBAL, statType, recapStruct.value, recapStruct.count )
 		}
 		
 		////////////
@@ -366,90 +372,124 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			#if DEVELOPER
 				mAssert( recapStruct.isValid, "Invalid struct data for player " + string( player ) + " was invalid for statType: " + string( statType ) + " ENUMFIELD: " + GetEnumString( "FS_ScoreType", statType )  )
 			#endif
-				
-			Remote_CallFunction_NonReplay( player, "ServerCallback_SendScenariosStandings", STANDINGS_ROUND, statType, recapStruct.value, recapStruct.count )
+			
+			Remote_CallFunction_UI( player, "ServerCallback_SendScenariosStandings", STANDINGS_ROUND, statType, recapStruct.value, recapStruct.count )
 		}
 		
 		_ClearRoundData( uid )
 		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SignalScenariosStandings" )
+		Remote_CallFunction_UI( player, "ServerCallback_SignalScenariosStandings" )
 	}
 	
 	void function _ClearRoundData( string uid )
 	{
 		foreach( k,v in file.scenariosPlayerRoundStandings[ uid ] )
-			v = 0
+			file.scenariosPlayerRoundStandings[ uid ][ k ] = 0
+	}
+	
+	void function Scenarios_ClearAllData()
+	{
+		foreach( string uid, table<int,int> dataStruct in file.scenariosPlayerRoundStandings )
+		{
+			foreach( k,v in dataStruct )
+				file.scenariosPlayerRoundStandings[ uid ][ k ] = 0
+		}
+		
+		foreach( string uid, table<int,int> dataStruct in file.scenariosPlayerScorePersistence )
+		{
+			foreach( k,v in dataStruct )
+				file.scenariosPlayerScorePersistence[ uid ][ k ] = 0
+		}
+	}
+	
+	bool function ClientCommand_ScenariosRequestStandings( entity player, array<string> args )
+	{
+		bool notify = true
+		
+		if( args.len() > 0 )
+		{
+			if( args[ 0 ] == "false" )
+				notify = false
+		}
+		
+		if( !CheckRate( player, notify, 5 ) )
+			return true
+			
+		Scenarios_SendStandingsToClient( player )
+		return true
 	}
 	
 #endif //SERVER
 
 #if CLIENT 
 	
-	void function ServerCallback_SendScenariosStandings( int standingType, int scoreType, int value, int count )
+	void function _UpdateStandingsScriptsFromClient() //ran with callback to trigger notify
 	{
-		if( !file.isTransmitting )
-			file.isTransmitting = true
-			
-		ClientRecapStruct recap
-		
-		recap.value = value 
-		recap.count = count //probably should just calculate on client
-		
-		switch( standingType )
-		{
-			case STANDINGS_GLOBAL:
-				file.localPlayerGlobalStandings[ scoreType ] <- recap
-				break
-				
-			case STANDINGS_ROUND:
-				file.localPlayerRoundSettings[ scoreType ] <- recap
-				break 
-				
-			default:
-				mAssert( false, "Server specified an incorrect standings type during recap transmission" )
-		}
+		UpdateStandingsScriptsFromClient( true )
 	}
 	
-	void function ServerCallback_SignalScenariosStandings()
+	void function UpdateStandingsScriptsFromClient( bool notify )
 	{
-		file.isTransmitting = false
-		
 		entity player = GetLocalClientPlayer()
-			
-		#if DEVELOPER
-			foreach( int scoreType, ClientRecapStruct data in file.localPlayerGlobalStandings )
-				printt( "GLOBAL scoreType =", GetEnumString( "FS_ScoreType", scoreType ), "-- score:", data.value, "--Totals:", data.count )
-				
-			foreach( int scoreType, ClientRecapStruct data in file.localPlayerRoundSettings )
-				printt( "ROUND scoreType =", GetEnumString( "FS_ScoreType", scoreType ), "-- score:", data.value, "--Totals:", data.count )
-		#endif
 		
-		//RunUIScript( "UI_UpdateScenariosRecapMenu", file.localPlayerGlobalStandings, file.localPlayerRoundSettings )
+		if( IsValid( player ) )
+		{
+			string notifyParam = notify ? " true" : " false"
+			
+			RunUIScript( "UI_ScenariosTemplate_Init", ( file.scores.len() - 1 ) )
+			player.ClientCommand( "requestStandings" + notifyParam )
+		}
 	}
 	
-	ClientRecapStruct function Scenarios_GetLocalStanding( int standingType, int scoreType )
-	{
-		ClientRecapStruct inval
-		
-		switch( standingType )
+	#if DEVELOPER 
+		void function print_entity_array( array<entity> arr )
 		{
-			case STANDINGS_GLOBAL:
-				return file.localPlayerGlobalStandings[ scoreType ]			
-				break 
+			foreach( entity player in arr )
+				printt( player )
 				
-			case STANDINGS_ROUND:
-				return file.localPlayerRoundSettings[ scoreType ]
-				break
-				
-			default:
-				mAssert( false, "Server specified an incorrect standings type during recap transmission" )
-				break
+			printt( "COUNT = ", arr.len() )
 		}
+	#endif 
+	
+	
+	void function Scenarios_SendPlayerScoreLeaders()
+	{
+		array<entity> playerScores = GetPlayerArray()
 		
-		return inval
+		playerScores.sort
+		( 
+			int function( entity y, entity z )
+			{
+				int a = y.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+				int b = z.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+				
+				if ( a > b )
+					return -1
+				if ( a < b )
+					return 1
+				return 0
+			}
+		)
+		
+		playerScores.resize( minint( 10, GetPlayerArray().len() ) )
+		
+		foreach( entity player in playerScores )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			string playerName = player.GetPlayerName()
+			
+			if( playerName.find( "[" ) != -1 )
+				continue
+				
+			RunUIScript( "Scenarios_ClientToUi_ScoreLeaders", playerName, player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" ) )
+		}
+			
+		RunUIScript( "Scenarios_SetScoreLeaders" )
 	}
-
-#endif //CLIENT
+	
+#endif //CLIENT 
 
 ////////////////////////////////////////////////////////
 //////// 			STATS SHIPPING 				////////

@@ -198,8 +198,8 @@ void function Sequence_WaitingForPlayers()
 	}
 	
 	#if TRACKER
-		if( !Tracker_IsBatchStatsLoaded() && Flowstate_IsTrackerSupportedMode() )
-			WaitSignalOrTimeout( svGlobal.levelEnt, Tracker_GetMaxWaitForBatchLoad(), "BatchFetchComplete" )
+		if( bLog() && !Tracker_IsBatchStatsLoaded() && Flowstate_IsTrackerSupportedMode() )
+			waitthread WaitSignalOrTimeout( svGlobal.levelEnt, Tracker_GetMaxWaitForBatchLoad(), "BatchFetchComplete" )
 	
 		WaitFrame()
 	#endif
@@ -220,7 +220,7 @@ void function Sequence_WaitingForPlayers()
 
 void function Sequence_PickLoadout()
 {
-	if ( !Survival_CharacterSelectEnabled() || Gamemode() != eGamemodes.SURVIVAL ) 
+	if ( Playlist() == ePlaylists.fs_scenarios || !Survival_CharacterSelectEnabled() || Gamemode() != eGamemodes.SURVIVAL ) 
 	{
 		foreach ( player in GetPlayerArray() )
 		{

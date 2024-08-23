@@ -278,7 +278,8 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 //purpose of this client command: allow lg duelers to enable a handicap ( idk quake gods wanted it )
 bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
 {
-	if ( !CheckRate( player ) ) return false
+	if ( !CheckRate( player ) ) 
+		return false
 	
 	string param = ""
 	

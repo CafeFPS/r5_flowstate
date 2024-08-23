@@ -513,7 +513,7 @@ void function SetHostInvetoryAttachments()
 	#if DEVELOPER
 		array<string> attachmentsClone = clone attachments
 		attachmentsClone.insert( 0, "===CUSTOM INVENTORY LOADOUT===" )
-		printarray( attachmentsClone )
+		print_string_array( attachmentsClone )
 	#endif
 	
 	if( totalAttachments == 0 )
@@ -3513,7 +3513,7 @@ void function Gamemode1v1_Init( int eMap )
 	
 	BannerImages_1v1Init()
 	
-	AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
+	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
 	file.bRestEnabled = true
 }
 
@@ -5651,10 +5651,10 @@ array<string> function ValidateBlacklistedWeapons( array<string> Weapons )
 		{	
 			string weaponName = Weapons[ i ].slice( 0, sliceIndex )
 			
-			if( GetBlackListedWeapons().find( weaponName ) != -1 )
+			if( GetBlackListedWeapons().contains( weaponName ) )
 				Weapons.remove( i )
 		}
-		else 
+		else
 		{
 			if( GetBlackListedWeapons().contains( Weapons[ i ] ) )
 				Weapons.remove( i )

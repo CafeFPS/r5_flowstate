@@ -1444,7 +1444,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				group.IsFinished = true
 				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-				thread FS_Scenarios_SendRecapData( group )
+				FS_Scenarios_SendRecapData( group )
 
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
@@ -2448,6 +2448,7 @@ LocPairData function CustomSpawns()
 			break
 	}
 	
+	//this was just for testing of meta data and can be removed ~mkos
 	array<table> metaData
 	
 	foreach( spawn in spawns )

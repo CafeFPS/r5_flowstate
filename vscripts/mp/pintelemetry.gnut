@@ -54,6 +54,7 @@ global function SavePlayerData
 global function Tracker_FetchPlayerData
 global function Tracker_SavePlayerData
 global function SetAfkToRest
+global function ArrayRemoveBot //todo move to code
 
 #if TRACKER
 	global const bool STUB = false
@@ -1139,9 +1140,9 @@ void function __SetPlayerSyncData( entity player )
 	{		
 		#if DEVELOPER 
 			printt( "\n\nIncoming StatsKeys:" )
-			printarray( statKeys )
+			print_string_array( statKeys )
 			printt( "\n\nIncoming Persistence Settings:" )
-			printarray( PersistenceData )
+			print_string_array( PersistenceData )
 		#endif 
 	
 		int SYNC_Data_length = statKeys.len()
@@ -2151,6 +2152,12 @@ bool function bBotEnabled()
 	return file.bChatbotEnabled
 }
 
+array<entity> function ArrayRemoveBot( array<entity> players )
+{
+	players.fastremovebyvalue( file.entityBotEnt )
+	return players
+}
+
 float function Tracker_GetMaxWaitForBatchLoad()
 {
 	return file.maxWaitForBatchLoad
@@ -2293,7 +2300,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		{
 			#if DEVELOPER
 				Warning( "fetching last attacker for " + string( victim ) )
-			#endif 
+			#endif
 			
 			entity potentialAttacker = Bleedout_GetCreditedKiller( victim )
 			
@@ -5230,6 +5237,7 @@ DamageEvent function Tracker_GetCurrentEventForAttackerOnVictim( int attackerHan
 bool function Tracker_IsRestrictedServer(){ return false }
 void function Tracker_SetRestrictedServer( bool _ ){}
 string function Tracker_PrintAllPlayerMetrics( bool _ ){ return "" }
+array<entity> function ArrayRemoveBot( array<entity> _ ){ return _ }
 
 void function PIN_Init()
 {

@@ -693,6 +693,7 @@ void function ShowScoreboardMP()
 	}
 }
 
+//Todo: create standalone version for each mode and init for the mode. 
 void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreHeaderRui )
 {
 	array<string> headers = GameMode_GetScoreboardColumnTitles( GAMETYPE )

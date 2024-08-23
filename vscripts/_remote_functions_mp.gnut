@@ -180,6 +180,8 @@ string function FindFuncName_ByID( int funcID )
 	}
 #endif
 
+
+//NOTICE: Param ranges are NON-INCLUSIVE ~mkos
 void function RemoteFunctions_Init_Begin()
 {
 	Remote_BeginRegisteringFunctions()

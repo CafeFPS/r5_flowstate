@@ -5,7 +5,7 @@ Todo:
 */
 
 #if SERVER
-const bool DEBUG_LOCK_STEP_PICK = true
+const bool DEBUG_LOCK_STEP_PICK = true //Todo: switch off in print/debug nuke before release
 #endif
 #if CLIENT
 const bool DEBUG_CHARACTER_SELECT = false
@@ -759,7 +759,9 @@ vector function GetSquadIntroSquadFormationPosition( vector mainPosition, vector
 
 void function DoAnimatedChampionSquadCardsPresentation()
 {
-	printt( "CHARACTER SELECT: DoAnimatedChampionSquadCardsPresentation" )
+	#if DEVELOPER
+		printt( "CHARACTER SELECT: DoAnimatedChampionSquadCardsPresentation" )
+	#endif
 
 	string voLine               = GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket( eSurvivalCommentaryBucket.INTRO_CHAMPION_CARD ) )
 	float fadeToBlackDuration   = 0.5
@@ -922,7 +924,7 @@ void function DoChampionSquadCardsPresentation()
 	int championSquad1EHI = GetGlobalNetInt( "championSquad1EEH" )
 	int championSquad2EHI = GetGlobalNetInt( "championSquad2EEH" )
 
-	if ( championSquad1EHI != EHI_null )
+	if ( championSquad1EHI != EHI_null && !g_bSinglePlayerChampion() )
 	{
 		NestedGladiatorCardHandle handle = CreateNestedGladiatorCard( rui, "cardBoxLeft", eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL, eGladCardPresentation.FULL_BOX )
 		ChangeNestedGladiatorCardOwner( handle, championSquad1EHI, Time(), eGladCardLifestateOverride.ALIVE )
@@ -934,7 +936,7 @@ void function DoChampionSquadCardsPresentation()
 		ChangeNestedGladiatorCardOwner( handle, championEHI, Time() + 0.2, eGladCardLifestateOverride.ALIVE )
 		nestedGCHandles.append( handle )
 	}
-	if ( championSquad2EHI != EHI_null )
+	if ( championSquad2EHI != EHI_null && !g_bSinglePlayerChampion() )
 	{
 		NestedGladiatorCardHandle handle = CreateNestedGladiatorCard( rui, "cardBoxRight", eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL, eGladCardPresentation.FULL_BOX )
 		ChangeNestedGladiatorCardOwner( handle, championSquad2EHI, Time() + 0.4, eGladCardLifestateOverride.ALIVE )
@@ -964,14 +966,9 @@ void function DoChampionSquadCardsPresentation()
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_BannerChampion" )
 	
-	if( Gamemode() == eGamemodes.fs_dm )
+	string timeToWait = Gamemode() == eGamemodes.fs_dm ? "championDisplayEndTime" : "pickLoadoutGamestateEndTime"
 	{
-		while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
-			WaitFrame()
-	}
-	else 
-	{
-		while( Time() < GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
+		while( Time() < GetGlobalNetTime( timeToWait ) )
 			WaitFrame()
 	}
 }
