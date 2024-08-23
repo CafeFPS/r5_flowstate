@@ -49,7 +49,7 @@ global const LOG_ERRORS = true
 // ╚══════╝
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 
-global function PIN_Callback_CheckReload
+global function g__InternalCheckReload //todo: move somewhere ideal
 global function SavePlayerData
 global function Tracker_FetchPlayerData
 global function Tracker_SavePlayerData
@@ -1307,7 +1307,6 @@ void function PIN_Init()
 	
 	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
 
-	RegisterSignal( "ReloadCheckComplete" )
 	RegisterSignal( "BatchFetchComplete" )
 	RegisterSignal( "SyncDataFullyLoaded" )
 	RegisterSignal( "PlayerStatsReady" )
@@ -1316,8 +1315,6 @@ void function PIN_Init()
 	Tracker_Init()
 	PlayerDataCallbacks_Init()
 	WeaponSettings_Init()
-	
-	SetServerReloadReadyState( ReloadState.BUSY )
 	
 	if( !bRunTracker )
 		file.LogOn = false
@@ -1415,8 +1412,7 @@ void function SetStartLog()
 
 void function Tracker_SettingsInit()
 {
-	settings.host_autoReloadRate 		= GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
-	
+	//todo: cleanup mode related stuff
 	file.LogOn 							= GetCurrentPlaylistVarBool( "logging_enabled", false)
 	file.LogE 							= GetCurrentPlaylistVarBool( "logging_encryption", false)
 	file.bChatbotEnabled				= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
@@ -1428,9 +1424,9 @@ void function Tracker_SettingsInit()
 	file.gamemode_type_1v1 				= g_is1v1GameType() //returns true if mode is confifugred as 1v1 type
 	
 	if( file.bChatbotEnabled )
-		file.sBotName = SQ_GetSetting__internal("settings.CHATBOT_PREFIX")
+		file.sBotName = SQ_GetSetting__internal( "settings.CHATBOT_PREFIX" )
 	
-	//init stat bools (must be before string inits)
+	//init stat bools (must be before string inits) todo: cleanup
 	file.global_stats 						= GetCurrentPlaylistVarBool( "use_global_stats", false )
 	file.restricted_server 					= GetCurrentPlaylistVarBool( "restricted_server", false )
 	file.DefaultLock1v1Setting 				= GetCurrentPlaylistVarBool("default_lock1v1_setting", true)
@@ -1447,10 +1443,12 @@ void function Tracker_SettingsInit()
 	file.restricted_whitelist_message 		= GetCurrentPlaylistVarString( "restricted_whitelist_message", "You are whitelisted to play on this restricted server." )
 	file.restricted_admin_message 			= GetCurrentPlaylistVarString( "restricted_admin_message", "You are an admin." )
 
+	//motd
 	file.bUseOnlineMOTD 					= GetCurrentPlaylistVarBool( "use_online_motd", false )
 	file.bMotdEnabled						= GetCurrentPlaylistVarBool( "enable_motd", false )
 	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "" )
 
+	//wait for players to connect before querying batch player stats
 	file.maxWaitForBatchLoad				= GetCurrentPlaylistVarFloat( "tracker_max_wait", 7.0 )
 }
 
@@ -5096,42 +5094,15 @@ float function Tracker_DecideTimeRemaining()
 
 // SHARED
 
-	struct {
-		
-		float host_autoReloadRate
-	
-	} settings 
-	
-	enum ReloadState 
-	{	
-		BUSY = 0
-		READY = 1
-	};
-	
-	void function SetServerReloadReadyState( int state )
-	{
-		//TODO: ( after internal implementation is done )
-		//SetAutoReloadState( state ) 
-		
-		if( state == 1 )
-		{
-			SetConVarFloat( "host_autoReloadRate", settings.host_autoReloadRate )
-		}
-		else 
-		{
-			SetConVarFloat( "host_autoReloadRate", 0 )
-		}	
-	}
-	
+	//Simplified as per amos request with SetAutoReloadState()
+
 	//gamemode dev is responsible for placement of this reload callback
 	//internal check after game related / logging activities are done.
-	void function PIN_Callback_CheckReload()
-	{
-		thread CheckAndResetReadyState()
-	}
 
-	void function CheckAndResetReadyState()
+	void function g__InternalCheckReload()
 	{
+		mAssert( IsThreadTop(), "This function should be called with waitthread" )
+		
 		if( file.LogOn )
 		{
 			int max = 0
@@ -5142,17 +5113,15 @@ float function Tracker_DecideTimeRemaining()
 				
 				if ( max >= 50 )
 				{
-					sqerror( format("Timeout while waiting for log to finish in %s()...", FUNC_NAME() ) )
+					sqerror( format( "Timeout while waiting for log to finish in %s()...", FUNC_NAME() ) )
 					break
 				}
 			}
 		}
 	
-		SetServerReloadReadyState( ReloadState.READY )
+		SetAutoReloadState( true )
 		wait 1.2
-		SetServerReloadReadyState( ReloadState.BUSY )
-		
-		Signal( svGlobal.levelEnt, "ReloadCheckComplete" )
+		SetAutoReloadState( false )
 	}
 
 
@@ -5244,10 +5213,7 @@ void function PIN_Init()
 	if( IsLobby() )
 		return
 	
-	RegisterSignal( "ReloadCheckComplete" )
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
-	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
-	SetServerReloadReadyState( ReloadState.BUSY )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	
 	if ( GetCurrentPlaylistVarBool( "cc_administration", false ) )

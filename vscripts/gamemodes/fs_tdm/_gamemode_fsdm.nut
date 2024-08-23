@@ -3819,10 +3819,7 @@ void function SimpleChampionUI()
 			}
 		}
 
-		SetGameState( eGameState.Postmatch )
-		
-		PIN_Callback_CheckReload()	
-		WaitSignal( svGlobal.levelEnt, "ReloadCheckComplete" ) //possibly use flag
+		waitthread g__InternalCheckReload()
 		
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
 	} //flowstate rounds
@@ -3913,8 +3910,7 @@ void function SimpleChampionUI()
 	// 		SET STATE FOR INTERNAL CHECKS 	  //
 	////////////////////////////////////////////
 	
-	SetGameState( eGameState.Postmatch )
-	PIN_Callback_CheckReload()
+	waitthread g__InternalCheckReload()
 
 	
 	////////////////////////////////
@@ -4073,8 +4069,7 @@ void function SimpleChampionUI()
 	/////	 NEXT ROUND NOW 	////
 	////////////////////////////////
 
-	file.currentRound++		
-	SetGameState( eGameState.Playing )
+	file.currentRound++
 }
 
 entity function GetMainRingBoundary()

@@ -121,8 +121,9 @@ void function SV_CL_Onboarding_Init()
 
 		if ( OnboardingEnabled() )
 			thread Sequence_WaitingForPlayers()
-			
-		AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
+		
+		if( Gamemode() == eGamemodes.SURVIVAL )
+			AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
 	#endif
 }
 
