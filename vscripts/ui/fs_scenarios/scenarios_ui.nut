@@ -11,6 +11,7 @@ global function ServerCallback_SignalScenariosStandings
 
 global function Scenarios_ClientToUi_ScoreLeaders
 global function Scenarios_SetScoreLeaders
+global function Scenarios_ClearSavedScores
 
 
 #if DEVELOPER
@@ -27,9 +28,10 @@ struct ClientRecapStruct
 	int count
 }
 
-//mock enum for DEV prints
+//ui copy from: sh_gamemode_scenarios.nut
 #if DEVELOPER 
-	global enum FS_ScoreType { //change datatable if you change this
+	global enum FS_ScoreType 
+	{ 
 		PLAYERSCORE = -1,
 		SURVIVAL_TIME, /* 0 */
 		DOWNED, /* 1 */
@@ -45,7 +47,7 @@ struct ClientRecapStruct
 		BONUS_BECOMES_SOLO_PLAYER, /* 11 */
 		BONUS_KILLED_SOLO_PLAYER, /* 12 */
 	}
-#endif 
+#endif
 
 typedef StandingsTable table<int,ClientRecapStruct>
 
@@ -103,6 +105,7 @@ void function InitScenariosMenu( var menu ) //need to add button events for cont
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ScenariosStandingsMenuOnNavBack )
 	
 	AddUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected )
+	//AddUICallback_LevelShutdown( Scenarios_ClearSavedScores )
 }
 
 void function UI_ScenariosTemplate_Init( int count )
@@ -148,6 +151,11 @@ void function UI_ScenariosTemplate_Init( int count )
 	}
 	
 	file.playerScoreLeaders.clear()
+}
+
+void function Scenarios_ClearSavedScores()
+{
+	
 }
 
 void function ReTransmitStandingsIfConnected()

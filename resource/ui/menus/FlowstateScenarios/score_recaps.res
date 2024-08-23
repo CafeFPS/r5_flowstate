@@ -7,6 +7,14 @@
 	//	tall			%100
 	//}
 	
+	////////////////
+	// DISCLAIMER //
+	////////////////
+	// The number in the Names of Elements are used by the script to 
+	// auto correlate enum fields with their display counterpart.
+	// They must match the enum value for FS_ScoreTypes for their field.
+	
+	
 	Background
 	{
 		ControlName 			RuiPanel
@@ -599,7 +607,7 @@
 		pin_to_sibling_corner		TOP_LEFT
 	}
 	
-	TotalsRow0 //kills
+	TotalsRow2 //kills
 	{
 		ControlName					Label
 		labelText					"0"
@@ -617,7 +625,7 @@
 		pin_to_sibling_corner		BOTTOM_LEFT
 	}
 	
-	TotalsRow1 //deaths
+	TotalsRow8 //deaths
 	{
 		ControlName					Label
 		labelText					"0"
@@ -630,12 +638,12 @@
 		//bgcolor_override			"70 70 70 0"
 		//paintbackground				1
 		
-		pin_to_sibling				TotalsRow0
+		pin_to_sibling				TotalsRow2
 		pin_corner_to_sibling		TOP_LEFT
 		pin_to_sibling_corner		BOTTOM_LEFT
 	}
 	
-	TotalsRow2 //downs
+	TotalsRow1 //downs
 	{
 		ControlName					Label
 		labelText					"0"
@@ -648,7 +656,7 @@
 		//bgcolor_override			"70 70 70 0"
 		//paintbackground				1
 		
-		pin_to_sibling				TotalsRow1
+		pin_to_sibling				TotalsRow8
 		pin_corner_to_sibling		TOP_LEFT
 		pin_to_sibling_corner		BOTTOM_LEFT
 	}
@@ -666,7 +674,7 @@
 		//bgcolor_override			"70 70 70 0"
 		//paintbackground				1
 		
-		pin_to_sibling				TotalsRow2
+		pin_to_sibling				TotalsRow1
 		pin_corner_to_sibling		TOP_LEFT
 		pin_to_sibling_corner		BOTTOM_LEFT
 	}
@@ -743,7 +751,7 @@
 		pin_to_sibling_corner		BOTTOM_LEFT
 	}
 	
-	TotalsRow8 //ring penalty
+	TotalsRow9 //ring penalty
 	{
 		ControlName					Label
 		labelText					"0"

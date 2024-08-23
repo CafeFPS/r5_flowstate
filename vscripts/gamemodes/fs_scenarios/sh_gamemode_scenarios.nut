@@ -15,6 +15,7 @@ global function Scenarios_RegisterNetworking
 	global function FS_Scenarios_UpdatePlayerScore
 	
 	global function ScenariosPersistence_GetScore
+	global function ScenariosPersistence_GetCount
 	global function ScenariosPersistence_FetchPlayerScoreTable
 	
 	global function Scenarios_SendStandingsToClient
@@ -30,6 +31,10 @@ global function Scenarios_RegisterNetworking
 		global function TrackerStats_ScenariosTeamWins
 		global function TrackerStats_ScenariosSoloWins
 	#endif
+	
+	#if DEVELOPER 
+		global function DEV_PrintScores
+	#endif 
 	
 #endif //SERVER
 
@@ -145,7 +150,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	int newScore = score + eventScore
 
 	player.SetPlayerNetInt( "FS_Scenarios_PlayerScore", newScore )
-	ScenariosPersistence_IncrementStat( player, FS_ScoreType.PLAYERSCORE, newScore )
+	__ScenariosPersistence_IncrementStat( player, FS_ScoreType.PLAYERSCORE, newScore )
 
 	#if DEVELOPER
 		printt( "NEW SCORE", player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" ), player, GetEnumString( "FS_ScoreType", event ) )
@@ -159,43 +164,43 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 				survivalTimeScoreToAdd *= int( value0 / 2 )
 				
 			AddPlayerScore( player, "FS_Scenarios_SurvivalTime", null, "", survivalTimeScoreToAdd )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.SURVIVAL_TIME, survivalTimeScoreToAdd )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.SURVIVAL_TIME, survivalTimeScoreToAdd )
 		break
 		case FS_ScoreType.DOWNED:
 			AddPlayerScore( player, "FS_Scenarios_EnemyDowned", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.DOWNED, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.DOWNED, 1 )
 		break
 		case FS_ScoreType.KILL:
 			AddPlayerScore( player, "FS_Scenarios_EnemyKilled", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.KILL, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.KILL, 1 )
 		break
 		case FS_ScoreType.BONUS_DOUBLE_DOWNED:
 			AddPlayerScore( player, "FS_Scenarios_EnemyDoubleDowned", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_DOUBLE_DOWNED, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_DOUBLE_DOWNED, 1 )
 		break
 		case FS_ScoreType.BONUS_TRIPLE_DOWNED:
 			AddPlayerScore( player, "FS_Scenarios_EnemyTripleDowned", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_TRIPLE_DOWNED, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_TRIPLE_DOWNED, 1 )
 		break
 		case FS_ScoreType.BONUS_TEAM_WIPE:
 			AddPlayerScore( player, "FS_Scenarios_BonusTeamWipe", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_TEAM_WIPE, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_TEAM_WIPE, 1 )
 		break
 		case FS_ScoreType.TEAM_WIN:
 			AddPlayerScore( player, "FS_Scenarios_TeamWin", null, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.TEAM_WIN, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.TEAM_WIN, 1 )
 		break
 		case FS_ScoreType.SOLO_WIN:
 			AddPlayerScore( player, "FS_Scenarios_SoloWin", null, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.SOLO_WIN, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.SOLO_WIN, 1 )
 		break
 		case FS_ScoreType.PENALTY_DEATH:
 			AddPlayerScore( player, "FS_Scenarios_PenaltyDeath", null, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.PENALTY_DEATH, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.PENALTY_DEATH, 1 )
 		break
 		case FS_ScoreType.PENALTY_RING:
 			AddPlayerScore( player, "FS_Scenarios_PenaltyRing", null, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.PENALTY_RING, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.PENALTY_RING, 1 )
 		break
 		case FS_ScoreType.PENALTY_DESERTER:
 			
@@ -203,12 +208,12 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		
 		case FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER:
 			AddPlayerScore( player, "FS_Scenarios_BecomesSoloPlayer", null, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER, 1 )
 		break
 		
 		case FS_ScoreType.BONUS_KILLED_SOLO_PLAYER:
 			AddPlayerScore( player, "FS_Scenarios_KilledSoloPlayer", victim, "", eventScore )
-			ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, eventScore )
+			__ScenariosPersistence_IncrementStat( player, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, 1 )
 		break
 	}
 }
@@ -269,7 +274,18 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		if( !ScenariosPersistence_PlayerExists( uid ) )
 			return 0
 		
-		return file.scenariosPlayerScorePersistence[ uid ][ type ]
+		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( type )
+		int multiply = scoreValue != 0 ? scoreValue : 1
+		
+		return file.scenariosPlayerScorePersistence[ uid ][ type ] * multiply
+	}
+	
+	int function Scenarios_CalculateScore( int count )
+	{
+		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( count )
+		int multiply = scoreValue != 0 ? scoreValue : 1
+		
+		return count * multiply
 	}
 	
 	void function ScenariosPersistence_SetScore( string uid, int type, int value )
@@ -281,15 +297,26 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	{
 		file.scenariosPlayerRoundStandings[ uid ][ type ] += value
 	}
+	
+	void function ScenariosPersistence_AddMatchScore( string uid, int type, int value )
+	{
+		file.scenariosPlayerScorePersistence[ uid ][ type ] += value
+	}
+	
+	int function ScenariosPersistence_GetCount( string uid, int type )
+	{
+		if( !ScenariosPersistence_PlayerExists( uid ) ) //Todo(dw): remove the need to check
+			return 0
+		
+		return file.scenariosPlayerScorePersistence[ uid ][ type ]
+	}
 
-	void function ScenariosPersistence_IncrementStat( entity player, int type, int value )
+	void function __ScenariosPersistence_IncrementStat( entity player, int type, int value )
 	{
 		string uid = player.p.UID
 		
 		ScenariosPersistence_AddRoundScore( uid, type, value )
-		
-		int currentScore = ScenariosPersistence_GetScore( uid, type )
-		ScenariosPersistence_SetScore( uid, type, currentScore + value )
+		ScenariosPersistence_AddMatchScore( uid, type, value )
 	}
 	
 	table<int,int> function ScenariosPersistence_FetchPlayerScoreTable( string uid )
@@ -334,8 +361,8 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			int scoreAward = scoreAward_temp > 0 ? scoreAward_temp : 1
 			
 			recapData.type 		= type
-			recapData.value 	= statValue
-			recapData.count		= statValue / scoreAward
+			recapData.value 	= Scenarios_CalculateScore( statValue )
+			recapData.count		= statValue
 			recapData.isValid	= true
 
 			recapStruct[ type ] <- recapData
@@ -418,6 +445,16 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		Scenarios_SendStandingsToClient( player )
 		return true
 	}
+	
+	#if DEVELOPER 
+		void function DEV_PrintScores()
+		{
+			foreach( int type, int score in file.scores )
+			{
+				printt( "type:", type, "[" + GetEnumString( "FS_ScoreType", type ) + "]", "score=", score )
+			}
+		}
+	#endif
 	
 #endif //SERVER
 
@@ -504,32 +541,32 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 
 	var function TrackerStats_ScenariosKills( string uid )
 	{
-		return ScenariosPersistence_GetScore( uid, FS_ScoreType.KILL ) / FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.KILL )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.KILL )
 	}
 
 	var function TrackerStats_ScenariosDeaths( string uid )
 	{
-		return abs( ScenariosPersistence_GetScore( uid, FS_ScoreType.PENALTY_DEATH ) ) / abs( FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.PENALTY_DEATH ) )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.PENALTY_DEATH )
 	}
 	
 	var function TrackerStats_ScenariosDowns( string uid )
 	{
-		return ScenariosPersistence_GetScore( uid, FS_ScoreType.DOWNED ) / FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.DOWNED )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.DOWNED )
 	}
 	
 	var function TrackerStats_ScenariosTeamWipe( string uid )
 	{
-		return ScenariosPersistence_GetScore( uid, FS_ScoreType.BONUS_TEAM_WIPE ) / FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.BONUS_TEAM_WIPE )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.BONUS_TEAM_WIPE )
 	}
 	
 	var function TrackerStats_ScenariosTeamWins( string uid )
 	{
-		return ScenariosPersistence_GetScore( uid, FS_ScoreType.TEAM_WIN ) / FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.TEAM_WIN )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.TEAM_WIN )
 	}
 	
 	var function TrackerStats_ScenariosSoloWins( string uid )
 	{
-		return ScenariosPersistence_GetScore( uid, FS_ScoreType.SOLO_WIN ) / FS_Scenarios_GetEventScoreFromDatatable( FS_ScoreType.SOLO_WIN )
+		return ScenariosPersistence_GetCount( uid, FS_ScoreType.SOLO_WIN )
 	}
 	
 #endif //SERVER && TRACKER 
