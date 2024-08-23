@@ -219,6 +219,10 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	}
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+	
+	if( !group.isValid ) //Do not calculate stats for players not in a round
+		return
+	
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
 	float elapsedTime = Time() - group.startTime
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
@@ -289,6 +293,8 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 {
 	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
 		return
+		
+	
 	
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
 	
@@ -370,7 +376,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
-	if( IsValid( group ) && !group.IsFinished )
+	if( IsValid( group ) && group.isValid && !group.IsFinished )
 		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
 
 	FS_Scenarios_HandleGroupIsFinished( player, null )
