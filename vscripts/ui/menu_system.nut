@@ -71,6 +71,14 @@ void function InitSystemMenu( var newMenuArg ) //
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnSystemMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnSystemMenu_Close )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnSystemMenu_NavigateBack )
+
+	AddUICallback_LevelShutdown
+	(
+		void function()
+		{
+			file.motdText = ""
+		}
+	)
 }
 
 void function InitSystemPanelMain( var panel )
