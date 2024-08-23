@@ -262,11 +262,11 @@ void function PlayerWaypoint_CreateCallback( entity wp )
 		case eWaypoint.PING_LOCATION:
 			if ( WaypointOwnerIsMuted( wp ) )
 				return
-			InstanceLocationPing( wp )
+			thread InstanceLocationPing_Thread( wp )
 			break
 
 		case eWaypoint.BASIC_LOCATION:
-			InstanceLocationPing( wp )
+			thread InstanceLocationPing_Thread( wp )
 			break
 
 		case eWaypoint.PING_LOOT:
@@ -278,6 +278,9 @@ void function PlayerWaypoint_CreateCallback( entity wp )
 		case eWaypoint.BASIC_POI:
 			break
 
+		case eWaypoint.TRAIN:
+			InstanceWP_WinterExpress_Train( wp )
+			break
 	}
 }
 
@@ -667,6 +670,37 @@ void function InstanceWP_Basic( entity wp )
 
 }
 
+void function InstanceWP_WinterExpress_Train( entity wp )
+{
+	entity train = wp.GetParent()
+
+	var wRui = CreateWaypointRui( $"ui/waypoint_basic_entpos.rpak", 200 )
+	SetWaypointRui_HUD( wp, wRui )
+	RuiKeepSortKeyUpdated( wRui, true, "targetPos" )
+	RuiSetFloat( wRui, "iconSize", 100.0 )
+	RuiSetFloat( wRui, "iconSizePinned", 120.0 )
+	RuiSetBool( wRui, "useInactiveScalar", false )
+	RuiSetBool( wRui, "completeADSFade", true )
+	RuiSetFloat( wRui, "fadeDistNear", 150.0 )
+	RuiSetFloat( wRui, "fadeDistFar", 600.0 )
+	RuiTrackFloat3( wRui, "playerAngles", GetLocalViewPlayer(), RUI_TRACK_CAMANGLES_FOLLOW )
+	RuiSetFloat3( wRui, "targetOffset", <0, 0, 46> )
+
+	var fRui = FullMap_CommonAdd( $"ui/in_world_minimap_square_simple.rpak" )
+	wp.wp.ruiFullmap = fRui
+	Fullmap_AddRui( fRui )
+	RuiSetFloat( fRui, "objectSize", FULLMAP_SIZE_SMALL )
+	RuiSetBool( fRui, "doAnnounceEffect", true )
+
+	RuiTrackFloat3( wRui, "targetPos", train, RUI_TRACK_OVERHEAD_FOLLOW )
+	RuiTrackFloat3( fRui, "objectPos", train, RUI_TRACK_OVERHEAD_FOLLOW )
+
+	RuiSetImage( wRui, "iconImage", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination_desaturated" )
+	RuiSetImage( fRui, "iconImage", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination_desaturated" )
+
+	RuiTrackGameTime( wRui, "fadeOutEndTime", wp, RUI_TRACK_WAYPOINT_GAMETIME, 0 )
+	RuiTrackGameTime( fRui, "fadeOutEndTime", wp, RUI_TRACK_WAYPOINT_GAMETIME, 0 )
+}
 #endif // CLIENT
 
 #if SERVER
@@ -1363,8 +1397,14 @@ var function AddLocationPingToFullmapInternal( asset icon, float iconSize, vecto
 	return rui
 }
 
-void function InstanceLocationPing( entity wp )
+void function InstanceLocationPing_Thread( entity wp )
 {
+	Assert( IsNewThread(), "Must be threaded off" )
+
+	if ( !IsValid( wp ) )
+		return
+
+	EndSignal( wp, "OnDestroy" )
 	int wpType = wp.GetWaypointType()
 	Assert( wpType == eWaypoint.PING_LOCATION || wpType == eWaypoint.BASIC_LOCATION )
 
@@ -1375,9 +1415,21 @@ void function InstanceLocationPing( entity wp )
 		return
 	}
 
-	if ( viewPlayer.GetTeamMemberIndex() < 0 )
+	#if DEV
+		if ( viewPlayer.GetTeamMemberIndex() < 0 )
+			Warning( "%s(): team member index was invalid.", FUNC_NAME() )
+	#endif // DEV
+
+	// This can happen through reconnect or late join, the teammember index is not valid, need to wait until it is before instancing the waypoint on the Client
+	while ( IsValid( viewPlayer ) && viewPlayer.GetTeamMemberIndex() < 0 )
 	{
-		Warning( "%s(): team member index was invalid.", FUNC_NAME() )
+		WaitFrame()
+		viewPlayer = GetLocalViewPlayer()
+	}
+
+	if ( !IsValid( viewPlayer ) )
+	{
+		Warning( "%s(): no view-player.", FUNC_NAME() )
 		return
 	}
 
@@ -1397,7 +1449,15 @@ void function InstanceLocationPing( entity wp )
 	#endif
 
 	entity owner = wp.GetOwner()
-	
+
+	if ( !IsValid( owner ) )
+	{
+		printt( format( "New ping #%d has no owner.", ticketID ) )
+		return
+	}
+
+	EndSignal( owner, "OnDestroy" )
+
 	if ( (owner == viewPlayer) && Ping_TicketIDIsLocallyCanceled( ticketID ) )
 	{
 		printt( format( "New ping #%d has already been canceled locally.", ticketID ) )
@@ -1407,10 +1467,12 @@ void function InstanceLocationPing( entity wp )
 			return
 	}
 
-	if ( !IsValid( owner ) )
+	// This can happen with reconnect or late join. If the loadoutSlot is not ready, wait until it is
+	if ( owner.IsPlayer() && !LoadoutSlot_IsReady( ToEHI( owner ), Loadout_CharacterClass() ) )
 	{
-		printt( format( "New ping #%d has no owner.", ticketID ) )
-		return
+		printf( "New ping #%d owners (%s) loadout slot wasn't ready.", ticketID, string( owner ) )
+
+		LoadoutSlot_WaitForItemFlavor( ToEHI( owner ), Loadout_CharacterClass() )
 	}
 
 	// store the latest valid waypoint ticket id so that we can cancel it when needed.
@@ -1888,13 +1950,15 @@ void function OnPlayerWaypointDestroyed( entity wp )
 	entity owner = wp.GetOwner()
 	if ( IsValid( owner ) && owner.IsPlayer() )
 	{
-		owner.p.pings.locations.fastremovebyvalue( wp )
-		owner.p.pings.loots.fastremovebyvalue( wp )
+		owner.p.pings.locations.removebyvalue( wp )
+		owner.p.pings.loots.removebyvalue( wp )
 	}
 }
 
 void function WaypointTimeout_THREAD( entity wp, float duration )
 {
+	if ( !IsValid( wp ) )
+		return
 	wp.EndSignal( "OnDestroy" )
 	wp.Signal( SIGNAL_WAYPOINT_TIMEOUT_BEGIN )
 	wp.EndSignal( SIGNAL_WAYPOINT_TIMEOUT_BEGIN )
@@ -2513,6 +2577,24 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 	return wp
 }
 
+void function DestroyAllLocationWaypointsForPlayer( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
+	array<entity> waypoints = clone player.p.pings.locations
+	foreach( entity wp in waypoints )
+	{
+		if ( IsValid( wp ) )
+			wp.Destroy()
+	}
+}
+
+void function DeleteWaypointsForLootItem( entity lootItem )
+{
+	foreach ( entity wp in Waypoint_GetWaypointsForEntity( lootItem ) )
+		wp.Destroy()
+}
 
 void function DeleteWaypoint_Safe( entity player, entity wpEnt )
 {
@@ -2523,9 +2605,6 @@ void function DeleteWaypoint_Safe( entity player, entity wpEnt )
 	if ( wpEnt.GetClassName() != PLAYER_WAYPOINT_CLASSNAME )
 		return
 
-	player.p.pings.locations.fastremovebyvalue( wpEnt )
-	player.p.pings.loots.fastremovebyvalue( wpEnt )
-
 	wpEnt.Destroy()
 }
 
@@ -2533,12 +2612,7 @@ void function DeleteWaypointByPingTicketID( entity player, int ticketID )
 {
 	entity wp = Waypoint_FindPingByTicketID( player, ticketID )
 	if ( IsValid( wp ) )
-	{
-		player.p.pings.locations.fastremovebyvalue( wp )
-		player.p.pings.loots.fastremovebyvalue( wp )
-
 		wp.Destroy()
-	}
 }
 
 void function Waypoint_BumpAnnounceEffect( entity wp )
@@ -2562,13 +2636,15 @@ bool function PlayerAttemptDibsOnLootWaypoint( entity player, entity wpEnt )
 	entity oldOwner = wpEnt.GetOwner()
 	if ( oldOwner )
 	{
-		oldOwner.p.pings.loots.fastremovebyvalue( wpEnt )
+		oldOwner.p.pings.loots.removebyvalue( wpEnt )
 		wpEnt.SetOwner( null )
 		SetTicketIDForWaypoint( wpEnt, -1 )
+		wpEnt.wp.oldOwner = oldOwner
 	}
 
 	SetDibsPlayerForLootWaypoint( wpEnt, player )
 	thread WaypointTimeout_THREAD( wpEnt, 240.0 )
+	thread WaypointDestroyOnPlayerDestroyed( wpEnt, player )
 	return true
 }
 
@@ -2581,6 +2657,22 @@ bool function PlayerAttemptDibsOnLootWaypointUndo( entity player, entity wpEnt )
 	SetDibsPlayerForLootWaypoint( wpEnt, null )
 	thread WaypointTimeout_THREAD( wpEnt, 7.0 )
 	return true
+}
+
+void function WaypointDestroyOnPlayerDestroyed( entity wp, entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( wp, "OnDestroy" )
+
+	OnThreadEnd(
+		function () : ( wp )
+		{
+			if ( IsValid( wp ) )
+				wp.Destroy()
+		}
+	)
+
+	WaitForever()
 }
 
 void function Waypoint_ClearPlayerSimilarPingsForReply( entity player, entity wpEnt, int pingReply )
@@ -2611,24 +2703,18 @@ void function Waypoint_ClearPlayerSimilarPingsForReply( entity player, entity wp
 	}
 
 	array<entity> deadPings
-	foreach( entity wp in player.p.pings.locations )
+	foreach ( entity wp in player.p.pings.locations )
 	{
-		if ( wp == wpEnt )
+		if ( !IsValid( wp ) || wp == wpEnt )
 			continue
-			
-		if ( !IsValid( wp ) )
-			return //should this really return here??
 
 		int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
 		if ( (wpPingType == pingType) )
 			deadPings.append( wp )
 	}
 
-	foreach( entity deadPing in deadPings )
+	foreach ( entity deadPing in deadPings )
 	{
-		player.p.pings.locations.fastremovebyvalue( deadPing )
-		player.p.pings.loots.fastremovebyvalue( deadPing )
-
 		if ( IsValid( deadPing ) )
 			deadPing.Destroy()
 	}
@@ -2664,6 +2750,13 @@ bool function PlayerIsPingMuted( entity player )
 
 bool function WaypointOwnerIsMuted( entity wp )
 {
+	// Never mute banner or bleedout pings. These are not spammable and are gameplay critical.
+	int pingType = Waypoint_GetPingTypeForWaypoint( wp )
+	if (pingType == ePingType.RESPAWN_BANNER || pingType == ePingType.BLEEDOUT)
+	{
+		return false
+	}
+
 	entity owner = wp.GetOwner()
 
 	if ( IsValid( owner ) )
@@ -2681,7 +2774,7 @@ void function TogglePlayerWaypointMute( entity player )
 
 	file.mutedPlayers[ player ] = !file.mutedPlayers[ player ]
 }
-#endif
+#endif // #if CLIENT
 
 #if SERVER
 void function AppendToWaypointList( entity lootItem, entity wp )
