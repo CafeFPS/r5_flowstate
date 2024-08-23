@@ -2263,6 +2263,23 @@ Resource/UI/flowstate_customhudvgui.res
         pin_corner_to_sibling   CENTER
         pin_to_sibling_corner   CENTER
     }
+
+    MainWeapon0_Sell
+    {
+        ControlName				Label
+        wide                    200
+        labelText				"%[L_SHOULDER|F]% SELL"
+		"visible"				"0"
+		allcaps					0
+		font					DefaultBold_62_DropShadow
+		textAlignment			center
+		fontHeight				23
+        ypos                   -3
+		zpos 					5
+        pin_to_sibling          MainWeapon0
+        pin_corner_to_sibling   TOP
+        pin_to_sibling_corner   TOP
+    }
 	
     MainWeapon0_Name
     {
@@ -2407,6 +2424,22 @@ Resource/UI/flowstate_customhudvgui.res
         // pin_corner_to_sibling   RIGHT
         // pin_to_sibling_corner   RIGHT
     // }
+    MainWeapon1_Sell
+    {
+        ControlName				Label
+        wide                    200
+        labelText				"%[R_SHOULDER|G]% SELL"
+		"visible"				"0"
+		allcaps					0
+		font					DefaultBold_62_DropShadow
+		textAlignment			center
+		fontHeight				23
+        ypos                   -3
+		zpos 					5
+        pin_to_sibling          MainWeapon1
+        pin_corner_to_sibling   TOP
+        pin_to_sibling_corner   TOP
+    }
 
     MainWeapon1_Name
     {
@@ -3674,10 +3707,10 @@ Resource/UI/flowstate_customhudvgui.res
 	"StaminaBar"
 	{
 		"ControlName"				"ImagePanel"
-		"wide"						"300"
-		"tall"						"15"
+		"wide"						"290"
+		"tall"						"12"
 		"xpos"						"0"
-		"ypos"						"-150"
+		"ypos"						"-170"
 		"zpos"						"0"
 		"visible"					"0"
 		"scaleImage"				"1"
@@ -3691,10 +3724,10 @@ Resource/UI/flowstate_customhudvgui.res
 	"StaminaBarMover"
 	{
 		"ControlName"				"ImagePanel"
-		"wide"						"300"
-		"tall"						"15"
+		"wide"						"290"
+		"tall"						"12"
 		"xpos"						"0"
-		"ypos"						"-150"
+		"ypos"						"-170"
 		"zpos"						"5"
 		"visible"					"0"
 		"scaleImage"				"1"
@@ -3708,10 +3741,10 @@ Resource/UI/flowstate_customhudvgui.res
 	"StaminaBarMover2"
 	{
 		"ControlName"				"ImagePanel"
-		"wide"						"300"
-		"tall"						"15"
+		"wide"						"290"
+		"tall"						"12"
 		"xpos"						"0"
-		"ypos"						"-150"
+		"ypos"						"-170"
 		"zpos"						"5"
 		"visible"					"0"
 		"scaleImage"				"1"
@@ -3729,9 +3762,9 @@ Resource/UI/flowstate_customhudvgui.res
 		"ypos"						"0"
 		"zpos"						"0"
 		"auto_wide_tocontents"		"1"
-		"tall"						"30"
+		"tall"						"28"
 		"visible"					"0"
-		"fontHeight"				"30"
+		"fontHeight"				"27"
 		"labelText"					"Stamina"
 		"font"						"DefaultBold_41"
 		"allcaps"					"1"
@@ -4156,8 +4189,8 @@ Resource/UI/flowstate_customhudvgui.res
 		xpos 					0
 		zpos 15
 		pin_to_sibling          WinterExpress_FlowstateScoreBox_Local
-		pin_corner_to_sibling   CENTER
-		pin_to_sibling_corner   CENTER
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
 	}
 	
 	WinterExpress_FlowstateScoreBox_Enemy1
@@ -4186,8 +4219,8 @@ Resource/UI/flowstate_customhudvgui.res
 		xpos 					0
 		zpos 15
 		pin_to_sibling          WinterExpress_FlowstateScoreBox_Enemy1
-		pin_corner_to_sibling   CENTER
-		pin_to_sibling_corner   CENTER
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
 	}
 	
 	WinterExpress_FlowstateScoreBox_Enemy2
@@ -4216,7 +4249,7 @@ Resource/UI/flowstate_customhudvgui.res
 		xpos 					0
 		zpos 15
 		pin_to_sibling          WinterExpress_FlowstateScoreBox_Enemy2
-		pin_corner_to_sibling   CENTER
-		pin_to_sibling_corner   CENTER
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
 	}
 }

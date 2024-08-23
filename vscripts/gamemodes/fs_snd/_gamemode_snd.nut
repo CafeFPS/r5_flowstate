@@ -3155,7 +3155,7 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 				break
 				
 				case 2:
-					modsToAttach = ["optic_cq_hcog_classic", "energy_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"]
+					modsToAttach = ["optic_cq_hcog_bruiser", "energy_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"]
 				break
 			}
 		break

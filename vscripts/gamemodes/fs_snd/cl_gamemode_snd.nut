@@ -344,7 +344,11 @@ void function ServerCallback_FlowstateSND_CustomBuyMenu_UpdateValues(int availab
 	file.weapon2lvl = weapon2lvl
 	
 	SetTierForSlotFromWeaponIDAndLVL(file.weapon1ID, file.weapon1lvl)
+		
 	SetTierForSlotFromWeaponIDAndLVL(file.weapon2ID, file.weapon2lvl)
+
+	Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
+	Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
 	
 	FillWeaponBoxTest(0)
 	FillWeaponBoxTest(1)
@@ -390,6 +394,9 @@ void function FlowstateSND_CustomBuyMenu_Start(int currentRound, int availableMo
 	file.currentRound = currentRound
 		
 	entity player = GetLocalClientPlayer()
+
+	Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
+	Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
 
 	if(!showSavedWeapons)
 	{
@@ -1132,7 +1139,7 @@ void function ServerCallback_SellSuccessful(int weaponID, int weaponSlot, int up
 		return
 	
 	#if DEVELOPER
-		printt("vendiendo vendiendo")
+		printt("vendiendo vendiendo", weaponID, weaponSlot, upgradeLevel, priceToCashback )
 	#endif
 	
 	EmitSoundOnEntity(GetLocalClientPlayer(), "UI_Menu_Purchase_Coins" )
@@ -1496,7 +1503,12 @@ void function FillWeaponBoxTest(int slot)
 			break
 		}
 		
-		Hud_SetText( HudElement( "MainWeapon" + slot + "_Name" ), slot == 0 ? wData.pickupString + "%[L_SHOULDER|F]% SELL" : wData.pickupString + "%[R_SHOULDER|G]% SELL")
+		Hud_SetText( HudElement( "MainWeapon" + slot + "_Name" ), wData.pickupString )
+		
+		if( slot == 1 )
+			Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), true )
+		else if( slot == 0 )
+			Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), true )
 	}
 
 	array<string> mods
@@ -1660,6 +1672,9 @@ void function FillRuiElementsWithDatatableData(int chosenMenu)
 
 void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool wasAbsoluteSell = false)
 {
+	if( weaponID == -1 && weaponlvl == -1 )
+		wasAbsoluteSell = true
+	
 	int i
 	int count
 	
@@ -1673,14 +1688,18 @@ void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool
 		
 		count++
 	}
+
+	printt( "SetTierForSlotFromWeaponIDAndLVL", weaponID, weaponlvl, wasAbsoluteSell, count, file.activeMenu, GetMenuForWeaponID( weaponID ) )
 	
 	if(GetAllBuyMenuElements()[i].weaponID == weaponID)
 	{	
-		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, weaponlvl + 3 )
+		if( file.activeMenu == GetMenuForWeaponID( weaponID ) && !wasAbsoluteSell )
+			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, weaponlvl + 3 )
 		
 		if(wasAbsoluteSell)
 		{
-			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, 1 )
+			if( weaponID != -1 )
+				RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, 1 )
 			
 			if(weaponID == file.weapon1ID)
 			{
@@ -1767,6 +1786,16 @@ array<weaponMenuElement> function GetWeaponElementsForActiveMenu()
 	}
 	
 	return result
+}
+
+int function GetMenuForWeaponID(int id)
+{
+	for(int i = 0; i < GetAllBuyMenuElements().len(); i++)
+	{
+		if( GetAllBuyMenuElements()[i].weaponID == id )
+			return GetAllBuyMenuElements()[i].menuID
+	}
+	return -1
 }
 
 string function GetWeaponNameForCurrentSlotAndMenu()
