@@ -3270,9 +3270,9 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	}()
 }
 
-array<string> function CreateLootForFlyerDeathBox( entity deathBox = null )
+array<string> function CreateLootForFlyerDeathBox( entity deathBox = null, bool passSurvival = false )
 {
-	if( Gamemode() != eGamemodes.SURVIVAL )
+	if( Gamemode() != eGamemodes.SURVIVAL && !passSurvival )
 		return []
 
 	//To mimic the idea that the deathbox is from a player, make sure we don't get more than 2 weapons.
@@ -5162,11 +5162,11 @@ void function Death_DropPlayerItems( entity deathBox, entity player, string item
 			ItemFlavor ornull weaponSkin  = null
 			ItemFlavor ornull weaponCharm = null
 
-			if ( itemFlavorGUIDForSkin != -1 )
+			if ( IsValidItemFlavorGUID( itemFlavorGUIDForSkin )  )
 			{
 				weaponSkin = GetItemFlavorByGUID( itemFlavorGUIDForSkin )
 			}
-			if ( itemFlavorGUIDForCharm != -1 )
+			if ( IsValidItemFlavorGUID( itemFlavorGUIDForCharm ) )
 			{
 				weaponCharm = GetItemFlavorByGUID( itemFlavorGUIDForCharm )
 			}
