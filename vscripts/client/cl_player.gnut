@@ -2236,8 +2236,7 @@ void function FS_Toggle_Mute( int chal, bool toggle ) //TODO: remove challenge s
 	string cmd = "FS_TT " + chal.tostring()
 	
 	if( toggle  )
-	{
-		
+	{	
 		if( !IsPlayerTextMutedForUID( uid ) )
 		{
 			TogglePlayerTextMutedForUID( uid )
@@ -2258,7 +2257,7 @@ void function FS_Toggle_Mute( int chal, bool toggle ) //TODO: remove challenge s
 	}	
 	
 	if( chal != 0 )
-		player.ClientCommand(cmd)
+		player.ClientCommand( cmd )
 }
 
 void function FS_Silence( bool toggle, int eHandle )

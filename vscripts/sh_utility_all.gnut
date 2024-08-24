@@ -327,6 +327,23 @@ string function RepeatString( string str, int times )
 	return out
 }
 
+void function print_locpair( LocPair loc )
+{
+	printt
+	( 
+		format
+		( 
+			"<%d,%d,%d><%d,%d,%d>",
+				loc.origin.x,
+				loc.origin.y,
+				loc.origin.z,
+				loc.angles.x,
+				loc.angles.y,
+				loc.angles.z
+		)
+	)			
+}
+
 bool function IsOdd( int num )
 {
 	return ( num % 2 ) == 1

@@ -364,7 +364,7 @@ void function ScoreboardFadeOut()
 }
 
 void function ShowScoreboardMP()
-{
+{	
 	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
 	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
 	

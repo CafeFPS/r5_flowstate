@@ -1049,40 +1049,37 @@ void function CloseAllToTargetMenu( var targetMenu )
 		CloseActiveMenu( true, false )
 }
 
-// void function CloseAllMenusExcept( array<var> targetMenus )
-// {
-	// int breakPoint = targetMenus.len()
-	// var currentMenu = GetActiveMenu()
-	
-	// if( !currentMenu )
-		// return
-	
-	// for( ; ; )
-	// {
-		// if( !targetMenus.contains( currentMenu ) )
-			// CloseActiveMenu( true, false )
-		
-		// if( uiGlobal.menuStack.len() == breakPoint )
-			// break
-		
-		// currentMenu = GetActiveMenu()
-		
-		// if( !currentMenu )
-			// break
-	// }
-// }
-
 void function CloseAllMenusExcept( array<var> targetMenus )
 {
-	foreach( MenuDef menuDef in uiGlobal.menuStack )
-	{
-		if ( menuDef.menu )
-		{
-			if( !targetMenus.contains( menuDef.menu ) )	
-				CloseMenuWrapper( menuDef.menu )
-		}
+	int breakPoint = targetMenus.len()
+	var currentMenu
+	
+	if( uiGlobal.menuStack.len() == 0 )
+		return
+			
+	for( ; ; )
+	{		
+		currentMenu = GetActiveMenu()
+			
+		if( !targetMenus.contains( currentMenu ) )
+			CloseActiveMenu( true, false )
+		
+		if( uiGlobal.menuStack.len() <= breakPoint )
+			break
 	}
 }
+
+// void function CloseAllMenusExcept( array<var> targetMenus )
+// {
+	// foreach( MenuDef menuDef in uiGlobal.menuStack )
+	// {
+		// if ( menuDef.menu )
+		// {
+			// if( !targetMenus.contains( menuDef.menu ) )	
+				// CloseMenu( menuDef.menu ) //CloseMenuWrapper( menuDef.menu )
+		// }
+	// }
+// }
 
 void function PrintMenuStack()
 {

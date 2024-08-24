@@ -30,6 +30,7 @@ global function Scenarios_RegisterNetworking
 		global function TrackerStats_ScenariosTeamWipe
 		global function TrackerStats_ScenariosTeamWins
 		global function TrackerStats_ScenariosSoloWins
+		global function TrackerStats_ScenariosRecentScore
 	#endif
 	
 	#if DEVELOPER 
@@ -71,8 +72,12 @@ struct
 	
 } file
 
-global enum FS_ScoreType { //change datatable if you change this
-	PLAYERSCORE = -1,
+global enum FS_ScoreType 
+{ 
+	//change datatable if you change this
+	//if this order changes, the ui will not be correct for players. Always Append + comment index for reference
+	
+	PLAYERSCORE = -1, /* -1 */
 	SURVIVAL_TIME, /* 0 */
 	DOWNED, /* 1 */
 	KILL, /* 2 */
@@ -119,7 +124,8 @@ void function FS_Scenarios_Score_System_Init()
 	}
 	
 	#if CLIENT
-		AddCallback_UIScriptReset( _UpdateStandingsScriptsFromClient )
+		if( Playlist() == ePlaylists.fs_scenarios )
+			AddCallback_UIScriptReset( _UpdateStandingsScriptsFromClient )
 	#endif
 	
 	#if SERVER
@@ -142,7 +148,7 @@ int function FS_Scenarios_GetEventScoreFromDatatable( int event )
 #if SERVER
 void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity victim = null, float value0 = -1 )
 {
-	if( !IsValid( player ) || GetGameState() != eGameState.Playing ) //todo, scenarios based gamestate exclusive ~mkos
+	if( !IsValid( player ) )
 		return
 
 	int score = player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
@@ -150,7 +156,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	int newScore = score + eventScore
 
 	player.SetPlayerNetInt( "FS_Scenarios_PlayerScore", newScore )
-	__ScenariosPersistence_IncrementStat( player, FS_ScoreType.PLAYERSCORE, newScore )
+	__ScenariosPersistence_IncrementStat( player, FS_ScoreType.PLAYERSCORE, eventScore )
 
 	#if DEVELOPER
 		printt( "NEW SCORE", player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" ), player, GetEnumString( "FS_ScoreType", event ) )
@@ -535,6 +541,11 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 #if SERVER && TRACKER 
 
 	var function TrackerStats_ScenariosScore( string uid )
+	{
+		return ScenariosPersistence_GetScore( uid, FS_ScoreType.PLAYERSCORE )
+	}
+	
+	var function TrackerStats_ScenariosRecentScore( string uid )
 	{
 		return ScenariosPersistence_GetScore( uid, FS_ScoreType.PLAYERSCORE )
 	}

@@ -282,9 +282,10 @@ void function RemoteFunctions_Init_Begin()
 	switch ( Gamemode() )
 	{
 		case eGamemodes.WINTEREXPRESS:
-			Remote_RegisterClientFunction("OpenFRChallengesSettingsWpnSelector" )
-			Remote_RegisterClientFunction("CloseFRChallengesSettingsWpnSelector" )	
+			Remote_RegisterClientFunction( "OpenFRChallengesSettingsWpnSelector" )
+			Remote_RegisterClientFunction( "CloseFRChallengesSettingsWpnSelector" )	
 		break
+		
 		case eGamemodes.fs_dm:
 			
 			if( Playlist() == ePlaylists.fs_scenarios )
@@ -1036,7 +1037,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_CreateTextInfoPanelWithID_Localized", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", 0.0, 100.0, 32, "int", INT_MIN, INT_MAX )
 
 	// Experiment -- This will be moved to code.
-	Remote_RegisterClientFunction( "FS_Toggle_Mute", "int", INT_MIN, INT_MAX, "bool" )
+	Remote_RegisterClientFunction( "FS_Toggle_Mute", "int", 9999999, 100000000, "bool" )
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
 	
 	// Client-side helper (not permissive)
@@ -1076,6 +1077,7 @@ void function RemoteFunctions_Init_Begin()
 	// Both of these efficiency methods will reduce slot usage and buffer consumption
 	
 	RegisterServerVar( "tracker_enabled", false )
+	Remote_RegisterUIFunction( "UI_Callback_MOTD" )
 	
 	if ( IsLobby())
 	{

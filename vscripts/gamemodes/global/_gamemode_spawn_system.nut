@@ -19,6 +19,7 @@ global function SpawnSystem_GetCurrentSpawnAsset
 global function SpawnSystem_CreateSpawnObject
 global function SpawnSystem_CreateSpawnObjectArray
 global function SpawnSystem_FindBaseMapForPak
+global function SpawnSystem_GenerateRandomSpawns
 
 global function SpawnSystem_CreateLocPairObject
 
@@ -85,6 +86,7 @@ global function SpawnSystem_CreateLocPairObject
 	}
 	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
+	const int MAX_GENERATE_RANDOM_ATTEMPTS = 2000
 	
 	struct
 	{
@@ -907,6 +909,70 @@ int function SpawnSystem_FindBaseMapForPak( int eMap )
 	}
 	
 	unreachable
+}
+
+array<LocPair> function SpawnSystem_GenerateRandomSpawns( vector origin, vector angles, float radius, float radiusScalar = 1.0, int amount = 10 ) //todo: radius towards origin optional param
+{
+	float radiusFrac = radius * radiusScalar
+	
+	array<vector> spawnOrigins
+	int spawnsAdded
+	int attempts
+	
+	while( spawnsAdded < amount )
+	{
+		vector spawnOrigin = GetRandom3DPointIn2DCircle( radiusFrac, origin )
+		
+		if( CheckSpawn( spawnOrigin ) )
+		{
+			spawnOrigins.append( spawnOrigin )
+			spawnsAdded++
+		}
+		
+		attempts++
+		
+		if( attempts > MAX_GENERATE_RANDOM_ATTEMPTS )
+			break
+	}
+	
+	if( !spawnOrigins.len() )
+	{
+		LocPair failed
+		
+		failed.origin = origin 
+		failed.angles = angles 
+		
+		return [ failed ]
+	}
+	
+	array<LocPair> generatedSpawns
+	
+	foreach( vector randomOrg in spawnOrigins )
+	{
+		LocPair point
+		
+		point.origin = randomOrg 
+		point.angles = angles
+		
+		generatedSpawns.append( point )
+	}
+	
+	return generatedSpawns
+}
+
+bool function CheckSpawn( vector origin )
+{
+	vector mins = <-16, -16, 0>
+	vector maxs = <16, 16, 72>
+	
+	TraceResults result = TraceHull( origin, origin + <0, 0, 1>, mins, maxs, null, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+
+	if ( result.startSolid )
+		return false
+
+	bool traceFinalResult = result.fraction == 1.0
+	
+	return traceFinalResult
 }
 
 

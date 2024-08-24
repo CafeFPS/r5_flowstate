@@ -63,6 +63,9 @@ void function Script_RegisterAllStats()
 	//								- all numericals are signed. 
 	//								
 	//								There also exists api rate-limiting. 
+	//
+	//	Stats registerd under 'recent_match_data' group in the backend do NOT aggregate.
+	//	These stats should be prefixed with 'previous_' for clarity.
 	
 	Tracker_RegisterStat( "settings" )
 
@@ -91,6 +94,7 @@ void function Script_RegisterAllStats()
 		Tracker_RegisterStat( "scenarios_team_wipe", null, TrackerStats_ScenariosTeamWipe )
 		Tracker_RegisterStat( "scenarios_team_wins", null, TrackerStats_ScenariosTeamWins )
 		Tracker_RegisterStat( "scenarios_solo_wins", null, TrackerStats_ScenariosSoloWins )
+		Tracker_RegisterStat( "previous_score", null, TrackerStats_ScenariosRecentScore )
 
 		AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
 	}
@@ -193,7 +197,7 @@ void function Script_RegisterAllQueries()
 {
 	////// INIT FUNCTIONS FOR GAMEMODES //////
 	
-	Pin_Query_Init()
+	Tracker_QueryInit()
 	//CustomGamemodeQueries_Init()
 	//Gamemode1v1Queries_Init()
 	//etc...etc..
