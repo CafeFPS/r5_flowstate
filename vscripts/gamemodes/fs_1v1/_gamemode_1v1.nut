@@ -219,11 +219,13 @@ struct
 
 //script vars 
 global bool mGroupMutexLock
+global array<LocPair> g_randomWaitingSpawns
 
 array<string> Weapons = []
 array<string> WeaponsSecondary = []
 vector Gamemode1v1_NotificationPanel_Coordinates
 vector Gamemode1v1_NotificationPanel_Angles
+
 float REST_GRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
@@ -966,7 +968,7 @@ void function endSpectate(entity player)
 	player.SetTakeDamageType( DAMAGE_YES )
 	try
 	{
-		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 	}
 	catch (error)
 	{}
@@ -1098,7 +1100,7 @@ void function mkos_Force_Rest( entity player )
 		
 		try
 		{
-			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 		}
 		catch (error)
 		{
@@ -2290,7 +2292,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 		
 		try
 		{
-			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 		}
 		catch (error)
 		{}
@@ -2381,7 +2383,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 		
 		try
 		{
-			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 		}
 		catch (error)
 		{
@@ -2429,7 +2431,7 @@ void function expliciteRest( entity player )
 	
 	try
 	{
-		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 	}
 	catch (error){}
 	
@@ -3364,16 +3366,17 @@ void function Gamemode1v1_Init( int eMap )
 	array<SpawnData> allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 	
 	Gamemode1v1_NotificationPanel_Coordinates = Gamemode1v1_GetNotificationPanel_Coordinates()
-	Gamemode1v1_NotificationPanel_Angles = Gamemode1v1_GetNotificationPanel_Angles()
-	
+	Gamemode1v1_NotificationPanel_Angles = Gamemode1v1_GetNotificationPanel_Angles()	
 	
 	if( !ValidateSpawns( allSoloLocations ) )
 	{
-		SpawnSystem_SetPreferredPak( 1 )
-		allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
+		// SpawnSystem_SetPreferredPak( 1 )
+		// allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap ) //disabled recheck for now as this reruns callbacks ~mkos
 		
 		mAssert( allSoloLocations.len() > 0, "No valid spawns were defined" )
 	}
+	
+	g_randomWaitingSpawns = SpawnSystem_GenerateRandomSpawns( getWaitingRoomLocation().origin, getWaitingRoomLocation().angles, file.waitingRoomRadius, .22, 60 ) //todo(dw): scenarios origin waiting area offset is not centered for polished effect
 
 	if( settings.is3v3Mode )
 	{	
@@ -4094,11 +4097,12 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			//#if !DEVELOPER 
 				if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin ) > file.waitingRoomRadius )
 				{
-					maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+					maki_tp_player( player, g_randomWaitingSpawns.getrandom() ) //waiting player should be in waiting room,not battle area
 					HolsterAndDisableWeapons( player )
 				}
 			//#endif
 		}
+		
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -631,7 +631,8 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 
 void function ClientReportChat(var button)
 {
-	if( CHAT_TEXT == "" || file.muted ){return}
+	if( CHAT_TEXT == "" || file.muted )
+		return
 	
 	string text = "say " + CHAT_TEXT
 	GetLocalClientPlayer().ClientCommand(text)

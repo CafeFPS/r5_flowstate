@@ -47,16 +47,26 @@ struct {
 void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
-
-	if ( !IsFiringRangeGameMode() )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
-
-	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
 	
 	file.survival_commentary_kill_leader_min_kills = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
 	file.survival_commentary_kill_leader_enabled = GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true )
 	file.survival_commentary_champion_enabled = GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true )
 	file.survival_commentary_first_blood_enabled = GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true )
+	
+	if ( !IsFiringRangeGameMode() )
+	{	
+		if
+		( 	
+			file.survival_commentary_kill_leader_enabled ||
+			file.survival_commentary_champion_enabled ||
+			file.survival_commentary_first_blood_enabled 
+		)
+		{
+			AddCallback_OnPlayerKilled( OnPlayerKilled )
+		}
+	}
+
+	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
 }
 
 int function SurvivalCommentary_GetKillLeaderEEH()
@@ -308,6 +318,9 @@ bool function ShouldStompConAltForLine( string conversationType, entity speaking
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if( DamageInfo_GetDamage( damageInfo ) == 0 )
+		return
+		
+	if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
 		return
 	
 	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )

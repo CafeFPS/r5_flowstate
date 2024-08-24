@@ -50,18 +50,18 @@ playlists
 				// THE FOLLOWING SETTINGS REQUIRES TRACKER DLL (add-on mod)	//
 				//////////////////////////////////////////////////////////////
 				
-				logging_enabled 								1
-				logging_encryption								1
-				logging_shipstats 								1
-				cc_administration								1
-				ea_verify_server								1
-				use_global_stats								1
+				logging_enabled 								1 // Tracker will not run without this. //Todo( renameto: tracker_enabled )
+				logging_encryption								1 // Todo( renameto: tracker_encryption
+				logging_shipstats 								1 // Enabling this will transfer data at end of match //Todo( renameto: tracker_shipstats )
+				cc_administration								1 // Enabling this enables admins to use 'cc' client commands.
+				ea_verify_server								1 // Todo(dw): use QueryData to auto determine if at all, remove from playlists file ( only applies to official r5r.dev servers )
+				use_global_stats								1 // Disabling this will disable api data ( api data only transfer at start/end of match. )
 				
 				enable_motd 		1  
 				use_online_motd 	0  // 1 for online, 0 for local	 //for online, must have tracker dll	
 				
 				// for local motd: [ NOT RECCOMENDED (leave blank) ] - This will create unncessary remote calls on client connect, preferably use FS_PLAYLIST_MOTD at the bottom of this file.
-				custom_MOTD "var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
+				custom_MOTD "" //"var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
 				
 
 				// restricted servers	
@@ -3354,8 +3354,8 @@ playlists
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
 				"BETA_BUILD_WATERMARK" 				  ""
-				"FS_PLAYLIST_MOTD"					  "Flowstate x R5Reloaded" //1000 char max [dev-note: DO NOT SHIP WITH THIS FILLED]
-				"FS_PLAYLIST_MOTD_CONTINUE"			  "" //append to first - 1000 char limit
+				"FS_PLAYLIST_MOTD"					  "g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b " //Flowstate x R5Reloaded" //1000 char max [dev-note: DO NOT SHIP WITH THIS FILLED]
+				"FS_PLAYLIST_MOTD_CONTINUE"			  "  \n\n\n\n THIS IS THE NEXT MESSAGE \n\n\n\n\n g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b " //append to first - 1000 char limit
 			}
 		}
 	}

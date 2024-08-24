@@ -180,8 +180,8 @@ global function Tracker_ReturnKills
 global function Tracker_ReturnDeaths
 global function Tracker_SetPlayerAsChampion
 global function Tracker_GetMaxWaitForBatchLoad
-global function Tracker_Credits
-global function Pin_Query_Init
+global function Tracker_Credits //not used
+global function Tracker_QueryInit
 
 global function bAfkToRest
 global function bGlobalStats
@@ -209,6 +209,7 @@ const DEBUGDMG = false
 
 #if DEVELOPER
 	global function DEV_GetPlayerMetricsIndexByUID
+	global function DEV_SetMetricSafe
 	
 	#if DEBUGDMG
 		global function DEV_DamageInfo
@@ -296,16 +297,19 @@ struct PlayerMetrics
     string playerID
 	string playername
 	
-    array<float> JumpTimestamps
-    table<int, array< float > > WeaponShotsTimestamps
-	array<float> SuperglideTimestamps
+    array<float> JumpTimestamps //internal only
+    table<int, array< float > > WeaponShotsTimestamps //internal only
+	array<float> SuperglideTimestamps //internal only
+	
 	int kills
 	int deaths
 	float damage
 
 	bool playerleft = false
 	bool ignore_sync_flag = false
-	bool previous_champion = false
+	
+	bool previous_champion = false	
+	int previous_score = 0
 };
 
 //tables
@@ -522,6 +526,75 @@ void function DEV_ManualLogKill( bool ship )
 }
 
 void function NULL_PDATA( entity player, string data ){}
+
+#if DEVELOPER
+	const table<string,string> PlayerMetricsExpect =
+	{
+		[ "playerID" ] = "string",
+		[ "playername" ] = "string",
+		[ "kills" ] = "int",
+		[ "deaths" ] = "int",
+		[ "damage" ] = "float",
+		[ "previous_champion" ] = "bool",
+		[ "playerleft" ] = "bool",
+		[ "ignore_sync_flag" ] = "bool"
+	}
+
+	bool function DEV_SetMetricSafe( string uid, string metricKey, ... )
+	{
+		if( !( metricKey in PlayerMetricsExpect ) )
+		{
+			Warning( "Key \"" + metricKey + "\" does not exist in PlayerMetrics struct." )
+			return false
+		}
+		
+		if( vargc < 1 )
+			return false
+		
+		string expected = PlayerMetricsExpect[ metricKey ]
+		string dataType = typeof vargv[ 0 ]
+		
+		if( dataType != expected )
+		{
+			Warning( "Datatype (" + dataType + ") passed to " + FUNC_NAME() + "() for key \"" + metricKey + "\" does not match expected type of: (" + expected + ")" )
+			return false
+		}
+		
+		var data = vargv[0]
+		
+		switch( metricKey )
+		{		
+			case "playerID":
+				Tracker_StatsMetricsByUID( uid ).playerID = expect string( data )
+				return true 
+			case "playername":
+				Tracker_StatsMetricsByUID( uid ).playername = expect string( data )
+				return true 
+			case "kills":
+				Tracker_StatsMetricsByUID( uid ).kills = expect int( data )
+				return true 
+			case "deaths":
+				Tracker_StatsMetricsByUID( uid ).deaths = expect int( data )
+				return true
+			case "damage":
+				Tracker_StatsMetricsByUID( uid ).damage = expect float( data )
+				return true
+			case "playerleft":
+				Tracker_StatsMetricsByUID( uid ).playerleft = expect bool( data )
+				return true
+			case "ignore_sync_flag":
+				Tracker_StatsMetricsByUID( uid ).ignore_sync_flag = expect bool( data )
+				return true
+			case "previous_champion":
+				Tracker_StatsMetricsByUID( uid ).previous_champion = expect bool( data )
+				return true
+			default:
+				return false
+		}
+		
+		unreachable
+	}
+#endif
 
 bool function bLog()
 {
@@ -897,7 +970,31 @@ void function ShowPlayerLocalMOTD( entity player )
 	)()
 }
 
-void function Pin_Query_Init()
+
+void function FireRemoteMotd( entity player )
+{	
+	thread
+	(
+		void function() : ( player )
+		{
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			
+			if( IsValid( player ) )
+			{
+				//run ui script for motd
+				Remote_CallFunction_UI( player, "UI_Callback_MOTD" )
+					wait 5
+					
+				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+			}
+		}
+	)()
+}
+
+
+
+void function Tracker_QueryInit()
 {
 	AddCallback_QueryString( "verified:SERVER" )
 
@@ -915,6 +1012,10 @@ void function Pin_Query_Init()
 		else if( !empty( file.localFlowstate_MOTD ) )
 		{
 			AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+		}
+		else 
+		{
+			AddCallback_OnClientConnected( FireRemoteMotd )
 		}
 	}
 }
@@ -1068,7 +1169,7 @@ string function BuildRequestedSettingsString()
 	}
 	
 	#if DEVELOPER
-		printt( "\n\n ---- Settings query ---- \n", settingsQuery, "\n\n" )
+		printt( "\n\n ---- Player Persistence Settings Query ---- \n", settingsQuery, "\n\n" )
 	#endif 
 	
 	return settingsQuery 
@@ -5231,13 +5332,39 @@ void function PIN_Init()
 	
 	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "" )
 	
-	if( !empty( file.localFlowstate_MOTD ) )
-		AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+	if( GetCurrentPlaylistVarBool( "enable_motd", false ) )
+	{
+		if( !empty( file.localFlowstate_MOTD ) )
+			AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+		else 
+			AddCallback_OnClientConnected( FireRemoteMotd )
+	}
 }
 
 void function SendMotdToPlayer( entity player, string motd )
 {
 	MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, motd, "", "", true )
+}
+
+void function FireRemoteMotd( entity player )
+{	
+	thread
+	(
+		void function() : ( player )
+		{
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			
+			if( IsValid( player ) )
+			{
+				//run ui script for motd
+				Remote_CallFunction_UI( player, "UI_Callback_MOTD" )
+					wait 5
+					
+				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+			}
+		}
+	)()
 }
 
 void function ShowPlayerLocalMOTD( entity player )

@@ -966,6 +966,7 @@ void function DoChampionSquadCardsPresentation()
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_BannerChampion" )
 	
+	
 	string timeToWait = Gamemode() == eGamemodes.fs_dm ? "championDisplayEndTime" : "pickLoadoutGamestateEndTime"
 	{
 		while( Time() < GetGlobalNetTime( timeToWait ) )

@@ -140,7 +140,10 @@ void function GamemodeSurvival_Init()
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
-	AddCallback_OnPlayerKilled( OnPlayerKilled_DropLoot )
+	
+	if ( Gamemode() == eGamemodes.SURVIVAL )
+		AddCallback_OnPlayerKilled( OnPlayerKilled_DropLoot )
+		
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad_Survival )
 	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
@@ -1349,10 +1352,6 @@ void function CreateSurvivalDeathBoxForPlayer( entity victim, entity attacker, v
 
 void function OnPlayerKilled_DropLoot( entity player, entity attacker, var damageInfo )
 {
-	// Don't drop player loot upon death for Firing Range.
-	if ( Gamemode() != eGamemodes.SURVIVAL )
-		return
-
 	if ( GetGameState() >= eGameState.Playing )
 		thread SURVIVAL_Death_DropLoot( player, damageInfo )
 }

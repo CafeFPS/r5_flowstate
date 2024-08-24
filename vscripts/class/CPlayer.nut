@@ -339,7 +339,6 @@ function CodeCallback_RegisterClass_CPlayer()
 		player.p.bTextmute = expect bool ( toggle )
 		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
 		player.p.bRelayChallengeState = false
-		player.p.ratelimit = 0
 		
 		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
 		

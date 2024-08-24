@@ -5,8 +5,10 @@ global function UpdateSystemPanel
 global function ToggleSetHunter
 global function OpenSystemMenu
 
+global function UI_Callback_MOTD
 global function SetMotdText
 global function OpenMOTD
+
 
 global function ShouldDisplayOptInOptions
 
@@ -318,16 +320,15 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
-			
-			//if( Playlist() != ePlaylists.fs_lgduels_1v1 && Playlist() != ePlaylists.fs_dm_fast_instagib )
-			//{
-				SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
-			//}
-			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 		}
 		else if( Playlist() == ePlaylists.fs_movementrecorder )
 		{
 			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+		}
+		else if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 		}
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
@@ -591,12 +592,17 @@ bool function ShouldDisplayOptInOptions()
 	return GetGlobalNetBool( "isOptInServer" )
 }
 
+void function UI_Callback_MOTD()
+{
+	SetMotdText( "" )
+}
+
 void function SetMotdText( string text )
 {
 	file.motdText = text
 	
 	// auto-opening motd disabled as per amos request
-	
+
 	if( !GetConVarInt( "show_motd_on_server_first_join" ) )
 		return
 

@@ -276,6 +276,7 @@ struct TrackerRecap
 	string uid
 	int kills 
 	int damage 
+	int score
 	//int survivalTime
 }
 
@@ -3441,7 +3442,7 @@ void function SimpleChampionUI()
 				try
 				{
 					eachPlayer.p.lastKiller = null
-					eachPlayer.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+					eachPlayer.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 				}
 				catch (error)
 				{}
@@ -3453,7 +3454,7 @@ void function SimpleChampionUI()
 		//// 	CORE TIMER LOOP 	////
 		////////////////////////////////
 		
-		while( Time() <= endTime )
+		while( Time() <= endTime ) //Todo: Execute callbacks for gamemode and add via AddCallback_ShouldTimerEnd( int timeRemaining, bool functionref() condFunc )
 		{
 			if( flowstateSettings.hackersVsPros )
 			{
@@ -3507,37 +3508,13 @@ void function SimpleChampionUI()
 			}
 
 			if( Time() == endTime - 60 )
-			{
-				// foreach( player in GetPlayerArray() )
-					// if( IsValid(player) )
-						// Message(player,"1 MINUTE REMAINING!","", 5, "")
-
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
-			}
 
 			if( Time() == endTime - 30 )
-			{
-				// foreach( player in GetPlayerArray() )
-					// if( IsValid(player) )
-						// Message(player,"30 SECONDS REMAINING!","", 5, "")
-
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
-			}
 
 			if( Time() == endTime - 10 )
-			{
-				// foreach( player in GetPlayerArray() )
-					// if( IsValid(player) )
-						// Message(player,"10 SECONDS REMAINING!","", 5, "")
-
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
-			}
-
-			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
-			{
-				PIN_RoundEnd( file.currentRound ) // r5r.dev
-				break
-			}
 
 			wait 1
 		}
@@ -3546,13 +3523,6 @@ void function SimpleChampionUI()
 	{
 		while( Time() <= endTime )
 		{
-			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
-			{
-				PIN_RoundEnd( file.currentRound ) //R5R.DEV		
-				break
-			}
-
-			//WaitFrame()
 			wait 1
 		}
 	}
@@ -4579,15 +4549,36 @@ entity function GetBestPlayer()
 	{
         if ( !IsValid( player ) )
 			continue
-        if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) {
-            bestScore = player.GetPlayerGameStat( PGS_KILLS )
-            bestPlayer = player
-
-        }
+		
+		switch( Playlist() )
+		{
+			case ePlaylists.fs_scenarios:
+				
+				int evalScore = ScenariosPersistence_GetScore( player.GetPlatformUID(), FS_ScoreType.PLAYERSCORE )
+				
+				if ( evalScore > bestScore )
+				{
+					bestScore = evalScore
+					bestPlayer = player
+				}
+			break
+			
+			default:
+			
+				if ( player.GetPlayerGameStat( PGS_KILLS ) > bestScore ) 
+				{
+					bestScore = player.GetPlayerGameStat( PGS_KILLS )
+					bestPlayer = player
+				}
+				
+			break
+		}
     }
+	
     return bestPlayer
 }
 
+//Todo: Deprecate( not used )
 // champion's score
 int function GetBestPlayerScore()
 {
@@ -4603,7 +4594,7 @@ int function GetBestPlayerScore()
     return bestScore
 }
 
-
+//Todo: Deprecate( not used )
 string function GetBestPlayerName()
 {
 	entity player = GetBestPlayer()
@@ -4806,13 +4797,16 @@ array<PlayerInfo> playersInfo = []
 
 void function ResetAllPlayerStats()
 {
-    foreach(player in GetPlayerArray()) {
-        if ( !IsValid( player ) ) continue
-        ResetPlayerStats(player)
+    foreach( player in GetPlayerArray() ) 
+	{
+        if ( !IsValid( player ) ) 
+			continue
+			
+        ResetPlayerStats( player )
     }
 }
 
-void function ResetPlayerStats(entity player)
+void function ResetPlayerStats( entity player )
 {
     player.SetPlayerGameStat( PGS_SCORE, 0 )
     player.SetPlayerGameStat( PGS_DEATHS, 0)
@@ -5919,7 +5913,7 @@ entity function GetNearestPlayer(entity player)
 	
 	enemies.extend(GetPlayerArrayOfTeam_Alive(TEAM_MILITIA))
 	enemies.extend(GetNPCArray())
-	enemies.removebyvalue(player)
+	enemies.removebyvalue(player) //could be fastremove
 	
 	foreach(target in enemies)
 	{
@@ -6664,7 +6658,7 @@ void function Tracker_SetChampionOnPersistenceLoad()
 
 			if( championCandidates.len() > 0 )
 			{							
-				array<entity> bestChampions = Tracker_DetermineBestChampions( championCandidates ) // FSDM_ReturnBestPlayers_FromChampions( championCandidates ) //TEMP_HACK - using local server persistence wont make sense if other champions come from other servers. will want to use tracker persistence data for last match. ~mkos	
+				array<entity> bestChampions = Tracker_DetermineBestChampions( championCandidates )
 				
 				bool bFoundChampion = false
 				if( !bestChampions.len() )
@@ -6871,6 +6865,7 @@ TrackerRecap function Tracker_GetChampionRecap( entity player )
 	recap.uid = uid
 	recap.kills = GetPlayerStatInt( uid, "previous_kills" )
 	recap.damage = GetPlayerStatInt( uid, "previous_damage" )
+	recap.score = GetPlayerStatInt( uid, "previous_score" )
 	//recap.survivalTime = GetPlayerStatInt( uid, "previous_survival_time" )
 	
 	return recap
@@ -6918,9 +6913,12 @@ array<entity> function Tracker_DetermineBestChampions( array<entity> championCan
 		case ePlaylists.winterexpress:
 		case ePlaylists.fs_vamp_1v1:
 		case ePlaylists.fs_1v1_headshots_only:
-		case ePlaylists.fs_scenarios:
 		
 			allSummaryData.sort( FS_SortDM_Tracker )
+			break
+			
+		case ePlaylists.fs_scenarios:
+			allSummaryData.sort( FS_SortScenarios_Tracker )
 			break
 			
 		default:
@@ -6961,6 +6959,24 @@ int function FS_SortSurvival_Tracker( TrackerRecap a, TrackerRecap b )
 
 int function FS_SortDM_Tracker( TrackerRecap a, TrackerRecap b )
 {
+	if ( a.kills > b.kills )
+		return -1
+	if ( a.kills < b.kills )
+		return 1
+	if ( a.damage > b.damage )
+		return -1
+	if ( a.damage < b.damage )
+		return 1
+		
+	return 0
+}
+
+int function FS_SortScenarios_Tracker( TrackerRecap a, TrackerRecap b )
+{
+	if ( a.score > b.score )
+		return -1
+	if ( a.score < b.score )
+		return 1
 	if ( a.kills > b.kills )
 		return -1
 	if ( a.kills < b.kills )

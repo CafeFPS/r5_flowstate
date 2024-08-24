@@ -1,5 +1,5 @@
 
-global function InitScenariosMenu
+global function InitScenariosMenu																			//mkos
 
 global function UI_OpenScenariosStandingsMenu
 global function UI_CloseScenariosStandingsMenu
