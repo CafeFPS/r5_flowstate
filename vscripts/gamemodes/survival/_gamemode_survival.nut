@@ -185,7 +185,7 @@ bool function ClientCommand_SetLegendaryWeapon(entity player, array<string> args
 	if( args.len() > 1 )
 		index2 = args[1].tointeger()
 
-	FS_SetLegendarySkinIndex( player, args[0].tointeger(), index2 )
+	//FS_SetLegendarySkinIndex( player, args[0].tointeger(), index2 )
 
 	return true
 }
