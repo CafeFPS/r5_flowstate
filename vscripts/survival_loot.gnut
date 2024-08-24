@@ -576,33 +576,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 	if ( deathBox != null )
 	{
-		if ( deathBox.GetLinkEntArray().len() == 0 )
-		{
-			deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
-
-			thread function() : ( deathBox )
-			{
-				wait 1.0
-				
-				if( !IsValid( deathBox ) )
-					return
-			
-				entity boxPhysics = deathBox.GetParent()
-			
-				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
-				{
-					deathBox.ClearParent()
-					boxPhysics.Destroy()
-				}
-
-				wait 2.0
-				
-				if ( IsValid( deathBox ) )
-					deathBox.Destroy()
-			}()
-		}
-		else
-			UpdateDeathBoxHighlight( deathBox )
+		UpdateDeathBoxHighlight( deathBox )
 	}
 
 	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
@@ -3099,6 +3073,9 @@ void function SetItemSpawnSource( entity itemEnt, int spawnSourceId, entity owne
 
 void function AddToDeathBox( entity drop, entity deathBox )
 {
+	if ( drop.GetNetworkedClassName() != "prop_survival" )
+		return
+
 	drop.RemoveFromAllRealms()
 	drop.AddToOtherEntitysRealms( deathBox )
 
@@ -3106,9 +3083,18 @@ void function AddToDeathBox( entity drop, entity deathBox )
 	drop.UnsetUsable()
 
 	drop.SetOrigin( deathBox.GetOrigin() )
-	drop.SetParent( deathBox )
+	drop.SetParent( deathBox, "", true )
+	AddEntityDestroyedCallback( drop, OnBoxPropDestroyed )
 
 	deathBox.LinkToEnt( drop )
+}
+
+void function OnBoxPropDestroyed( entity pickup )
+{
+	entity box = pickup.GetParent()
+
+	if ( IsValid( box ) && (box.GetTargetName() == DEATH_BOX_TARGETNAME) )
+		delaythread(0.1) UpdateDeathBoxHighlight( box ) // delay to allow the pickup to be destroyed
 }
 
 entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )

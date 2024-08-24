@@ -8,7 +8,6 @@ global function _GetSquadRank
 global function JetwashFX
 global function Survival_PlayerRespawnedTeammate
 global function UpdateDeathBoxHighlight
-global function UpdateDeathBoxHighlight_Retail
 global function HandleSquadElimination
 // these probably doesn't belong here
 //----------------------------------
@@ -159,6 +158,7 @@ void function GamemodeSurvival_Init()
 		AddClientCommandCallback("forceRingMovement", ClientCommand_ForceRingMovement )
 		
 		AddClientCommandCallback("destroyEndScreen", ClientCommand_DestroyEndScreen)
+		AddClientCommandCallback("setLegendary", ClientCommand_SetLegendaryWeapon)
 	#endif
 
 	FillSkyWithClouds()
@@ -173,6 +173,21 @@ void function GamemodeSurvival_Init()
 
 	if( GetCurrentPlaylistVarBool( "deathfield_starts_in_prematch", false ) )
 		thread SURVIVAL_RunArenaDeathField()
+}
+
+bool function ClientCommand_SetLegendaryWeapon(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 || args.len() != 2)
+		return false
+
+	int index2 = -1
+	
+	if( args.len() > 1 )
+		index2 = args[1].tointeger()
+
+	FS_SetLegendarySkinIndex( player, args[0].tointeger(), index2 )
+
+	return true
 }
 
 bool function ClientCommand_GiveSword(entity player, array<string> args)
@@ -1560,30 +1575,7 @@ void function Survival_PlayerRespawnedTeammate( entity playerWhoRespawned, entit
 	StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
 }
 
-void function UpdateDeathBoxHighlight( entity box )
-{
-	int highestTier = 0
-
-	foreach ( item in box.GetLinkEntArray() )
-	{
-		LootData data = SURVIVAL_Loot_GetLootDataByIndex( item.GetSurvivalInt() )
-		if ( data.ref == "" )
-			continue
-
-		if ( data.tier > highestTier )
-			highestTier = data.tier
-	}
-
-	box.SetNetInt( "lootRarity", highestTier )
-	// Highlight_SetNeutralHighlight( box, SURVIVAL_GetHighlightForTier( highestTier ) ) //FIXME. Cafe
-
-	foreach ( player in GetPlayerArray() )
-		Remote_CallFunction_ByRef( player, "ServerCallback_RefreshDeathBoxHighlight" )
-		//Remote_CallFunction_Replay( player, "ServerCallback_RefreshDeathBoxHighlight" )
-}
-
-//FIXME. Cafe
-void function UpdateDeathBoxHighlight_Retail( entity box, bool longerHighlightDist = false )
+void function UpdateDeathBoxHighlight( entity box, bool longerdist = false )
 {
 	if ( !IsValid( box ) )
 		return
@@ -1611,7 +1603,8 @@ void function UpdateDeathBoxHighlight_Retail( entity box, bool longerHighlightDi
 				maxTier = data.tier
 		}
 
-		box.SetNetInt( "maxLootTier", maxTier )
+		box.SetNetInt( "lootRarity", maxTier )
+		Highlight_SetNeutralHighlight( box, SURVIVAL_GetHighlightForTier( maxTier, longerdist ) )
 	}
 	else
 	{
@@ -1644,8 +1637,6 @@ void function UpdateDeathBoxHighlight_Retail( entity box, bool longerHighlightDi
 			return
 		}
 	}
-
-	box.SetNetBool( "highlightFar", longerHighlightDist )
 }
 
 float function Survival_GetMapFloorZ( vector field )

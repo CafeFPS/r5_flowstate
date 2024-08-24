@@ -838,7 +838,7 @@ entity function CreateFlyerLootDeathBox( vector origin, vector angles, array<str
 
 	deathBox.e.blockActive = false
 
-	// UpdateDeathBoxHighlight( deathBox, true ) //Longer dist highlight initially. Later on when loot gets removed/added it's fine to just use normal dist highlight
+	UpdateDeathBoxHighlight( deathBox, true ) //Longer dist highlight initially. Later on when loot gets removed/added it's fine to just use normal dist highlight
 
 	// unparent loot for now; we'll reparent it when the box is dropped (optimization hack)
 	foreach ( loot in deathBox.GetLinkEntArray() )
