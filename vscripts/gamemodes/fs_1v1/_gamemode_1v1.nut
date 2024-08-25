@@ -3355,9 +3355,9 @@ void function Gamemode1v1_Init( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	//FlagWait( "EntitiesDidLoad" )
+	//FlagWait( "EntitiesDidLoad" ) //creates timing issues to wait here
 	
-	if( Playlist() == ePlaylists.fs_vamp_1v1 )
+	if( Playlist() == ePlaylists.fs_vamp_1v1 ) //Todo: This should be handled by the mode's script file using AddCallback_FlowstateSpawnsSettings
 	{
 		SpawnSystem_SetCustomPlaylist( "fs_1v1" )
 	}
@@ -3370,16 +3370,17 @@ void function Gamemode1v1_Init( int eMap )
 	
 	if( !ValidateSpawns( allSoloLocations ) )
 	{
-		// SpawnSystem_SetPreferredPak( 1 )
-		// allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap ) //disabled recheck for now as this reruns callbacks ~mkos
+		SpawnSystem_SetPreferredPak( 1 )
+		//SpawnSystem_SetRunCallbacks( false ) //for this mode, we wont disable re-running callbacks, as they may be needed to customize spawns again. If the gamemode dev has prop spawning or things that should only be done once, they should make sure it's only init once in their logic.
+		allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 		
-		mAssert( allSoloLocations.len() > 0, "No valid spawns were defined" )
+		mAssert( ValidateSpawns( allSoloLocations ), "No valid spawns were defined" )
 	}
 	
 	g_randomWaitingSpawns = SpawnSystem_GenerateRandomSpawns( getWaitingRoomLocation().origin, getWaitingRoomLocation().angles, file.waitingRoomRadius, .22, 60 ) //todo(dw): scenarios origin waiting area offset is not centered for polished effect
 
 	if( settings.is3v3Mode )
-	{	
+	{
 		for ( int i = 0; i < allSoloLocations.len(); i=i+3 )
 		{
 			soloLocStruct p
@@ -3427,7 +3428,7 @@ void function Gamemode1v1_Init( int eMap )
 
 	if( settings.is3v3Mode )
 	{
-		forbiddenZoneInit(GetMapName())
+		forbiddenZoneInit( GetMapName() )
 		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
 		return
 	}
@@ -3561,12 +3562,12 @@ void function CreatePanels( vector origin, vector angles, table<string, entity> 
 		keys.append( title )
 	}
 
-	const float FORWARD_OFFSET = 40
-	const float SIDE_OFFSET = 100
-	const float SIDE_ANGLE_ADJUST = 40
-	const float FAR_OFFSET_INITIAL = 120
-	const float RIGHT_OFFSET_INITIAL = 80
-	const float POSITION_INCREMENT = 60
+	float FORWARD_OFFSET = 40
+	float SIDE_OFFSET = 100
+	float SIDE_ANGLE_ADJUST = 40
+	float FAR_OFFSET_INITIAL = 120
+	float RIGHT_OFFSET_INITIAL = 80
+	float POSITION_INCREMENT = 60
 
 	int panelCount = keys.len()
 	vector panelPos

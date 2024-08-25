@@ -18,8 +18,8 @@ global function Scenarios_RegisterNetworking
 	global function ScenariosPersistence_GetCount
 	global function ScenariosPersistence_FetchPlayerScoreTable
 	
-	global function Scenarios_SendStandingsToClient
-	global function Scenarios_ClearAllData
+	global function ScenariosPersistence_SendStandingsToClient
+	global function ScenariosPersistence_ClearAllData
 	
 	//Fetcher functions for backend
 	#if TRACKER 
@@ -286,9 +286,9 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		return file.scenariosPlayerScorePersistence[ uid ][ type ] * multiply
 	}
 	
-	int function Scenarios_CalculateScore( int count )
+	int function Scenarios_CalculateScore( int type, int count )
 	{
-		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( count )
+		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( type )
 		int multiply = scoreValue != 0 ? scoreValue : 1
 		
 		return count * multiply
@@ -355,7 +355,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	{
 		table<int,ScenariosRecapData> recapStruct
 		
-		foreach( int type, int statValue in recapInfo )
+		foreach( int type, int statCount in recapInfo )
 		{
 			ScenariosRecapData recapData
 			
@@ -367,8 +367,8 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			int scoreAward = scoreAward_temp > 0 ? scoreAward_temp : 1
 			
 			recapData.type 		= type
-			recapData.value 	= Scenarios_CalculateScore( statValue )
-			recapData.count		= statValue
+			recapData.value 	= Scenarios_CalculateScore( type, statCount )
+			recapData.count		= statCount
 			recapData.isValid	= true
 
 			recapStruct[ type ] <- recapData
@@ -377,7 +377,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		return recapStruct
 	}
 	
-	void function Scenarios_SendStandingsToClient( entity player )
+	void function ScenariosPersistence_SendStandingsToClient( entity player )
 	{
 		string uid = player.p.UID
 		
@@ -420,7 +420,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			file.scenariosPlayerRoundStandings[ uid ][ k ] = 0
 	}
 	
-	void function Scenarios_ClearAllData()
+	void function ScenariosPersistence_ClearAllData()
 	{
 		foreach( string uid, table<int,int> dataStruct in file.scenariosPlayerRoundStandings )
 		{
@@ -448,7 +448,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		if( !CheckRate( player, notify, 5 ) )
 			return true
 			
-		Scenarios_SendStandingsToClient( player )
+		ScenariosPersistence_SendStandingsToClient( player )
 		return true
 	}
 	

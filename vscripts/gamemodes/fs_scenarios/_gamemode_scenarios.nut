@@ -1421,7 +1421,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						} else
 							player.p.InDeathRecap = false
 							
-						Scenarios_SendStandingsToClient( player )
+						ScenariosPersistence_SendStandingsToClient( player )
 
 						#if DEVELOPER
 							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
@@ -2480,7 +2480,7 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 		if( !IsValid( Team1Player ) )
 			continue 
 			
-		Scenarios_SendStandingsToClient( Team1Player )
+		ScenariosPersistence_SendStandingsToClient( Team1Player )
 	}
 	
 	foreach( Team2Player in group.team2Players )
@@ -2488,7 +2488,7 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 		if( !IsValid( Team2Player ) )
 			continue 
 			
-		Scenarios_SendStandingsToClient( Team2Player )
+		ScenariosPersistence_SendStandingsToClient( Team2Player )
 	}
 	
 	foreach( Team3Player in group.team3Players )
@@ -2496,7 +2496,7 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 		if( !IsValid( Team3Player ) )
 			continue
 			
-		Scenarios_SendStandingsToClient( Team3Player )
+		ScenariosPersistence_SendStandingsToClient( Team3Player )
 	}
 }
 

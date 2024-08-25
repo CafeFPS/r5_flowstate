@@ -13,6 +13,7 @@ global function AddCallback_FlowstateSpawnsPostInit
 global function SpawnSystem_SetCustomPak
 global function SpawnSystem_SetCustomPlaylist
 global function SpawnSystem_SetPreferredPak
+global function SpawnSystem_SetRunCallbacks
 
 global function SpawnSystem_GetCurrentSpawnSet
 global function SpawnSystem_GetCurrentSpawnAsset
@@ -93,13 +94,14 @@ global function SpawnSystem_CreateLocPairObject
 		array<LocPairData functionref()> onSpawnInitCallbacks
 		array<void functionref()> spawnSettingsCallbacks
 		LocPair functionref() mapGamemodeBasedOffsetFunc = null
-		int preferredSpawnPak = 1
-		string currentSpawnPak = ""
-		string customSpawnpak = ""
-		string customPlaylist = ""
-		int teamsize = 2
-		bool overrideSpawns = false	
+		int preferredSpawnPak 	= 1
+		string currentSpawnPak 	= ""
+		string customSpawnpak 	= ""
+		string customPlaylist 	= ""
+		int teamsize 			= 2
+		bool overrideSpawns 	= false	
 		bool bSpawnsInitialized = false
+		bool bRunCallbacks 		= true
 		
 		#if DEVELOPER
 			LocPair &panelsloc
@@ -541,40 +543,43 @@ array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1
 	#endif
 	//add with AddCallback_FlowstateSpawnsPostInit( functionref ) 
 	//  function ref should return a LocPairData data object
-	foreach( callbackFunc in file.onSpawnInitCallbacks )
+	if( file.bRunCallbacks )
 	{
-		LocPairData data = callbackFunc()
-		
-		if ( data.spawns.len() > 0 )
+		foreach( callbackFunc in file.onSpawnInitCallbacks )
 		{
-			if( data.bOverrideSpawns )
-			{
-				#if DEVELOPER 
-					Warning("Spawns overriden with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
-				#endif 
-				customSpawns = SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData )
-				file.overrideSpawns = true
-			}
-			else 
-			{
-				#if DEVELOPER 
-					Warning("Spawns extended with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
-				#endif 
-				
-				customSpawns.extend( SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData, coreSpawnsLen ) )
-			}	
-		}
+			LocPairData data = callbackFunc()
 			
-		if( data.waitingRoom != null )
-		{
-			LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
-			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( varWaitingRoom )
-		}
-		
-		if( data.panels != null )
-		{
-			LocPair varPanels = expect LocPair( data.panels )
-			g_waitingRoomPanelLocation = NewLocPair( varPanels.origin, varPanels.angles )
+			if ( data.spawns.len() > 0 )
+			{
+				if( data.bOverrideSpawns )
+				{
+					#if DEVELOPER 
+						Warning("Spawns overriden with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
+					#endif 
+					customSpawns = SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData )
+					file.overrideSpawns = true
+				}
+				else 
+				{
+					#if DEVELOPER 
+						Warning("Spawns extended with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
+					#endif 
+					
+					customSpawns.extend( SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData, coreSpawnsLen ) )
+				}	
+			}
+				
+			if( data.waitingRoom != null )
+			{
+				LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
+				g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( varWaitingRoom )
+			}
+			
+			if( data.panels != null )
+			{
+				LocPair varPanels = expect LocPair( data.panels )
+				g_waitingRoomPanelLocation = NewLocPair( varPanels.origin, varPanels.angles )
+			}
 		}
 	}
 	
@@ -975,6 +980,10 @@ bool function CheckSpawn( vector origin )
 	return traceFinalResult
 }
 
+void function SpawnSystem_SetRunCallbacks( bool setting )
+{
+	file.bRunCallbacks = setting
+}
 
 //////////////////////////////////////////////////////////////////////
 //						  DEVELOPER FUNCTIONS						//

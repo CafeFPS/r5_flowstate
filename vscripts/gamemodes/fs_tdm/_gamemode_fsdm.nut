@@ -3239,7 +3239,7 @@ void function SimpleChampionUI()
 	SurvivalCommentary_ResetAllData()
 	
 	if( Playlist() == ePlaylists.fs_scenarios )
-		Scenarios_ClearAllData()
+		ScenariosPersistence_ClearAllData()
 
 	//printt("Flowstate DEBUG - Clearing last round stats.")
 	foreach( player in GetPlayerArray() )
