@@ -1259,11 +1259,11 @@ void function SetPlayerSettings( entity player, table settings )
 void function OnboardingPlaylistSettings_Init()
 {
 	#if CLIENT 
-		//SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
+		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
 	#endif 
 	
 	#if SERVER
-		//SetConVarInt( "sv_quota_stringCmdsPerSecond", 200 )
+		SetConVarInt( "sv_quota_stringCmdsPerSecond", 200 )
 		file.flowstate_modified_movement = GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 )
 		file.use_r2_deathcam = GetCurrentPlaylistVarBool( "use_r2_deathcam", false )
 	#endif

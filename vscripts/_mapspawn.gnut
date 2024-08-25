@@ -419,7 +419,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl" )
 	PrecacheModel( $"mdl/creatures/prowler/prowler_apex.rmdl" )
 	PrecacheModel( $"mdl/creatures/spider/spider.rmdl" )
-	
+
 	PrecacheModel( $"mdl/fx/cloud_fill_01.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_16x128_01.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x352_01.rmdl" )

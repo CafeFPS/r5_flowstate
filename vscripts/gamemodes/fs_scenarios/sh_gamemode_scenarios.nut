@@ -2,7 +2,7 @@
 // stats/persistence/recaps - mkos
 
 global function FS_Scenarios_Score_System_Init
-global function FS_Scenarios_GetEventScoreFromDatatable
+global function FS_Scenarios_GetEventScoreValue
 global function Scenarios_RegisterNetworking
 	
 #if CLIENT 
@@ -135,7 +135,7 @@ void function FS_Scenarios_Score_System_Init()
 	#endif
 }
 
-int function FS_Scenarios_GetEventScoreFromDatatable( int event )
+int function FS_Scenarios_GetEventScoreValue( int event )
 {
 	if( event in file.scores )
 		return file.scores[event]
@@ -151,8 +151,8 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	if( !IsValid( player ) )
 		return
 
-	int score = player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
-	int eventScore = FS_Scenarios_GetEventScoreFromDatatable( event )
+	int score = ScenariosPersistence_GetScore( player.p.UID, FS_ScoreType.PLAYERSCORE )
+	int eventScore = FS_Scenarios_GetEventScoreValue( event )
 	int newScore = score + eventScore
 
 	player.SetPlayerNetInt( "FS_Scenarios_PlayerScore", newScore )
@@ -280,7 +280,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		if( !ScenariosPersistence_PlayerExists( uid ) )
 			return 0
 		
-		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( type )
+		int scoreValue = FS_Scenarios_GetEventScoreValue( type )
 		int multiply = scoreValue != 0 ? scoreValue : 1
 		
 		return file.scenariosPlayerScorePersistence[ uid ][ type ] * multiply
@@ -288,7 +288,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	
 	int function Scenarios_CalculateScore( int type, int count )
 	{
-		int scoreValue = FS_Scenarios_GetEventScoreFromDatatable( type )
+		int scoreValue = FS_Scenarios_GetEventScoreValue( type )
 		int multiply = scoreValue != 0 ? scoreValue : 1
 		
 		return count * multiply
@@ -363,7 +363,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 				recapData.keyField = GetEnumString( "FS_ScoreType", type )
 			#endif
 			
-			int scoreAward_temp = FS_Scenarios_GetEventScoreFromDatatable( type )
+			int scoreAward_temp = FS_Scenarios_GetEventScoreValue( type )
 			int scoreAward = scoreAward_temp > 0 ? scoreAward_temp : 1
 			
 			recapData.type 		= type
