@@ -1304,7 +1304,7 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
 	
-	if( Gamemode() != eGamemodes.fs_snd ) //&& Playlist() != ePlaylists.fs_scenarios
+	if( Gamemode() != eGamemodes.fs_snd && Playlist() != ePlaylists.fs_scenarios )
 	{
 		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )

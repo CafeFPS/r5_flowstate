@@ -832,7 +832,7 @@ void function SND_Lobby()
 			//Reset player stats
 			player.p.playerDamageDealt = 0.0
 			player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
-			player.SetPlayerNetInt( "playerObservedCount", 0 )
+			// player.SetPlayerNetInt( "playerObservedCount", 0 )
 			player.SetPlayerNetInt( "planted", 0 )
 			player.SetPlayerNetInt( "defused", 0 )
 

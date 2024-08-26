@@ -18,6 +18,7 @@ global function SpawnGenericLoot
 global function SetItemSpawnSource
 global function AddToDeathBox
 global function SURVIVAL_CreateDeathBox
+global function Survival_CreateDeathBox_Retail
 global function FakePhysicsThrow
 global function FakePhysicsThrow_NewTest
 global function FakePhysicsThrow_NewTestBomb

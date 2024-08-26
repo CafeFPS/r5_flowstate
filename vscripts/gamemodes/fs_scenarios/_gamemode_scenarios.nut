@@ -170,8 +170,7 @@ void function Init_FS_Scenarios()
 	SurvivalFreefall_Init()
 	SurvivalShip_Init()
 
-	AddClientCommandCallback( "playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
-	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
+	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
@@ -1361,8 +1360,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				player.SetShieldHealth( player.GetShieldHealthMax() )
 			}
 
-			//todo(dw): g_randomWaitingSpawns.getrandom()
-			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin ) > settings.waitingRoomRadius ) //waiting player should be in waiting room,not battle area
+			if( Distance( player.GetOrigin(), waitingRoomLocation.origin ) > settings.waitingRoomRadius ) //waiting player should be in waiting room,not battle area
 			{
 				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
 				HolsterAndDisableWeapons( player )
@@ -1798,6 +1796,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						circledPos = result.endPos
 
 					// player.SetOrigin( circledPos )
+					ClearLastAttacker( player )
 					player.SnapToAbsOrigin( circledPos )
 					player.SnapEyeAngles( location.angles )
 					player.SnapFeetToEyes()
@@ -1893,6 +1892,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					
 					MakeInvincible(player)
 				}
+
+				UpdatePlayerCounts()
 				
 				if( settings.fs_scenarios_characterselect_enabled )
 				{
@@ -2012,10 +2013,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 
 	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
 	{
-		int droppableItems = GetAllDroppableItems( player ).len()
-
-		if ( droppableItems > 0 )
-			CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
+		thread SURVIVAL_Death_DropLoot( player, damageInfo )
 	}
 } 
 

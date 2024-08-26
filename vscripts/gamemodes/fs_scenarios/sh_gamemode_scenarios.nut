@@ -8,6 +8,7 @@ global function Scenarios_RegisterNetworking
 #if CLIENT 
 	global function UpdateStandingsScriptsFromClient
 	global function Scenarios_SendPlayerScoreLeaders
+	global function FS_Scenarios_ForceUpdatePlayerCount
 #endif
 	
 #if SERVER
@@ -532,6 +533,29 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		RunUIScript( "Scenarios_SetScoreLeaders" )
 	}
 	
+	void function FS_Scenarios_ForceUpdatePlayerCount() //getting rid of networked int for this game mode, so we can show proper enemy player count (each team should have a different value, networked int will show only one value) Colombia
+	{
+		var statusRui = ClGameState_GetRui()
+		if( statusRui != null )
+		{
+			array<entity> players = GetPlayerArrayOfEnemies_Alive( GetLocalClientPlayer().GetTeam() )
+			ArrayRemoveOutOfRealmAndLobbyPlayers( players )
+			// printt( "FS_Scenarios_ForceUpdatePlayerCount", players.len() )
+			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
+			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )
+		}
+	}
+
+	void function ArrayRemoveOutOfRealmAndLobbyPlayers( array<entity> ents )
+	{
+		entity player = GetLocalClientPlayer()
+		for ( int i = ents.len() - 1; i >= 0; i-- )
+		{
+			if ( IsValid( ents[ i ] ) && IsValid( player ) && !ents[ i ].DoesShareRealms( player ) || IsValid( ents[ i ] ) && ents[ i ].GetRealms().len() > 1 ) //more than one realm means they are in lobby ( all realms )
+				ents.remove( i )
+		}
+	}
+
 #endif //CLIENT 
 
 ////////////////////////////////////////////////////////

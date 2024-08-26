@@ -1940,7 +1940,7 @@ entity function CreatePlayerWaypoint_Wrapper( int waypointType )
 	entity wp = CreatePlayerWaypoint( waypointType )
 	Waypoint_ResetCreatedTime( wp )
 
-	AddEntityDestroyedCallback( wp, OnPlayerWaypointDestroyed )
+	AddEntityDestroyedCallback( wp, OnPlayerWaypointDestroyed ) //Works now
 
 	return wp
 }
@@ -2522,7 +2522,6 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 	const int MAX_LOOT_PINGS_PER_PLAYER = 3
 
 	// Don't re-ping:
-	ArrayRemoveInvalid( player.p.pings.loots )
 	foreach ( entity lootWp in player.p.pings.loots )
 	{
 		entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )

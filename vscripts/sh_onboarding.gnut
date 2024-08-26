@@ -1127,9 +1127,16 @@ void function UpdatePlayerCounts()
 		break
 		
 		case eGamemodes.fs_dm:
-		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
-		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
+		if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			foreach( player in GetPlayerArray() )
+				Remote_CallFunction_ByRef( player, "FS_Scenarios_ForceUpdatePlayerCount" )
+		} else
+		{
+			array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+			SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+			SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
+		}
 		break
 
 		case eGamemodes.CUSTOM_CTF:

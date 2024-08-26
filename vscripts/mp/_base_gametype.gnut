@@ -1370,26 +1370,16 @@ void function OnNPCKilled_SP( entity npc, var damageInfo )
 
 void function CodeCallback_OnEntityDestroyed( entity ent )
 {
-	// Must do ent.SetDoDestroyCallback( true ) to get this callback
-//	print( "OnEntityDestroyed " + ent.entindex() + "\n" )
-
-	if ( "onEntityDestroyedCallbacks" in ent.s )
+	foreach ( callbackFunc in ent.e.onEntityDestroyedCallbacks ) //Cafe was here
 	{
-		foreach ( callbackFunc in ent.s.onEntityDestroyedCallbacks )
-		{
-			callbackFunc( ent )
-		}
+		callbackFunc( ent )
 	}
 }
 
 function AddEntityDestroyedCallback( entity ent, void functionref( entity ) callbackFunc )
 {
-	//AssertParameters( callbackFunc, 1, "entity" )
-
-	if ( !( "onEntityDestroyedCallbacks" in ent.e ) )
-		ent.e.onEntityDestroyedCallbacks = []
-
-	ent.e.onEntityDestroyedCallbacks.append( callbackFunc )
+	if( !(ent.e.onEntityDestroyedCallbacks.contains( callbackFunc ) ) )
+		ent.e.onEntityDestroyedCallbacks.append( callbackFunc )
 
 	// set this or else the ent won't run CodeCallback_OnEntityDestroyed at all
 	ent.SetDoDestroyCallback( true )

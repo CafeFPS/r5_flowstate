@@ -437,6 +437,9 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 	
 	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
 		return false
+	
+	if( viewer.GetRealms().len() > 1 && Playlist() == ePlaylists.fs_scenarios )
+		return false
 
 	return true
 }

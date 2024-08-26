@@ -253,8 +253,7 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		Flowstate_ForceRemoveAllObituaries()
 		FS_SetHideEndTimeUI( true )
-		Obituary_Print_Localized( "mkos - code improvements, spawns system", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		OpenCharacterSelectNewMenu()
 	}
 	else
@@ -469,10 +468,15 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
+
+	SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "Final Ring" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+
 	#if DEVELOPER
 		printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
@@ -488,8 +492,6 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame" ) ), "basicImage", $"rui/flowstate_custom/dm_countdown" )
 	
 	thread Flowstate_DMTimer_Thread( new )
-
-	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
 }
 	
 void function Flowstate_DMTimer_Thread( float endtime )
@@ -540,8 +542,6 @@ void function Flowstate_ShowStartTimeUI( float new )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
 	
 	thread Flowstate_StartTime_Thread( new )
-
-	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
 }
 	
 void function Flowstate_StartTime_Thread( float endtime )
@@ -2149,6 +2149,11 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 		file.enemyTeamHandles.clear()
 		file.enemyTeamHandles2.clear()
 		FS_Scenarios_InitPlayersCards()
+	}
+	
+	if( !show )
+	{
+		SetNextCircleDisplayCustomClear()
 	}
 }
 
