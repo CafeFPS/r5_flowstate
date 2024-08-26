@@ -338,6 +338,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
+	PrecacheWeapon( $"mp_weapon_haloshotgun" )
 
 	switch( GameRules_GetGameMode() )
 	{

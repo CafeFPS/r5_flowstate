@@ -315,6 +315,7 @@ global enum eDamageSourceId
 	mp_weapon_plasma_grenade_halomod
 	mp_weapon_oddball_primary
 	melee_oddball
+	mp_weapon_bubble_bunker_master_chief
 	
 	mp_weapon_flagpole_primary
 	melee_flagpole
@@ -325,9 +326,9 @@ global enum eDamageSourceId
 	mp_weapon_titan_sword_slam
 	melee_titan_sword
 	
-	mp_ability_heal //added for stats (triggers ondamaged callback ?)
-	mp_ability_holopilot //triggers ondamaged..?
-	mp_weapon_grenade_gas //triggers ondamaged
+	mp_ability_heal
+	mp_ability_holopilot
+	mp_weapon_grenade_gas
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.

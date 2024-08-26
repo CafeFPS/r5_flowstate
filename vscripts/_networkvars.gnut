@@ -10,13 +10,13 @@ global function SyncEntityVars
 
 function SetEntityVar( entity ent, varName, value )
 {
-	mAssert( IsServer() )
-	mAssert( varName in _entityClassVars[ent.GetClassName()], "Entity " + ent + " does not have remote var " + varName )
-	mAssert( varName in _entityClassVarsIsEnts[ent.GetClassName()] )
-	mAssert( varName in _entityClassVarsSyncToAllClients[ent.GetClassName()] )
-	mAssert( typeof value != "string" )
+	Assert( IsServer() )
+	Assert( varName in _entityClassVars[ent.GetClassName()], "Entity " + ent + " does not have remote var " + varName )
+	Assert( varName in _entityClassVarsIsEnts[ent.GetClassName()] )
+	Assert( varName in _entityClassVarsSyncToAllClients[ent.GetClassName()] )
+	Assert( typeof value != "string" )
 
-	mAssert( "_entityVars" in ent )
+	Assert( "_entityVars" in ent )
 
 	if ( ent._entityVars[varName] == value )
 		return
@@ -57,9 +57,9 @@ function SetEntityVar( entity ent, varName, value )
 
 function SetServerVar( varName, value )
 {
-	mAssert( IsServer() )
-	mAssert( varName in _serverVars )
-	mAssert( typeof value != "string" )
+	Assert( IsServer() )
+	Assert( varName in _serverVars )
+	Assert( typeof value != "string" )
 	expect string( varName )
 
 	if ( _serverVars[varName] == value )
@@ -105,7 +105,7 @@ function SetNetworkVar( obj, varName, value )
 
 function SyncServerVars( entity player )
 {
-	mAssert( IsServer() )
+	Assert( IsServer() )
 
 	foreach ( varName, value in _serverVars )
 	{
@@ -123,7 +123,7 @@ function SyncServerVars( entity player )
 
 function SyncEntityVars( entity player )
 {
-	mAssert( IsServer() )
+	Assert( IsServer() )
 
 	foreach ( className, _ in _entityClassVars )
 	{
@@ -146,7 +146,7 @@ function SyncEntityVars( entity player )
 
 				if ( !_entityClassVarsSyncToAllClients[className][varName] && ent != player )
 				{
-					mAssert( className == "player" )
+					Assert( className == "player" )
 					continue
 				}
 				//if ( className == "player" && !_entityClassVarsSyncToAllClients[className][varName] )
@@ -164,7 +164,7 @@ function SyncEntityVars( entity player )
 					// entValue = entValue.GetEncodedEHandle()
 				// }
 
-				mAssert( player.p.clientScriptInitialized )
+				Assert( player.p.clientScriptInitialized )
 
 				Remote_CallFunction_NonReplay( player, "ServerCallback_SetEntityVar", ent.GetEncodedEHandle(), _entityClassVarHandles[varName], entValue )
 			}

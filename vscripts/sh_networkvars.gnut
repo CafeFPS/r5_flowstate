@@ -63,8 +63,8 @@ int _currentStringIndex = MIN_REGISTERED_STRING_INDEX
 
 void function RegisterString( string thestring )
 {
-	mAssert( _RegisteringFunctions, "Cannot register string outside of _remote_functions.nut" )
-	mAssert( thestring.find( "#" ) == 0, "Cannot register unlocalized string \"" + thestring + "\"" )
+	Assert( _RegisteringFunctions, "Cannot register string outside of _remote_functions.nut" )
+	Assert( thestring.find( "#" ) == 0, "Cannot register unlocalized string \"" + thestring + "\"" )
 
 	int index = _currentStringIndex
 
@@ -76,7 +76,7 @@ void function RegisterString( string thestring )
 
 int function GetStringID( string thestring )
 {
-	mAssert( thestring in _stringToIndex, "String \"" + thestring + "\" has not been registered" )
+	Assert( thestring in _stringToIndex, "String \"" + thestring + "\" has not been registered" )
 
 	return _stringToIndex[thestring]
 }
@@ -85,21 +85,21 @@ int function GetNetworkableStringID( string thestring )
 {
 	int index = GetStringID( thestring ) - MIN_REGISTERED_STRING_INDEX
 
-	mAssert( index >= 0 && index < 256 )
+	Assert( index >= 0 && index < 256 )
 	return index
 }
 
 string function GetStringFromID( int index )
 {
-	mAssert( index >= MIN_REGISTERED_STRING_INDEX, "Index \"" + index + "\" is not a valid registered string index" )
-	mAssert( index in _indexToString )
+	Assert( index >= MIN_REGISTERED_STRING_INDEX, "Index \"" + index + "\" is not a valid registered string index" )
+	Assert( index in _indexToString )
 
 	return _indexToString[index]
 }
 
 string function GetStringFromNetworkableID( int index )
 {
-	mAssert( index >= 0 && index < 256 )
+	Assert( index >= 0 && index < 256 )
 	return GetStringFromID( index + MIN_REGISTERED_STRING_INDEX )
 }
 
@@ -123,7 +123,7 @@ void function RegisterEntityVar( string className, string varName, value, bSyncT
 	bool isPlayer = className == "player"
 
 	if ( !isPlayer )
-		mAssert( className.find( "npc" ) == 0 || className.find( "titan_soul" ) == 0, "only player and NPC's and Titan souls are supported for networked entity vars" )
+		Assert( className.find( "npc" ) == 0 || className.find( "titan_soul" ) == 0, "only player and NPC's and Titan souls are supported for networked entity vars" )
 
 	if ( bSyncToAllClients == null )
 	{
@@ -145,9 +145,9 @@ void function RegisterEntityVar( string className, string varName, value, bSyncT
 	if ( !(className in _entityClassVarsSyncToAllClients ) )
 		_entityClassVarsSyncToAllClients[className] <- {}
 
-	mAssert( !( varName in _entityClassVars[className] ) )
-	mAssert( !( varName in _entityClassVarsIsEnts[className] ) )
-	mAssert( !( varName in _entityClassVarsSyncToAllClients[className] ) )
+	Assert( !( varName in _entityClassVars[className] ) )
+	Assert( !( varName in _entityClassVarsIsEnts[className] ) )
+	Assert( !( varName in _entityClassVarsSyncToAllClients[className] ) )
 
 	if ( IsServer() )
 		_entityClassVarHandles[varName] <- _nextEntVarIndex
@@ -159,13 +159,13 @@ void function RegisterEntityVar( string className, string varName, value, bSyncT
 	_entityClassVars[className][varName] <- value
 	_entityClassVarsIsEnts[className][varName] <- bIsEntities					// means that this variable hold an entity and we should automatically convert eHandles
 
-	mAssert( bSyncToAllClients || className == "player", "Non-player vars must sync to all clients" )
+	Assert( bSyncToAllClients || className == "player", "Non-player vars must sync to all clients" )
 	_entityClassVarsSyncToAllClients[className][varName] <- bSyncToAllClients	// only used for vars set on CPlayers
 }
 
 void function RegisterServerVar( string varName, value )
 {
-	mAssert( !(varName in _serverVars ) )
+	Assert( !(varName in _serverVars ) )
 
 	if ( IsServer() )
 		_serverVarHandles[varName] <- _nextServerVarIndex
@@ -179,7 +179,7 @@ void function RegisterServerVar( string varName, value )
 
 void function RegisterServerEntityVar( string varName )
 {
-	mAssert( !(varName in _serverVars ) )
+	Assert( !(varName in _serverVars ) )
 
 	if ( IsServer() )
 		_serverVarHandles[varName] <- _nextServerVarIndex
@@ -194,7 +194,7 @@ void function RegisterServerEntityVar( string varName )
 
 function GetEntityVar( ent, varName )
 {
-	mAssert( varName in _entityClassVars[ ent.GetNetworkedClassName() ] )
+	Assert( varName in _entityClassVars[ ent.GetNetworkedClassName() ] )
 
 	return ent._entityVars[varName]
 }
@@ -211,7 +211,7 @@ bool function GetHasEntityVar( ent, varName )
 
 function GetServerVar( varName )
 {
-	mAssert( varName in _serverVars )
+	Assert( varName in _serverVars )
 
 	return _serverVars[varName]
 }
@@ -270,14 +270,14 @@ void function RegisterEntityVarChangeCallback( string className, string varName,
 	if ( !(varName in _entityClassVarChangeCallbacks[className]) )
 		_entityClassVarChangeCallbacks[className][varName] <- []
 
-	mAssert( className in _entityClassVars, className + " is not a registered netvar classname." )
-	mAssert( varName in _entityClassVars[ className ], varName + " is not a registered netvar for classname " + className )
+	Assert( className in _entityClassVars, className + " is not a registered netvar classname." )
+	Assert( varName in _entityClassVars[ className ], varName + " is not a registered netvar for classname " + className )
 	_entityClassVarChangeCallbacks[className][varName].append( callbackFunc.bindenv( this ) )
 }
 
 void function InitEntityVars( entity ent )
 {
-	mAssert( "_entityVars" in ent )
+	Assert( "_entityVars" in ent )
 
 	#if CLIENT
 		local className = ent.GetNetworkedClassName()

@@ -30,10 +30,10 @@ void function ServerCallback_SetEntityVar( int eHandle, varHandle, value )
 	}
 
 
-	mAssert( className in _entityClassVars )
-	mAssert( className in _entityClassVarsIsEnts )
+	Assert( className in _entityClassVars )
+	Assert( className in _entityClassVarsIsEnts )
 
-	mAssert( ("_entityVars" in ent) )
+	Assert( ("_entityVars" in ent) )
 
 	if ( _entityClassVarsIsEnts[className][varName] && value == null )
 	{

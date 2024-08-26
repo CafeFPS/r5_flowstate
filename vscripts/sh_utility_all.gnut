@@ -1747,6 +1747,35 @@ string function GetEnumString( string enumName, int value )
 	return reverseEnumLookupMap[enumName][value]
 }
 
+///////////////////////////////////////////////////////////////
+table<string, table<string, int> > enumLookupMap = {}
+bool function BuildEnumLookup( string enumName, bool assertOnDuplicates = true )
+{
+	table enumTableCopy = expect table( getconsttable()[ enumName ] )
+
+	table<string, int> lookup = {}
+	foreach( string key, int value in enumTableCopy )
+	{
+		if ( key in lookup )
+		{
+			mAssert( !assertOnDuplicates, "Enum '" + enumName + "' has two keys with value '" + key + "'" )
+			return false
+		}
+		lookup[ key ] <- value
+	}
+	enumLookupMap[ enumName ] <- lookup
+	return true
+}
+
+
+int function GetEnumValue( string enumName, string key )
+{
+	if ( !( enumName in enumLookupMap ) )
+		BuildEnumLookup( enumName )
+
+	return enumLookupMap[ enumName ][ key ]
+}
+///////////////////////////////////////////////////////////////
 
 string function DEV_GetEnumStringSafe( string enumName, int value )
 {
