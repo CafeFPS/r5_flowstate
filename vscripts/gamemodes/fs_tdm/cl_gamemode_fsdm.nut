@@ -469,7 +469,8 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
 
-	SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "Final Ring" )
+	if( Playlist() == ePlaylists.fs_scenarios )
+		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "Final Ring" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
