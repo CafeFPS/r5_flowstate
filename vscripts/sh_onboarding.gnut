@@ -42,20 +42,25 @@
 global function SV_CL_Onboarding_Init
 
 #if SERVER
-global function TakeLoadoutRelatedWeapons
-global function GiveLoadoutRelatedWeapons
-global function DecideRespawnPlayer
-global function DecideRespawnPlayer_Retail
+	global function TakeLoadoutRelatedWeapons
+	global function GiveLoadoutRelatedWeapons
+	global function DecideRespawnPlayer
+	global function DecideRespawnPlayer_Retail
 
-global function PlayerStartSpectating
-global function PlayerStopSpectating
+	global function PlayerStartSpectating
+	global function PlayerStopSpectating
 
-global function UpdatePlayerCounts
-global function Flowstate_AssignUniqueCharacterForPlayer
-global function Flowstate_SetAssignedCustomModelToPlayer
+	global function UpdatePlayerCounts
+	global function Flowstate_AssignUniqueCharacterForPlayer
+	global function Flowstate_SetAssignedCustomModelToPlayer
 
-global function SetCallback_ObserverThreadOverride
+	global function SetCallback_ObserverThreadOverride
+
+	global function SetPlayerSettings
+	global function Flowstate_ApplyModifiedMovementToPlayer
 #endif
+
+global function ModifiedMovement_RegisterNetworking
 
 global function PreGame_GetWaitingForPlayersHasBlackScreen
 global function PreGame_GetWaitingForPlayersSpawningEnabled
@@ -81,10 +86,6 @@ global function CharSelect_GetOutroTransitionDuration
 
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
-
-global function SetPlayerSettings
-global function Flowstate_ApplyModifiedMovementToPlayer
-global function ModifiedMovement_RegisterNetworking
 
 struct
 {
@@ -1233,53 +1234,6 @@ bool function Survival_CharacterSelectEnabled()
 }
 #endif
 
-void function SetPlayerSettings( entity player, table settings )
-{
-	// string cc
-
-	// foreach( k, v in settings )
-	// {	
-		// #if CLIENT
-			// cc = "set"
-		// #elseif SERVER
-			// cc = "_setClassVarServer"
-		// #endif
-
-		// cc += " " + k + " " + v
-
-		// #if CLIENT
-			// player.ClientCommand( cc )
-		// #elseif SERVER
-			// ClientCommand( player, cc )
-		// #endif
-		
-		// player.kv.k = v
-	// }
-	
-	#if SERVER 
-	
-	// thread 
-	// (
-		// void function() : ( player, settings )
-		// {
-			foreach( k,v in settings )
-			{		
-				string cmd_server = "_setClassVarServer"
-				string cmd = " " + k + " " + v
-				
-				cmd_server += cmd 
-				
-				printt( player, cmd_server )
-				
-				ClientCommand( player, cmd_server )
-				SetEntityVar( player, k, v )
-				player.kv.k = v
-			}
-		// }
-	// )()
-	#endif
-}
-
 void function OnboardingPlaylistSettings_Init()
 {
 	#if CLIENT 
@@ -1293,6 +1247,26 @@ void function OnboardingPlaylistSettings_Init()
 	#endif
 }
 
+#if SERVER
+void function SetPlayerSettings( entity player, table settings )
+{
+	foreach( k,v in settings )
+	{		
+		string cmd_server = "_setClassVarServer"
+		string cmd = " " + k + " " + v
+		
+		cmd_server += cmd 
+		
+		#if DEVELOPER
+			printt( player, cmd_server )
+		#endif
+		
+		ClientCommand( player, cmd_server )
+		SetEntityVar( player, k, v )
+		player.kv.k = v
+	}
+}
+
 void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool resetOnly = false )
 {
 	if( file.flowstate_modified_movement == 0 )
@@ -1304,10 +1278,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 	switch( file.flowstate_modified_movement )
 	{
 		case 1:
-			#if SERVER
-				player.SetMoveSpeedScale( 0.87 )
-			#endif
-			
+			player.SetMoveSpeedScale( 0.87 )		
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
 			
 			#if DEVELOPER
@@ -1316,14 +1287,11 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		break
 		
 		case 2:
-			#if SERVER
 				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
 				player.SetMoveSpeedScale(1.38854974986041364747)
 				player.DisableMantle()
 				player.SetGroundFrictionScale(1.03125)
-			#endif
-
-			SetPlayerSettings( player, CSGO_MOVEMENT )
+				SetPlayerSettings( player, CSGO_MOVEMENT )
 			
 			#if DEVELOPER
 				printt( "Player movement changed to CSGO" )
@@ -1331,13 +1299,10 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		break
 
 		case 3:
-			#if SERVER
 				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
 				player.SetMoveSpeedScale(1.77840093365762835808)
-				player.DisableMantle()
-			#endif
-			
-			SetPlayerSettings( player, HL1_MOVEMENT )
+				player.DisableMantle()	
+				SetPlayerSettings( player, HL1_MOVEMENT )
 			
 			#if DEVELOPER
 				printt( "Player movement changed to HL1" )
@@ -1345,15 +1310,10 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		break
 
 		case 4:
-			#if SERVER
 				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
 				player.SetMoveSpeedScale( 1.1 )
 				player.DisableMantle()
 				SetPlayerSettings( player, HALO_MOVEMENT )
-			#endif
-			
-				
-
 			
 			#if DEVELOPER
 				printt( "Player movement changed to Halo" )
@@ -1361,34 +1321,32 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		break
 
 		case 5:
-			SetPlayerSettings( player, SURF_SETTINGS )
-			
-			#if DEVELOPER
-				printt( "Player movement changed to Surf" )
-			#endif
+				SetPlayerSettings( player, SURF_SETTINGS )
+				
+				#if DEVELOPER
+					printt( "Player movement changed to Surf" )
+				#endif
 		break
 		
 		case 6:
-			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
-			
-			#if DEVELOPER
-				printt( "Superglide modified for all players" )
-			#endif
+				SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
+				
+				#if DEVELOPER
+					printt( "Superglide modified for all players" )
+				#endif
 		break
 
 		case 7:
-			#if SERVER
-				player.SetMoveSpeedScale( 0.87 )
-			#endif
-			
-			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
-			
-			#if DEVELOPER
-				printt( "Player movement changed to TF2" )
-			#endif
+				player.SetMoveSpeedScale( 0.87 )	
+				SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
+				
+				#if DEVELOPER
+					printt( "Player movement changed to TF2" )
+				#endif
 		break
 	}
 }
+#endif
 
 void function ModifiedMovement_RegisterNetworking()
 {

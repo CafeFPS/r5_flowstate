@@ -424,7 +424,7 @@ void function ClientCodeCallback_PlayerSpawned( entity player )
 
 		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
 
-		Flowstate_ApplyModifiedMovementToPlayer( player )
+		//Flowstate_ApplyModifiedMovementToPlayer( player )
 	}
 
 	if ( IsMenuLevel() )
