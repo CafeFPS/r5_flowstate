@@ -3263,19 +3263,19 @@ void function SimpleChampionUI()
 		
 		if( flowstateSettings.enable_oddball_gamemode )
 		{
+			if( !IsValid( player ) )
+				continue
 
-				if( !IsValid( player ) )
-					continue
+			int maxplayers = GetPlayerArray().len()
+			int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
 
-				int maxplayers = GetPlayerArray().len()
-				int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
-
-				if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
-					SetTeam(player, TEAM_MILITIA )
-				else
-					SetTeam(player, TEAM_IMC )
+			if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
+				SetTeam(player, TEAM_MILITIA )
+			else
+				SetTeam(player, TEAM_IMC )
 
 		}
+		
 		player.p.playerDamageDealt = 0.0
 		player.SetPlayerNetInt( "damage", 0 )
 		player.p.assignedMasterChief = -1

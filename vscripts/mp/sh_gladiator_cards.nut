@@ -2521,11 +2521,10 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 			
 			if( IsValid( player ) )
 			{
-				#if HAS_TRACKER_DLL
+				if( GetServerVar( "tracker_enabled" ) )
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonKills" )
-				#else
+				else
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "kills" )
-				#endif
 			}
 			break
 			case 1:
@@ -2534,11 +2533,10 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 
 			if( IsValid( player ) )
 			{
-				#if HAS_TRACKER_DLL
+				if( GetServerVar( "tracker_enabled" ) )
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonGamesplayed" )
-				#else
+				else
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "deaths" )
-				#endif
 			}
 			break
 			case 2:
@@ -2546,11 +2544,10 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 			overrideDataIntegerOrNull = 0
 			if( IsValid( player ) )
 			{
-				#if HAS_TRACKER_DLL
+				if( GetServerVar( "tracker_enabled" ) )
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonDeaths" )
-				#else
+				else
 					overrideDataIntegerOrNull = player.GetPlayerNetInt( "damage" )
-				#endif
 			}
 			break
 		}

@@ -294,6 +294,7 @@ void function CodeCallback_OnSpawned( entity ent )
 		return
 	}
 		
+	
 	int teamNum = int( expect string( ent.kv.teamnumber ) )
 	
 	if ( teamNum != 0 && !ent.IsPlayer() )

@@ -582,8 +582,8 @@ void function Delayed_VaultPanelInit( entity panel )
 }
 bool function VaultPanel_CanUseFunction( entity playerUser, entity controlPanel )
 {
-	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
-		return false
+	// if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
+		// return false
 
 	return ControlPanel_CanUseFunction( playerUser, controlPanel )
 }

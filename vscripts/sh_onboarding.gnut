@@ -987,9 +987,10 @@ void function OnClientConnected( entity player )
 
 	array<entity> allplayers = GetPlayerArray()
 
-	foreach (p in allplayers)
+	foreach ( p in allplayers )
 	{
-		if (!IsValid(p)) continue
+		if ( !IsValid( p ) ) 
+			continue
 
 		int teamSize = GetPlayerArrayOfTeam( p.GetTeam() ).len()
 
