@@ -329,6 +329,8 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "flowstate_DMStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "flowstate_DMRoundEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "FSDM_GameState", SNDC_GLOBAL, SNVT_INT, -1 )
+			
+			//Todo: Try to remove these for non 1v1 gamemodes.
 			RegisterNetworkedVariable( "FSDM_1v1_Enemy", SNDC_PLAYER_GLOBAL, SNVT_ENTITY )
 			RegisterNetworkedVariable( "FSDM_1v1_PositionInScoreboard", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
 			
@@ -1056,10 +1058,10 @@ void function RemoteFunctions_Init_Begin()
 	
 	//r5r.dev player stats
 	RegisterNetworkedVariable( "SeasonScore", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0  )
-	RegisterNetworkedVariable( "SeasonKills", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
-	RegisterNetworkedVariable( "SeasonDeaths", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
+	RegisterNetworkedVariable( "SeasonKills", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
+	RegisterNetworkedVariable( "SeasonDeaths", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
 	RegisterNetworkedVariable( "SeasonPlaytime", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
-	RegisterNetworkedVariable( "SeasonGamesplayed", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
+	RegisterNetworkedVariable( "SeasonGamesplayed", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
 	//todo add wins
 	
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
