@@ -6808,7 +6808,7 @@ array<entity> function FSDM_ReturnBestPlayers_FromChampions( array<entity> champ
 			
 		default:
 			#if DEVELOPER 
-				Warning( "No sort method provided for playlist, using DM" )
+				Warning( "No champion sort method provided for playlist, using DM" )
 			#endif
 			
 			allSummaryData.sort( FS_SortDM )
@@ -6923,7 +6923,7 @@ array<entity> function Tracker_DetermineBestChampions( array<entity> championCan
 			
 		default:
 			#if DEVELOPER 
-				Warning( "No sort method provided for playlist, using DM" )
+				Warning( "No champion sort method provided for playlist, using DM" )
 			#endif
 			
 			allSummaryData.sort( FS_SortDM_Tracker )

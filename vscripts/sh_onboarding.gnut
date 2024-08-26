@@ -39,7 +39,6 @@
 		End:
 			charselect_outro_transition_duration		- The duration of transition from past steps to playing state.
 */
-
 global function SV_CL_Onboarding_Init
 
 #if SERVER
@@ -82,8 +81,10 @@ global function CharSelect_GetOutroTransitionDuration
 
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
+
 global function SetPlayerSettings
 global function Flowstate_ApplyModifiedMovementToPlayer
+global function ModifiedMovement_RegisterNetworking
 
 struct
 {
@@ -548,7 +549,6 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
@@ -1235,25 +1235,49 @@ bool function Survival_CharacterSelectEnabled()
 
 void function SetPlayerSettings( entity player, table settings )
 {
-	string cc
+	// string cc
 
-	foreach( k, v in settings )
-	{	
-		#if CLIENT
-			cc = "set"
-		#elseif SERVER
-			cc = "_setClassVarServer"
-		#endif
+	// foreach( k, v in settings )
+	// {	
+		// #if CLIENT
+			// cc = "set"
+		// #elseif SERVER
+			// cc = "_setClassVarServer"
+		// #endif
 
-		cc += " " + k + " " + v
+		// cc += " " + k + " " + v
 
-		#if CLIENT
-			player.ClientCommand( cc )
-		#elseif SERVER
-			ClientCommand( player, cc )
-		#endif
-		player.kv.k = v
-	}
+		// #if CLIENT
+			// player.ClientCommand( cc )
+		// #elseif SERVER
+			// ClientCommand( player, cc )
+		// #endif
+		
+		// player.kv.k = v
+	// }
+	
+	#if SERVER 
+	
+	// thread 
+	// (
+		// void function() : ( player, settings )
+		// {
+			foreach( k,v in settings )
+			{		
+				string cmd_server = "_setClassVarServer"
+				string cmd = " " + k + " " + v
+				
+				cmd_server += cmd 
+				
+				printt( player, cmd_server )
+				
+				ClientCommand( player, cmd_server )
+				SetEntityVar( player, k, v )
+				player.kv.k = v
+			}
+		// }
+	// )()
+	#endif
 }
 
 void function OnboardingPlaylistSettings_Init()
@@ -1325,9 +1349,11 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
 				player.SetMoveSpeedScale( 1.1 )
 				player.DisableMantle()
+				SetPlayerSettings( player, HALO_MOVEMENT )
 			#endif
 			
-			SetPlayerSettings( player, HALO_MOVEMENT )
+				
+
 			
 			#if DEVELOPER
 				printt( "Player movement changed to Halo" )
@@ -1361,5 +1387,17 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 				printt( "Player movement changed to TF2" )
 			#endif
 		break
+	}
+}
+
+void function ModifiedMovement_RegisterNetworking()
+{
+	foreach( k,v in HALO_MOVEMENT ) //using halo movement for var keys as a test
+	{
+		RegisterEntityVar_Entity( "player", expect string( k ), 0 )
+		
+		#if CLIENT
+			RegisterEntityVarChangeCallback( "player", expect string( k ), OnVarChangedCallback_PlayerMovement )
+		#endif
 	}
 }

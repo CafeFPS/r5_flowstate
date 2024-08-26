@@ -397,7 +397,7 @@ void function CodeCallback_EntityVarChanged( entity ent, varName, newValue, oldV
 		if ( infos.parameters.len() == 2 )
 			callbackFunc( ent )
 		else
-			callbackFunc( ent, newValue, oldValue )
+			callbackFunc( ent, varName, newValue, oldValue ) //added varName so that callbackfunc has a ref
 	}
 }
 

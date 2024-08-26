@@ -28,9 +28,16 @@ void function Flowstate_LgDuels1v1_Init()
 		SetCallback_FlowstateSpawnsOffset( LGDuels_Spawns_Offset ) //used to move all spawns by an offset
 		AddCallback_FlowstateSpawnsPostInit( Init_LGDuels_Spawns )
 	}
-	else 
+	else
 	{
-		SpawnSystem_SetCustomPlaylist( AllPlaylistsArray()[ ePlaylists.fs_1v1 ] ) 
+		AddCallback_FlowstateSpawnsSettings
+		(
+			void function()
+			{
+				SpawnSystem_SetCustomPlaylist( AllPlaylistsArray()[ ePlaylists.fs_1v1 ] ) //override hack
+			}
+		)
+		
 	}
 
 	#if TRACKER && HAS_TRACKER_DLL

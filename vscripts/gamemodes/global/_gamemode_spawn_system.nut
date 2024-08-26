@@ -852,7 +852,7 @@ bool function SpawnSystem_SetCustomPak( string custom_rpak )
 		if( success )
 		{
 			file.customSpawnpak = custom_rpak
-			settings.spawnOptions["use_custom_rpak"] = true
+			settings.spawnOptions[ "use_custom_rpak" ] = true
 		}
 	}
 	
@@ -864,11 +864,11 @@ void function SpawnSystem_SetCustomPlaylist( string playlistref )
 	if( AllPlaylistsArray().contains( playlistref ) )
 	{
 		file.customPlaylist = playlistref
-		settings.spawnOptions["use_custom_playlist"] = true
+		settings.spawnOptions[ "use_custom_playlist" ] = true
 	}
 	else 
 	{
-		Warning("Tried to specify custom playlist for spawn pak, but playlist \"" + playlistref + "\" doesn't exist.")
+		Warning( "Tried to specify custom playlist for spawn pak, but playlist \"" + playlistref + "\" doesn't exist." )
 	}
 }
 

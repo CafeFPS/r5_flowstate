@@ -3264,6 +3264,7 @@ void function Gamemode1v1_Init( int eMap )
 		Flowstate_LgDuels1v1_Init()
 		
 	Flowstate_SpawnSystem_InitGamemodeOptions()
+		
 	SetHostInvetoryAttachments()
 	
 	if( settings.bAllowWeaponsMenu )
