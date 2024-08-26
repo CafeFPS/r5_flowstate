@@ -152,13 +152,17 @@ function SyncEntityVars( entity player )
 				//if ( className == "player" && !_entityClassVarsSyncToAllClients[className][varName] )
 				//	continue
                 //
-				if ( _entityClassVarsIsEnts[className][varName] )
-				{
-					if ( !IsValid( entValue ) )
-						continue
+				
+				
+				//no? 
+				
+				// if ( _entityClassVarsIsEnts[className][varName] )
+				// {
+					// if ( !IsValid( entValue ) )
+						// continue
 					// if this is an entity var, change over to e-handle
-					entValue = entValue.GetEncodedEHandle()
-				}
+					// entValue = entValue.GetEncodedEHandle()
+				// }
 
 				mAssert( player.p.clientScriptInitialized )
 
