@@ -962,11 +962,13 @@ bool function ClApexScreens_PosInStaticBanner( vector pos )
 
 void function UpdateScreensContent( array<ApexScreenState> screenList )
 {
+	if ( GetGameState() >= eGameState.WinnerDetermined )
+		return
 
 
 	entity localViewPlayer = GetLocalViewPlayer()
 	bool isCrypto          = PlayerHasPassive( localViewPlayer, ePassives.PAS_CRYPTO )
-	bool inCamera          = StatusEffect_GetSeverity( localViewPlayer, eStatusEffect.camera_view ) > 0.0
+	bool inCamera          = IsValid( localViewPlayer.p.cryptoActiveCamera )
 	foreach( ApexScreenState screen in screenList )
 	{
 		bool shouldShow = true
