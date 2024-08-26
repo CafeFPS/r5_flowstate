@@ -171,6 +171,7 @@ void function Init_FS_Scenarios()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
+	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
