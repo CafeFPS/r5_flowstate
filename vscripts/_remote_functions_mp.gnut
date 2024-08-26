@@ -75,7 +75,8 @@ void function SetupRemoteFuncAliases()
 			SND_ForceUpdatePlayerCount,
 			Consumable_UseBomb,
 			ServerCallback_CTF_HideCustomUI,
-			Tracker_ShowChampion
+			Tracker_ShowChampion,
+			FS_Scenarios_ForceUpdatePlayerCount
 		]
 	#endif
 	
@@ -118,7 +119,8 @@ void function SetupRemoteFuncAliases()
 			"SND_ForceUpdatePlayerCount",
 			"Consumable_UseBomb",
 			"ServerCallback_CTF_HideCustomUI",
-			"Tracker_ShowChampion"
+			"Tracker_ShowChampion",
+			"FS_Scenarios_ForceUpdatePlayerCount"
 		]
 	#endif
 	
@@ -661,6 +663,9 @@ void function RemoteFunctions_Init_Begin()
 
 	RegisterNetworkedVariable( "PreGameStartTime", SNDC_GLOBAL, SNVT_TIME, 0.0 )
 	RegisterServerVar( "winningTeam", null )
+
+	//Fade REVISIT
+	// Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
 	
 	// Attack/Defend based game modes
 	RegisterNetworkedVariable( "attackingTeam", SNDC_GLOBAL, SNVT_INT, TEAM_UNASSIGNED )
