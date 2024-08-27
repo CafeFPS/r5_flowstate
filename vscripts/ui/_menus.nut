@@ -42,6 +42,7 @@ global function RemoveCallback_OnPartyMemberRemoved
 global function AddCallback_OnTopLevelCustomizeContextChanged
 global function RemoveCallback_OnTopLevelCustomizeContextChanged
 global function AddUICallback_LevelLoadingFinished
+global function RemoveUICallback_LevelLoadingFinished
 global function AddUICallback_LevelShutdown
 global function AddUICallback_OnResolutionChanged
 global function UICodeCallback_UserInfoUpdated
@@ -2995,6 +2996,12 @@ void function SetTopLevelCustomizeContext( ItemFlavor ornull item )
 void function AddUICallback_LevelLoadingFinished( void functionref() callback )
 {
 	file.levelLoadingFinishedCallbacks.append( callback )
+}
+
+void function RemoveUICallback_LevelLoadingFinished( void functionref() callback )
+{
+	if( file.levelLoadingFinishedCallbacks.contains( callback ) )
+		file.levelLoadingFinishedCallbacks.removebyvalue( callback )
 }
 
 

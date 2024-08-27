@@ -11,7 +11,7 @@ global function ServerCallback_SignalScenariosStandings
 
 global function Scenarios_ClientToUi_ScoreLeaders
 global function Scenarios_SetScoreLeaders
-global function Scenarios_ClearSavedScores
+global function Scenarios_ClearUiData
 
 
 #if DEVELOPER
@@ -104,8 +104,8 @@ void function InitScenariosMenu( var menu ) //need to add button events for cont
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, ScenariosStandingsMenuOnClose )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ScenariosStandingsMenuOnNavBack )
 	
-	AddUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected )
-	//AddUICallback_LevelShutdown( Scenarios_ClearSavedScores )
+	if( Playlist() == ePlaylists.fs_scenarios )
+		AddUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected )
 }
 
 void function UI_ScenariosTemplate_Init( int count )
@@ -153,15 +153,18 @@ void function UI_ScenariosTemplate_Init( int count )
 	file.playerScoreLeaders.clear()
 }
 
-void function Scenarios_ClearSavedScores()
+void function Scenarios_ClearUiData()
 {
-	
+	RemoveUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected )
 }
 
 void function ReTransmitStandingsIfConnected()
 {
+	if( Playlist() != ePlaylists.fs_scenarios ) //Todo(dw): manage ui callbacks better for mode
+		return
+	
 	if( !CheckSafeClientRun() )
-		return 
+		return
 		
 	RunClientScript( "UpdateStandingsScriptsFromClient", false )
 }
