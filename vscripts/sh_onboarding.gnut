@@ -1260,18 +1260,8 @@ void function SetPlayerSettings( entity player, table settings )
 {
 	foreach( k,v in settings )
 	{		
-		string cmd_server = "_setClassVarServer"
-		string cmd = " " + k + " " + v
-		
-		cmd_server += cmd 
-		
-		#if DEVELOPER
-			printt( player, cmd_server )
-		#endif
-		
-		ClientCommand( player, cmd_server )
-		SetEntityVar( player, k, v )
 		player.kv.k = v
+		SetEntityVar( player, k, v )	
 	}
 }
 
@@ -1358,12 +1348,70 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 void function ModifiedMovement_RegisterNetworking()
 {
-	foreach( k,v in HALO_MOVEMENT ) //using halo movement for var keys as a test
+	array<string> entityClassVars = 
+	[
+		"airacceleration",
+		"landslowdownduration",
+		"gravityscale",
+		"jumpheight",
+		"Slidejumpheight",
+		"slideRequiredStartSpeed",
+		"stepheight",
+		"ziplineSpeed",
+		"wallrun",
+		"doublejump",
+		"superjumpMinHeight",
+		"superjumpMaxHeight",
+		"superjumpHorzSpeed",
+		"wallrun_timeLimit",
+		"wallrunJumpOutwardSpeed",
+		"wallrunJumpUpSpeed",
+		"wallrunJumpInputDirSpeed",
+		"wallrunMaxSpeedVertical",
+		"wallrunMaxSpeedHorizontal",
+		"wallrunAccelerateVertical",
+		"wallrunAccelerateHorizontal",
+		"leech_range",
+		"impactSpeed",
+		"slidedecel",
+		"automantle_enable",
+		"slidevelocitydecay",
+		"skip_speed_reduce",
+		"slideSpeedBoostCap",
+		"antiMultiJumpHeightFrac",
+		"airspeed",
+		"acceleration",
+		"player_slideBoostEnabled",
+		"slideRequiredStartSpeedAir",
+		"slideSpeedBoost",
+		"slideVelocityDecay",
+		"climbheight",
+		"skip_time",
+		"climbEnabled",
+		"automantle",
+		"airStrafeAcceleration",
+		"airStrafeEnabled",
+		"airStrafeTaperStart",
+		"airStrafeTaperFinish",
+		"glideStrafeTaperStart",
+		"glideStrafeTaperFinish",
+		"glideStrafe",
+		"glideRedirectSideways",
+		"glideRedirectJumpHeightStartOffset",
+		"glideRedirectJumpHeightFinishOffset",
+		"superjumpCanUseAfterWallrun",
+		"glideEnabled",
+		"player_slideBoostCooldown",
+		"sprintspeed",
+		"speed",
+	]
+
+	foreach( varKey in entityClassVars )
 	{
-		RegisterEntityVar_Entity( "player", expect string( k ), 0 )
+		RegisterEntityVar_Entity( "player", varKey, 0 )
 		
 		#if CLIENT
-			RegisterEntityVarChangeCallback( "player", expect string( k ), OnVarChangedCallback_PlayerMovement )
+			RegisterEntityVarChangeCallback( "player", varKey, OnVarChangedCallback_PlayerMovement )
 		#endif
 	}
 }
