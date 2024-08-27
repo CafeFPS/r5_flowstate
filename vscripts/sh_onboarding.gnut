@@ -64,7 +64,9 @@ global function SV_CL_Onboarding_Init
 	#endif
 #endif
 
-global function ModifiedMovement_RegisterNetworking
+#if ENTITYVAR_DEPRECATED
+	global function ModifiedMovement_RegisterNetworking
+#endif
 
 global function PreGame_GetWaitingForPlayersHasBlackScreen
 global function PreGame_GetWaitingForPlayersSpawningEnabled
@@ -1281,7 +1283,12 @@ void function SetPlayerSettings( entity player, table settings )
 	foreach( k,v in settings )
 	{		
 		player.kv.k = v
-		SetEntityVar( player, k, v )	
+		
+		#if ENTITYVAR_DEPRECATED
+			SetEntityVar( player, k, v )
+		#else
+			player.SetPlayerClassVar( k, v )
+		#endif
 	}
 }
 
@@ -1415,75 +1422,77 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 }
 #endif
 
-void function ModifiedMovement_RegisterNetworking() 
-{
-	array<string> entityClassVars = 
-	[
-		"airacceleration",
-		"landslowdownduration",
-		"gravityscale",
-		"jumpheight",
-		"Slidejumpheight",
-		"slideRequiredStartSpeed",
-		"stepheight",
-		"ziplineSpeed",
-		"wallrun",
-		"doublejump",
-		"superjumpMinHeight",
-		"superjumpMaxHeight",
-		"superjumpHorzSpeed",
-		"wallrun_timeLimit",
-		"wallrunJumpOutwardSpeed",
-		"wallrunJumpUpSpeed",
-		"wallrunJumpInputDirSpeed",
-		"wallrunMaxSpeedVertical",
-		"wallrunMaxSpeedHorizontal",
-		"wallrunAccelerateVertical",
-		"wallrunAccelerateHorizontal",
-		"leech_range",
-		"impactSpeed",
-		"slidedecel",
-		"automantle_enable",
-		"slidevelocitydecay",
-		"skip_speed_reduce",
-		"slideSpeedBoostCap",
-		"antiMultiJumpHeightFrac",
-		"airspeed",
-		"acceleration",
-		"player_slideBoostEnabled",
-		"slideRequiredStartSpeedAir",
-		"slideSpeedBoost",
-		"slideVelocityDecay",
-		"climbheight",
-		"skip_time",
-		"climbEnabled",
-		"automantle",
-		"airStrafeAcceleration",
-		"airStrafeEnabled",
-		"airStrafeTaperStart",
-		"airStrafeTaperFinish",
-		"glideStrafeTaperStart",
-		"glideStrafeTaperFinish",
-		"glideStrafe",
-		"glideRedirectSideways",
-		"glideRedirectJumpHeightStartOffset",
-		"glideRedirectJumpHeightFinishOffset",
-		"superjumpCanUseAfterWallrun",
-		"glideEnabled",
-		"player_slideBoostCooldown",
-		"sprintspeed",
-		"speed",
-	]
-
-	foreach( varKey in entityClassVars )
+#if ENTITYVAR_DEPRECATED
+	void function ModifiedMovement_RegisterNetworking() 
 	{
-		RegisterEntityVar_Entity( "player", varKey, 0 )
-		
-		#if CLIENT
-			RegisterEntityVarChangeCallback( "player", varKey, OnVarChangedCallback_PlayerMovement )
-		#endif
+		array<string> entityClassVars = 
+		[
+			"airacceleration",
+			"landslowdownduration",
+			"gravityscale",
+			"jumpheight",
+			"Slidejumpheight",
+			"slideRequiredStartSpeed",
+			"stepheight",
+			"ziplineSpeed",
+			"wallrun",
+			"doublejump",
+			"superjumpMinHeight",
+			"superjumpMaxHeight",
+			"superjumpHorzSpeed",
+			"wallrun_timeLimit",
+			"wallrunJumpOutwardSpeed",
+			"wallrunJumpUpSpeed",
+			"wallrunJumpInputDirSpeed",
+			"wallrunMaxSpeedVertical",
+			"wallrunMaxSpeedHorizontal",
+			"wallrunAccelerateVertical",
+			"wallrunAccelerateHorizontal",
+			"leech_range",
+			"impactSpeed",
+			"slidedecel",
+			"automantle_enable",
+			"slidevelocitydecay",
+			"skip_speed_reduce",
+			"slideSpeedBoostCap",
+			"antiMultiJumpHeightFrac",
+			"airspeed",
+			"acceleration",
+			"player_slideBoostEnabled",
+			"slideRequiredStartSpeedAir",
+			"slideSpeedBoost",
+			"slideVelocityDecay",
+			"climbheight",
+			"skip_time",
+			"climbEnabled",
+			"automantle",
+			"airStrafeAcceleration",
+			"airStrafeEnabled",
+			"airStrafeTaperStart",
+			"airStrafeTaperFinish",
+			"glideStrafeTaperStart",
+			"glideStrafeTaperFinish",
+			"glideStrafe",
+			"glideRedirectSideways",
+			"glideRedirectJumpHeightStartOffset",
+			"glideRedirectJumpHeightFinishOffset",
+			"superjumpCanUseAfterWallrun",
+			"glideEnabled",
+			"player_slideBoostCooldown",
+			"sprintspeed",
+			"speed",
+		]
+
+		foreach( varKey in entityClassVars )
+		{
+			RegisterEntityVar_Entity( "player", varKey, 0 )
+			
+			#if CLIENT
+				RegisterEntityVarChangeCallback( "player", varKey, OnVarChangedCallback_PlayerMovement )
+			#endif
+		}
 	}
-}
+#endif
 
 
 #if SERVER && DEVELOPER

@@ -55,7 +55,10 @@ global function FS_Silence
 global function FS_RegisterAdmin
 
 global function PlayerSetting_DamageClosesMenu
-global function OnVarChangedCallback_PlayerMovement
+
+#if ENTITYVAR_DEPRECATED
+	global function OnVarChangedCallback_PlayerMovement
+#endif
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -2373,12 +2376,14 @@ void function FS_RegisterAdmin()
 	RunUIScript( "UICallback_AdminStatus", Gamemode() == eGamemodes.WINTEREXPRESS ? false : player.GetPlayerNetBool("IsAdmin") )	
 }
 
-void function OnVarChangedCallback_PlayerMovement( ent, varName, newValue, oldValue )
-{
-	entity player = GetLocalClientPlayer()
-	
-	if( IsValid( player ) )
+#if ENTITYVAR_DEPRECATED
+	void function OnVarChangedCallback_PlayerMovement( ent, varName, newValue, oldValue )
 	{
-		player.ClientCommand( "set" + " " + varName + " " + newValue )
+		entity player = GetLocalClientPlayer()
+		
+		if( IsValid( player ) )
+		{
+			player.ClientCommand( "set" + " " + varName + " " + newValue )
+		}
 	}
-}
+#endif

@@ -91,7 +91,6 @@ void function Player1v1Gamestate( entity player, int state )
 			break 
 		
 		case e1v1State.RESTING:
-		case e1v1State.WAITING:
 		case e1v1State.RECAP:
 
 			if( !EntityCallback_Exists( player, ZeroDamage ) )

@@ -223,6 +223,7 @@ global function LogError
 global function GetTrackerErrorArray
 global function CodeCallback_BatchStatsLoaded
 global function CodeCallback_PlayerStatsReady
+global function CodeCallback_VerifyEaAccount
 
 const int MAX_SECONDS_WAIT_FOR_BATCH_LOAD = 5
 const float MAX_FIGHT_HISTORY_TIME = 20;
@@ -2727,13 +2728,13 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			entity currentAttacker = GetEntityFromEncodedEHandle( player_handles[i] )
 			
 			//*move to gametype specific in future
-			if ( Flowstate_IsLGDuels() )
-			{			
-				if ( IsValid( currentAttacker ) && IsValid( victim ) )
-				{
-					RecapStats( currentAttacker, playerTotalDamages[i], float( playerTotalHits[i] ), float( playerTotalShots[i] ), string( victimName ), victimTotalDamage, float( victimTotalHits ), float( victimTotalShots )  )
-				}
-			}
+			// if ( Flowstate_IsLGDuels() )
+			// {			
+				// if ( IsValid( currentAttacker ) && IsValid( victim ) )
+				// {
+					// RecapStats( currentAttacker, playerTotalDamages[i], float( playerTotalHits[i] ), float( playerTotalShots[i] ), string( victimName ), victimTotalDamage, float( victimTotalHits ), float( victimTotalShots )  )
+				// }
+			// }
 			
 			if( file.gamemode_type_1v1 )
 			{
@@ -3417,10 +3418,11 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 		
 			if ( file.gamemode_type_1v1 ) 
 			{
-				WaitSignal( player, "OnConnected", "OnDisconnected", "OnDestroy" )
+				if( !player.p.isConnected )
+					waitthread WaitSignalOrTimeout( player, 5, "OnConnected", "OnDisconnected", "OnDestroy" )
 				
 				if( !IsValid( player ) || !player.p.isConnected )
-					return 
+					return
 					
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 				mkos_Force_Rest( player )
@@ -3461,64 +3463,60 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 				return;
 			}
 
-			playerVerifyCounts[index].verifyCount += 1;
+			playerVerifyCounts[index].verifyCount += 1
 
-			string token = args[0];
-			Player_EA_Verify( player, token, OID, ea_acc );
-
-			return;
+			string token = args[0]
+			EA_Verify__internal( token, OID, ea_acc )
+			
+			return
 		
 	}
 	
-	void function Player_EA_Verify (entity player, string token, string OID, string ea_acc)
+	void function CodeCallback_VerifyEaAccount( string oid, int token )
 	{	
-		// Todo: To avoid net process budgets, and avoid hanging the server thread, 
-		// Move this information relay to a CodeCallback 
-		// This wont need threaded at that point either. 
+		entity player = GetPlayerEntityByUID( oid )
 		
-		SetConVarInt( "net_processTimeBudget", 5100 )
-		WaitFrame()
-		int VERIFY = EA_Verify__internal( token, OID, ea_acc )
-		SetConVarInt( "net_processTimeBudget", 200 )
-
-		switch (VERIFY) 
+		if( !IsValid( player ) )
+			return
+					
+		switch ( token )
 		{
 			case 10:
-				Message(player, "Failed: Expired Token", "Please request a new one")
-				return;
+				Message( player, "Failed: Expired Token", "Please request a new one" )
+				return
 
 			case 2:
-				Message(player, "Invalid token", "Usage: ea_verify   yourtoken")
-				return;
+				Message( player, "Invalid token", "Usage: ea_verify   yourtoken" )
+				return
 
 			case 4:
-				Message(player, "Failed", "EA Account already linked.")
-				return;
+				Message( player, "Failed", "EA Account already linked." )
+				return
 
 			case 1:
-				Message(player, "SUCCESS", "Your account was successfully verified on R5R.DEV")
-				return;
+				Message( player, "SUCCESS", "Your account was successfully verified on R5R.DEV" )
+				return
 
 			case 5:
-				Message(player, "Failed: ", "Database error on success")
-				return;
+				Message( player, "Failed: ", "Database error on success" )
+				return
 
 			case 3:
-				Message(player, "Failed: ", "DB error")
-				return;
+				Message( player, "Failed: ", "DB error" )
+				return
 
 			case 6:
-				Message(player, "Failed: ", "Missing Data")
-				return;
+				Message( player, "Failed: ", "Missing Data" )
+				return
 
 			case 8:
-				Message(player, "Failed: ", "CURL Error.")
-				return;
+				Message( player, "Failed: ", "CURL Error." )
+				return
 
 			case 0:
 			default:
-				Message(player, "Failed", "Could not verify EA Account.")
-				return;
+				Message( player, "Failed", "Could not verify EA Account." )
+				return
 		}	
 	}
 
