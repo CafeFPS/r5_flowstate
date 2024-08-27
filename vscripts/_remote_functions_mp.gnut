@@ -195,14 +195,18 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_ByRef_ConsistencyCheck" )
 	AddCallback_OnNetworkRegistration( ByRef_ConsistencyCheck )
 
+	#if !DEVELOPER
 	if( GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) > 0 )
 	{
+	#endif
 		#if DEVELOPER
 			Warning( "Registered ModifiedMovement_RegisterNetworking()" )
 		#endif
 		
 		ModifiedMovement_RegisterNetworking()
+	#if !DEVELOPER
 	}
+	#endif
 	
 	//Minimap Toggle
 	//Remote_RegisterClientFunction("Minimap_EnableDraw_Internal") //moved to byRef ~mkos

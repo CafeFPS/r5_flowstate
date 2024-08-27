@@ -220,7 +220,7 @@
         InheritProperties		SwitchButton
         style					DialogListButton
         navUp					SwitchPilotDamageIndicators
-        navDown					SwitchStreamerMode
+        navDown					SwitchShowHealthbars
         ConVar					"player_setting_damage_closes_deathbox_menu"
         
 		list
@@ -234,12 +234,32 @@
         pin_to_sibling_corner	BOTTOM_LEFT
         childGroupAlways        MultiChoiceButtonAlways
 	}
+	SwitchShowHealthbars
+	{
+        ControlName				RuiButton
+        InheritProperties		SwitchButton
+        style					DialogListButton
+        navUp					SwitchDamageClosesMenu
+        navDown					SwitchStreamerMode
+        ConVar					"enable_healthbar"
+        
+		list
+        {
+            "#SETTING_OFF"	0
+            "#SETTING_ON"	1
+        }
+
+        pin_to_sibling			SwitchDamageClosesMenu
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+        childGroupAlways        MultiChoiceButtonAlways
+	}
     SwitchStreamerMode
     {
         ControlName				RuiButton
         InheritProperties		SwitchButton
         style					DialogListButton
-        navUp					SwitchDamageClosesMenu
+        navUp					SwitchPilotDamageIndicators
         navDown					SwitchAnalytics
         ConVar					"hud_setting_streamerMode"
         visible                 1
@@ -250,7 +270,7 @@
             "#SETTING_ALL"	    2
         }
 
-        pin_to_sibling			SwitchDamageClosesMenu
+        pin_to_sibling			SwitchShowHealthbars
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         childGroupAlways        MultiChoiceButtonAlways

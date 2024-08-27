@@ -62,6 +62,7 @@ global function BloodSprayDecals_Toggle
 #endif
 
 const float DEFAULT_GAMEMODE_ANNOUNCEMENT_DURATION = 5.0
+const float WAIT_TO_HIDE_HEALTHBAR = 2
 
 struct {
 	entity lastEarnedReward // primarily used to check if we should still show the reward message after a delay
@@ -70,9 +71,14 @@ struct {
 
 	float lastBloodDecalTime = 0
 	bool log_damage_to_obituary
+	
+	//todo(dw): better system...
+	bool bDoesPlaylistAllowHealthbars
 	int player_setting_damage_closes_deathbox_menu = -1
+	int enable_healthbar = -1
 
 	table<entity, entity> healthBars
+	table<entity, float> onPlayerDamagedTimes
 } file
 
 struct BloodDecalParams
@@ -110,6 +116,7 @@ void function ClPlayer_Init()
 	RegisterSignal( "TargetChanged" )
 	RegisterSignal( "OnDisconnected" )
 	RegisterSignal( "ChangedTeam" )
+	RegisterSignal( "StopShowingHealthbars" )
 	//RegisterSignal( "PlayerADSPressed" )
 
 	FlagInit( "DamageDistancePrint" )
@@ -123,7 +130,7 @@ void function ClPlayer_Init()
 	if( GetCurrentPlaylistVarBool( "flowstate_enable_health_bars", false ) ) //By Cafe
 	{
 		AddCreateCallback( "player", FS_HealthBars_StartForPlayer )
-		AddDestroyCallback( "player", FS_HealthBars_OnPlayerDestroyed )
+		AddDestroyCallback( "player", FS_HealthBars_Destroy )
 	}
 
 	AddCreateCallback( "first_person_proxy", SetupFirstPersonProxyEvents )
@@ -145,19 +152,26 @@ void function ClPlayer_Init()
 	//RegisterConCommandTriggeredCallback( "+zoom", CPlayerADSPressed )
 
 	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
+		
+	file.enable_healthbar = GetConVarInt( "enable_healthbar" )
+	
+	file.bDoesPlaylistAllowHealthbars = GetCurrentPlaylistVarBool( "flowstate_enable_health_bars", false )
 	
 	OnSettingsUpdated()
 }
 
 void function FS_HealthBars_StartForPlayer( entity player )
 {
-	if( player == GetLocalClientPlayer() )
+	if( player == GetLocalClientPlayer() || GetConVarInt( "enable_healthbar" ) == 0 )
 		return
 
 	if( !( player in file.healthBars ) )
 	{
 		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
 	}
+
+	if( !( player in file.onPlayerDamagedTimes ) )
+		file.onPlayerDamagedTimes[ player ] <- 0.0
 
 	Flowstate_CreateCustomHealthBarForPlayer( player )
 }
@@ -184,9 +198,25 @@ void function Flowstate_CreateCustomHealthBarForPlayer( entity player )
 	thread Flowstate_CustomHealthBar_UpdateBarAngles( player, vgui )
 }
 
+bool function DoesHealthBarExist( entity player )
+{
+	if( !IsValid( player ) )
+		return false 
+		
+	if( player in file.healthBars )
+	{
+		if( IsValid( file.healthBars[ player ] ) )
+			return true 
+		else 
+			FS_HealthBars_Destroy( player )
+	}
+		
+	return false
+}
+
 void function Flowstate_CustomHealthBar_UpdateBarAngles( entity player, entity vgui )
 {
-	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDestroy", "StopShowingHealthbars" )
 
 	while( true )
 	{
@@ -216,8 +246,8 @@ void function Flowstate_CustomHealthBar_UpdateBarAngles( entity player, entity v
 
 void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 {
-	EndSignal( player, "OnDestroy", "OnDisconnected" )
-
+	EndSignal( player, "OnDestroy", "OnDisconnected", "StopShowingHealthbars" )
+	
 	//test
 	// {
 		// vector origin = player.GetOrigin()
@@ -295,8 +325,8 @@ void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 
 	while( true )
 	{
-		player.WaitSignal( "HealthChanged", "ShieldChanged", "SettingsChanged", "ChangedTeam" )
-
+		waitthread WaitSignalOrTimeout( player, WAIT_TO_HIDE_HEALTHBAR, "HealthChanged", "ShieldChanged", "SettingsChanged", "ChangedTeam" )
+		
 		if( !IsValid( player ) )
 			break
 		
@@ -305,6 +335,17 @@ void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
 			vgui.SetParent( player )
 			file.healthBars[player] = vgui
+		}
+		
+		if( Time() - file.onPlayerDamagedTimes[ player ] > WAIT_TO_HIDE_HEALTHBAR ) 
+		{
+			foreground.Hide()
+			background.Hide()
+
+			foreach( shieldElement in shields )
+				shieldElement.Hide()
+			
+			continue
 		}
 
 		//Condiciones para ocultarla
@@ -360,16 +401,21 @@ void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 	}
 }
 
-void function FS_HealthBars_OnPlayerDestroyed( entity player )
+void function FS_HealthBars_Destroy( entity player )
 {
 	if ( !IsValid( player ) )
 		return
 
 	if( player in file.healthBars )
 	{
+		player.Signal( "StopShowingHealthbars" )
+		
 		if( IsValid( file.healthBars[player] ) )
 			file.healthBars[ player ].Destroy()
 		delete file.healthBars[player]
+		
+		if( player in file.onPlayerDamagedTimes )
+			delete file.onPlayerDamagedTimes[ player ]
 	}
 }
 
@@ -381,10 +427,38 @@ void function FS_HealthBars_OnPlayerDestroyed( entity player )
 void function OnSettingsUpdated()
 {
 	int iCheckPlayerDamageCloseSetting = GetConVarInt( "player_setting_damage_closes_deathbox_menu" )
+	int iCheckShowHealthbarsSetting = GetConVarInt( "enable_healthbar" )
+	
+	if( iCheckPlayerDamageCloseSetting > 1 || iCheckShowHealthbarsSetting > 1 )
+		return
 	
 	if( iCheckPlayerDamageCloseSetting != file.player_setting_damage_closes_deathbox_menu  )
 	{
 		file.player_setting_damage_closes_deathbox_menu = iCheckPlayerDamageCloseSetting
+	}
+	
+	if( iCheckShowHealthbarsSetting != file.enable_healthbar )
+	{	
+		file.enable_healthbar = iCheckShowHealthbarsSetting
+		
+		if( IsLobby() || !file.bDoesPlaylistAllowHealthbars )
+			return		
+		
+		switch( iCheckShowHealthbarsSetting )
+		{	
+			case 0:		
+				foreach( entity player, entity vgui in file.healthBars )
+					FS_HealthBars_Destroy( player )
+			break
+			
+			case 1:
+				array<entity> players = GetPlayerArray()			
+				players.fastremovebyvalue( GetLocalClientPlayer() )
+				
+				foreach( player in players )
+					FS_HealthBars_StartForPlayer( player )
+			break
+		}
 	}
 }
 
@@ -964,6 +1038,11 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	{
 		PlayHitSound( victim, attacker, damageFlags, isCritShot, victimIsHeavyArmor, isKillShot, hitType )
 	}
+	
+	if( victim in file.onPlayerDamagedTimes )
+		file.onPlayerDamagedTimes[ victim ] = Time()
+	else
+		file.onPlayerDamagedTimes[ victim ] <- Time()
 
 	foreach ( callback in clGlobal.onLocalPlayerDidDamageCallback )
 	{

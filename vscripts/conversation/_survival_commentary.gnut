@@ -233,6 +233,12 @@ void function SurvivalCommentary_ResetAllData()
 
 void function SetChampion( entity champion )
 {
+	if( !IsValid( champion ) )
+	{
+		SetGlobalNetInt( "championEEH", -1 )
+		return
+	}
+	
 	SetGlobalNetInt( "championEEH", champion.GetEncodedEHandle() )
 	array<entity> championSquadMates = GetPlayerArrayOfTeam( champion.GetTeam() )
 	championSquadMates.fastremovebyvalue( champion )

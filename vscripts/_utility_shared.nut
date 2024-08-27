@@ -4502,7 +4502,7 @@ void function PrintFirstPersonSequenceStruct( FirstPersonSequenceStruct fpsStruc
 	printt( "gravity: " + fpsStruct.gravity )
 }
 
-void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "" )
+void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "", string signal4 = "" )
 {
 	//Assert( IsValid( ent ) )
 	if( !IsValid( ent ) )
@@ -4515,6 +4515,9 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 
 	if ( signal3 != "" )
 		ent.EndSignal( signal3 )
+		
+	if ( signal4 != "" )
+		ent.EndSignal( signal4 )
 
 	wait( timeout )
 	

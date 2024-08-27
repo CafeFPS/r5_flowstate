@@ -548,7 +548,7 @@ playlists
 				flowstate_giveskins_weapons 					0 // if you host with these you will be banned
 				flowstate_giveskins_characters 					1 // if you host with these you will be banned
 				r5reloaded_AnimatedCharacterSelect				0
-				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
+				flowstate_modified_movement						0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 				flowstate_enable_bullet_slow					1
 				
 				flowstate_limit_playback_per_slot_amount		1	//-1 for unlimited (up to server limit)		
@@ -623,7 +623,7 @@ playlists
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall	0
 				
-				flowstate_modified_movement					2 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement					4 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 			}
 			gamemodes { fs_snd { maps {
 				mp_rr_arena_empty                   			1
@@ -1260,6 +1260,8 @@ playlists
 				afk_to_rest_bool						0
 				
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_modified_movement		0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode		
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
@@ -1639,7 +1641,7 @@ playlists
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall			1
 				
-				flowstateRoundtime 						30 //800
+				flowstateRoundtime 						800
 				
 				/////////////////////////
 				// mkos added features //
@@ -2207,7 +2209,9 @@ playlists
 				flowstateEndlessFFAorTDM				0 //location won't change, no champion will be defined
 				Admins 									"r5r_ColombiaFPS"
 				respawn_delay 							5
-				flowstateRoundtime 						600
+				
+				flowstateRoundtime 						30 //600
+				
 				flowstateBubble 						"252, 140, 3" //ring color
 				flowstateResetKills 					1
 				flowstateTimer 							1
@@ -2238,7 +2242,7 @@ playlists
 				flowstateAutoreloadSecondary 			0
 				flowstateKillshotEnabled 				1	//enables the killshot sound when killing
 
-				flowstate_modified_movement				4 //0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement				8 	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 
 			}
 			gamemodes { fs_dm { maps {
@@ -2369,8 +2373,8 @@ playlists
 				flowstateExtrashieldsSpawntime 			240
 				flowstateExtrashieldValue 				150 //extrashield actual value
 
-				teammate_huds_enabled                          0    //Enables teammate huds
-				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				teammate_huds_enabled					0    //Enables teammate huds
+				flowstate_modified_movement				8	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 			}
 			gamemodes { fs_dm { maps {
 				mp_flowstate	1
@@ -2439,7 +2443,7 @@ playlists
 				////CTF Score And Round time:
 				max_score                                      3    //Set max amount of flag captures
 				round_time                                     30   //Sets time limit for rounds in minutes
-				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement 				   8 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 			}
 			gamemodes { custom_ctf { maps {
 				mp_flowstate					1
@@ -3238,7 +3242,7 @@ playlists
 				flowstate_giveskins_weapons 					0 // if you host with these you will be banned
 				flowstate_giveskins_characters 					0 // if you host with these you will be banned
 				r5reloaded_AnimatedCharacterSelect				0
-				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
+				flowstate_modified_movement						0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 				flowstate_enable_bullet_slow					1
 
 				flowstate_give_character_passive		1

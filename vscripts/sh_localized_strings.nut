@@ -834,6 +834,22 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	{
 		S = file.fs_variableString
 		SubS = file.fs_variableSubString
+		
+		if( S.len() > 2 )
+		{
+			string checkForToken = S.slice( 0, 2 ) //don't search the entire string for #
+			
+			if( checkForToken.find( "#" ) != -1 )
+				S = Localize( S )
+		}
+		
+		if( SubS.len() > 2 )
+		{
+			string checkForToken2 = SubS.slice( 0, 2 )
+			
+			if( checkForToken2.find( "#" ) != -1 )
+				SubS = Localize( SubS )
+		}
 	}
 	else 
 	{	//I really hate this.
@@ -899,6 +915,8 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 
 void function DisplayMessage( string str1, string str2, float duration, int uiType = 0 )
 {
+	printt( str1, str2 )
+	
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )
 	Announcement_SetSubText( announcement, str2 )

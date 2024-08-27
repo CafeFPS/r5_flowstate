@@ -93,50 +93,6 @@ global function ClientCommand_GiveWeapon
 
 global function ValidateWeaponTgiveSettings
 
-//todo: grab from damagedef names
-const table<string, string> WeaponNameMap = {
-    ["mp_weapon_r97"] = "R99",
-    ["mp_weapon_vinson"] = "Flatline",
-    ["mp_weapon_volt_smg"] = "Volt SMG",
-    ["mp_weapon_car"] = "Car SMG",
-    ["mp_weapon_sniper"] = "Kraber",
-    ["mp_weapon_alternator_smg"] = "Alternator",
-    ["mp_weapon_defender"] = "Charge Rifle",
-    ["mp_weapon_esaw"] = "Devotion",
-    ["mp_weapon_epg"] = "EPG",
-    ["mp_weapon_shotgun"] = "EVA8",
-    ["mp_weapon_g2"] = "G7 Scout",
-    ["mp_weapon_energy_ar"] = "Havoc",
-    ["mp_weapon_hemlok"] = "Hemlok",
-    ["mp_weapon_dmr"] = "Longbow",
-    ["mp_weapon_lstar"] = "Lstar",
-    ["mp_weapon_mastiff"] = "Mastiff",
-    ["mp_weapon_shotgun_pistol"] = "Mozambique",
-    ["mp_weapon_semipistol"] = "P2020",
-    ["mp_weapon_energy_shotgun"] = "Peacekeeper",
-    ["mp_weapon_pdw"] = "Prowler",
-    ["mp_weapon_rspn101"] = "R301",
-    ["mp_weapon_autopistol"] = "RE45",
-    ["mp_weapon_smart_pistol"] = "Smart Pistol",
-    ["mp_weapon_lmg"] = "Spitfire",
-    ["mp_weapon_doubletake"] = "Triple Take",
-    ["mp_weapon_wingman"] = "Wingman",
-    ["mp_weapon_grenade_emp"] = "Arc Star",
-    ["mp_weapon_frag_grenade"] = "Frag",
-    ["mp_weapon_thermite_grenade"] = "Thermite",
-    ["mp_weapon_grenade_creeping_bombardment"] = "Bangalore Ultimate",
-    ["mp_weapon_grenade_bangalore"] = "Bangalore Tactical",
-    ["mp_weapon_dirty_bomb"] = "Caustic Tactical",
-    ["mp_weapon_grenade_gas"] = "Caustic Ultimate",
-    ["mp_ability_crypto_drone_emp"] = "Crypto Ultimate",
-    ["mp_weapon_grenade_defensive_bombardment"] = "Gibraltar Ultimate",
-    ["mp_weapon_tesla_trap"] = "Wattson Tactical",
-    ["deathField"] = "(ZONE)",
-    ["melee_pilot_emptyhanded"] = "Punch/Kick",
-    ["melee_bolo_sword"] = "Bolo Melee",
-	["mp_weapon_lightninggun"] = "Lightning Gun"
-};
-
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
@@ -364,17 +320,15 @@ bool function bIs1v1Mode()
 	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
 		return false
 
-	return true
-	
-	// Commenting this for now as it's returning false for scenarios
+	// Commenting this for now as it's returning false for scenarios //that's probably because the map wasn't enabled in playlists? ~mkos
 
-	// if( GetCurrentPlaylistMapsCount() == 0 )
-		// return false
+	if( GetCurrentPlaylistMapsCount() == 0 )
+		return false
 
-	// if( GetPlaylistMaps( GetCurrentPlaylistName() ).contains( GetMapName() ) )
-		// return true
+	if( GetPlaylistMaps( GetCurrentPlaylistName() ).contains( GetMapName() ) )
+		return true
 
-	// return false
+	return false
 }
 
 
@@ -4039,6 +3993,7 @@ void function SimpleChampionUI()
 	/////	 NEXT ROUND NOW 	////
 	////////////////////////////////
 
+	SetChampion( null )
 	file.currentRound++
 }
 
@@ -4575,6 +4530,9 @@ entity function GetBestPlayer()
 		}
     }
 	
+	if( bestScore == 0 )
+		bestPlayer = null
+		
     return bestPlayer
 }
 
@@ -5269,7 +5227,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 			subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
 	
 		if( ClientCommand_SaveCurrentWeapons( player, ["1"] ) )
-			sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )		
+			sWepName = weapon.GetWeaponSettingString( eWeaponVar.printname )		
 		
 		LocalMsg( player, "#FS_WEAPONSAVED", subToken, uiType, 5, sWepName )
 			
@@ -5278,18 +5236,6 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
     return true
 }
-
-
-string function GetWepName_FromClassName( string classname )
-{
-	if ( classname in WeaponNameMap )
-	{
-		return WeaponNameMap[classname]
-	}
-	
-	return "Unknown";
-}
-
 
 ///Save TDM Current Weapons
 bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)

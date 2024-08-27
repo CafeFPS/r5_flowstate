@@ -58,6 +58,10 @@ global function SV_CL_Onboarding_Init
 
 	global function SetPlayerSettings
 	global function Flowstate_ApplyModifiedMovementToPlayer
+	
+	#if DEVELOPER 
+		global function DEV_SetMovement
+	#endif
 #endif
 
 global function ModifiedMovement_RegisterNetworking
@@ -86,6 +90,22 @@ global function CharSelect_GetOutroTransitionDuration
 
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
+
+global enum MovementType
+{
+	DISABLED = 0,
+	TRUE_TF2_SETTINGS,
+	TRUE_TF2_SETTINGS_HIGH_AIRACCEL,
+	TRUE_TF2_SETTINGS_LOW_GRAV,
+	CSGO_MOVEMENT,
+	CSGO_MOVEMENT_HIGH_AIRACCEL,
+	SURF_SETTINGS,
+	HL1_MOVEMENT,
+	HALO_MOVEMENT,
+	SUPERGLIDE_BOOST_SETTINGS,
+	INSTAGIB_PLAYER_SETTINGS,
+	HAVEFUN_PLAYER_SETTINGS
+}
 
 struct
 {
@@ -1066,7 +1086,7 @@ void function OnClientConnected( entity player )
 
 	player.p.isConnected = true
 	player.Signal( "OnConnected" )
-
+	
 	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 }
 
@@ -1267,7 +1287,7 @@ void function SetPlayerSettings( entity player, table settings )
 
 void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool resetOnly = false )
 {
-	if( file.flowstate_modified_movement == 0 )
+	if( file.flowstate_modified_movement == MovementType.DISABLED )
 		return
 
 	if( resetOnly )
@@ -1275,78 +1295,127 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 	switch( file.flowstate_modified_movement )
 	{
-		case 1:
+		case MovementType.TRUE_TF2_SETTINGS: //1
+		
 			player.SetMoveSpeedScale( 0.87 )		
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to TF2" )
+				printt( "Player movement changed to Titanfall 2" )
 			#endif
 		break
 		
-		case 2:
-				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-				player.SetMoveSpeedScale(1.38854974986041364747)
-				player.DisableMantle()
-				player.SetGroundFrictionScale(1.03125)
-				SetPlayerSettings( player, CSGO_MOVEMENT )
+		case MovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL: //2
+		
+			player.SetMoveSpeedScale( 0.87 )
+			player.DisableMantle()
+			SetPlayerSettings( player, TRUE_TF2_SETTINGS_HIGH_AIRACCEL )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to Titanfall 2 High Air Accel" )
+			#endif
+		break
+		
+		case MovementType.TRUE_TF2_SETTINGS_LOW_GRAV: //3
+		
+			player.SetMoveSpeedScale( 0.87 )	
+			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to Titanfall 2 Low Gravity" )
+			#endif
+		break
+		
+		case MovementType.CSGO_MOVEMENT: //4
+		
+			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
+			player.SetMoveSpeedScale( 1.38854974986041364747 )
+			player.DisableMantle()
+			player.SetGroundFrictionScale( 1.03125 )
+			SetPlayerSettings( player, CSGO_MOVEMENT )
 			
 			#if DEVELOPER
 				printt( "Player movement changed to CSGO" )
 			#endif
 		break
-
-		case 3:
-				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-				player.SetMoveSpeedScale(1.77840093365762835808)
-				player.DisableMantle()	
-				SetPlayerSettings( player, HL1_MOVEMENT )
+		
+		case MovementType.CSGO_MOVEMENT_HIGH_AIRACCEL: //5
+		
+			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
+			player.SetMoveSpeedScale( 1.38854974986041364747 )
+			player.DisableMantle()
+			player.SetGroundFrictionScale( 1.03125 )
+			SetPlayerSettings( player, CSGO_MOVEMENT_HIGH_AIRACCEL )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to HL1" )
+				printt( "Player movement changed to CSGO High Air Accel" )
+			#endif
+		break
+		
+		case MovementType.SURF_SETTINGS: //6
+		
+			SetPlayerSettings( player, SURF_SETTINGS )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to (Apex) Surf" )
 			#endif
 		break
 
-		case 4:
-				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-				player.SetMoveSpeedScale( 1.1 )
-				player.DisableMantle()
-				SetPlayerSettings( player, HALO_MOVEMENT )
+		case MovementType.HL1_MOVEMENT: //7
+				
+			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
+			player.SetMoveSpeedScale( 1.77840093365762835808 )
+			player.DisableMantle()	
+			SetPlayerSettings( player, HL1_MOVEMENT )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to Half-Life 1" )
+			#endif
+		break
+
+		case MovementType.HALO_MOVEMENT: //8
+				
+			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
+			player.SetMoveSpeedScale( 1.1 )
+			player.DisableMantle()
+			SetPlayerSettings( player, HALO_MOVEMENT )
 			
 			#if DEVELOPER
 				printt( "Player movement changed to Halo" )
 			#endif
 		break
-
-		case 5:
-				SetPlayerSettings( player, SURF_SETTINGS )
-				
-				#if DEVELOPER
-					printt( "Player movement changed to Surf" )
-				#endif
+		
+		case MovementType.SUPERGLIDE_BOOST_SETTINGS: //9
+		
+			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
+			
+			#if DEVELOPER
+				printt( "Superglide modified for all players" )
+			#endif
 		break
 		
-		case 6:
-				SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
-				
-				#if DEVELOPER
-					printt( "Superglide modified for all players" )
-				#endif
+		case MovementType.INSTAGIB_PLAYER_SETTINGS: //10
+		
+			SetPlayerSettings( player, INSTAGIB_PLAYER_SETTINGS )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to Insta-Gib" )
+			#endif
 		break
-
-		case 7:
-				player.SetMoveSpeedScale( 0.87 )	
-				SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
-				
-				#if DEVELOPER
-					printt( "Player movement changed to TF2" )
-				#endif
+		
+		case MovementType.HAVEFUN_PLAYER_SETTINGS: //11
+		
+			SetPlayerSettings( player, HAVEFUN_PLAYER_SETTINGS )
+			
+			#if DEVELOPER
+				printt( "Player movement changed to Have Fun Settings" )
+			#endif
 		break
 	}
 }
 #endif
 
-void function ModifiedMovement_RegisterNetworking()
+void function ModifiedMovement_RegisterNetworking() 
 {
 	array<string> entityClassVars = 
 	[
@@ -1415,3 +1484,61 @@ void function ModifiedMovement_RegisterNetworking()
 		#endif
 	}
 }
+
+
+#if SERVER && DEVELOPER
+	table<int,table> movementLookupTable = {}
+	bool bMovementLookupTableSet = false
+
+	void function DEV_BuildMovementLookupTable()
+	{
+		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS ] <- TRUE_TF2_SETTINGS
+		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL ] <- TRUE_TF2_SETTINGS_HIGH_AIRACCEL
+		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS_LOW_GRAV ] <- TRUE_TF2_SETTINGS_LOW_GRAV
+		movementLookupTable[ MovementType.CSGO_MOVEMENT ] <- CSGO_MOVEMENT
+		movementLookupTable[ MovementType.CSGO_MOVEMENT_HIGH_AIRACCEL ] <- CSGO_MOVEMENT_HIGH_AIRACCEL
+		movementLookupTable[ MovementType.SURF_SETTINGS ] <- SURF_SETTINGS
+		movementLookupTable[ MovementType.HL1_MOVEMENT ] <- HL1_MOVEMENT
+		movementLookupTable[ MovementType.HALO_MOVEMENT ] <- HALO_MOVEMENT
+		movementLookupTable[ MovementType.SUPERGLIDE_BOOST_SETTINGS ] <- SUPERGLIDE_BOOST_SETTINGS
+		movementLookupTable[ MovementType.INSTAGIB_PLAYER_SETTINGS ] <- INSTAGIB_PLAYER_SETTINGS
+		movementLookupTable[ MovementType.HAVEFUN_PLAYER_SETTINGS ] <- HAVEFUN_PLAYER_SETTINGS
+		
+		bMovementLookupTableSet = true
+	}
+
+	void function DEV_SetMovement( int enumVal )
+	{
+		int enumLen = MovementType.len()
+		
+		if( enumVal > enumLen || enumVal < 0 )
+		{
+			Warning( "Invalid enum val:" + enumVal )
+			return
+		}
+
+		array<entity> players = GetPlayerArray()
+		ArrayRemoveInvalid( players )
+		
+		if( enumVal == 0 )
+		{
+			foreach( player in players )
+			{
+				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+				player.SetPlayerSettingsWithMods( characterSetFile, [] )
+			}
+			
+			return
+		}
+		
+		if( !bMovementLookupTableSet )
+			DEV_BuildMovementLookupTable()
+		
+		foreach( player in players )
+			SetPlayerSettings( player, movementLookupTable[ enumVal ] )
+			
+		string movementType = GetEnumString( "MovementType", enumVal )
+		Warning( "Player Movement set to: " + movementType )
+	}
+#endif

@@ -5172,7 +5172,6 @@ void function PIN_PlayerJumpedFromPlane( entity player, int len )
 
 void function PIN_Training( entity player, string status, string trainingStatus )
 {
-
 }
 
 void function Tracker_Credits()
