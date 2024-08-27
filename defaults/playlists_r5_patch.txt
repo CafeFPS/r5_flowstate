@@ -622,6 +622,8 @@ playlists
 				flowstate_spectator_team_only				1
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall	0
+				
+				flowstate_modified_movement					2 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 			}
 			gamemodes { fs_snd { maps {
 				mp_rr_arena_empty                   			1
@@ -1567,8 +1569,8 @@ playlists
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_desertlands_64k_x_64k 1
-				// mp_rr_canyonlands_64k_x_64k                    	1
-				// mp_rr_olympus_mu1								1
+				mp_rr_canyonlands_64k_x_64k                    	1
+				mp_rr_olympus_mu1								1
 			} } }
 		}
 
@@ -2144,9 +2146,9 @@ playlists
 				abbreviation                       "Halo Mod DM"
 				lobbytitle                         "Halo Mod DM"
 				
-				max_teams                          2
-				max_team_size						4
-				max_players                        8
+				max_teams                          60
+				max_team_size						1
+				max_players                        16
 				min_players                        0
 				
 				default_shield_hp                  125
@@ -2236,7 +2238,7 @@ playlists
 				flowstateAutoreloadSecondary 			0
 				flowstateKillshotEnabled 				1	//enables the killshot sound when killing
 
-				flowstate_modified_movement				0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement				4 //0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 
 			}
 			gamemodes { fs_dm { maps {
@@ -3362,5 +3364,6 @@ playlists
 	
 	"KVFileOverrides"
 	{
+		
 	}
 }
