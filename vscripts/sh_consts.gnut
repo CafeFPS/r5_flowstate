@@ -16,6 +16,7 @@ global const bool HAS_TRACKER_DLL 			= false
 global const bool MULTIPLAYER_DEBUG_PRINTS 	= false
 global const bool NOTIFY_RATELIMIT_FAILED	= false
 global const bool MKOS						= false
+global const bool ENTITYVAR_DEPRECATED		= true
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
