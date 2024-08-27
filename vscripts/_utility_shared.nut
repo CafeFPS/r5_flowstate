@@ -4522,7 +4522,7 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 	wait( timeout )
 	
 	#if DEVELOPER
-		Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, func: %s", signal1, signal2, signal3, FUNC_NAME( 3 ) ) )
+		//Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, %s, func: %s", signal1, signal2, signal3, signal4, FUNC_NAME( 3 ) ) )
 	#endif 
 }
 
