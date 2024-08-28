@@ -412,7 +412,7 @@ bool function JumpPad_ShouldPushPlayerOrNPC( entity target )
 
 //Cannon
 
-entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
+entity function FSCannon_Create( vector origin, float pushRadius, vector dir, int push = 745 )
 {
 	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
 	trigger.SetRadius( pushRadius )
@@ -421,7 +421,7 @@ entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 	trigger.SetOrigin( origin )
 	trigger.SetAngles( <0,0,0> )
 	trigger.SetTriggerType( TT_JUMP_PAD )
-	trigger.SetLaunchScaleValues( 870, 1.7 )
+	trigger.SetLaunchScaleValues( push, 1.7 )
 	trigger.SetLaunchDir( dir )
 	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"

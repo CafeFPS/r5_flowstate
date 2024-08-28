@@ -3443,7 +3443,7 @@ void function FS_GamemodeHudSetup()
 	switch( Playlist() )
 	{
 		case ePlaylists.winterexpress:
-		modeString = "Apex"
+		modeString = "FLOWSTATE"
 		modeSubString = "WINTER EXPRESS"
 		break
 		
@@ -3467,6 +3467,7 @@ void function FS_GamemodeHudSetup()
 		modeSubString = "#" + GetMapName()
 		break
 	}
+
 	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), modeString )
 	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), modeSubString)
 }

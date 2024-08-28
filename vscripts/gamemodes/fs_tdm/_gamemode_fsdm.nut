@@ -97,7 +97,7 @@ const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
-global const int FLOWSTATE_START_TIME_DELAY = 5
+global const int FLOWSTATE_START_TIME_DELAY = 7
 bool debugging = false
 global bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
@@ -3071,7 +3071,7 @@ void function SimpleChampionUI()
 						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
 						thread function ( ) : ( player )
 						{
-							wait 6 // -.-
+							wait 2 // -.-
 
 							if( GetGameState() != eGameState.Playing ) // O.O
 								return
@@ -3133,6 +3133,10 @@ void function SimpleChampionUI()
 		
 		case "Beaver Creek":
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42014.6719, -10264.7627, -26246>, 7000 ) )
+		break
+
+		case "The Pit":
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <41974.3789, -9356.3877, -20371.6523>, 7000 ) )
 		break
 	}
 
@@ -6277,19 +6281,19 @@ void function SpawnChill()
 		FS_ResetMapLightning()
 		WaitFrame()
 
-		// SetConVarFloat( "jump_graceperiod", 0 )
-		// SetConVarFloat( "mat_envmap_scale", 0.12 )
+		SetConVarFloat( "jump_graceperiod", 0 )
+		SetConVarFloat( "mat_envmap_scale", 0.12 )
 
-		// SetConVarFloat( "mat_autoexposure_max", 1.0 )
-		// SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
-		// SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
-		// SetConVarFloat( "mat_autoexposure_min", 1.7 )
+		SetConVarFloat( "mat_autoexposure_max", 1.0 )
+		SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
+		SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
+		SetConVarFloat( "mat_autoexposure_min", 1.7 )
 
-		// SetConVarFloat( "mat_sky_scale", 0.01 )
-		// SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
-		// SetConVarFloat( "mat_sun_scale", 1 )
-		// SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
-		// SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
+		SetConVarFloat( "mat_sky_scale", 0.01 )
+		SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
+		SetConVarFloat( "mat_sun_scale", 1 )
+		SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
 
 		//cannons
 		file.playerSpawnedProps.append( FSCannon_Create( <40676.5586, -10610.1416, -20472.6426>, 48, <1.0, 0.0, 1.0>) )
@@ -6383,7 +6387,7 @@ void function SpawnBeavercreek()
 		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
 
 		//TODO ADD WEAPON RACKS
-		//TODO ADD TELEPORTERS
+		FS_BuildBeaverCreekTeleporters()
 
 		//Add some OOB triggers.
 		file.playerSpawnedProps.append( AddOutOfBoundsTriggerWithParams( <41779.8359, -10134.5674, -25237.0918>, 5000 ) )
@@ -6405,6 +6409,65 @@ void function SpawnBeavercreek()
 			skyboxCamera.SetAngles( <0, 67, 0> ) //Chill
 		}
 	}()
+}
+
+//who cares. Cafe
+vector tp1 = <41997.957, -11697.3643, -26018.1563>
+vector tp1Angs = <0, -88.7698135, 0>
+vector tp2 = <41991.0234, -8477.37012, -26018.1563>
+vector tp2Angs = <0, 85.6242523, 0>
+
+void function FS_BuildBeaverCreekTeleporters()
+{
+	entity tp1Ent = CreateInfoTarget( tp1, <0,0,0> )
+	entity tp2Ent = CreateInfoTarget( tp2, <0,0,0> )
+	
+	file.playerSpawnedProps.append( tp1Ent )
+	file.playerSpawnedProps.append( tp2Ent )
+
+	entity tp1Trigger = CreateEntity( "trigger_cylinder" )
+	tp1Trigger.SetRadius( 45 )
+	tp1Trigger.SetAboveHeight( 36 )
+	tp1Trigger.SetBelowHeight( 36 )
+	tp1Trigger.SetOrigin( tp1 )
+	tp1Trigger.SetParent( tp1Ent )
+	DispatchSpawn( tp1Trigger )
+
+	tp1Trigger.SetEnterCallback( tp1_OnAreaEnter )
+
+	entity tp2Trigger = CreateEntity( "trigger_cylinder" )
+	tp2Trigger.SetRadius( 45 )
+	tp2Trigger.SetAboveHeight( 36 )
+	tp2Trigger.SetBelowHeight( 36 )
+	tp2Trigger.SetOrigin( tp2 )
+	tp2Trigger.SetParent( tp2Ent )
+	DispatchSpawn( tp2Trigger )
+
+	tp2Trigger.SetEnterCallback( tp2_OnAreaEnter )
+}
+
+void function tp1_OnAreaEnter( entity trigger, entity player )
+{
+	if( !IsValid( player ) || !IsAlive( player ) || !IsValid( trigger ) )
+		return
+		
+	player.SetVelocity(<0,0,0>)
+	player.SetOrigin( tp2 )
+	player.SetAngles( tp2Angs )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+}
+
+void function tp2_OnAreaEnter( entity trigger, entity player )
+{
+	if( !IsValid( player ) || !IsAlive( player ) || !IsValid( trigger ) )
+		return
+		
+	player.SetVelocity(<0,0,0>)
+	player.SetOrigin( tp1 )
+	player.SetAngles( tp1Angs )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 }
 
 void function FS_ResetMapLightning()
