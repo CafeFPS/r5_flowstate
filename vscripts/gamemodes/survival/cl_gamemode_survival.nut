@@ -3334,7 +3334,7 @@ void function OnToggleMute( var button )
 
 bool function GetWaitingForPlayersOverlayEnabled( entity player )
 {
-	if( Playlist() == ePlaylists.fs_movementgym || MapName() == eMaps.mp_flowstate )
+	if( Playlist() == ePlaylists.fs_movementgym )
 		return false
 
 	if ( IsTestMap() )
@@ -3438,8 +3438,37 @@ void function FS_GamemodeHudSetup()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), true)
 
-	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), Gamemode() == eGamemodes.WINTEREXPRESS ? "APEX" : GetCurrentPlaylistVarString( "name", "APEX" ) )
-	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), "#" + GetMapName())
+	string modeString
+	string modeSubString
+	switch( Playlist() )
+	{
+		case ePlaylists.winterexpress:
+		modeString = "Apex"
+		modeSubString = "WINTER EXPRESS"
+		break
+		
+		case ePlaylists.fs_haloMod_ctf:
+		modeString = "Halo Mod"
+		modeSubString = "CAPTURE THE FLAG"
+		break
+		
+		case ePlaylists.fs_haloMod_oddball:
+		modeString = "Halo Mod"
+		modeSubString = "ODDBALL"
+		break
+
+		case ePlaylists.fs_haloMod:
+		modeString = "Halo Mod"
+		modeSubString = "DEATH MATCH"
+		break
+		
+		default:
+		modeString = GetCurrentPlaylistVarString( "name", "APEX" )
+		modeSubString = "#" + GetMapName()
+		break
+	}
+	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), modeString )
+	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), modeSubString)
 }
 
 void function DisableCustomMapAndGamemodeNameFrames()
@@ -3514,6 +3543,10 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 		
 		case "mp_rr_olympus_mu1":
 			cutsceneSpawns.append(NewCameraPair( <0,0,0>, <0,0,0> ) )
+		break
+		
+		case "mp_flowstate":
+			cutsceneSpawns.append(NewCameraPair( <41000,-10000,0>, <0,0,0> ) )
 		break
 	}
 	

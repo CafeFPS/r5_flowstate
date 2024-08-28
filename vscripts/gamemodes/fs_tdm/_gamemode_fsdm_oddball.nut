@@ -256,6 +256,9 @@ int function GetZLimitForCurrentLocationName()
 			return -21000
 		break
 
+		case "Beaver Creek":
+			return -26500
+		break
 		default:
 		return -22500
 	}
@@ -282,7 +285,11 @@ void function SpawnBallSpawnerAtMapLocation( string mapName )
 		break
 
 		case "Lockout":
-		CreateBallSpawner( <41878.957, -9840.07324, -20806.2383>  )
+		CreateBallSpawner( <41878.957, -9840.07324, -20806.2383> )
+		break
+
+		case "Beaver Creek":
+		CreateBallSpawner( <42051.8242, -10105.6211, -26054.0566> )
 		break
 
 		default:

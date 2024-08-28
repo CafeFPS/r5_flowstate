@@ -3045,7 +3045,7 @@ void function SimpleChampionUI()
 					player.FreezeControlsOnServer()
 
 					// #if !DEVELOPER
-					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
+					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 						wait FLOWSTATE_START_TIME_DELAY
 					// #endif
 
