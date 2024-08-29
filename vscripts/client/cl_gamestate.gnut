@@ -150,7 +150,10 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
 		
 		int pl = Playlist()
-		
+
+		if( Flowstate_IsHaloMode() )
+			RuiSetString( rui, "gameModeString", "HALO DM" )
+			
 		switch( pl )
 		{
 			case ePlaylists.winterexpress:
@@ -192,8 +195,16 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "gameModeString", "APEX SOLOS" )
 			break
 
+			case ePlaylists.fs_haloMod_ctf:	
+			RuiSetString( rui, "gameModeString", "HALO CTF" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+			break
+			
 			case ePlaylists.fs_haloMod_oddball:	
-			RuiSetString( rui, "gameModeString", "ODDBALL" )
+			RuiSetString( rui, "gameModeString", "HALO ODDBALL" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
@@ -249,9 +260,6 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)
 			break
 		}
-		
-		if( Flowstate_IsHaloMode() )
-			RuiSetString( rui, "gameModeString", "HALO DM" )
 	}
 	else
 	{

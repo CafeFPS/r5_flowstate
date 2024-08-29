@@ -492,15 +492,15 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 	if ( vduVideo != $"" )
 		Assert( radioDisplayName != "", "Dialogue alias " + name + " specifies a vdu bink without setting radioDisplayName as well." )
 
-#if SERVER && DEVELOPER
-	if ( alias != "" && !DoesAliasExist( alias ) )
-	{
-		if ( alias.find( "%" ) >= 0 )
-			VerifyExistenceOfNongenericAliases( alias, extraPerspective )
-		else
-			Warning( "Error: Dialogue '" + name + "': alias '" + alias + "' can't be registered because the alias does not exist" )
-	}
-#endif // SERVER && DEVELOPER
+// #if SERVER && DEVELOPER
+	// if ( alias != "" && !DoesAliasExist( alias ) )
+	// {
+		// if ( alias.find( "%" ) >= 0 )
+			// VerifyExistenceOfNongenericAliases( alias, extraPerspective )
+		// else
+			// Warning( "Error: Dialogue '" + name + "': alias '" + alias + "' can't be registered because the alias does not exist" )
+	// }
+// #endif // SERVER && DEVELOPER
 
 	DialogueData data
 	data.name = name

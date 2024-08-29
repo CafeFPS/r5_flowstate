@@ -957,12 +957,16 @@ Scripts:
 	weapons/mp_weapon_titan_sword_slam.nut
 	weapons/mp_weapon_titan_sword_launcher.nut
 	weapons/mp_weapon_titan_sword_super.nut
+	
+	//weapons/mp_weapon_grenade_cryonade.nut
+	//weapons/mp_ability_phase_chamber.nut
 ]
 
 When: "SERVER || CLIENT"
 Scripts:
 [
 	sh_map_zones.nut
+	weapons/sh_incap_shield.nut
 ]
 
 When: "SERVER"
@@ -1079,6 +1083,8 @@ Scripts:
 
     // ReMap Live
     mp/levels/mp_rr_remap.nut
+	
+   // mp/_movement_recorder_deprecated.nut
 ]
 
 When: "CLIENT"

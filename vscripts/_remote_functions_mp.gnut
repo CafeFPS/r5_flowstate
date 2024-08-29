@@ -1106,10 +1106,6 @@ void function RemoteFunctions_Init_Begin()
 		//Register networked variables for the lobby
 	}
 
-	if ( !IsLobby() )
-	{
-		GibraltarShield_RegisterNetworkFunctions()
-	}
 
 	#if CLIENT
 		if ( !IsLobby() )

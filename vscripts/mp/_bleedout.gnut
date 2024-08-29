@@ -4,6 +4,7 @@ global function Bleedout_StartPlayerBleedout
 global function Bleedout_AddCallback_OnPlayerStartBleedout
 global function Bleedout_AddCallback_OnPlayerGiveFirstAid
 global function Bleedout_ShouldAIMissBleedingPlayer
+global function IsPlayerSelfHealing
 
 global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
@@ -280,10 +281,8 @@ void function PlayerDying( entity player )
 	}
 
 	entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	if( ref != "" )
-		incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) )
-
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	if( IsValid( incapShield ) )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 
 	OnThreadEnd(
 	function() : ( player, ids, forceHolster, bleedoutWp, oldWeapon )

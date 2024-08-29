@@ -212,6 +212,8 @@ void function SV_CL_Init()
 	MpWeaponFlameThrower_Init()
 	MpWeaponSentinel_Init()
 	ProtoBatteryCharger_Init()
+	// MpUltimatePhaseChamber_Init()
+	ShIncapShield_Init()
 	
 	Sh_Squads_Init()
 	

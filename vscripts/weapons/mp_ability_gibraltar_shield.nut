@@ -450,7 +450,7 @@ entity function CreatePlayerShield( entity player, entity vortexWeapon )
 	gs.model = FX_GUN_SHIELD_SHIELD_COL
 	gs.modelOverrideAngles = SHIELD_ANGLE_OFFSET
 
-	entity vortexSphere = CreateGunAttachedShield( gs )
+	entity vortexSphere = CreateGunAttachedShield_PropDynamic( gs )
 
 	return vortexSphere
 }

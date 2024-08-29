@@ -4291,17 +4291,22 @@ void function HaloMod_HandlePlayerModel( entity player )
 	
 	if( player.p.assignedMasterChief == -1 )
 	{
-		if( file.haloModAvailableColors.len() > 0 )
-			assignedColor = file.haloModAvailableColors.getrandom()
-		else
-		{
-			file.haloModAvailableColors = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
-			assignedColor = file.haloModAvailableColors.getrandom()
-		}
-
 		printt( "new master chief assigned, color:", assignedColor, player )
 
-		file.haloModAvailableColors.fastremovebyvalue( assignedColor )
+		if( RandomInt( 15 ) == 0 )
+			assignedColor = 420
+		else
+		{
+			if( file.haloModAvailableColors.len() > 0 )
+				assignedColor = file.haloModAvailableColors.getrandom()
+			else
+			{
+				file.haloModAvailableColors = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+				assignedColor = file.haloModAvailableColors.getrandom()
+			}
+
+			file.haloModAvailableColors.fastremovebyvalue( assignedColor )
+		}
 
 		player.p.assignedMasterChief = assignedColor
 	} else
@@ -4348,7 +4353,20 @@ void function HaloMod_HandlePlayerModel( entity player )
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
 		break
+		
+		case 420:
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_haloelite.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_haloelite.rmdl" )
+		break
 	}
+
+	#if DEVELOPER
+	if( player.GetPlayerName() == "7bt2ft55kl7i" || player.GetPlayerName() == "r5r_ColombiaFPS" )
+	{
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_haloelite.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_haloelite.rmdl" )
+	}
+	#endif
 }
 
 void function CharSelect( entity player)
@@ -6426,7 +6444,7 @@ void function FS_BuildBeaverCreekTeleporters()
 	file.playerSpawnedProps.append( tp2Ent )
 
 	entity tp1Trigger = CreateEntity( "trigger_cylinder" )
-	tp1Trigger.SetRadius( 45 )
+	tp1Trigger.SetRadius( 10 )
 	tp1Trigger.SetAboveHeight( 36 )
 	tp1Trigger.SetBelowHeight( 36 )
 	tp1Trigger.SetOrigin( tp1 )
@@ -6436,7 +6454,7 @@ void function FS_BuildBeaverCreekTeleporters()
 	tp1Trigger.SetEnterCallback( tp1_OnAreaEnter )
 
 	entity tp2Trigger = CreateEntity( "trigger_cylinder" )
-	tp2Trigger.SetRadius( 45 )
+	tp2Trigger.SetRadius( 10 )
 	tp2Trigger.SetAboveHeight( 36 )
 	tp2Trigger.SetBelowHeight( 36 )
 	tp2Trigger.SetOrigin( tp2 )

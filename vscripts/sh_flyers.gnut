@@ -805,8 +805,11 @@ void function InitDeathBoxFlyer( entity flyerModelNode )
 	entity deathBox         = CreateFlyerLootDeathBox( flyerModelOrigin, flyerModelAngles )
 	Flyers_CreateDeathBoxFlyer( flyerModelOrigin, flyerModelAngles, flyerModelNode, flyerModelNode.GetValueForKey( "starts_in_flight" ) == "1" )
 	Assert( flyerModelNode in file.deathBoxFlyerToDataStructTable )
-	file.deathBoxFlyerToDataStructTable[ flyerModelNode ].deathBox = deathBox
-	deathBox.SetParent( flyerModelNode, "ATTACH_DEATH_BOX_01" )
+	if( IsValid( deathBox ) && !deathBox.IsMarkedForDeletion() ) //fix for flyers without deathboxes forced for flowstate. Cafe
+	{
+		file.deathBoxFlyerToDataStructTable[ flyerModelNode ].deathBox = deathBox
+		deathBox.SetParent( flyerModelNode, "ATTACH_DEATH_BOX_01" )
+	}
 }
 
 entity function CreateFlyerLootDeathBox( vector origin, vector angles, array<string> lootRefs = [] )

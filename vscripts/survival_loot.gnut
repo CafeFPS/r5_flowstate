@@ -125,6 +125,13 @@ global struct LootThrowData
 	float throwScale
 }
 
+const array<int> nonLootMoveModes = [
+	ePlaylists.fs_snd,
+	ePlaylists.fs_haloMod_ctf,
+	ePlaylists.fs_haloMod_oddball,
+	ePlaylists.fs_haloMod
+]
+
 struct {
 	array<LootZone> lootZones
 	LootZone hotZone
@@ -3703,8 +3710,12 @@ void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, b
 	}
 
 	physicsEnt.e.lastAttacker = drop
-	if( Gamemode() != eGamemodes.fs_snd )
+
+	if( !nonLootMoveModes.contains( Playlist() ) )
+	{ 
 		AddEntityCallback_OnPhysicsDisabled( physicsEnt, SurvivalLoot_OnPhysicsDisabled )
+	}
+
 	thread PhysicsEntCleanup( physicsEnt, drop )
 }
 
