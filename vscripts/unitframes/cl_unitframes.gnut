@@ -31,6 +31,7 @@ struct
 	table<entity, UnitFrameDef>       teamUnitFrames
 	array< void functionref(int) >    Callbacks_OnTeamUnitFrameCreated
 	array< void functionref(int) >    Callbacks_OnTeamUnitFrameDestroyed
+	table<entity, string> characterRefTable
 } file
 
 void function ClUnitFrames_Init()
@@ -68,6 +69,9 @@ void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 	{
 		DestroyTeamUnitFrame( player )
 	}
+	
+	if( newTeam == GetLocalViewPlayer().GetTeam() || player == GetLocalViewPlayer() ) //Cafe was here
+		RefreshUnitframesForPlayer( GetLocalViewPlayer() )
 }
 
 
@@ -79,14 +83,37 @@ void function OnPlayerDestroyed( entity player )
 
 void function OnPlayerClassChanged( entity player )
 {
-	if ( PlayerHasUnitFrame( player ) && player.GetPlayerSettings() != SPECTATOR_SETTINGS )
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	string characterRef  = ItemFlavor_GetHumanReadableRef( character ).tolower()
+
+	bool characterChanged = true
+
+	bool playerIsSpectator = player.GetPlayerSettings() == SPECTATOR_SETTINGS
+
+	if ( characterRef != "" )
 	{
-		SetUnitFrameOwner( GetUnitFrame( player ), player )
+		if ( !( player in file.characterRefTable ) )
+			file.characterRefTable[player] <- characterRef
+		else
+		{
+			if ( file.characterRefTable[player] == characterRef )
+				characterChanged = false
+			else if ( ! playerIsSpectator ) 
+				file.characterRefTable[player] = characterRef
+		}
 	}
-	else if ( PlayerShouldHaveUnitFrame( player ) )
+
+	if ( characterChanged )
 	{
-		printt( "UF: OnPlayerClassChanged", player )
-		CreateTeamUnitFrame( player )
+		if ( PlayerHasUnitFrame( player ) && !playerIsSpectator )
+		{
+			SetUnitFrameOwner( GetUnitFrame( player ), player )
+		}
+		else if ( PlayerShouldHaveUnitFrame( player ) )
+		{
+			
+			CreateTeamUnitFrame( player )
+		}
 	}
 }
 
@@ -95,6 +122,7 @@ void function OnGameStateEnterPlaying()
 {
 	entity viewPlayer = GetLocalViewPlayer()
 	RefreshUnitframesForPlayer( viewPlayer )
+
 }
 
 
@@ -109,12 +137,13 @@ void function OnSpectatorTargetChanged( entity spectator, entity prevTarget, ent
 void function OnViewPlayerChanged( entity newViewPlayer )
 {
 	RefreshUnitframesForPlayer( newViewPlayer )
+	UpdateFullmapRuiTracks()
 }
 
 void function UpdateRUITest()
 {
 	RefreshUnitframesForPlayer( GetLocalViewPlayer() )
-	thread InitSurvivalHealthBar()
+	// thread InitSurvivalHealthBar()
 }
 
 void function RefreshUnitframesForPlayer( entity player )
@@ -131,20 +160,17 @@ void function RefreshUnitframesForPlayer( entity player )
 
 	foreach ( unitframePlayer, unitFrame in file.teamUnitFrames )
 	{
-		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && Gamemode() == eGamemodes.fs_snd || unitframePlayer.GetTeam() != playerTeam )
-		{
+		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && Gamemode() == eGamemodes.fs_snd || unitframePlayer.GetTeam() != playerTeam || !PlayerShouldHaveUnitFrame( unitframePlayer ) )
 			playersToRemove.append( unitframePlayer )
-		}
+		else
+			thread SetUnitFrameDataFromOwner( unitFrame.rui, unitframePlayer )
 	}
 
 	foreach ( unitframePlayer in playersToRemove )
 		DestroyTeamUnitFrame( unitframePlayer )
 
-	//	incase we don't want to show unitframes when spectating enemies
-	//	if ( newTargetTeam != GetLocalClientPlayer().GetTeam() )
-	//		return
-
-	foreach ( teamPlayer in GetPlayerArrayOfTeam( playerTeam ) )
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( playerTeam )
+	foreach ( teamPlayer in teamPlayers )
 	{
 		if ( PlayerShouldHaveUnitFrame( teamPlayer ) )
 			CreateTeamUnitFrame( teamPlayer )
@@ -158,8 +184,7 @@ void function CreateTeamUnitFrame( entity player )
 	if ( GetCurrentPlaylistVarBool( "teammate_huds_enabled", true ) == false )
 		return
 
-	// don't create a unit frame for the local view player
-	if ( player == GetLocalViewPlayer() )
+	if ( player == GetLocalViewPlayer() && ( !IsSpectating() || IsAlive( player ) ) )
 		return
 
 	if ( PlayerHasUnitFrame( player ) )
@@ -173,35 +198,55 @@ void function CreateTeamUnitFrame( entity player )
 	UnitFrameDef unitFrame
 	unitFrame.rui = rui
 
-	if ( player == GetLocalClientPlayer() )
-	{
-		unitFrame.index = 0
+	file.teamUnitFrames[player] <- unitFrame
 
-		foreach ( frame in file.teamUnitFrames )
-		{
-			if ( frame.index >= 0 )
-			{
-				frame.index++
-				SetUnitFramePosition( frame )
-			}
-		}
-	}
-	else
-	{
-		unitFrame.index = file.teamUnitFrames.len()
-	}
+	UpdateUnitFrameIndices()
 
 	foreach ( callbackFunc in file.Callbacks_OnTeamUnitFrameCreated )
 	{
 		callbackFunc( unitFrame.index )
 	}
 
-	file.teamUnitFrames[player] <- unitFrame
-
 	SetUnitFrameOwner( unitFrame, player )
 	SetUnitFramePosition( unitFrame )
 }
 
+int function SquadMemberIndexSort( entity a, entity b )
+{
+	if ( a.GetTeamMemberIndex() > b.GetTeamMemberIndex() )
+		return 1
+	else if ( a.GetTeamMemberIndex() < b.GetTeamMemberIndex() )
+		return -1
+
+	return 0
+}
+
+void function UpdateUnitFrameIndices()
+{
+	entity localPlayer = GetLocalViewPlayer()
+	array<entity> team = GetPlayerArrayOfTeam( localPlayer.GetTeam() )
+	team.fastremovebyvalue( localPlayer )
+
+	team.sort( SquadMemberIndexSort )
+
+	if ( PlayerHasUnitFrame( localPlayer ) )
+	{
+		team.insert( 0, localPlayer )
+	}
+
+	int displayIndex = 0;
+	foreach ( entity player in team )
+	{
+		if ( player in file.teamUnitFrames )
+		{
+			UnitFrameDef unitFrame = file.teamUnitFrames[player];
+			unitFrame.index = displayIndex
+			SetUnitFramePosition( unitFrame )
+
+			displayIndex++
+		}
+	}
+}
 
 asset function GetUnitFrameAssetForGameMode()
 {
@@ -227,6 +272,7 @@ void function SetUnitFrameDataFromOwner( var rui, entity ent, bool forceUpdate =
 	while ( !EHIHasValidScriptStruct( ToEHI( ent ) ) )
 		WaitFrame() // todo(dw): temp fix for R5DEV-60667
 
+	WaitFrame()
 	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( ent ), Loadout_CharacterClass() )
 	asset classIcon      = CharacterClass_GetGalleryPortrait( character )
 
@@ -267,7 +313,7 @@ void function SetUnitFrameDataFromOwner( var rui, entity ent, bool forceUpdate =
 	RuiSetBool( rui, "isPvE", true )
 	RuiTrackInt( rui, "squadID", ent, RUI_TRACK_SQUADID )
 	UpdateWaitingToRespawnTextForFrame( rui )
-#endif //MP_PVEMODE
+	#endif //MP_PVEMODE
 }
 
 void function OnInUseHealingKitTypeChanged( entity player, int oldkitType, int kitType, bool actuallyChanged )
@@ -327,8 +373,8 @@ void function OnPlayerEquippedWeaponChanged( entity player, int oldWeaponRef, in
 			else
 			{
 				LootData weaponData = SURVIVAL_Loot_GetLootDataByIndex( weaponIndex )
-				string ammoType = weaponData.ammoType
-				if ( ammoType != "" )
+				string ammoType     = weaponData.ammoType
+				if ( GetWeaponInfoFileKeyField_GlobalBool( weaponData.baseWeapon, "uses_ammo_pool" ) )
 				{
 					LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
 					hudIcon = ammoData.hudIcon
@@ -377,14 +423,7 @@ void function DestroyTeamUnitFrame( entity player )
 		callbackFunc( removedIndex )
 	}
 
-	foreach ( unitFrame in file.teamUnitFrames )
-	{
-		if ( unitFrame.index >= removedIndex )
-		{
-			unitFrame.index--
-			SetUnitFramePosition( unitFrame )
-		}
-	}
+	UpdateUnitFrameIndices()
 }
 
 
@@ -419,9 +458,15 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 {
 	entity viewer  = GetLocalViewPlayer()
 	int playerTeam = player.GetTeam()
+	entity client = GetLocalClientPlayer()
 
-	if ( player == viewer )
+	
+	if ( player == viewer && ( !IsSpectating() || IsAlive( player ) ) )
 		return false
+
+	if( client.GetTeam() == TEAM_SPECTATOR )
+		if ( client.GetObserverTarget() == player )
+			return false
 
 	if ( playerTeam == TEAM_UNASSIGNED )
 		return false

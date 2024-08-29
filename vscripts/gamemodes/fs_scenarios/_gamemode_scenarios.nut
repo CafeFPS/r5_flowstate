@@ -1818,7 +1818,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				(
 					function() : ( newGroup, players  )
 					{
-						foreach( player in players )
+						foreach( entity player in players )
 						{
 							if( !IsValid( player ) )
 								continue
@@ -1860,6 +1860,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
 								player.SetPlayerNetBool( "hasLockedInCharacter", true )
 							}
+							
+							//Setup starting shields
+							PlayerRestoreHP_1v1(player, 100, Equipment_GetDefaultShieldHP() )
 						}
 					}
 				)
@@ -1920,6 +1923,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					RemoveCinematicFlag( player, CE_FLAG_INTRO )
 					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+					player.SetShieldHealth( 0 )
+					player.SetShieldHealthMax( 0 )
+					Inventory_SetPlayerEquipment(player, "", "armor")
 				}
 
 				wait settings.fs_scenarios_game_start_time_delay

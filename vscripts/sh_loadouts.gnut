@@ -473,25 +473,7 @@ void function ShLoadouts_LevelInit_Finish()
 	//	if ( DEV_resendAllCacheData )
 	//		RunClientScript( "UIToClient_ResendAllCacheData" ) // for uiscript_reset
 	//#endif
-
-	//Flowstate custom
-	#if CLIENT
-		LoadoutEntry charC = Loadout_CharacterClass()
-		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( charC, FS_OnLocalCharacterChanged, false )
-	#endif
 }
-
-
-#if CLIENT
-void function FS_OnLocalCharacterChanged( EHI playerEHI, ItemFlavor unused )
-{
-	// printt( "FS_OnLocalCharacterChanged" )
-	if ( playerEHI != LocalClientEHI() )
-		return
-
-	thread InitSurvivalHealthBar()
-}
-#endif
 
 #if UI
 void function ShLoadouts_LevelShutdown()

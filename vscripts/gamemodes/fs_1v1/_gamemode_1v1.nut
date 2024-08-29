@@ -2568,6 +2568,10 @@ void function soloModePlayerToWaitingList( entity player )
 			}
 			if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
 				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
+			
+			player.SetShieldHealth( 0 )
+			player.SetShieldHealthMax( 0 )
+			Inventory_SetPlayerEquipment(player, "", "armor")
 		}
 
 		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
@@ -4650,13 +4654,11 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 
 		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
-		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 
 		foreach( item in STANDARD_INV_LOOT )
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
-		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 		//Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
 		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 	

@@ -1461,7 +1461,7 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
 		} 
-		else
+		else if( Playlist() != ePlaylists.fs_scenarios )
 		{
 			player.SetShieldHealth( 0 )
 			player.SetShieldHealthMax( 0 )
@@ -1469,11 +1469,11 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			
 			thread function () : ( player )
 			{
+				EndSignal( player, "OnDestroy" )
+				EndSignal( player, "OnDeath" )
+
 				WaitFrame()
-				
-				if( !IsValid( player ) || !IsAlive( player ) )
-					return
-				
+
 				player.SetShieldHealthMax( Equipment_GetDefaultShieldHP() )
 
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
