@@ -301,6 +301,12 @@ void function RemoteFunctions_Init_Begin()
 		case eGamemodes.WINTEREXPRESS:
 			Remote_RegisterClientFunction( "OpenFRChallengesSettingsWpnSelector" )
 			Remote_RegisterClientFunction( "CloseFRChallengesSettingsWpnSelector" )	
+			Remote_RegisterClientFunction( "FS_Scenarios_ChangeAliveStateForPlayer", "int", INT_MIN, INT_MAX, "bool" )
+			Remote_RegisterClientFunction( "FS_Scenarios_TogglePlayersCardsVisibility", "bool" )
+			Remote_RegisterClientFunction( "FS_Scenarios_SetupPlayersCards" )
+			Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle", "int", INT_MIN, INT_MAX )
+			Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle2", "int", INT_MIN, INT_MAX )
+			Remote_RegisterClientFunction( "FS_Scenarios_AddAllyHandle", "int", INT_MIN, INT_MAX )
 		break
 		
 		case eGamemodes.fs_dm:
@@ -671,7 +677,7 @@ void function RemoteFunctions_Init_Begin()
 	RegisterServerVar( "winningTeam", null )
 
 	//Fade REVISIT
-	// Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
+	//Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
 	
 	// Attack/Defend based game modes
 	RegisterNetworkedVariable( "attackingTeam", SNDC_GLOBAL, SNVT_INT, TEAM_UNASSIGNED )

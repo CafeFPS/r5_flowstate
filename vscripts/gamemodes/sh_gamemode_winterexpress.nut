@@ -268,8 +268,8 @@ struct {
 		var enemyTeam2Score
 		int enemyTeam2ScoreValue
 	
-		int currentEnemy1
-		int currentEnemy2
+		int currentEnemy1 = -1
+		int currentEnemy2 = -1
 	#endif
 } file
 
@@ -285,6 +285,7 @@ void function WinterExpress_Init()
 		MapZones_SharedInit()
 		SurvivalFreefall_Init()
 		Sh_ArenaDeathField_Init()
+		ShApexScreens_Init()
 		AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
 
 		SetCallback_ObserverThreadOverride( WinterExpress_StartObserving )
@@ -365,6 +366,8 @@ void function WinterExpress_Init()
 		SurvivalCommentary_SetEventEnabled( eSurvivalEventType.CIRCLE_MOVES_30SEC, false )
 		SurvivalCommentary_SetEventEnabled( eSurvivalEventType.CIRCLE_MOVES_45SEC, false )
 		RegisterDisabledBattleChatterEvents( WINTER_EXPRESS_DISABLED_BATTLE_CHATTER_EVENTS )
+		
+		AddSpawnCallbackEditorClass( "func_brush", "func_brush_arenas_start_zone", TurnOffArenaWalls )
 	#endif
 
 	#if CLIENT
@@ -377,6 +380,7 @@ void function WinterExpress_Init()
 		SurvivalFreefall_Init()
 		ClUnitFrames_Init()
 		Cl_SquadDisplay_Init()
+		ShApexScreens_Init()
 
 		if( file.scoreLimit == 3 )
 			Obituary_SetHorizontalOffset( 40 )
@@ -406,12 +410,31 @@ void function WinterExpress_Init()
 
 		FlagInit( "WinterExpress_ObjectiveStateUpdated", false )
 		FlagInit( "WinterExpress_ObjectiveOwnerUpdated", false )
-
+		AddCallback_OnClientScriptInit( FS_WinterExpress_OnClientScriptInit )
 	#endif
 
 	WinterExpress_RegisterNetworking()
 }
 
+#if CLIENT
+void function FS_WinterExpress_OnClientScriptInit( entity player ) 
+{
+	FS_Scenarios_InitPlayersCards()
+	
+	#if DEVELOPER && MKOS
+		return //mkos: I need my debugs lol -.- 
+	#endif
+	
+	//I don't want these things in user screen even if they launch in debug
+	SetConVarBool( "cl_showpos", false )
+	SetConVarBool( "cl_showfps", false )
+	SetConVarBool( "cl_showgpustats", false )
+	SetConVarBool( "cl_showsimstats", false )
+	SetConVarBool( "host_speeds", false )
+	SetConVarBool( "con_drawnotify", false )
+	SetConVarBool( "enable_debug_overlays", false )
+}
+#endif
 
 void function WinterExpress_RegisterNetworking()
 {
@@ -457,6 +480,9 @@ void function WinterExpress_RegisterNetworking()
 		RegisterNetworkedVariableChangeCallback_time( "WinterExpress_TrainArrivalTime", OnServerVarChanged_TrainArrival )
 		RegisterNetworkedVariableChangeCallback_time( "WinterExpress_TrainTravelTime", OnServerVarChanged_TrainTravelTime )
 		RegisterNetworkedVariableChangeCallback_bool( "WinterExpress_IsOvertime", OnServerVarChanged_OvertimeChanged )
+		
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnPlayerLoadoutChanged )
+		RegisterSignal( "FSDM_EndTimer" )
 	#endif
 }
 
@@ -520,9 +546,23 @@ void function OnLeaveMatch( entity player )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_CL_WinnerDetermined", TEAM_INVALID )
 }
 
+void function TurnOffArenaWalls( entity wall )
+{
+	if ( GetEditorClass( wall ) == "func_brush_arenas_start_zone" )
+	{
+		wall.NotSolid()
+		wall.MakeInvisible()
+	}
+}
 #endif
 
 #if CLIENT
+void function OnPlayerLoadoutChanged( EHI playerEHI, ItemFlavor flavour )
+{
+	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+		FS_Scenarios_SetupPlayersCards()
+}
+
 void function Client_OnTeamChanged( entity player, int oldTeam, int newTeam )
 {
 	//SetCustomPlayerInfo( player )
@@ -595,8 +635,11 @@ void function OnEntitiesDidLoad_Client()
 
 	SurvivalCommentary_SetHost( eSurvivalHostType.MIRAGE )
 	
-	if( GetGameState() == eGameState.Playing )
+	if( GetGameState() == eGameState.Playing ) //Cafe was here
+	{
+		FS_Scenarios_SetupPlayersCards()
 		FS_CreateScoreHUD()
+	}
 }
 
 void function FinishGamestateRui()
@@ -1077,6 +1120,7 @@ void function Thread_OnGameStatePlaying()
 	DesertlandsTrain_InitMovement()
 	SetupHolidayHoverTank_OnGameStartedPlaying()
 	SetDefaultObserverBehavior( GetBestObserverTarget_WinterExpress )
+	FS_SendPlayerHUDData()
 
 	//setup train objective waypoints
 	entity trainCenter = GetEntByScriptName( TRAIN_MOVER_NAME + "_1" )
@@ -1149,6 +1193,79 @@ void function Thread_OnGameStatePlaying()
 	SetGlobalNetTime( "WinterExpress_TrainTravelTime", roughTravelTime )
 }
 
+void function FS_SendPlayerHUDData()
+{
+	array<int> teams = GetTeamsForPlayers( GetPlayerArray() )
+
+	if( teams.len() != 3 )
+		return
+
+	int team1Int = teams[0]
+	int team2Int = teams[1]
+	int team3Int = teams[2]
+	
+	array<entity> team1 = GetPlayerArrayOfTeam( team1Int )
+	array<entity> team2 = GetPlayerArrayOfTeam( team2Int )
+	array<entity> team3 = GetPlayerArrayOfTeam( team3Int )
+	
+	foreach( player in team1 )
+	{
+		foreach( splayer in team1 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team2 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team3 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+		}
+	}
+	
+	foreach( player in team2 )
+	{
+		foreach( splayer in team1 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team2 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team3 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+		}
+	}
+
+	foreach( player in team3 )
+	{
+		foreach( splayer in team1 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team2 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+		}
+		foreach( splayer in team3 )
+		{
+			if( IsValid( player ) && IsValid( splayer ) )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+		}
+	}
+}
+
 void function OnWinnerDetermined()
 {
 	foreach ( player in GetPlayerArray() )
@@ -1164,9 +1281,10 @@ void function OnWinnerDetermined()
 	StopSoundOnEntity( file.trainRef, "WXpress_Train_Capture_Status_Enemy" )
 
 	//Cafe was here
+	//Send stats
 	thread function () : ()
 	{
-		wait 5
+		wait 8
 		GameRules_ChangeMap( "mp_rr_desertlands_holiday", "winterexpress" )
 	}()
 }
@@ -1187,7 +1305,11 @@ void function OnPlayerKilled_GameState( entity victim, entity attacker, var atta
 		}
 
 	}
-
+	
+	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+		foreach ( player in GetConnectedPlayers() )
+			Remote_CallFunction_Replay( player, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
+	
 	file.deadPlayers.append( victim )
 
 	// Make sure loadout info is updated before it is displayed
@@ -3606,8 +3728,6 @@ void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, i
 		squadWinningIndex  = Squads_GetSquadUIIndex( winningTeam )
 	}
 
-	FS_UpdateScoreForTeam( squadWinningIndex, newScore ) //Cafe was here
-
 	asset borderIcon         = $""
 	string soundAlias        = "WXpress_Train_Update"
 
@@ -3621,6 +3741,7 @@ void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, i
 		announcementColor = Squads_GetNonLinearSquadColor( squadWinningIndex )
 		borderIcon = $""//$"rui/hud/gametype_icons/winter_express/legend_icon_round_won"
 		soundAlias = "WXpress_Train_Capture"
+		FS_UpdateScoreForTeam( winningTeam, newScore ) //Cafe was here
 	}
 	else  // local team lost 
 	{
@@ -3629,6 +3750,7 @@ void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, i
 		announcementColor = Squads_GetNonLinearSquadColor( squadWinningIndex )
 		borderIcon = $""//winningSquadRuiIndex == 1 ? $"rui/hud/gametype_icons/winter_express/icon_announcement_fail" : $"rui/hud/gametype_icons/winter_express/icon_announcement_fail_alt"
 		soundAlias = "WXpress_Train_Capture_Enemy"
+		FS_UpdateScoreForTeam( squadWinningIndex, newScore ) //Cafe was here
 	}
 
 	if ( endCondition == eWinterExpressRoundEndCondition.OBJECTIVE_CAPTURED )
@@ -3738,6 +3860,7 @@ void function DisplayRoundStart()
 
 	// foreach ( team, rui in file.squadOnObjectiveElements )
 		// RuiSetInt( rui, "roundState", eWinterExpressRoundState.OBJECTIVE_ACTIVE )
+	Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "WinterExpress_RoundEnd" ) )
 }
 
 void function DisplayRoundFinished()
@@ -3747,6 +3870,8 @@ void function DisplayRoundFinished()
 
 	// foreach ( team, rui in file.squadOnObjectiveElements )
 		// RuiSetInt( rui, "roundState", eWinterExpressRoundState.ABOUT_TO_CHANGE_STATIONS )
+	
+	Flowstate_ShowRoundEndTimeUI( - 1)
 }
 
 void function DisplayRoundChanging()
@@ -3930,17 +4055,9 @@ void function ServerCallback_CL_WinnerDetermined( int team )
 {
 	RunUIScript( "UI_UpdateOpenMenuButtonCallbacks_Spectate", LIFE_ALIVE, true )
 	StopSoundOnEntity( GetLocalClientPlayer(), "Music_LTM32_SpectateCam" )
-	// SetSummaryDataDisplayStringsCallback( WinterExpress_PopulateSummaryDataStrings )
-	CL_ScoreUpdate( team, 3 )
-
-	int uiWinningTeam     = Squads_GetTeamsUIId( team )
-	int squadWinningIndex = -1
-	if	(team >= TEAM_IMC)
-	{
-		squadWinningIndex  = Squads_GetSquadUIIndex( team )
-	}
-
-	FS_UpdateScoreForTeam( squadWinningIndex, 3 ) //Cafe was here
+	
+	FS_UpdateScoreForTeam( team, 3 )
+	FS_Scenarios_TogglePlayersCardsVisibility( false )
 }
 
 
@@ -4566,6 +4683,12 @@ void function FS_ReloadScoreHUD()
 
 	if( file.enemyTeam2ScoreValue > 0 && file.currentEnemy2 != -1 && file.enemyTeam2ScoreValue <= 3 )
 		FS_UpdateScoreForTeam( file.currentEnemy2, file.enemyTeam2ScoreValue )	
+	
+	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+	{
+		FS_Scenarios_InitPlayersCards()
+		FS_Scenarios_SetupPlayersCards()
+	}
 }
 
 void function FS_CreateScoreHUD()
@@ -4577,15 +4700,15 @@ void function FS_CreateScoreHUD()
 	int localIndex = Squads_GetSquadUIIndex( localteam )
 	string name = Localize( Squads_GetSquadName( localIndex, true ) ).tolower()
 
-	array<int> teams = GetTeamsForPlayers( GetPlayerArray() )
+	array<int> teams = GetTeamsIndexesForPlayers( GetPlayerArrayOfEnemies( localteam ) )
+	printt( "WEHUD - Localindex", localIndex )
+	foreach( team in teams )
+	{
+		printt( "WEHUD - TEAM:", team ) //" - ", Squads_GetSquadUIIndex( team ), Squads_GetSquadUIIndex( team ), Localize( Squads_GetSquadName( Squads_GetSquadUIIndex( team ), true ) ).tolower() )
+	}
 
-	// foreach( team in teams )
-	// {
-		// printt( "WEHUD", Squads_GetSquadUIIndex( team ), Localize( Squads_GetSquadName( Squads_GetSquadUIIndex( team ), true ) ).tolower() )
-	// }
-
-	if( teams.contains( localteam ) )
-		teams.removebyvalue( localteam )
+	// if( teams.contains( TEAM_IMC ) ) //remove local
+		// teams.removebyvalue( TEAM_IMC )
 
 	//Local team
 	file.localTeam = HudElement( "WinterExpress_FlowstateScoreBox_Local" )
@@ -4616,7 +4739,7 @@ void function FS_CreateScoreHUD()
 		enemy1 = teams[0]
 
 		if( file.currentEnemy1 == -1 )
-			file.currentEnemy1 = Squads_GetSquadUIIndex( enemy1 )
+			file.currentEnemy1 = enemy1
 	} else
 	{
 		Hud_SetVisible( file.enemyTeam2, false)
@@ -4630,7 +4753,7 @@ void function FS_CreateScoreHUD()
 		enemy2 = teams[1]
 
 		if( file.currentEnemy2 == -1 )
-			file.currentEnemy2 = Squads_GetSquadUIIndex( enemy2 )
+			file.currentEnemy2 = enemy2
 	} else
 	{
 		Hud_SetVisible( file.enemyTeam2, false)
@@ -4641,7 +4764,7 @@ void function FS_CreateScoreHUD()
 
 	if( enemy1 != -1 )
 	{
-		int enemy1Index = Squads_GetSquadUIIndex( enemy1 )
+		int enemy1Index = enemy1
 		string enemy1name = Localize( Squads_GetSquadName( enemy1Index, true ) ).tolower()
 	
 		teamPic = "rui/flowstatecustom/winterexpress/enemy_" + enemy1name
@@ -4652,7 +4775,7 @@ void function FS_CreateScoreHUD()
 
 	if( enemy2 != -1 )
 	{
-		int enemy2Index = Squads_GetSquadUIIndex( enemy2 )
+		int enemy2Index = enemy2
 		string enemy2name = Localize( Squads_GetSquadName( enemy2Index, true ) ).tolower()
 	
 		teamPic = "rui/flowstatecustom/winterexpress/enemy_" + enemy2name
@@ -4660,6 +4783,19 @@ void function FS_CreateScoreHUD()
 		if( IsValidName( enemy2name ) )
 			RuiSetImage( Hud_GetRui( file.enemyTeam2 ), "basicImage", CastStringToAsset( teamPic ) )
 	}
+}
+
+array<int> function GetTeamsIndexesForPlayers( array<entity> playersToUse )
+{
+	array<int> results
+	foreach ( player in playersToUse )
+	{
+		int team = Squads_GetSquadUIIndex( player.GetTeam() )
+		if ( !results.contains( team ) )
+			results.append( team )
+	}
+
+	return results
 }
 
 void function FS_ToggleVisibilityScoreHUD( bool visible )
@@ -4698,12 +4834,16 @@ void function FS_UpdateScoreForTeam( int team, int score )
 	if( file.scoreLimit != 3 )
 		return
 
-	string name = Localize( Squads_GetSquadName( team, true ) ).tolower()
+	string name = Localize( Squads_GetSquadName( Squads_GetArrayIndexForTeam( team ), true ) ).tolower()
 
 	if( !IsValidName( name ) )
 		return
 
-	bool isLocalTeam = team == TEAM_IMC
+	// team = Squads_GetArrayIndexForTeam( team )
+
+	bool isLocalTeam = team == GetLocalClientPlayer().GetTeam() //TEAM_IMC
+	
+	printt( "FS_UpdateScoreForTeam CURRENT SAVED TEAMS", file.currentEnemy1, file.currentEnemy2, GetLocalClientPlayer().GetTeam()  )
 	printt( "FS_UpdateScoreForTeam", team, score, name, isLocalTeam )
 
 	var teamScoreElement

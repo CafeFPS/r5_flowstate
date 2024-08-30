@@ -327,7 +327,6 @@ void function ClGamemodeSurvival_Init()
 	RegisterSignal( "DroppodLanded" )
 	RegisterSignal( "SquadEliminated" )
 	RegisterSignal( "RestartLaserSightThread" )
-	RegisterSignal( "InitSurvivalHealthBarReset" )
 	FlagInit( "SquadEliminated" )
 
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_survival.rpak" )
@@ -400,6 +399,7 @@ void function ClGamemodeSurvival_Init()
 
 	AddFirstPersonSpectateStartedCallback( OnFirstPersonSpectateStarted )
 	AddCallback_OnViewPlayerChanged( OnViewPlayerChanged )
+	AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnPlayerLoadoutChanged )
 	AddCallback_OnPlayerConsumableInventoryChanged( UpdateDpadHud )
 	
 	AddClientCallback_OnResolutionChanged( OnResolutionChanged_FixRuiSize )
@@ -746,6 +746,7 @@ var function AddInWorldMinimapTopo( entity ent, float width, float height )
 }
 
 const array<int> nonCompassModes = [
+	ePlaylists.winterexpress,
 	ePlaylists.custom_ctf,
 	ePlaylists.fs_haloMod_ctf,
 	ePlaylists.fs_haloMod_oddball,
@@ -835,30 +836,16 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	if( IsLobby() )
-		return 
-		
-	Signal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
-	EndSignal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
-
+	Assert( IsNewThread(), "Must be threaded off" )
 	entity player = GetLocalViewPlayer()
-	
-	// if( GameRules_GetGameMode() != SURVIVAL )
-		// player = GetLocalClientPlayer()
-	
-	OnThreadEnd(
-		function() : ( player )
-		{
-			if(IsValid(player))
-				thread SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 
-			if( Playlist() == ePlaylists.fs_movementgym )
-					MG_CustomPilotRUI( player, file.pilotRui )
-		}
-	)
-	
-	while( !IsValid(player) )
-		WaitFrame()
+	if( Playlist() == ePlaylists.fs_movementgym )
+	{
+		MG_CustomPilotRUI( player, file.pilotRui )
+		return
+	}
+
+	SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 }
 
 
@@ -929,11 +916,6 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	
 	if(RGB_HUD)
 		thread RGBRui(rui)
-
-	// if( GameRules_GetGameMode() != "fs_dm" ) return
-	
-	// if ( IsControllerModeActive() )
-		// player.ClientCommand( "controllerstate true")
 }
 
 void function RGBRui(var rui)
@@ -2773,8 +2755,11 @@ void function Survival_OnPlayerClassChanged( entity player )
 			ResetInventoryMenu( player )
 		}
 
-
-		thread InitSurvivalHealthBar()
+		bool isReady = LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() )
+		if ( isReady )
+		{
+			thread InitSurvivalHealthBar()
+		}
 	}
 
 	if ( player == GetLocalClientPlayer() )
@@ -3470,6 +3455,7 @@ void function FS_GamemodeHudSetup()
 
 	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), modeString )
 	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), modeSubString)
+	
 }
 
 void function DisableCustomMapAndGamemodeNameFrames()
@@ -5070,6 +5056,16 @@ void function OnViewPlayerChanged( entity newViewPlayer )
 	}
 }
 
+void function OnPlayerLoadoutChanged( EHI playerEHI, ItemFlavor flavour )
+{
+	entity player = FromEHI( playerEHI )
+	if ( player == GetLocalViewPlayer() )
+	{
+		thread InitSurvivalHealthBar()
+	}
+
+	Squads_SetCustomPlayerInfo( player )
+}
 
 void function OnLocalPlayerSpawned( entity localPlayer )
 {

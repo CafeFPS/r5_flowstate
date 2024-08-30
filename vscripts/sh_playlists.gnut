@@ -375,7 +375,7 @@ asset function GetModeEmblemImage( string playlistName )
 		break
 
 		case "fs_scenarios":
-		emblemImage = $"rui/menu/gamemode_emblem/duos"
+		emblemImage = $""
 		break
 	}
 

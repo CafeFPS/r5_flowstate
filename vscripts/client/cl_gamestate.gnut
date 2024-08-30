@@ -298,12 +298,10 @@ void function UpdateGamestateRuiTracking( entity player )
 
 void function UpdateCommonScoreRuiTracking( var rui, entity player )
 {
-	if( Playlist() != ePlaylists.fs_scenarios )
-		RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
-
+	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
 	RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 
-	if( Playlist() != ePlaylists.fs_scenarios )
+	if( Playlist() != ePlaylists.fs_scenarios && Playlist() != ePlaylists.winterexpress )
 		RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "damage" ) )
 	// else
 		// RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
