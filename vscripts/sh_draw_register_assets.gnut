@@ -42,7 +42,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 {
 	#if SERVER 
 		AddClientCommandCallback( "assetIntegrityCheck", ClientCommand_AssetIntegrityCheck )
-	#endif 
+	#endif
 	
 	#if CLIENT 
 		if( file.bShouldWaitForRpak )
@@ -93,21 +93,28 @@ void function WorldDrawAsset_RegisterAllAssets()
 			
 			continue
 		}
-			
-		#if CLIENT 
-			string cmd
-			foreach( inv in invalidAssets )
-				cmd += " " + string( inv )
-				
-			entity player = GetLocalClientPlayer()
-			if( !IsValid( player ) )
-				return 
-				
-			player.ClientCommand( "assetIntegrityCheck" + cmd )
-		#endif
 		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
 	}
+	
+	#if CLIENT 
+		thread
+		(
+			void function() : ( invalidAssets )
+			{	
+				string cmd
+				foreach( inv in invalidAssets )
+					cmd += " " + string( inv )
+					
+				FlagWait( "EntitiesDidLoad" )
+				entity player = GetLocalClientPlayer()
+				if( !IsValid( player ) )
+					return 
+					
+				player.ClientCommand( "assetIntegrityCheck" + cmd )
+			}
+		)()
+	#endif
 }
 
 #if CLIENT
@@ -192,6 +199,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 	
 	bool function ClientCommand_AssetIntegrityCheck( entity player, array<string> args )
 	{
+		Warning( "check itttttttttttttttttttttttttttttttt" )
 		if( !IsValid( player ) )
 			return false
 			
