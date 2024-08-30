@@ -464,15 +464,12 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 	
 	bool function VideoAssetExists( string ref )//todo: better method
 	{
-		try 
-		{
-			CastStringToAsset( ref )
-		}
-		catch(e)
-		{
-			Warning( "Video asset '" + ref + "' does not exist." )
-			return false
-		}
+		// asset varAsset = GetAssetFromString( ref )
+		// if ( !IsValid( varAsset ) || varAsset == $"" )
+		// {
+			// Warning( "Video asset '" + ref + "' does not exist." )
+			// return false
+		// }
 		
 		return true
 	}
@@ -517,7 +514,7 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		{
 			try
 			{
-				varAsset = CastStringToAsset( assetRef )
+				varAsset = CastStringToAsset( assetRef ) //NEVER FAILS?
 			}
 			catch( e )
 			{
@@ -765,6 +762,13 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		
 		var rui = GetWorldDrawAssetRUI( RUIID )
 		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW //sanity check
+				printw( "Tried to set visibility on RUIID =", RUIID, "groupId =", groupId, "bannerId =", bannerId, " ; but rui instance is invalid." )
+			#endif		
+			return //todo: notify server
+		}
 		
 		#if DEVELOPER && DEBUG_WORLD_DRAW
 			printw( "rui ID:", RUIID, "rui instance:", string( rui ), "type:", WorldDrawAsset_GetAssetTypeByID( bannerId ), "groupId:", groupId )

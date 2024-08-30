@@ -3202,13 +3202,13 @@ void function BannerImages_1v1Init()
 	(
 		void function()
 		{
-			BannerAssets_GroupAppendAsset
-			(
-				"main_banner",
-				WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
-				false,
-				"A cool karma banner"
-			)
+			// BannerAssets_GroupAppendAsset
+			// (
+				// "main_banner",
+				// WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
+				// false,
+				// "A cool karma banner"
+			// )
 			
 			BannerAssets_GroupAppendAsset
 			(
