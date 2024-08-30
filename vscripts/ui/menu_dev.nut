@@ -390,7 +390,7 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "Melee: Shadow Hands", "script thread SetupHeirloom(3)" )
 		SetupDevCommand( "Melee: Boxing Hands", "script thread SetupHeirloom(4)" )
 		SetupDevCommand( "Custom Melee: Bolo Sword", "script thread SetupHeirloom(0)" )
-		SetupDevCommand( "Custom Melee: VCTBlue Knife", "script thread SetupHeirloom(2)" )
+		// SetupDevCommand( "Custom Melee: VCTBlue Knife", "script thread SetupHeirloom(2)" )
 
 		// This adds CAPTURE MODE every time you load a level.
 		// Capture mode doesn't work, so I am commenting this out.

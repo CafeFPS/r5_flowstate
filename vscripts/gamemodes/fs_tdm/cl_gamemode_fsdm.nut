@@ -59,6 +59,7 @@ global function FS_Scenarios_AddAllyHandle
 global function FS_Scenarios_AddEnemyHandle
 global function FS_Scenarios_AddEnemyHandle2
 
+global function FS_Scenarios_InitPlayersCards
 global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
 global function FS_CreateTeleportFirstPersonEffectOnPlayer
@@ -512,14 +513,27 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
 
-	float startTime = GetGlobalNetTime( "flowstate_DMStartTime" )
+	float startTime = Playlist() == ePlaylists.winterexpress ? Time() : GetGlobalNetTime( "flowstate_DMStartTime" )
+	
+	string main = "Time Remaining: "
+	
+	switch( Playlist() )
+	{
+		case ePlaylists.winterexpress:
+		main = "Round Ending In: "
+		break
+		
+		case ePlaylists.fs_scenarios:
+		main = "Scenario End: "
+		break
+	}
 	
 	while ( startTime <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
-			
+		
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
-		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
+		Hud_SetText( HudElement( "FS_DMCountDown_Text"), main + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
 
 		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !file.hideendtimeui )
@@ -1943,7 +1957,7 @@ void function FS_Scenarios_InitPlayersCards()
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
 
-	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 )
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 || Playlist() == ePlaylists.winterexpress )
 	{
 		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
 		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 115, wepSelectorBasePos.y + 2 )
@@ -2035,7 +2049,8 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 
 void function FS_Scenarios_SetupPlayersCards()
 {
-	file.buildingTeam = false
+	if( Playlist() != ePlaylists.winterexpress )
+		file.buildingTeam = false
 
 	foreach( int i, int handle in file.enemyTeamHandles2 )
 	{
