@@ -95,18 +95,15 @@ void function WorldDrawAsset_RegisterAllAssets()
 		}
 			
 		#if CLIENT 
-			if( invalidAssets.len() != 0 )
-			{
-				string cmd
-				foreach( inv in invalidAssets )
-					cmd += " " + string( inv )
-					
-				entity player = GetLocalClientPlayer()
-				if( !IsValid( player ) )
-					return 
-					
-				player.ClientCommand( "assetIntegrityCheck" + cmd )
-			}
+			string cmd
+			foreach( inv in invalidAssets )
+				cmd += " " + string( inv )
+				
+			entity player = GetLocalClientPlayer()
+			if( !IsValid( player ) )
+				return 
+				
+			player.ClientCommand( "assetIntegrityCheck" + cmd )
 		#endif
 		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
@@ -198,8 +195,14 @@ void function WorldDrawAsset_RegisterAllAssets()
 		if( !IsValid( player ) )
 			return false
 			
+		string signal = "BannersValidated"
+		
 		if( args.len() < 1 )
-			return false
+		{
+			player.p.bannersValidated = true
+			player.Signal( signal )
+			return true
+		}
 			
 		array<int> invalidAssets
 		foreach( arg in args )
@@ -210,10 +213,10 @@ void function WorldDrawAsset_RegisterAllAssets()
 			invalidAssets.append( int( arg ) )
 		}
 		
-		if( invalidAssets.len() == 0 )
-			return true
-			
-		player.p.invalidAssets = invalidAssets
+		player.p.invalidAssets.extend( invalidAssets )
+		player.p.bannersValidated = true
+		
+		player.Signal( signal )
 		return true
 	}
 #endif

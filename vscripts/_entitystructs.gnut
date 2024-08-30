@@ -821,7 +821,7 @@ global struct ServerPlayerStruct
 	bool waitingFor1v1			= false
 	bool ClientCommandsEnabled 	= true
 	array<int> invalidAssets	= []
-	//float recordingStartTime	= 0.0
+	bool bannersValidated		= false
 	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks
