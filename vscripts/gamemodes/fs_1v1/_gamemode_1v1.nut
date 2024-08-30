@@ -3165,7 +3165,7 @@ vector function Gamemode1v1_FetchNotificationPanelAngles()
 	return Gamemode1v1_NotificationPanel_Angles
 }
 
-void function BannerAssets_1v1Init()
+void function BannerImages_1v1Init()
 {
 	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
 	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,267 > //TODO():, raytrace for determining valid display loc
@@ -3202,13 +3202,13 @@ void function BannerAssets_1v1Init()
 	(
 		void function()
 		{
-			// BannerAssets_GroupAppendAsset
-			// (
-				// "main_banner",
-				// WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
-				// false,
-				// "A cool karma banner"
-			// )
+			BannerAssets_GroupAppendAsset
+			(
+				"main_banner",
+				WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
+				false,
+				"A cool karma banner"
+			)
 			
 			BannerAssets_GroupAppendAsset
 			(
@@ -3232,6 +3232,12 @@ void function BannerAssets_1v1Init()
 			(
 				"main_banner",
 				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner03" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"main_banner",
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner02" )
 			)
 			
 			//testbanner group
@@ -3560,7 +3566,7 @@ void function Gamemode1v1_Init( int eMap )
 		}
 	)
 	
-	BannerAssets_1v1Init()
+	BannerImages_1v1Init()
 	
 	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
 	file.bRestEnabled = true

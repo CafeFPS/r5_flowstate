@@ -9,7 +9,6 @@ global function WorldDrawAsset_RegisterAllAssets
 #endif
 
 #if SERVER 
-	global function WorldDrawAsset_GetInvalid
 	global function WorldDrawAsset_TransmitDesiredAssets
 #endif 
 
@@ -27,13 +26,9 @@ struct
 		"rui/world/flowstate1v1_banner02",
 		"rui/world/flowstate1v1_rdiffs",
 		"rui/world/flowstate1v1_banner03",
-		"rui/world/karma_banner_01"
-		//"media/karma-r5r-video.bik",
+		"rui/world/karma_banner_01",
+		"media/karma-r5r-video.bik"
 	]
-	
-	#if SERVER 
-		array<int> invalidAssets
-	#endif 
 	
 	#if CLIENT
 		bool bShouldWaitForRpak = false
@@ -72,7 +67,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 			assetType = eAssetType.IMAGE
 		
 		#if CLIENT	
-			//todo: determine if bik exists? NEED A WAY?!
+			//todo: determine if bik exists?
 			if( assetType == eAssetType.IMAGE && !RuiImageExists( potentialVarAsset ) )
 			{
 				invalidAssets.append( iter )
@@ -83,7 +78,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 		
 		try
 		{
-			varAsset = CastStringToAsset( potentialVarAsset ) //never fails apparently		
+			varAsset = CastStringToAsset( potentialVarAsset )
 		}
 		catch( e )
 		{
@@ -93,8 +88,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 			
 			#if CLIENT
 				invalidAssets.append( iter )
-			#elseif SERVER 
-				file.invalidAssets.append( iter )
 			#endif
 		}
 		
@@ -120,13 +113,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 		)()
 	#endif
 }
-
-#if SERVER 
-	array<int> function WorldDrawAsset_GetInvalid()
-	{
-		return file.invalidAssets
-	}
-#endif 
 
 #if CLIENT
 	void function ClientCodeCallback_PakRequestFinished( table preferablyTableOfSomedata ) //todo: move
@@ -210,6 +196,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 	
 	bool function ClientCommand_AssetIntegrityCheck( entity player, array<string> args )
 	{
+		Warning( "check itttttttttttttttttttttttttttttttt" )
 		if( !IsValid( player ) )
 			return false
 			
