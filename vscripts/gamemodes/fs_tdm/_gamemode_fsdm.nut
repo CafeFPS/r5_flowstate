@@ -253,7 +253,6 @@ void function InitializePlaylistSettings()
 	flowstateSettings.custom_match_ending_message 			= GetCurrentPlaylistVarString( "custom_match_ending_message", "Don't leave. Server is going to reload to avoid lag." )
 	flowstateSettings.end_match_message 					= GetCurrentPlaylistVarBool( "end_match_message",true )
 	flowstateSettings.rotate_map 							= GetCurrentPlaylistVarBool( "rotate_map", false )
-	flowstateSettings.maplist 								= GetCurrentPlaylistVarString( "maplist", "" )
 	flowstateSettings.ring_radius_padding 					= GetCurrentPlaylistVarFloat( "ring_radius_padding", 800 )
 	flowstateSettings.Admins 								= GetCurrentPlaylistVarString( "Admins", "" )
 	flowstateSettings.flowstate_1v1mode 					= GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
@@ -3732,12 +3731,22 @@ void function SimpleChampionUI()
 
 		if ( flowstateSettings.rotate_map )
 		{
-			array<string> maplist = split( flowstateSettings.maplist, "," )
+			array<PlaylistName> maplist = GetPlaylistMaps( GetCurrentPlaylistName() )
 			int countmaps = maplist.len()
 			int i;
 
 			for ( i = 0; i < countmaps; i++ ) 
 			{
+				if( GetCurrentPlaylistVarInt( maplist[i], 0 ) == 0 )
+				{
+					Warning("was 0")
+					continue
+				}
+				else 
+				{
+					Warning("was 1")
+				}
+					
 				if ( GetMapName() == maplist[i] ) 
 				{
 					int index = (i + 1) % countmaps	

@@ -11,11 +11,11 @@ global const int BOOSTZONE_ALIVE_TIME = 15
 global const SCRIPT_GAME_VERSION__RELEASE = false //not used yet...
 
 //r5r.dev
-global const bool TRACKER 					= false
-global const bool HAS_TRACKER_DLL 			= false
+global const bool TRACKER 					= true
+global const bool HAS_TRACKER_DLL 			= true
 global const bool MULTIPLAYER_DEBUG_PRINTS 	= false
 global const bool NOTIFY_RATELIMIT_FAILED	= false
-global const bool MKOS						= false
+global const bool MKOS						= true
 global const bool ENTITYVAR_DEPRECATED		= true
 
 global const int INT_MIN = (1<<31)

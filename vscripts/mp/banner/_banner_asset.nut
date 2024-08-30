@@ -107,6 +107,22 @@ void function BannerAssets_Init()
 				file.groupSignals[ signal ] <- true
 			}
 			
+			array<int> invalidAssets = WorldDrawAsset_GetInvalid()
+			foreach( string groupName, BannerGroupData bannerData in file.groupDataMap )
+			{
+				foreach( banner in bannerData.groupBanners )
+				{
+					if( invalidAssets.contains( banner.id ) )
+					{
+						banner.isValid = false
+						
+						#if DEVELOPER && DEBUG_BANNER_ASSET
+							printw( "Asset ID:", banner.id, "for group", bannerData.groupId, "ref = ", banner.assetName, "was marked as invalid." )
+						#endif
+					}
+				}
+			}
+			
 			file.__channelRequiredGroups = groups
 			__SetupChannels()
 		}
@@ -468,7 +484,7 @@ void function __HideAllBanners( entity player, BannerGroupData groupData, table<
 			false, 
 			false, 
 			banners[ iter ].id,
-			0,
+			-1,
 			false
 		)
 	}
@@ -512,7 +528,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	BannerImageData baseBannerImage
 	BannerImageData baseBannerVideo
 	
-	table<int,int> typeToRuiID = groupData.typeToRuiID
+	table<int,int> typeToRuiID = clone groupData.typeToRuiID
 	bool bFirstRun = typeToRuiID.len() == 0
 	int clientRUIID = -1
 	bool bDontSync
@@ -529,10 +545,10 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		bool bFoundImage = false
 		bool bFoundVideo = false
 
-		iter = -1
+		iter = 0
 		foreach( banner in banners )
 		{
-			++iter
+			//++iter
 			switch( banner.assetType )
 			{
 				case eAssetType.IMAGE:
@@ -553,6 +569,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					bFoundVideo = true
 					break 
 			}
+			
+			iter++
 		}
 		
 		WaitFrame()
@@ -665,6 +683,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				)
 			#endif
 		}
+		
+		groupData.typeToRuiID = clone typeToRuiID
 	}
 	
 	OnThreadEnd
@@ -729,12 +749,11 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				continue
 		}
 
+		clientRUIID = typeToRuiID[ banner.assetType ]
 		//set the server managed ruiid instance to use based on type.
 		#if DEVELOPER && DEBUG_BANNER_ASSET
-			printw( "setting next asset '" + banner.assetName + "' as type:", banner.assetType, "in group:", groupData.groupName )
+			printw( "setting next asset '" + banner.assetName + "' as type:", banner.assetType, "in group:", groupData.groupName, "RUIID = ", clientRUIID )
 		#endif 
-		
-		clientRUIID = typeToRuiID[ banner.assetType ]
 		
 		//change over to next asset.
 		WorldDrawAsset_Modify
