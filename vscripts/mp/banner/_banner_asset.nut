@@ -528,10 +528,11 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		
 		bool bFoundImage = false
 		bool bFoundVideo = false
-		
-		iter = 0
+
+		iter = -1
 		foreach( banner in banners )
 		{
+			++iter
 			switch( banner.assetType )
 			{
 				case eAssetType.IMAGE:
@@ -552,8 +553,6 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					bFoundVideo = true
 					break 
 			}
-			
-			iter++
 		}
 		
 		WaitFrame()

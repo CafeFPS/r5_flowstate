@@ -26,7 +26,7 @@ struct
 		"rui/world/flowstate1v1_banner02",
 		"rui/world/flowstate1v1_rdiffs",
 		"rui/world/flowstate1v1_banner03",
-		"rui/world/karma_banner_01"
+		"rui/world/karma_banner_01",
 		"media/karma-r5r-video.bik"
 	]
 	
@@ -71,7 +71,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 			if( assetType == eAssetType.IMAGE && !RuiImageExists( potentialVarAsset ) )
 			{
 				invalidAssets.append( iter )
-				continue
 			}
 		#endif
 		
@@ -90,8 +89,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 			#if CLIENT
 				invalidAssets.append( iter )
 			#endif
-			
-			continue
 		}
 		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
@@ -109,7 +106,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 				FlagWait( "EntitiesDidLoad" )
 				entity player = GetLocalClientPlayer()
 				if( !IsValid( player ) )
-					return 
+					return
 					
 				player.ClientCommand( "assetIntegrityCheck" + cmd )
 			}
