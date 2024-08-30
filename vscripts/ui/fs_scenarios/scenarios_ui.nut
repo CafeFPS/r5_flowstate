@@ -104,8 +104,7 @@ void function InitScenariosMenu( var menu ) //need to add button events for cont
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, ScenariosStandingsMenuOnClose )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ScenariosStandingsMenuOnNavBack )
 	
-	if( Playlist() == ePlaylists.fs_scenarios )
-		AddUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected )
+	AddUICallback_LevelLoadingFinished( ReTransmitStandingsIfConnected ) //very important
 }
 
 void function UI_ScenariosTemplate_Init( int count )

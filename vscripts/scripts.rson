@@ -89,7 +89,7 @@ Scripts:
 	sh_survival_equipment_slot.gnut
     sh_survival_loot_distribution.gnut
 	
-	sh_draw_img.gnut
+	sh_world_draw.gnut
 	sh_draw_register_assets.gnut
 ]
 
@@ -113,7 +113,7 @@ Scripts:
 	mp/sh_music.gnut
 	mp/sh_skydive_trails.gnut
 	sh_weapons.gnut
-  sh_dev_weapons.nut
+	sh_dev_weapons.nut
 	sh_dev_menu.nut
 	sh_weapon_cosmetics.nut
 ]
@@ -121,7 +121,7 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	mp/banner_img/_banner_image.nut
+	mp/banner/_banner_asset.nut
 ]
 
 When: "CLIENT"

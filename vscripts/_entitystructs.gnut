@@ -820,6 +820,7 @@ global struct ServerPlayerStruct
 	bool rest_request 			= false
 	bool waitingFor1v1			= false
 	bool ClientCommandsEnabled 	= true
+	array<int> invalidAssets	= []
 	//float recordingStartTime	= 0.0
 	
 	//for adding specific spawn behavior on a player basis.

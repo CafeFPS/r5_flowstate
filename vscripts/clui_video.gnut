@@ -14,9 +14,11 @@ global function UICodeCallback_VideoChannelFinishedPlaying
 #if CLIENT
 global function UIToClient_VideoChannelReserved
 global function UIToClient_VideoChannelFinishedPlaying
+global function IsVideoChannelAvailable
+global function SetVideoChannelReport
 #endif
 
-const int NUM_BINK_CHANNELS = 10 // must match C:\depot\r5dev\src\public\avi\ibik.h:28
+global const int NUM_BINK_CHANNELS = 10 // must match C:\depot\r5dev\src\public\avi\ibik.h:28
 
 #if UI
 enum eVideoChannelStatus
@@ -36,6 +38,7 @@ struct
 
 	#if CLIENT
 		int videoChannelFromUI = -1
+		bool isVideoChannelAvailable
 	#endif
 
 	#if UI || CLIENT
@@ -57,6 +60,15 @@ void function VideoChannelManager_OnLevelShutdown()
 	}
 }
 #endif
+
+#if CLIENT 
+	void function VideoChannelManager_OnScriptReset()
+	{
+		//todo: cleanup any running videos and reset.
+		// run client funciton checker.
+		// get rui from WorldDrawImg if exists for channel
+	}
+#endif 
 
 
 #if UI || CLIENT
@@ -93,7 +105,7 @@ int function ReserveVideoChannelInternal( bool calledFromUI )
 		return channelIndex
 	}
 
-	Assert( false, "No free video channels." )
+	mAssert( false, "No free video channels." )
 	unreachable
 }
 #endif
@@ -154,18 +166,33 @@ void function ClientToUI_ReleaseVideoChannel( int channel )
 #if UI
 bool function IsVideoChannelAvailable()
 {
-	#if UI
-		for ( int channelIndex = 0; channelIndex < NUM_BINK_CHANNELS; channelIndex++ )
+	for ( int channelIndex = 0; channelIndex < NUM_BINK_CHANNELS; channelIndex++ )
+	{
+		if ( file.videoChannelStatusList[channelIndex] == eVideoChannelStatus.AVAILABLE )
 		{
-			if ( file.videoChannelStatusList[channelIndex] == eVideoChannelStatus.AVAILABLE )
-				return true
+			RunClientScript( "SetVideoChannelReport", true )
+			return true
 		}
-		return false
-	#endif
-	// todo(dw): make this available in the CLIENT VM
+	}
+	
+	RunClientScript( "SetVideoChannelReport", false )
+	return false
+	// todo(dw): make this available in the CLIENT VM //to respawn: done. ~mkos
 }
 #endif
 
+#if CLIENT 
+	bool function IsVideoChannelAvailable()
+	{
+		RunUIScript( "IsVideoChannelAvailable" ) //possible timing issues.
+		return file.isVideoChannelAvailable
+	}
+	
+	void function SetVideoChannelReport( bool isAvailable )
+	{
+		file.isVideoChannelAvailable = isAvailable
+	}
+#endif 
 
 #if UI
 void function UICodeCallback_VideoChannelFinishedPlaying( int channel )

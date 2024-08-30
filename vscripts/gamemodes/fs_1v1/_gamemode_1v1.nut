@@ -3168,54 +3168,100 @@ vector function Gamemode1v1_FetchNotificationPanelAngles()
 void function BannerImages_1v1Init()
 {
 	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
-	
 	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,267 > //TODO():, raytrace for determining valid display loc
 	
-	BannerImages_SetAllGroupsFunc
+	LocPair testbanner_two__Coordinates = NewLocPair( < 276.335, 299.989, 410 >, < 353.8, 1.16019, 0 > )
+	
+	BannerAssets_SetAllGroupsFunc
 	(
-		void function() : ( main_banner__Coordinates )
+		void function() : ( main_banner__Coordinates, testbanner_two__Coordinates )
 		{
-			BannerImages_RegisterGroup
+			BannerAssets_RegisterGroup
 			(
 				"main_banner",
 				main_banner__Coordinates,
-				400,
-				280
+				480,
+				270,
+				.95,
+				5
+			)
+			
+			BannerAssets_RegisterGroup
+			(
+				"test_banner",
+				testbanner_two__Coordinates,
+				480,
+				270,
+				.95,
+				5
 			)
 		}
 	)
 	
-	BannerImages_SetAllImagesFunc //test - REMOVE BEFORE SHIPPING
+	BannerAssets_SetAllAssetsFunc //test - REMOVE BEFORE SHIPPING
 	(
 		void function()
 		{
-			BannerImages_GroupAppendImage
+			BannerAssets_GroupAppendAsset
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner01" )
+				WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
+				false,
+				"A cool karma banner"
 			)
 			
-			BannerImages_GroupAppendImage
+			BannerAssets_GroupAppendAsset
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/karma_banner_01" )
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner01" )
 			)
 			
-			BannerImages_GroupAppendImage
+			BannerAssets_GroupAppendAsset
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner03" )
+				WorldDrawAsset_AssetRefToID( "rui/world/karma_banner_01" )
 			)
 			
-			BannerImages_GroupAppendImage
+			BannerAssets_GroupAppendAsset
 			(
 				"main_banner",
-				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
+				WorldDrawAsset_AssetRefToID( "media/respawn.bik" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"main_banner",
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner03" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"main_banner",
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner02" )
+			)
+			
+			//testbanner group
+			BannerAssets_GroupAppendAsset
+			(
+				"test_banner",
+				WorldDrawAsset_AssetRefToID( "media/respawn.bik" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"test_banner",
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner03" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"test_banner",
+				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner02" )
 			)
 		}
 	)
 	
-	BannerImages_Init()
+	BannerAssets_Init() //conectoutput?
 }
 
 void function INIT_PregameCallbacks()
@@ -3472,7 +3518,7 @@ void function Gamemode1v1_Init( int eMap )
 			float imgWidth = 600
 			float imgHeight = 380
 			
-			int refID = WorldDrawImg_CreateOnClient
+			int refID = WorldDrawAsset_CreateOnClient
 			(
 				player,
 				"",
@@ -3480,10 +3526,10 @@ void function Gamemode1v1_Init( int eMap )
 				Gamemode1v1_GetNotificationPanel_Angles(),
 				imgWidth,
 				imgHeight,
-				WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" )
+				WorldDrawAsset_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" )
 			)
 			
-			// WorldDrawImg_Timed
+			// WorldDrawAsset_Timed
 			// (
 				// player, 
 				// "rui/flowstate_custom/mkos/1v1banner",
@@ -3491,7 +3537,7 @@ void function Gamemode1v1_Init( int eMap )
 				// Gamemode1v1_GetNotificationPanel_Angles(),
 				// imgWidth,
 				// imgHeight,
-				// -1, //WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" ),
+				// -1, //WorldDrawAsset_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" ),
 				// -1, //no alpha change
 				// 15  //duration
 			// )

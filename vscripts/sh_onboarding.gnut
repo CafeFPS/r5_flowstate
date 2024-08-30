@@ -93,7 +93,7 @@ global function CharSelect_GetOutroTransitionDuration
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
 
-global enum MovementType
+global enum eMovementType
 {
 	DISABLED = 0,
 	TRUE_TF2_SETTINGS,
@@ -1294,7 +1294,7 @@ void function SetPlayerSettings( entity player, table settings )
 
 void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool resetOnly = false )
 {
-	if( file.flowstate_modified_movement == MovementType.DISABLED )
+	if( file.flowstate_modified_movement == eMovementType.DISABLED )
 		return
 
 	if( resetOnly )
@@ -1302,7 +1302,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 	switch( file.flowstate_modified_movement )
 	{
-		case MovementType.TRUE_TF2_SETTINGS: //1
+		case eMovementType.TRUE_TF2_SETTINGS: //1
 		
 			player.SetMoveSpeedScale( 0.87 )		
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
@@ -1312,7 +1312,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL: //2
+		case eMovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL: //2
 		
 			player.SetMoveSpeedScale( 0.87 )
 			player.DisableMantle()
@@ -1323,7 +1323,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.TRUE_TF2_SETTINGS_LOW_GRAV: //3
+		case eMovementType.TRUE_TF2_SETTINGS_LOW_GRAV: //3
 		
 			player.SetMoveSpeedScale( 0.87 )	
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
@@ -1333,7 +1333,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.CSGO_MOVEMENT: //4
+		case eMovementType.CSGO_MOVEMENT: //4
 		
 			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
 			player.SetMoveSpeedScale( 1.38854974986041364747 )
@@ -1346,7 +1346,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.CSGO_MOVEMENT_HIGH_AIRACCEL: //5
+		case eMovementType.CSGO_MOVEMENT_HIGH_AIRACCEL: //5
 		
 			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
 			player.SetMoveSpeedScale( 1.38854974986041364747 )
@@ -1359,7 +1359,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.SURF_SETTINGS: //6
+		case eMovementType.SURF_SETTINGS: //6
 		
 			SetPlayerSettings( player, SURF_SETTINGS )
 			
@@ -1368,7 +1368,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 
-		case MovementType.HL1_MOVEMENT: //7
+		case eMovementType.HL1_MOVEMENT: //7
 				
 			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
 			player.SetMoveSpeedScale( 1.77840093365762835808 )
@@ -1380,7 +1380,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 
-		case MovementType.HALO_MOVEMENT: //8
+		case eMovementType.HALO_MOVEMENT: //8
 				
 			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
 			player.SetMoveSpeedScale( 1.1 )
@@ -1392,7 +1392,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.SUPERGLIDE_BOOST_SETTINGS: //9
+		case eMovementType.SUPERGLIDE_BOOST_SETTINGS: //9
 		
 			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
 			
@@ -1401,7 +1401,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.INSTAGIB_PLAYER_SETTINGS: //10
+		case eMovementType.INSTAGIB_PLAYER_SETTINGS: //10
 		
 			SetPlayerSettings( player, INSTAGIB_PLAYER_SETTINGS )
 			
@@ -1410,7 +1410,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 		break
 		
-		case MovementType.HAVEFUN_PLAYER_SETTINGS: //11
+		case eMovementType.HAVEFUN_PLAYER_SETTINGS: //11
 		
 			SetPlayerSettings( player, HAVEFUN_PLAYER_SETTINGS )
 			
@@ -1546,24 +1546,24 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 	void function DEV_BuildMovementLookupTable()
 	{
-		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS ] <- TRUE_TF2_SETTINGS
-		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL ] <- TRUE_TF2_SETTINGS_HIGH_AIRACCEL
-		movementLookupTable[ MovementType.TRUE_TF2_SETTINGS_LOW_GRAV ] <- TRUE_TF2_SETTINGS_LOW_GRAV
-		movementLookupTable[ MovementType.CSGO_MOVEMENT ] <- CSGO_MOVEMENT
-		movementLookupTable[ MovementType.CSGO_MOVEMENT_HIGH_AIRACCEL ] <- CSGO_MOVEMENT_HIGH_AIRACCEL
-		movementLookupTable[ MovementType.SURF_SETTINGS ] <- SURF_SETTINGS
-		movementLookupTable[ MovementType.HL1_MOVEMENT ] <- HL1_MOVEMENT
-		movementLookupTable[ MovementType.HALO_MOVEMENT ] <- HALO_MOVEMENT
-		movementLookupTable[ MovementType.SUPERGLIDE_BOOST_SETTINGS ] <- SUPERGLIDE_BOOST_SETTINGS
-		movementLookupTable[ MovementType.INSTAGIB_PLAYER_SETTINGS ] <- INSTAGIB_PLAYER_SETTINGS
-		movementLookupTable[ MovementType.HAVEFUN_PLAYER_SETTINGS ] <- HAVEFUN_PLAYER_SETTINGS
+		movementLookupTable[ eMovementType.TRUE_TF2_SETTINGS ] <- TRUE_TF2_SETTINGS
+		movementLookupTable[ eMovementType.TRUE_TF2_SETTINGS_HIGH_AIRACCEL ] <- TRUE_TF2_SETTINGS_HIGH_AIRACCEL
+		movementLookupTable[ eMovementType.TRUE_TF2_SETTINGS_LOW_GRAV ] <- TRUE_TF2_SETTINGS_LOW_GRAV
+		movementLookupTable[ eMovementType.CSGO_MOVEMENT ] <- CSGO_MOVEMENT
+		movementLookupTable[ eMovementType.CSGO_MOVEMENT_HIGH_AIRACCEL ] <- CSGO_MOVEMENT_HIGH_AIRACCEL
+		movementLookupTable[ eMovementType.SURF_SETTINGS ] <- SURF_SETTINGS
+		movementLookupTable[ eMovementType.HL1_MOVEMENT ] <- HL1_MOVEMENT
+		movementLookupTable[ eMovementType.HALO_MOVEMENT ] <- HALO_MOVEMENT
+		movementLookupTable[ eMovementType.SUPERGLIDE_BOOST_SETTINGS ] <- SUPERGLIDE_BOOST_SETTINGS
+		movementLookupTable[ eMovementType.INSTAGIB_PLAYER_SETTINGS ] <- INSTAGIB_PLAYER_SETTINGS
+		movementLookupTable[ eMovementType.HAVEFUN_PLAYER_SETTINGS ] <- HAVEFUN_PLAYER_SETTINGS
 		
 		bMovementLookupTableSet = true
 	}
 
 	void function DEV_SetMovement( int enumVal )
 	{
-		int enumLen = MovementType.len()
+		int enumLen = eMovementType.len()
 		
 		if( enumVal > enumLen || enumVal < 0 )
 		{
@@ -1592,7 +1592,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		foreach( player in players )
 			SetPlayerSettings( player, movementLookupTable[ enumVal ] )
 			
-		string movementType = GetEnumString( "MovementType", enumVal )
-		Warning( "Player Movement set to: " + movementType )
+		string eMovementType = GetEnumString( "eMovementType", enumVal )
+		Warning( "Player Movement set to: " + eMovementType )
 	}
 #endif

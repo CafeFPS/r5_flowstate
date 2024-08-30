@@ -126,7 +126,10 @@ void function FS_Scenarios_Score_System_Init()
 	
 	#if CLIENT
 		if( Playlist() == ePlaylists.fs_scenarios )
+		{
 			AddCallback_UIScriptReset( _UpdateStandingsScriptsFromClient )
+			UpdateStandingsScriptsFromClient( true )
+		}
 	#endif
 	
 	#if SERVER

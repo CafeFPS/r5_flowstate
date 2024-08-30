@@ -916,7 +916,7 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 			weaponData.highWeaponChance,
 			weaponData.hudIcon
 		)
-	#endif 
+	#endif
 }
 
 void function CreateCustomHopup(CustomHopupData hopupData)

@@ -253,15 +253,6 @@ global struct GameSummarySquadData
 	int deaths
 }
 
-//verify struct
-
-global struct PlayerVerifyCount 
-{
-    string playerID
-    int verifyCount
-};
-
-
 global struct DamageEvent 
 {
     int weaponSource
@@ -281,18 +272,24 @@ global struct DamageEvent
 	bool isNew
 	float shotIdentifier
 	bool isValid = false	
-};
+}
 
 
-global struct DeleteEvents 
+struct DeleteEvents 
 {
 	int victim_handle
 	int attacker_handle	
 	float fightEndTime
-};
+}
+
+//verify struct
+struct PlayerVerifyCount 
+{
+    string playerID
+    int verifyCount
+}
 
 // array of player structs containing various new metrics
-
 struct PlayerMetrics 
 {
     string playerID
@@ -314,13 +311,12 @@ struct PlayerMetrics
 };
 
 //tables
-global table PlayerSupergliding
-global table < string, bool > PlayerDidJump
+table < string, bool > PlayerDidJump
 table<string, int> PlayerIdMap
 
 //script arrays
-global array<DamageEvent> allDamageEvents
-global table<int, DamageEvent> allDamageEventsMap = {}
+array<DamageEvent> allDamageEvents
+table<int, DamageEvent> allDamageEventsMap = {}
 array<PlayerMetrics> PlayerMetricsArray
 array<PlayerVerifyCount> playerVerifyCounts
 array< string > whitelist
@@ -3468,8 +3464,7 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 			string token = args[0]
 			EA_Verify__internal( token, OID, ea_acc )
 			
-			return
-		
+			return	
 	}
 	
 	void function CodeCallback_VerifyEaAccount( string oid, int token )

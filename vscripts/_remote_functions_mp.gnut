@@ -1079,14 +1079,15 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
 	Remote_RegisterUIFunction( "UICallback_ForceCloseDeathScreenMenu" )
 	
-	// ClientWorldImg
+	// ClientWorldImg -- Todo: Lower ranges.
 	if( Gamemode() != eGamemodes.fs_snd )
 	{
-		Remote_RegisterUntypedFunction_deprecated( "__BuildWorldImgAssetString" ) //optional, else called by int ref
-		Remote_RegisterClientFunction( "ServerCallback_CreateWorldImg", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "int", -1, INT_MAX, "int", -1, 99, "float", -1.0, 1.0, 32, "bool", "float", -1.0, 32000.0, 32 )
-		Remote_RegisterClientFunction( "ServerCallback_DestroyWorldImg", "int", 0, INT_MAX )
-		Remote_RegisterClientFunction( "ServerCallback_SetWorldImgVisibility", "int", 0, INT_MAX, "bool", "bool", "bool", "int", -5, 3 )
-		Remote_RegisterClientFunction( "ServerCallback_ModifyWorldImg", "int", 0, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 1.0, 32, "int", -1, INT_MAX )
+		Remote_RegisterUntypedFunction_deprecated( "__BuildWorldAssetString" ) //optional, else called by int ref
+		Remote_RegisterClientFunction( "ServerCallback_CreateWorldAsset", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "int", -1, INT_MAX, "int", -1, INT_MAX, "int", -1, 99, "float", -1.0, 1.0, 32, "bool", "float", -1.0, 32000.0, 32 )
+		Remote_RegisterClientFunction( "ServerCallback_DestroyWorldAsset", "int", -2, 99999 )
+		Remote_RegisterClientFunction( "ServerCallback_SetWorldAssetVisibility", "int", 0, 99999, "int", 0, 99999, "bool", "bool", "bool", "int", -2, 5000, "int", -5, 3, "bool" )
+		Remote_RegisterClientFunction( "ServerCallback_ModifyWorldAsset", "int", -2, 99999, "int", -2, 99999, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 1.0, 32, "int", -1, INT_MAX )
+		Remote_RegisterClientFunction( "ServerCallback_CreateChannel", "int", -1, 99999 )
 	}
 	// Maybe enable them only in the gamemodes that are planned to be used ( 1v1? )
 	// Don't reenable until you confirm that the gamemodes work or find a solution for this. Cafe

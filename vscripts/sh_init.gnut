@@ -207,7 +207,7 @@ void function SV_CL_Init()
 	MpWeaponPortalGun_Init()
 
 	WeaponMastiff_Init()
-	WorldDrawImg_Init()
+	WorldDrawAsset_Init()
 
 	MpWeaponFlameThrower_Init()
 	MpWeaponSentinel_Init()

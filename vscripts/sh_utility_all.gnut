@@ -2616,3 +2616,8 @@ FXHandle function CleanupFXHandle( FXHandle fxHandle, bool doRemoveAllParticlesN
 	#endif
 }
 #endif
+
+bool function empty( string s )
+{
+	return s == ""
+}

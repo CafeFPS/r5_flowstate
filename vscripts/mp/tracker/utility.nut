@@ -1,6 +1,5 @@
 global function GetAdminList																	//~mkos
 global function EnableVoice
-global function empty
 global function StringToArray
 global function trim
 global function Concatenate
@@ -813,28 +812,38 @@ struct {
 
 							try 
 							{
-								if ( IsTrackerAdmin(param) )
+								if ( IsTrackerAdmin( param ) )
 								{		
 									Message( player, "Failed", param + " is an admin. Ban rejected.", 10 )
 									return false		
 								}
 								
-								if ( !IsNum(param) )
+								if ( !IsNum( param ) )
 								{			
 									Message( player, "Failed", param + " is not a valid oid format.", 10 )
 									return false	
 								}
 								
-								if ( param2 == "")
+								if ( param2 == "" )
 								{		
 									param2 = "0";							
+								}
+								
+								entity playerToBan = GetPlayerEntityByUID( param )
+								
+								if( IsValid( playerToBan ) )
+								{
+									BanPlayerById( param, param3 )
+									Message( player, "Success", param + " was added to the banlist and removed from the server.", 10 )
+									
+									return true
 								}
 								
 								if ( AddBanByID( param2, param ) )
 								{					
 									Message( player, "Success", param + " was added to the banlist.", 10 )
 									return true	
-								} 
+								}
 								else 
 								{	
 									Message( player, "Failed", "Failed to add player oid: " + param + " to the banlist.", 10 )
@@ -1957,13 +1966,6 @@ void function SetDefaultIBMM( entity player )
 	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
 	player.p.IBMM_grace_period = f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
 }
-
-
-bool function empty( string str )
-{
-	return str == "";
-}
-
 
 bool function IsNum( string str ) 
 {

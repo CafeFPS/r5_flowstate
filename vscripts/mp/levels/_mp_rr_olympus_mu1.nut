@@ -421,7 +421,7 @@ array<entity> function Flowstate_GenerateWarpBasePathForTrigger( entity ent )
 	
 	for( int i = maxIter; i >= 0; i-- )
 	{
-		if( node[i].GetClassName() != "info_target" )
+		if( nodes[i].GetClassName() != "info_target" )
 		{
 			nodes.remove( i )
 		}

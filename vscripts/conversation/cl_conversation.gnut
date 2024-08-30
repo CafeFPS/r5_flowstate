@@ -1247,7 +1247,7 @@ table function GetAliases( entity guy, dialogue, radioDelayOverride = null )
 
 void function VerifyConversationAliases()
 {
-	if ( !GetDeveloperLevel() )
+	if ( !GetDeveloperLevel() ) 
 		return
 
 	table e
