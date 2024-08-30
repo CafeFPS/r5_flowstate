@@ -92,6 +92,7 @@ void function WorldDrawAsset_Init()
 	#endif
 	
 	#if SERVER
+		RegisterSignal( "BannersValidated" )
 		AddClientCommandCallback( "VideoFinishedPlaying", ClientCallback_VideoPlaybackFinished )
 		WorldDrawAsset_TransmitDesiredAssets()
 	#endif

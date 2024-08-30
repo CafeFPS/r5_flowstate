@@ -42,7 +42,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 {
 	#if SERVER 
 		AddClientCommandCallback( "assetIntegrityCheck", ClientCommand_AssetIntegrityCheck )
-	#endif 
+	#endif
 	
 	#if CLIENT 
 		if( file.bShouldWaitForRpak )
@@ -93,24 +93,28 @@ void function WorldDrawAsset_RegisterAllAssets()
 			
 			continue
 		}
-			
-		#if CLIENT 
-			if( invalidAssets.len() != 0 )
-			{
+		
+		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
+	}
+	
+	#if CLIENT 
+		thread
+		(
+			void function() : ( invalidAssets )
+			{	
 				string cmd
 				foreach( inv in invalidAssets )
 					cmd += " " + string( inv )
 					
+				FlagWait( "EntitiesDidLoad" )
 				entity player = GetLocalClientPlayer()
 				if( !IsValid( player ) )
 					return 
 					
 				player.ClientCommand( "assetIntegrityCheck" + cmd )
 			}
-		#endif
-		
-		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
-	}
+		)()
+	#endif
 }
 
 #if CLIENT
@@ -195,11 +199,18 @@ void function WorldDrawAsset_RegisterAllAssets()
 	
 	bool function ClientCommand_AssetIntegrityCheck( entity player, array<string> args )
 	{
+		Warning( "check itttttttttttttttttttttttttttttttt" )
 		if( !IsValid( player ) )
 			return false
 			
+		string signal = "BannersValidated"
+		
 		if( args.len() < 1 )
-			return false
+		{
+			player.p.bannersValidated = true
+			player.Signal( signal )
+			return true
+		}
 			
 		array<int> invalidAssets
 		foreach( arg in args )
@@ -210,10 +221,10 @@ void function WorldDrawAsset_RegisterAllAssets()
 			invalidAssets.append( int( arg ) )
 		}
 		
-		if( invalidAssets.len() == 0 )
-			return true
-			
-		player.p.invalidAssets = invalidAssets
+		player.p.invalidAssets.extend( invalidAssets )
+		player.p.bannersValidated = true
+		
+		player.Signal( signal )
 		return true
 	}
 #endif

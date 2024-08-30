@@ -497,8 +497,12 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		#endif 
 	}
 	
+	EndSignal( player, "OnDestroy" )
 	EndSignal( file.dummyEnt, "KillAllBannerGroups" )
-
+	
+	if( !player.p.bannersValidated )
+		player.WaitSignal( "BannersValidated" )
+		
 	for( int i = banners.len() - 1; i >= 0; i-- )
 	{
 		if( player.p.invalidAssets.contains( banners[ i ].id ) )
