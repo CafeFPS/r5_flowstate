@@ -408,7 +408,7 @@ void function __SetupThreads()
 	{		
 		#if DEVELOPER && DEBUG_BANNER_ASSET
 			Warning( "Spawning banner group: " + name )
-		#endif 
+		#endif
 		
 		AddCallback_OnClientConnected
 		(
@@ -444,6 +444,7 @@ void function BannerAssets_SyncAllPlayers( int assetRefId = -1, bool bLocked = f
 			{
 				foreach( string name, BannerGroupData data in file.groupDataMap )
 				{	
+					data = clone data
 					data.syncToAsset = assetRefId 
 					data.bLocked	 = bLocked
 					
@@ -539,6 +540,27 @@ void function SetRUIID( entity player, int groupId, int assetType, int RUIID )
 	player.p.groupTypeToRuiID[ groupId ][ assetType ] = RUIID
 }
 
+array<BannerImageData> function DeepCopyBanner( array<BannerImageData> banners )
+{
+	array<BannerImageData> returnBanners = []
+	
+	foreach ( BannerImageData banner in banners )
+	{
+		BannerImageData bannerClone
+		
+		bannerClone.id = banner.id
+		bannerClone.assetType = banner.assetType
+		bannerClone.assetName = banner.assetName
+		bannerClone.assetResourceRef = banner.assetResourceRef
+		bannerClone.loopVideo = banner.loopVideo
+		bannerClone.isValid = banner.isValid
+
+		returnBanners.append( bannerClone )
+	}
+
+    return returnBanners
+}
+
 void function __Singlethread( entity player, BannerGroupData groupData )
 {
 	//FlagWait( "EntitiesDidLoad" )
@@ -547,7 +569,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		mAssert( IsNewThread(), "Must be threaded off." )
 	#endif
 	
-	array<BannerImageData> banners = groupData.groupBanners
+	array<BannerImageData> banners = DeepCopyBanner( groupData.groupBanners )
 	
 	if( banners.len() == 0 )
 	{

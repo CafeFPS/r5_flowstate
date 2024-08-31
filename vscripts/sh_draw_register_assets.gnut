@@ -29,8 +29,9 @@ struct
 		"rui/world/flowstate1v1_rdiffs",
 		"rui/world/flowstate1v1_banner03",
 		"rui/world/karma_banner_01",
-		"balls.bik"
-		//"media/karma-r5r-video.bik",
+		"rui/balls_image",
+		"balls.bik",
+		"media/karma-r5r-video.bik",
 	]
 	
 	#if SERVER 

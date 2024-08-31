@@ -3202,13 +3202,13 @@ void function BannerImages_1v1Init()
 	(
 		void function()
 		{
-			// BannerAssets_GroupAppendAsset
-			// (
-				// "main_banner",
-				// WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
-				// false,
-				// "A cool karma banner"
-			// )
+			BannerAssets_GroupAppendAsset
+			(
+				"main_banner",
+				WorldDrawAsset_AssetRefToID( "media/karma-r5r-video.bik" ),
+				false,
+				"A cool karma banner"
+			)
 			
 			BannerAssets_GroupAppendAsset
 			(
@@ -3245,6 +3245,12 @@ void function BannerImages_1v1Init()
 			(
 				"test_banner",
 				WorldDrawAsset_AssetRefToID( "media/respawn.bik" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"test_banner",
+				WorldDrawAsset_AssetRefToID( "rui/balls_image" )
 			)
 			
 			BannerAssets_GroupAppendAsset
