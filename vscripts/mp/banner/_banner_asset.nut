@@ -45,7 +45,6 @@ struct BannerGroupData
 {
 	string groupName
 	array<BannerImageData> groupBanners
-	table<int, int> typeToRuiID
 	vector org 
 	vector ang
 	int groupId			= -1
@@ -127,7 +126,7 @@ void function BannerAssets_Init()
 			__SetupChannels()
 		}
 			
-		__RunThreads()
+		__SetupThreads()
 	}
 	
 	_bBannerImages_Loaded = true
@@ -402,7 +401,8 @@ void function BannerAssets_ModifyGroupData( string groupName, table tbl )
 	}
 }
 
-void function __RunThreads()
+
+void function __SetupThreads()
 {
 	foreach( string name, BannerGroupData data in file.groupDataMap )
 	{		
@@ -477,7 +477,7 @@ void function __HideAllBanners( entity player, BannerGroupData groupData )
 		WorldDrawAsset_SetVisible
 		(
 			player,
-			groupData.typeToRuiID[ banner.assetType ],
+			GetRUIID( player, groupData.groupId, banner.assetType ),
 			groupData.groupId,
 			false,
 			false, 
@@ -490,8 +490,59 @@ void function __HideAllBanners( entity player, BannerGroupData groupData )
 }
 
 
+table<int,int> function CreateAssetTbl()
+{
+	table< int, int > tbl = {}
+	
+	foreach( keyName, value in eAssetType )
+	{
+		tbl[ value ] <- -1
+	}
+	
+	return tbl
+}
+
+void function SetGroupData( entity player, int groupId, table<int,int> groupData )
+{
+	player.p.groupTypeToRuiID[ groupId ] <- groupData
+}
+
+bool function GroupDataHasRuiSet( table<int, int> tbl )
+{
+	foreach( k,v in tbl )
+	{
+		if( v != -1 )
+			return true
+	}
+	
+	return false
+}
+
+table<int, int> function GetGroupData( entity player, int groupId )
+{
+	if( !( groupId in player.p.groupTypeToRuiID) )
+	{
+		table<int,int> tbl = CreateAssetTbl()
+		player.p.groupTypeToRuiID[ groupId ] <- tbl
+	}
+		
+	return player.p.groupTypeToRuiID[ groupId ]
+}
+
+int function GetRUIID( entity player, int groupId, int assetType )
+{
+	return player.p.groupTypeToRuiID[ groupId ][ assetType ]
+}
+
+void function SetRUIID( entity player, int groupId, int assetType, int RUIID )
+{
+	player.p.groupTypeToRuiID[ groupId ][ assetType ] = RUIID
+}
+
 void function __Singlethread( entity player, BannerGroupData groupData )
 {
+	//FlagWait( "EntitiesDidLoad" )
+	
 	#if DEVELOPER
 		mAssert( IsNewThread(), "Must be threaded off." )
 	#endif
@@ -527,13 +578,13 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	BannerImageData baseBannerImage
 	BannerImageData baseBannerVideo
 	
-	//table<int,int> typeToRuiID = groupData.typeToRuiID
-	bool bFirstRun = !groupData.typeToRuiID.len()
+	bool bFirstRun = !GroupDataHasRuiSet( GetGroupData( player, groupData.groupId ) )
 	int clientRUIID = -1
 	bool bDontSync
 	int iter
 	
-	///////////////
+	WaitEndFrame()
+	//////////////
 	//	CREATE 	//
 	//////////////
 	if( bFirstRun )
@@ -542,8 +593,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 			printw( "setting group first run for group ", groupData.groupId )
 		#endif 
 		
-		groupData.typeToRuiID[ eAssetType.IMAGE ] <- -1 
-		groupData.typeToRuiID[ eAssetType.VIDEO ] <- -1 
+		GetGroupData( player, groupData.groupId )[ eAssetType.IMAGE ] <- -1 
+		GetGroupData( player, groupData.groupId )[ eAssetType.VIDEO ] <- -1 
 		
 		bool bFoundImage = false
 		bool bFoundVideo = false
@@ -604,7 +655,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				groupData.isVisible
 			)
 			
-			groupData.typeToRuiID[ eAssetType.IMAGE ] = clientRUIID
+			GetGroupData( player, groupData.groupId )[ eAssetType.IMAGE ] = clientRUIID
 			
 			WorldDrawAsset_SetVisible
 			(
@@ -640,7 +691,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 			#endif
 		}
 		
-		WaitFrame() //always wait a frame before creating another rui on the client.
+		WaitFrame() //always wait before creating another rui on the client.
 		///////////
 		// VIDEO //
 		///////////
@@ -660,7 +711,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				groupData.isVisible	
 			)
 			
-			groupData.typeToRuiID[ eAssetType.VIDEO ] = clientRUIID
+			GetGroupData( player, groupData.groupId )[ eAssetType.VIDEO ] = clientRUIID
 			
 			WorldDrawAsset_SetVisible
 			(
@@ -713,6 +764,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 			return
 	}
 	
+	//todo: check for rui creation on client or shut down.
+	
 	////////
 	iter = -1
 	////////
@@ -760,7 +813,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				continue
 		}
 
-		clientRUIID = groupData.typeToRuiID[ banner.assetType ]
+		clientRUIID = GetRUIID( player, groupData.groupId, banner.assetType )
 		//set the server managed ruiid instance to use based on type.
 		#if DEVELOPER && DEBUG_BANNER_ASSET
 			printw( "setting next asset '" + banner.assetName + "' as type:", banner.assetType, "in group:", groupData.groupName, "RUIID = ", clientRUIID )

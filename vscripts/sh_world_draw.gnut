@@ -217,14 +217,14 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 
 	int function __GenerateUniqueWorldRuiID()
 	{
-		return file.uniqueWorldRuiID++;
+		return ++file.uniqueWorldRuiID;
 	}
 
 	int function WorldDrawAsset_CreateOnClient( entity player, string varAssetRef, vector origin, vector angles, float width, float height, int groupId, int remoteAssetRefID = -1, float alpha = -1.0, bool visible = true, float duration = -1.0 )
 	{
 		bool bHasRefID = remoteAssetRefID > -1
 		
-		if( empty( varAssetRef ) && !bHasRefID )
+		if( !bHasRefID && empty( varAssetRef ) )
 			return -1
 			
 		int RUIID = __GenerateUniqueWorldRuiID()
@@ -525,7 +525,6 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		else 
 		{
 			varAsset = __FetchWorldAssetFromRef( remoteAssetRefID )
-			//id = id != -1 ? remoteAssetRefID : id  //set to server managed id's unless calling predefined 0-99
 		}
 		
 		setduration = duration != -1.0 ? duration : null 

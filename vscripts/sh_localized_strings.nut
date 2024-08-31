@@ -29,13 +29,12 @@ global function StringReplaceLimited
 
 #if DEVELOPER 
 	global function DEV_GenerateTable
-	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
 	global function DEV_Print_eMsgUI
 	#if CLIENT || SERVER
-		global function DEV_printLocalizationTable
+		global function DEV_PrintLocalizationTable
 	#endif
 	#if CLIENT 
-		global function DEV_printLocalizedTokenByID
+		global function DEV_PrintLocalizedTokenByID
 	#endif 
 #endif
 
@@ -295,7 +294,7 @@ const array<int> longUiTypes =
 void function INIT_Flowstate_Localization_Strings()
 {	
 	#if DEVELOPER
-		printt("Initializing all localization tokens")
+		printt( "Initializing all localization tokens" )
 	#endif
 	
 	int iTokensCount = file.allTokens.len()
@@ -318,7 +317,7 @@ void function INIT_Flowstate_Localization_Strings()
 	file.allTokens.clear()
 	
 	#if DEVELOPER && ASSERT_LOCALIZATION
-		Warning("ASSERTS ENABLED for script: " + FILE_NAME() )
+		Warning( "ASSERTS ENABLED for script: " + FILE_NAME() )
 	#endif
 }
 
@@ -1244,21 +1243,8 @@ void function ParseFSTokens( string path )
 */
 }
 
-int function DEV_getTokenIdFromRef( string ref ) //deprecated
-{
-	foreach ( key, value in file.FS_LocalizedStrings )
-	{
-		if ( ref == value )
-		{
-			return key
-		}
-	}
-	
-	return -1
-}
-
 #if CLIENT || SERVER
-void function DEV_printLocalizationTable()
+void function DEV_PrintLocalizationTable()
 {
 	
 	#if CLIENT 
@@ -1272,7 +1258,7 @@ void function DEV_printLocalizationTable()
 			string vFormat = StringReplaceLimited( Localize(value), "\n", "\\n", 100 )
 			string kFormat = StringReplaceLimited( value, "#", "", 1 )
 			int kOffset = 30 - kFormat.len()
-			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n";				
+			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n"				
 		#endif //CLIENT
 			
 		#if SERVER 
@@ -1289,7 +1275,7 @@ void function DEV_printLocalizationTable()
 #endif //CLIENT || SERVER
 
 	#if CLIENT 
-		void function DEV_printLocalizedTokenByID( int id )
+		void function DEV_PrintLocalizedTokenByID( int id )
 		{
 			printt( Localize( Flowstate_FetchToken( id ) ) )
 		}

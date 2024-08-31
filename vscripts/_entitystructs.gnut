@@ -822,6 +822,8 @@ global struct ServerPlayerStruct
 	bool ClientCommandsEnabled 	= true
 	array<int> invalidAssets	= []
 	bool bannersValidated		= false
+	table< table<int, int> > groupTypeToRuiID = {}
+	
 	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks
