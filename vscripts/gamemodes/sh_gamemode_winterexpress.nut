@@ -171,11 +171,6 @@ const asset RESPAWN_BEACON_MOBILE_MODEL = $"mdl/props/pathfinder_beacon_radar/pa
 const float  HOLIDAY_HOVERTANK_ALT_CHECK 	= 0
 
 struct {
-	//settings
-	int           scoreLimit
-	int           roundLimit
-	bool		openFlowstateWeaponsOnRespawn
-
 	entity        trainRef
 	array<entity> trainTriggers
 
@@ -273,12 +268,30 @@ struct {
 	#endif
 } file
 
+struct {
+	int			scoreLimit
+	int			roundLimit
+	bool		openFlowstateWeaponsOnRespawn
+	bool 		infinite_heal_items
+	float		winter_express_round_time
+	bool		winter_express_store_ultimate_charge
+	float		winter_express_cap_unlock_delay
+	float		winter_express_respawn_skydive_height
+	float		winter_express_overtime_limit
+	float		winter_express_cap_time
+
+	bool		winter_express_hovertank_spawn
+	bool		winter_express_skydive_spawn
+
+	bool		winter_express_wave_respawn
+	float		winter_express_wave_respawn_interval
+
+	bool		winter_express_round_based_respawn
+	bool		winter_express_show_player_cards
+} settings
+
 void function WinterExpress_Init()
 {
-	file.scoreLimit = GetCurrentPlaylistVarInt( "winter_express_score_limit", 3 )
-	file.roundLimit = GetCurrentPlaylistVarInt( "winter_express_round_limit", 30 )
-	file.openFlowstateWeaponsOnRespawn = GetCurrentPlaylistVarBool( "winter_express_open_weapons_buy_menu", true )
-
 	#if SERVER
 		//Cafe was here
 		SurvivalShip_Init()
@@ -326,7 +339,7 @@ void function WinterExpress_Init()
 		// {
 			// AddCallback_LoadoutSelection_OnLoadoutUpdated( WinterExpress_OnLoadoutUpdated )
 			// AddCallback_LoadoutSelection_OnLoadoutSelected( WinterExpress_OnLoadoutSelected )
-			// AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
+			AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
 		// }
 
 		RegisterSignal( "WinterExpress_ObjectiveCaptureCancelled" )
@@ -343,7 +356,7 @@ void function WinterExpress_Init()
 		FlagInit( "FirstPlayerDied" )
 		FlagInit( "WinterExpress_ObjectiveActive" )
 
-		if ( GetCurrentPlaylistVarBool( "winter_express_store_ultimate_charge", false ) )
+		if ( settings.winter_express_store_ultimate_charge )
 		{
 			file.shouldStoreUltimateCharge = true
 			// AddCallback_OnPlayerKilled( StoreUltimateChargeForPlayer )
@@ -382,7 +395,7 @@ void function WinterExpress_Init()
 		Cl_SquadDisplay_Init()
 		ShApexScreens_Init()
 
-		if( file.scoreLimit == 3 )
+		if( settings.scoreLimit == 3 )
 			Obituary_SetHorizontalOffset( 40 )
 
 		AddClientCallback_OnResolutionChanged( FS_ReloadScoreHUD )
@@ -412,6 +425,25 @@ void function WinterExpress_Init()
 		FlagInit( "WinterExpress_ObjectiveOwnerUpdated", false )
 		AddCallback_OnClientScriptInit( FS_WinterExpress_OnClientScriptInit )
 	#endif
+
+	//Init Playlist Settings
+	settings.scoreLimit = GetCurrentPlaylistVarInt( "winter_express_score_limit", 3 )
+	settings.roundLimit = GetCurrentPlaylistVarInt( "winter_express_round_limit", 30 )
+	settings.openFlowstateWeaponsOnRespawn = GetCurrentPlaylistVarBool( "winter_express_open_weapons_buy_menu", true )
+	settings.infinite_heal_items = GetCurrentPlaylistVarBool( "infinite_heal_items", true )
+	settings.winter_express_round_time = GetCurrentPlaylistVarFloat( "winter_express_round_time", 180.0 )
+	settings.winter_express_store_ultimate_charge = GetCurrentPlaylistVarBool( "winter_express_store_ultimate_charge", false )
+	settings.winter_express_cap_unlock_delay = GetCurrentPlaylistVarFloat( "winter_express_cap_unlock_delay", 7.0 )
+	settings.winter_express_respawn_skydive_height = GetCurrentPlaylistVarFloat( "winter_express_respawn_skydive_height", 11000.0 )
+	settings.winter_express_overtime_limit = GetCurrentPlaylistVarFloat( "winter_express_overtime_limit", 15.0 )
+	settings.winter_express_cap_time = GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10.0 )
+	settings.winter_express_hovertank_spawn = GetCurrentPlaylistVarBool( "winter_express_hovertank_spawn", true )
+	settings.winter_express_skydive_spawn = GetCurrentPlaylistVarBool( "winter_express_skydive_spawn", false )
+	settings.winter_express_wave_respawn = GetCurrentPlaylistVarBool( "winter_express_wave_respawn", false )
+	settings.winter_express_wave_respawn_interval = GetCurrentPlaylistVarFloat( "winter_express_wave_respawn_interval", 10.0 )
+	settings.winter_express_round_based_respawn = GetCurrentPlaylistVarBool( "winter_express_round_based_respawn", true )
+	//Flowstate custom
+	settings.winter_express_show_player_cards = GetCurrentPlaylistVarBool( "winter_express_show_player_cards", true )
 
 	WinterExpress_RegisterNetworking()
 }
@@ -516,12 +548,12 @@ void function OnEntitiesDidLoad()
 
 	DesertlandsTrain_SetMaxSpeed( WINTER_EXPRESS_TRAIN_MAX_SPEED )
 	DesertlandsTrain_SetAcceleration( WINTER_EXPRESS_TRAIN_ACCELERATION )
-	DesertlandsTrain_SetWaitDuration( GetCurrentPlaylistVarFloat( "winter_express_round_time", 180 ) + GetCurrentPlaylistVarFloat( "winter_express_cap_unlock_delay", 7 ) )
+	DesertlandsTrain_SetWaitDuration( settings.winter_express_round_time + settings.winter_express_cap_unlock_delay )
 	DesertlandsTrain_SetAboutToLeaveBuffer( 0 )
 	DesertlandsTrain_SetAdditionalLeaveBuffer( WINTER_EXPRESS_LEAVE_BUFFER )
 
 	vector spawnPos     = SURVIVAL_GetDeathFieldCenter()
-	float skydiveHeight = GetCurrentPlaylistVarFloat( "winter_express_respawn_skydive_height", 11000.0 )
+	float skydiveHeight = settings.winter_express_respawn_skydive_height
 	spawnPos += <0, 0, skydiveHeight>
 
 	entity spawnEntity = CreatePropDynamicLightweight( RESPAWN_BEACON_MOBILE_MODEL, spawnPos )
@@ -559,7 +591,7 @@ void function TurnOffArenaWalls( entity wall )
 #if CLIENT
 void function OnPlayerLoadoutChanged( EHI playerEHI, ItemFlavor flavour )
 {
-	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+	if( settings.winter_express_show_player_cards )
 		FS_Scenarios_SetupPlayersCards()
 }
 
@@ -644,14 +676,14 @@ void function OnEntitiesDidLoad_Client()
 
 void function FinishGamestateRui()
 {
-	// RuiSetFloat( ClGameState_GetRui(), "overtimeTimeLimit", GetCurrentPlaylistVarFloat( "winter_express_overtime_limit", 15 ) )
-	// RuiSetFloat( ClGameState_GetRui(), "captureTimeRequired", GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 ) )
+	// RuiSetFloat( ClGameState_GetRui(), "overtimeTimeLimit", settings.winter_express_overtime_limit )
+	// RuiSetFloat( ClGameState_GetRui(), "captureTimeRequired", settings.winter_express_cap_time )
 	// RuiSetFloat( ClGameState_GetRui(), "trainTravelTime", 10.0 )
 
 	// RuiTrackInt( ClGameState_GetRui(), "roundState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "WinterExpress_RoundState" ) )
 	// RuiTrackInt( ClGameState_GetRui(), "roundCounter", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "WinterExpress_RoundCounter" ) )
 	// RuiTrackFloat( ClGameState_GetRui(), "unlockEndTime", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL, GetNetworkedVariableIndex( "WinterExpress_UnlockDelayEndTime" ) )
-	// RuiSetInt( ClGameState_GetRui(), "roundLimit", file.roundLimit )
+	// RuiSetInt( ClGameState_GetRui(), "roundLimit", settings.roundLimit )
 }
 
 void function OnServerVarChanged_ConnectedPlayers( entity player, int old, int new, bool actuallyChanged )
@@ -997,7 +1029,7 @@ void function UpdateObjectiveStateForTeam( int newState, int team )
 	if ( currentState == eWinterExpressObjectiveState.CONTROLLED && newState != eWinterExpressObjectiveState.CONTROLLED )
 	{
 		file.cachedObjectiveOwner = GetGlobalNetInt( "WinterExpress_ObjectiveOwner" )
-		float capTime            = GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 )
+		float capTime            = settings.winter_express_cap_time
 		float timeLeftToCapture  = GetGlobalNetTime( "WinterExpress_CaptureEndTime" ) - Time()
 		float percentageCaptured = (capTime - timeLeftToCapture) / capTime
 		file.cachedObjectivePercent = percentageCaptured
@@ -1023,7 +1055,7 @@ void function UpdateObjectiveStateForTeam( int newState, int team )
 	if ( currentState == eWinterExpressObjectiveState.CONTESTED && newState == eWinterExpressObjectiveState.CONTROLLED )
 	{
 		if ( team == file.cachedObjectiveOwner )
-			seekTime = GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 ) * file.cachedObjectivePercent
+			seekTime = settings.winter_express_cap_time * file.cachedObjectivePercent
 	}
 
 	seekTime = Clamp( seekTime, 0.0, 10.0 )
@@ -1306,7 +1338,7 @@ void function OnPlayerKilled_GameState( entity victim, entity attacker, var atta
 
 	}
 	
-	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+	if( settings.winter_express_show_player_cards )
 		foreach ( player in GetConnectedPlayers() )
 			Remote_CallFunction_Replay( player, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
 	
@@ -1424,7 +1456,7 @@ void function TrainArrivedAtStation_Internal()
 	else
 		thread PlayCommentaryLineWithMirageResponseIfOnSquad( PickCommentaryLineFromBucket_WinterExpressCustom( eSurvivalCommentaryBucket.TRAIN_STOP ) )
 
-	float unlockDelay = GetCurrentPlaylistVarFloat( "winter_express_cap_unlock_delay", 7 )
+	float unlockDelay = settings.winter_express_cap_unlock_delay
 	if(!file.hasReachedFirstStation)
 	{
 		file.hasReachedFirstStation = true
@@ -1451,7 +1483,7 @@ void function TrainArrivedAtStation_Internal()
 		return
 	}
 
-	float roundEndTime = Time() + GetCurrentPlaylistVarFloat( "winter_express_round_time", 180 )
+	float roundEndTime = Time() + settings.winter_express_round_time
 	SetGlobalNetTime( "WinterExpress_RoundEnd", roundEndTime )
 	SetGlobalNetBool( "WinterExpress_IsOvertime", false )
 
@@ -1573,7 +1605,7 @@ void function ProcessControlledObjective( int team )
 	float capPercentage = 0
 	if ( team == file.cachedObjectiveOwner )
 		capPercentage = file.cachedObjectivePercent
-	float waitTime = GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 ) * (1 - capPercentage)
+	float waitTime = settings.winter_express_cap_time * (1 - capPercentage)
 
 	printf( "WINTER EXPRESS: Cap wait time: " + waitTime + " with cached cap percentage " + capPercentage + " and cached objective owner " + file.cachedObjectiveOwner )
 
@@ -1614,7 +1646,7 @@ void function ProcessRound()
 		}
 	)
 
-	wait GetCurrentPlaylistVarFloat( "winter_express_round_time", 180 )
+	wait settings.winter_express_round_time
 
 	if ( GetGlobalNetInt( "WinterExpress_ObjectiveState" ) != eWinterExpressObjectiveState.UNCONTROLLED )
 	{
@@ -1641,7 +1673,7 @@ void function ProcessOvertime()
 
 	thread PlayCommentaryLineToAllPlayers( PickCommentaryLineFromBucket_WinterExpressCustom( eSurvivalCommentaryBucket.TIME_ALMOST_EXPIRED ) )
 
-	wait GetCurrentPlaylistVarFloat( "winter_express_overtime_limit", 15 )
+	wait settings.winter_express_overtime_limit
 
 	thread TryDetermineRoundWinner( TEAM_INVALID, eWinterExpressRoundEndCondition.OVERTIME_EXPIRED )
 }
@@ -1704,7 +1736,7 @@ void function TryDetermineRoundWinner( int team, int endCondition )
 		file.objectiveScore[team] <- 1
  
 	//updating match point state
-	if ( team in file.objectiveScore && file.objectiveScore[team] == file.scoreLimit - 1 )
+	if ( team in file.objectiveScore && file.objectiveScore[team] == settings.scoreLimit - 1 )
 		file.isTeamOnMatchPoint[team] <- true
 
 	if ( team != TEAM_INVALID && (endCondition == eWinterExpressRoundEndCondition.OBJECTIVE_CAPTURED || endCondition == eWinterExpressRoundEndCondition.LAST_SQUAD_ALIVE  ) )
@@ -1775,7 +1807,7 @@ bool function TryDetermineMatchWinner()
 			continue
 
 		//check for score limit end condition
-		if ( score >= file.scoreLimit && team != -1 )
+		if ( score >= settings.scoreLimit && team != -1 )
 		{
 			scoreLimitReached = true
 		}
@@ -1789,7 +1821,7 @@ bool function TryDetermineMatchWinner()
 		}
 	}
 
-	if ( GetGlobalNetInt( "WinterExpress_RoundCounter" ) >= file.roundLimit )
+	if ( GetGlobalNetInt( "WinterExpress_RoundCounter" ) >= settings.roundLimit )
 		roundLimitReached = true
 
 	// check for game end conditions
@@ -1832,9 +1864,9 @@ bool function TryDetermineMatchWinner()
 	{
 		//making sure invalid team wins in a game draw
 		if ( TEAM_INVALID in file.objectiveScore )
-			file.objectiveScore[TEAM_INVALID] = file.scoreLimit + 1
+			file.objectiveScore[TEAM_INVALID] = settings.scoreLimit + 1
 		else
-			file.objectiveScore[TEAM_INVALID] <- file.scoreLimit + 1
+			file.objectiveScore[TEAM_INVALID] <- settings.scoreLimit + 1
 
 		// SetWinner( TEAM_UNASSIGNED, eWinReason.DEFAULT, "#GAMEMODE_ROUND_LIMIT_REACHED", "#GAMEMODE_ROUND_LIMIT_REACHED" )
 		foreach ( player in GetConnectedPlayers() )
@@ -1903,7 +1935,7 @@ int function WinterExpress_GetCurrentRank( entity player )
 	if ( GetGameState() < eGameState.WinnerDetermined )
 		return GetCurrentPlaylistVarInt( "max_teams", 4 )
 
-	if ( TEAM_INVALID in file.objectiveScore && file.objectiveScore[TEAM_INVALID] > file.scoreLimit )
+	if ( TEAM_INVALID in file.objectiveScore && file.objectiveScore[TEAM_INVALID] > settings.scoreLimit )
 		return GetCurrentPlaylistVarInt( "max_teams", 4 )
 
 	int rank    = 1//GetNumTeamsExisting()	// start last
@@ -1925,29 +1957,18 @@ int function WinterExpress_GetCurrentRank( entity player )
 // Functions for handling skydiving, death, and controlling respawning //
 /////////////////////////////////////////////////////////////////////////
 #if SERVER
-/*void function GameStartSkydive()
-{
-	Sur_SetPlaneEnt( file.skydiveSpawn )
-	Sur_SetPlaneCenterEnt( file.skydiveSpawn )
-	SetGlobalNetTime( "PlaneDoorsOpenTime", Time() + 8.0 )
-	SetGlobalNetTime( "PlaneDoorsCloseTime", Time() + 8.0 )
-	Survival_PutPlayersInPlane()
-
-	SetUsingStaticJumpPoint( true )
-	OpenAndClosePlaneDoor( file.skydiveSpawn, 8.0, 0.0 )
-}*/
-
 // Give loadouts to players that spawn on the hovertank or in the air, once they land. This avoids some weapon order issues and issues with grenades not equipping properly
-void function OnPlayerMatchStateChanged( entity player, int newValue )
+void function OnPlayerMatchStateChanged( entity player, int oldValue, int newValue )
 {
 	if ( IsValid( player ) && newValue == ePlayerMatchState.NORMAL && player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
 	{
 		// Set the WinterExpress_IsPlayerAllowedLegendChange bool here to tell us that the player has landed from the hovertank and gotten their loadout so they should not be able to change it or get it again this life
 		player.SetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange", false )
+
 		// LoadoutSelection_GivePlayerInventoryAndLoadout( player, false, true, false )
 	}
 }
-const array<string> STANDARD_INV_LOOT = [ "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large" ]
+const array<string> STANDARD_INV_LOOT = [ "health_pickup_combo_small", "health_pickup_health_small" ] //"health_pickup_combo_large", "health_pickup_health_large"
 
 void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool fromRespawning )
 {
@@ -2475,7 +2496,7 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startin
 
 	if ( !success )
 	{
-		if ( GetCurrentPlaylistVarBool( "winter_express_hovertank_spawn", true ) )
+		if ( settings.winter_express_hovertank_spawn )
 		{
 			//if last team to score wasn't able to respawn on train, put them into a skydive instead at the next station
 			if ( team == file.lastValidTeamToScore )
@@ -2488,7 +2509,7 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startin
 				WinterExpress_RespawnHoverTank( player, startingGame )
 			}
 		}
-		else if ( GetCurrentPlaylistVarBool( "winter_express_skydive_spawn", false ) )
+		else if ( settings.winter_express_skydive_spawn )
 		{
 			WinterExpress_RespawnSkydive( player )
 		}
@@ -3232,6 +3253,9 @@ bool function WinterExpress_CanSquadBeEliminated( entity player )
 #if SERVER
 void function SpawnAmmoForCurrentWeapon( entity player, var attackerDamageInfo = null )
 {
+	if( GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) )
+		return
+
 	LootThrowData throwData
 	throwData.throwAngle = 0
 	throwData.throwScale = 1
@@ -3392,12 +3416,12 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 	if ( !IsValid( player ) )
 		return
 
-	// if ( !isLegendSelectAvailable && file.OpenMenuGameplayButtonCallbackRegistered )
-	// {
-		// DeregisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
+	if ( !isLegendSelectAvailable && file.OpenMenuGameplayButtonCallbackRegistered )
+	{
+		DeregisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
 
-		// // if( CharacterSelect_MenuIsOpen() )
-			// // CloseCharacterSelectMenu()
+		// if( CharacterSelect_MenuIsOpen() )
+			CloseCharacterSelectNewMenu()
 
 		// if ( file.legendSelectMenuPromptRui != null )
 		// {
@@ -3412,12 +3436,12 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 
 		// // }
 
-		// file.OpenMenuGameplayButtonCallbackRegistered = false
-	// }
+		file.OpenMenuGameplayButtonCallbackRegistered = false
+	}
 
-	// if ( isLegendSelectAvailable && !file.OpenMenuGameplayButtonCallbackRegistered && player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
-	// {
-		// RegisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
+	if ( isLegendSelectAvailable && !file.OpenMenuGameplayButtonCallbackRegistered && player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
+	{
+		RegisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
 
 		// var rui = CreateFullscreenRui( $"ui/winter_express_change_prompt_screen.rpak", 100 )
 		// file.legendSelectMenuPromptRui = rui
@@ -3428,8 +3452,8 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 		// // }
 
 		// WinterExpress_UpdateCurrentLoadoutHUD()
-		// file.OpenMenuGameplayButtonCallbackRegistered = true
-	// }
+		file.OpenMenuGameplayButtonCallbackRegistered = true
+	}
 }
 
 
@@ -3681,7 +3705,7 @@ void function UICallback_WinterExpress_OpenCharacterSelect()
 	const bool browseMode = true
 	const bool showLockedCharacters = true
 	HideScoreboard()
-	// OpenCharacterSelectMenu( browseMode, showLockedCharacters )
+	OpenCharacterSelectNewMenu( browseMode ) //, showLockedCharacters )
 }
 
 bool function WinterExpress_ShouldShowDeathScreen()
@@ -3788,7 +3812,7 @@ void function CL_ScoreUpdate( int team, int score )
 	file.objectiveScore[uiTeam] <- score
 
 	//update match point state
-	if ( file.objectiveScore[uiTeam] == file.scoreLimit - 1 )
+	if ( file.objectiveScore[uiTeam] == settings.scoreLimit - 1 )
 		file.isTeamOnMatchPoint[uiTeam] <- true
 
 	if ( !(uiTeam in file.scoreElements) )
@@ -3871,7 +3895,7 @@ void function DisplayRoundFinished()
 	// foreach ( team, rui in file.squadOnObjectiveElements )
 		// RuiSetInt( rui, "roundState", eWinterExpressRoundState.ABOUT_TO_CHANGE_STATIONS )
 	
-	Flowstate_ShowRoundEndTimeUI( - 1)
+	Flowstate_ShowRoundEndTimeUI( -1 )
 }
 
 void function DisplayRoundChanging()
@@ -3935,7 +3959,7 @@ void function OnServerVarChanged_ObjectiveState( entity player, int old, int new
 	// if ( new == eWinterExpressObjectiveState.CONTROLLED )
 	// {
 		// RuiSetGameTime( ClGameState_GetRui(), "captureEndTime", GetGlobalNetTime( "WinterExpress_CaptureEndTime" ) )
-		// RuiSetFloat( ClGameState_GetRui(), "captureTimeRequired", GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 ) )
+		// RuiSetFloat( ClGameState_GetRui(), "captureTimeRequired", settings.winter_express_cap_time )
 	// }
 	// else
 	// {
@@ -3947,7 +3971,7 @@ void function OnServerVarChanged_ObjectiveState( entity player, int old, int new
 		// if ( new == eWinterExpressObjectiveState.CONTROLLED )
 		// {
 			// RuiSetGameTime( file.trainWaypoint.wp.ruiHud, "captureEndTime", GetGlobalNetTime( "WinterExpress_CaptureEndTime" ) )
-			// RuiSetFloat( file.trainWaypoint.wp.ruiHud, "captureTimeRequired", GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 ) )
+			// RuiSetFloat( file.trainWaypoint.wp.ruiHud, "captureTimeRequired", settings.winter_express_cap_time )
 		// }
 		// else
 		// {
@@ -4058,6 +4082,7 @@ void function ServerCallback_CL_WinnerDetermined( int team )
 	
 	FS_UpdateScoreForTeam( team, 3 )
 	FS_Scenarios_TogglePlayersCardsVisibility( false )
+	Flowstate_ShowRoundEndTimeUI( -1 )
 }
 
 
@@ -4107,19 +4132,19 @@ void function AnnouncementMessageSweepWinterExpress( entity player, string messa
 #if SERVER || CLIENT || UI
 float function GetWaveRespawnInterval()
 {
-	return GetCurrentPlaylistVarFloat( "winter_express_wave_respawn_interval", 10 )
+	return settings.winter_express_wave_respawn_interval
 }
 
 bool function IsWaveRespawn()
 {
 	// Assert ( !GetCurrentPlaylistVarBool( "winter_express_wave_respawn", false ) || (GetCurrentPlaylistVarBool( "winter_express_wave_respawn", false ) && GetWaveRespawnInterval() > 0) )
 
-	return GetCurrentPlaylistVarBool( "winter_express_wave_respawn", true )
+	return settings.winter_express_wave_respawn
 }
 
 bool function IsRoundBasedRespawn()
 {
-	return GetCurrentPlaylistVarBool( "winter_express_round_based_respawn", false )
+	return settings.winter_express_round_based_respawn
 }
 #endif //SERVER || CLIENT || UI
 
@@ -4515,6 +4540,7 @@ void function DelayedDisablePlayerWeaponsAndAbilities( entity player, bool shoul
 	player.EndSignal( "WinterExpress_LeftDropship" )
 
 	// player.DisableWeaponTypes( WPT_ALL_EXCEPT_VIEWHANDS_OR_INCAP )
+	HolsterAndDisableWeapons( player )
 
 	// Wait for skydive to finish (in the rare case we enter the hovership's airspace while in a skydive)
 	while ( PlayerMatchState_GetFor( player ) != ePlayerMatchState.NORMAL || player.p.hasDropSettings == true )
@@ -4565,7 +4591,9 @@ void function DelayedPutPlayerIntoSkydiveFromHovertank( entity player )
 				// player.EnableWeaponTypes( WPT_ALL_EXCEPT_VIEWHANDS_OR_INCAP )
 				player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				//player.DeployWeapon()
+				
 				PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_FALLING )
+				DeployAndEnableWeapons( player )
 
 				if ( GetCurrentPlaylistVarBool( "infinite_heal_items", false ) )
 					GivePassive( player, ePassives.PAS_INFINITE_HEAL )
@@ -4628,7 +4656,7 @@ void function OnServerVarChanged_CaptureEndTime( entity player, float old, float
 {
 	printt( "OnServerVarChanged_CaptureEndTime", old, new )
 
-	float capTime            = GetCurrentPlaylistVarFloat( "winter_express_cap_time", 10 )
+	float capTime            = settings.winter_express_cap_time
 	float timeLeftToCapture  = new - Time()
 	float percentageCaptured = (capTime - timeLeftToCapture) / capTime
 	float starttime = Time() - ( capTime * percentageCaptured )
@@ -4665,7 +4693,7 @@ void function FS_CaptureProgressUI( float starttime, float endtime )
 
 void function FS_ReloadScoreHUD()
 {
-	if( file.scoreLimit != 3 )
+	if( settings.scoreLimit != 3 )
 		return
 
 	if( GetGameState() != eGameState.Playing )
@@ -4684,7 +4712,7 @@ void function FS_ReloadScoreHUD()
 	if( file.enemyTeam2ScoreValue > 0 && file.currentEnemy2 != -1 && file.enemyTeam2ScoreValue <= 3 )
 		FS_UpdateScoreForTeam( file.currentEnemy2, file.enemyTeam2ScoreValue )	
 	
-	if( GetCurrentPlaylistVarBool( "winter_express_show_player_cards", false ) )
+	if( settings.winter_express_show_player_cards )
 	{
 		FS_Scenarios_InitPlayersCards()
 		FS_Scenarios_SetupPlayersCards()
@@ -4693,7 +4721,7 @@ void function FS_ReloadScoreHUD()
 
 void function FS_CreateScoreHUD()
 {
-	if( file.scoreLimit != 3 )
+	if( settings.scoreLimit != 3 )
 		return
 
 	int localteam = GetLocalClientPlayer().GetTeam()
@@ -4831,7 +4859,7 @@ void function FS_UpdateScoreForTeam( int team, int score )
 	if( team < 0 || score < 0 )
 		return
 
-	if( file.scoreLimit != 3 )
+	if( settings.scoreLimit != 3 )
 		return
 
 	string name = Localize( Squads_GetSquadName( Squads_GetArrayIndexForTeam( team ), true ) ).tolower()
@@ -4935,7 +4963,7 @@ void function CameraLerpHovertankThread( entity player, vector stationPos, vecto
 				cameraMover.Destroy()
 			}
 	
-			if( file.openFlowstateWeaponsOnRespawn )
+			if( settings.openFlowstateWeaponsOnRespawn )
 				thread function() : ( player )
 				{
 					player.EndSignal( "OnDestroy" )
@@ -5024,16 +5052,16 @@ void function CameraLerpTrainThread( entity player, vector estimatedCameraStart,
 				cameraMover.Destroy()
 			}
 
-			if( file.openFlowstateWeaponsOnRespawn )
-				thread function() : ( player )
-				{
-					player.EndSignal( "OnDestroy" )
-					player.EndSignal( "OnDeath" )
+			// if( settings.openFlowstateWeaponsOnRespawn )
+				// thread function() : ( player )
+				// {
+					// player.EndSignal( "OnDestroy" )
+					// player.EndSignal( "OnDeath" )
 		
-					wait 1
+					// wait 1
 					
-					OpenFRChallengesSettingsWpnSelector()
-				}()
+					// OpenFRChallengesSettingsWpnSelector()
+				// }()
 		}
 	)
 

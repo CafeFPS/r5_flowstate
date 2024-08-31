@@ -3154,7 +3154,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	string weapon = args[0]
 	
 	bool bIs1v1 = g_is1v1GameType() //idc, conditional.	
-	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) )
+	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) || Playlist() == ePlaylists.winterexpress && !player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
 		return true
 	
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)

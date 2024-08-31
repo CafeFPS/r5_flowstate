@@ -1137,7 +1137,7 @@ void function UpdatePlayerCounts()
 	switch(currGameMode)
 	{
 		case eGamemodes.WINTEREXPRESS:
-		array<entity> playersAlive = GetPlayerArray_Alive()
+		array<entity> playersAlive = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
 		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
 		break
