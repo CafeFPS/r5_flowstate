@@ -2907,7 +2907,9 @@ void function UpdatePlayerModel( ItemFlavor character )
 		}
 		else
 		{
-			printt( "Map doesn't have menu lights compiled in. Make sure the latest menu box instance is in the level and recompile the map." )
+			#if DEVELOPER
+				printt( "Map doesn't have menu lights compiled in. Make sure the latest menu box instance is in the level and recompile the map." )
+			#endif
 		}
 
 		SetChromaCharacter( character )
@@ -3868,7 +3870,9 @@ void function SetCharacterSelectSceneForChampionSquad()
 	}
 	else
 	{
-		printt( "Map doesn't have menu lights compiled in. Make sure the latest menu box instance is in the level and recompile the map." )
+		#if DEVELOPER
+			printt( "Map doesn't have menu lights compiled in. Make sure the latest menu box instance is in the level and recompile the map." )
+		#endif
 	}
 }
 #endif

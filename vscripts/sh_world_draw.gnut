@@ -3,18 +3,20 @@
 global function WorldDrawAsset_Init
 global function WorldDrawAsset_RegisterRemoteAsset
 
+#if SERVER || CLIENT 
+	global function WorldDrawAsset_GetAssetByID
+	global function WorldDrawAsset_GetAssetByRef
+	global function WorldDrawAsset_GetAssetType
+	global function WorldDrawAsset_GetAssetRefById
+#endif
+
 #if SERVER
 	global function WorldDrawAsset_CreateOnClient
 	global function WorldDrawAsset_DestroyOnClient
 	global function WorldDrawAsset_AssetRefToID
 	global function WorldDrawAsset_Modify
 	global function WorldDrawAsset_SetVisible
-	global function WorldDrawAsset_Timed
-	global function WorldDrawAsset_GetAssetByID
-	global function WorldDrawAsset_GetAssetByRef
-	global function WorldDrawAsset_GetAssetType
-	global function WorldDrawAsset_GetAssetRefById
-	
+	global function WorldDrawAsset_Timed	
 	global function MoveDecimal
 #endif
 
@@ -225,7 +227,6 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		if( empty( varAssetRef ) && !bHasRefID )
 			return -1
 			
-		//int RUIID = !bHasRefID ? __GenerateUniqueWorldRuiID() : remoteAssetRefID //don't allow manual assignment unless predefined, as overwriting topologies will lose the reference to destroy them on client.
 		int RUIID = __GenerateUniqueWorldRuiID()
 		
 		if( duration > -1.0 ) //timed ruis destroy and do not need a server ref.
@@ -266,6 +267,12 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 				mAssert( false, "Cannot set speed greater than 3 or less than -2" )
 			#endif 
 			
+			return
+		}
+		
+		if( RUIID < 0 )
+		{
+			mAssert( false, "RUIID cannot be invalid when requested to modify on the client. RUUID was: " + string( RUIID ) )
 			return
 		}
 		
@@ -461,18 +468,6 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 			file.worldAssetRef += format( "%c", vargv[i] )
 		}
 	}
-	
-	bool function VideoAssetExists( string ref )//todo: better method
-	{
-		// asset varAsset = GetAssetFromString( ref )
-		// if ( !IsValid( varAsset ) || varAsset == $"" )
-		// {
-			// Warning( "Video asset '" + ref + "' does not exist." )
-			// return false
-		// }
-		
-		return true
-	}
 
 	void function ServerCallback_CreateWorldAsset( vector origin, vector angles, float width, float height, int groupId, int RUIID, int remoteAssetRefID, float alpha, bool visible, float duration )
 	{
@@ -489,7 +484,7 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		bool bHasID 		= remoteAssetRefID > -1
 		string assetRef 	= file.worldAssetRef
 		
-		if( assetRef != "" && !RuiImageExists( assetRef ) && !VideoAssetExists( assetRef ) )
+		if( assetRef != "" && !RuiImageExists( assetRef ) && !VideoExists( remoteAssetRefID ) )
 		{
 			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Warning: Asset \"" + assetRef + "\" does not exist @ " + FUNC_NAME() + "()" )
@@ -1043,7 +1038,10 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		int channel = ReserveVideoChannel( cl_OnVideoFinished )	
 		file.assetToRuiChannels[ channel ] <- {}
 		
-		Warning( "assigning slot for groupId = " + groupId + " channel: " + channel )
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "assigning slot for groupId = " + groupId + " channel: " + channel )
+		#endif 
+		
 		file.groupChannels[ groupId ] <- channel
 		
 		return channel

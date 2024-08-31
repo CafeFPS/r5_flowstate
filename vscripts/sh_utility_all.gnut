@@ -2621,3 +2621,21 @@ bool function empty( string s )
 {
 	return s == ""
 }
+
+#if DEVELOPER 
+	void function DEV_SetBreakPoint()
+	{
+		if( GetConVarInt( "sv_cheats" ) != 1 )
+			return 
+			
+		#if SERVER 
+			ServerCommand( "server_single_frame" )
+		#elseif CLIENT 
+			entity player = GetLocalClientPlayer()
+			if( !IsValid( player ) )
+				throw "cannot set breakpoint from invalid player"
+				
+			player.ClientCommand( "server_single_frame" )
+		#endif
+	}
+#endif

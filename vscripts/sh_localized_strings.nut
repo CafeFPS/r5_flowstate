@@ -915,7 +915,7 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 
 void function DisplayMessage( string str1, string str2, float duration, int uiType = 0 )
 {
-	printt( str1, str2 )
+	//printt( str1, str2 )
 	
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )

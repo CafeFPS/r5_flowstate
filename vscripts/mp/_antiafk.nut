@@ -76,17 +76,17 @@ void function CheckAfkKickThread(entity player)
 		if (!bAfkToRest())
 			continue
 		
-		//another mkos mod
-		if ( Flowstate_IsFS1v1() && isPlayerInRestingList( player ) && FlowState_RestMsg() )
-		{	
-			if ( player.p.messagetime == 0 || Time() >= player.p.messagetime + 30 )
-			{	
-				Message(player, "\n\n\n\n\n\n You are Resting", LineBreak("Type 'rest' in console to exit rest or press panel button to resume 1v1s \n\n Type 'wait' in console for info about your IBMM queue times \n\n Type 'show player #' in console replacing # with player's name/id for info about that player.",50), 30, "")
-				player.p.messagetime = Time()
-			}
+		//another mkos mod -- removed as it's tacky and expensive.
+		// if ( Flowstate_IsFS1v1() && isPlayerInRestingList( player ) && FlowState_RestMsg() )
+		// {	
+			// if ( player.p.messagetime == 0 || Time() >= player.p.messagetime + 30 )
+			// {	
+				// Message(player, "\n\n\n\n\n\n You are Resting", LineBreak("Type 'rest' in console to exit rest or press panel button to resume 1v1s \n\n Type 'wait' in console for info about your IBMM queue times \n\n Type 'show player #' in console replacing # with player's name/id for info about that player.",50), 30, "")
+				// player.p.messagetime = Time()
+			// }
 			
-			continue
-		}
+			// continue
+		// }
 		
 		switch ( GetAfkState( player ) )
 		{	

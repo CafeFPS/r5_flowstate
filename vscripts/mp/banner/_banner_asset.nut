@@ -100,28 +100,28 @@ void function BannerAssets_Init()
 					groups.append( bannerGroup.groupId )
 			}
 			
-			foreach( group in groups )
+			foreach( groupId in groups )
 			{
-				string signal = "VideoFinishedPlaying_" + group
+				string signal = "VideoFinishedPlaying_" + groupId
 				RegisterSignal( signal )
 				file.groupSignals[ signal ] <- true
 			}
 			
-			array<int> invalidAssets = WorldDrawAsset_GetInvalid()
-			foreach( string groupName, BannerGroupData bannerData in file.groupDataMap )
-			{
-				foreach( banner in bannerData.groupBanners )
-				{
-					if( invalidAssets.contains( banner.id ) )
-					{
-						banner.isValid = false
+			// array<int> invalidAssets = WorldDrawAsset_GetInvalid()
+			// foreach( string groupName, BannerGroupData bannerData in file.groupDataMap )
+			// {
+				// foreach( banner in bannerData.groupBanners )
+				// {
+					// if( invalidAssets.contains( banner.id ) )
+					// {
+						// banner.isValid = false
 						
-						#if DEVELOPER && DEBUG_BANNER_ASSET
-							printw( "Asset ID:", banner.id, "for group", bannerData.groupId, "ref = ", banner.assetName, "was marked as invalid." )
-						#endif
-					}
-				}
-			}
+						// #if DEVELOPER && DEBUG_BANNER_ASSET
+							// printw( "Asset ID:", banner.id, "for group", bannerData.groupId, "ref = ", banner.assetName, "was marked as invalid." )
+						// #endif
+					// }
+				// }
+			// }
 			
 			file.__channelRequiredGroups = groups
 			__SetupChannels()
@@ -236,7 +236,6 @@ void function BannerAssets_GroupAppendAsset( string groupName, int assetIdRef, b
 	if ( !empty( assetResourceRef ) )
 	{
 		assetType = WorldDrawAsset_GetAssetType( potentialAsset, assetResourceRef )
-		//potentialAsset = getasset from cast?
 	}
 	else 
 	{
@@ -461,7 +460,7 @@ void function BannerAssets_SyncAllPlayers( int assetRefId = -1, bool bLocked = f
 	)()
 }
 
-void function __HideAllBanners( entity player, BannerGroupData groupData, table<int,int> typeToRuiID )
+void function __HideAllBanners( entity player, BannerGroupData groupData )
 {
 	if( !IsValid( player ) ) //player might have disconnected
 		return
@@ -478,13 +477,13 @@ void function __HideAllBanners( entity player, BannerGroupData groupData, table<
 		WorldDrawAsset_SetVisible
 		(
 			player,
-			typeToRuiID[ banner.assetType ], 
+			groupData.typeToRuiID[ banner.assetType ],
 			groupData.groupId,
 			false,
 			false, 
 			false, 
 			banners[ iter ].id,
-			-1,
+			0,
 			false
 		)
 	}
@@ -528,8 +527,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	BannerImageData baseBannerImage
 	BannerImageData baseBannerVideo
 	
-	table<int,int> typeToRuiID = clone groupData.typeToRuiID
-	bool bFirstRun = typeToRuiID.len() == 0
+	//table<int,int> typeToRuiID = groupData.typeToRuiID
+	bool bFirstRun = !groupData.typeToRuiID.len()
 	int clientRUIID = -1
 	bool bDontSync
 	int iter
@@ -539,8 +538,12 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	//////////////
 	if( bFirstRun )
 	{
-		typeToRuiID[ eAssetType.IMAGE ] <- -1 
-		typeToRuiID[ eAssetType.VIDEO ] <- -1 
+		#if DEVELOPER && DEBUG_BANNER_ASSET
+			printw( "setting group first run for group ", groupData.groupId )
+		#endif 
+		
+		groupData.typeToRuiID[ eAssetType.IMAGE ] <- -1 
+		groupData.typeToRuiID[ eAssetType.VIDEO ] <- -1 
 		
 		bool bFoundImage = false
 		bool bFoundVideo = false
@@ -555,19 +558,27 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				
 					if( bFoundImage )
 						break
-						
+					
+					#if DEVELOPER && DEBUG_BANNER_ASSET
+						printw( "found base bannerIMAGE in group", groupData.groupId, "for banner id", banners[ iter ].id  )
+					#endif 
+				
 					baseBannerImage = banners[ iter ]
 					bFoundImage = true
 					break 
 					
 				case eAssetType.VIDEO:
 				
-					if( bFoundImage )
+					if( bFoundVideo )
 						break
 						
+					#if DEVELOPER && DEBUG_BANNER_ASSET
+						printw( "found base bannerVIDEO in group", groupData.groupId, "for banner id", banners[ iter ].id  )
+					#endif
+					
 					baseBannerVideo = banners[ iter ]
 					bFoundVideo = true
-					break 
+					break
 			}
 			
 			iter++
@@ -593,7 +604,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				groupData.isVisible
 			)
 			
-			typeToRuiID[ eAssetType.IMAGE ] = clientRUIID
+			groupData.typeToRuiID[ eAssetType.IMAGE ] = clientRUIID
 			
 			WorldDrawAsset_SetVisible
 			(
@@ -613,7 +624,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 			
 			#if DEVELOPER && DEBUG_BANNER_ASSET
 				printt
-				( 
+				(
 					"clientRUIID", clientRUIID, "\n",
 					"player", player, "\n",
 					"baseBannerImage.assetResourceRef", baseBannerImage.assetResourceRef, "\n",
@@ -623,7 +634,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					"groupData.height", groupData.height, "\n",
 					"baseBannerImage.id", baseBannerImage.id, "\n",
 					"groupData.alpha", groupData.alpha, "\n",
-					"groupData.isVisible", groupData.isVisible, "\n"
+					"groupData.isVisible", groupData.isVisible, "\n",
+					"groupData.groupId", groupData.groupId, "\n"
 				)
 			#endif
 		}
@@ -648,7 +660,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				groupData.isVisible	
 			)
 			
-			typeToRuiID[ eAssetType.VIDEO ] = clientRUIID
+			groupData.typeToRuiID[ eAssetType.VIDEO ] = clientRUIID
 			
 			WorldDrawAsset_SetVisible
 			(
@@ -679,19 +691,18 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					"groupData.height", groupData.height, "\n",
 					"baseBannerVideo.id", baseBannerVideo.id, "\n",
 					"groupData.alpha", groupData.alpha, "\n",
-					"groupData.isVisible", groupData.isVisible, "\n"
+					"groupData.isVisible", groupData.isVisible, "\n",
+					"groupData.groupId", groupData.groupId, "\n"
 				)
 			#endif
 		}
-		
-		groupData.typeToRuiID = clone typeToRuiID
 	}
 	
 	OnThreadEnd
 	(
-		void function() : ( player, groupData, typeToRuiID )
+		void function() : ( player, groupData )
 		{
-			__HideAllBanners( player, groupData, typeToRuiID )
+			__HideAllBanners( player, groupData )
 		}
 	)
 	
@@ -749,7 +760,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 				continue
 		}
 
-		clientRUIID = typeToRuiID[ banner.assetType ]
+		clientRUIID = groupData.typeToRuiID[ banner.assetType ]
 		//set the server managed ruiid instance to use based on type.
 		#if DEVELOPER && DEBUG_BANNER_ASSET
 			printw( "setting next asset '" + banner.assetName + "' as type:", banner.assetType, "in group:", groupData.groupName, "RUIID = ", clientRUIID )

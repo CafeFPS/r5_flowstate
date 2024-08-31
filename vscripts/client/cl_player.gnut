@@ -499,8 +499,7 @@ void function ClientCodeCallback_PlayerSpawned( entity player )
 		if( GetCurrentPlaylistVarBool( "flowstate_force_softened_locale", false ) )
 			SetConVarBool( "cl_is_softened_locale", true )
 
-		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
-
+		//SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
 		//Flowstate_ApplyModifiedMovementToPlayer( player )
 	}
 

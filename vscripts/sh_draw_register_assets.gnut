@@ -6,6 +6,7 @@ global function WorldDrawAsset_RegisterAllAssets
 #if CLIENT
 	global function ClientCodeCallback_PakRequestFinished //todo: move?
 	global function ServerCallback_ShouldWaitForRpak
+	global function VideoExists
 #endif
 
 #if SERVER 
@@ -27,7 +28,8 @@ struct
 		"rui/world/flowstate1v1_banner02",
 		"rui/world/flowstate1v1_rdiffs",
 		"rui/world/flowstate1v1_banner03",
-		"rui/world/karma_banner_01"
+		"rui/world/karma_banner_01",
+		"balls.bik"
 		//"media/karma-r5r-video.bik",
 	]
 	
@@ -39,7 +41,9 @@ struct
 		bool bShouldWaitForRpak = false
 		string someRpakName = ""
 		array<string> someBuiltAssetArrayFromServerClientMightNotHave = []
-	#endif 
+		array<int> invalidVideoAssets
+		bool videoValidationComplete = false
+	#endif
 
 } file
 
@@ -57,6 +61,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 		}
 		
 		array<int> invalidAssets = []
+		array<int> videoAssetsToCheck = []
 	#endif
 	
 	int iter = -1
@@ -71,32 +76,24 @@ void function WorldDrawAsset_RegisterAllAssets()
 		else 
 			assetType = eAssetType.IMAGE
 		
-		#if CLIENT	
-			//todo: determine if bik exists? NEED A WAY?!
-			if( assetType == eAssetType.IMAGE && !RuiImageExists( potentialVarAsset ) )
+		#if CLIENT		
+			switch( assetType )
 			{
-				invalidAssets.append( iter )
-			}
+				case eAssetType.IMAGE:
+				
+					if( !RuiImageExists( potentialVarAsset ) )
+						invalidAssets.append( iter )
+				break 
+				
+				case eAssetType.VIDEO:
+					
+					videoAssetsToCheck.append( iter ) 
+				break 
+			}		
 		#endif
 		
 		asset varAsset
-		
-		try
-		{
-			varAsset = CastStringToAsset( potentialVarAsset ) //never fails apparently		
-		}
-		catch( e )
-		{
-			#if DEVELOPER
-				Warning( "Error: " + e )
-			#endif 
-			
-			#if CLIENT
-				invalidAssets.append( iter )
-			#elseif SERVER 
-				file.invalidAssets.append( iter )
-			#endif
-		}
+		varAsset = CastStringToAsset( potentialVarAsset )
 		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
 	}
@@ -104,18 +101,28 @@ void function WorldDrawAsset_RegisterAllAssets()
 	#if CLIENT 
 		thread
 		(
-			void function() : ( invalidAssets )
-			{	
-				string cmd
-				foreach( inv in invalidAssets )
-					cmd += " " + string( inv )
-					
+			void function() : ( invalidAssets, videoAssetsToCheck )
+			{					
 				FlagWait( "EntitiesDidLoad" )
+				
 				entity player = GetLocalClientPlayer()
 				if( !IsValid( player ) )
 					return
 					
+				waitthread CheckVideoAssets_expensive( player, videoAssetsToCheck )
+				invalidAssets.extend( file.invalidVideoAssets )
+				
+				string cmd
+				foreach( inv in invalidAssets )
+					cmd += " " + string( inv )
+				
+				if( !IsValid( player ) ) //waited for thread, recheck.
+					return
+					
+				//this client command is responsible for letting the server know 
+				// what assets are not available on the client. IMPORTANT.
 				player.ClientCommand( "assetIntegrityCheck" + cmd )
+				file.videoValidationComplete = true
 			}
 		)()
 	#endif
@@ -191,10 +198,65 @@ void function WorldDrawAsset_RegisterAllAssets()
 					player.Signal( "RemoteAssetsLoaded" )
 				} 
 			}
-		)()
+		)()		
+	}
+	
+	//There really is no other way to validate if a video exists on the client. Sorry.
+	void function CheckVideoAssets_expensive( entity player, array<int> videoAssetIds )
+	{
+		if( !IsValid( player ) ) //check again, was threaded off.
+			return
+			
+		EndSignal( player, "OnDestroy" )
+		int channel = ReserveVideoChannel()
 		
+		foreach( assetId in videoAssetIds )
+		{
+			asset video = WorldDrawAsset_GetAssetByID( assetId )
+			StartVideoOnChannel( channel, video, false, 0.0 )
+			PauseVideoOnChannel( channel )
+			
+			WaitFrames(3)
+			
+			// please don't remove this debug comment. Thanks ~mkos.
+			
+			// int frames
+			// while( !VideoChannelHasVideoAssigned( channel ) )
+			// {
+				// ++frames
+				// printw( "current frame=", frames )
+				// WaitFrame()
+			// }
+			
+			// printw( "Total frames needed to detect video =", frames )
+			// DEV_SetBreakPoint()
+			
+			if( !VideoChannelHasVideoAssigned( channel ) )
+			{	
+				#if DEVELOPER
+					printw( "Video asset:", string( video ), "is not valid! id = ", assetId )
+				#endif 
+				
+				file.invalidVideoAssets.append( assetId )
+			}
+			
+			StopVideoOnChannel( channel )
+		}
+		
+		ReleaseVideoChannel( channel )
+	}
+	
+	bool function VideoExists( int assetId )
+	{
+		if( !file.videoValidationComplete )
+			mAssert( false, "Tried to check if video exists before validator has ran." )
+			
+		return file.invalidVideoAssets.contains( assetId )
 	}
 #endif
+
+//PauseVideoOnChannel
+//VideoChannelHasVideoAssigned
 
 #if SERVER	
 	void function WorldDrawAsset_TransmitDesiredAssets()

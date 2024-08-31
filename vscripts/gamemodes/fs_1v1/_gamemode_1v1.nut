@@ -3250,6 +3250,12 @@ void function BannerImages_1v1Init()
 			BannerAssets_GroupAppendAsset
 			(
 				"test_banner",
+				WorldDrawAsset_AssetRefToID( "balls.bik" )
+			)
+			
+			BannerAssets_GroupAppendAsset
+			(
+				"test_banner",
 				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner03" )
 			)
 			
