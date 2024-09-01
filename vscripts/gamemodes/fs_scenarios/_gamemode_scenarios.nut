@@ -1923,7 +1923,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 					RemoveCinematicFlag( player, CE_FLAG_INTRO )
 					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards", false )
 					player.SetShieldHealth( 0 )
 					player.SetShieldHealthMax( 0 )
 					Inventory_SetPlayerEquipment(player, "", "armor")

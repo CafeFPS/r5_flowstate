@@ -2516,7 +2516,7 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	if( settings.is3v3Mode )
 	{
-		Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false )
+		Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false, true )
 
 		if( player.Player_IsFreefalling() )
 		{

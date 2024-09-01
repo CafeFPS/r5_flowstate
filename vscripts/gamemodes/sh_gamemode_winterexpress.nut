@@ -451,8 +451,6 @@ void function WinterExpress_Init()
 #if CLIENT
 void function FS_WinterExpress_OnClientScriptInit( entity player ) 
 {
-	FS_Scenarios_InitPlayersCards()
-	
 	#if DEVELOPER && MKOS
 		return //mkos: I need my debugs lol -.- 
 	#endif
@@ -592,7 +590,7 @@ void function TurnOffArenaWalls( entity wall )
 void function OnPlayerLoadoutChanged( EHI playerEHI, ItemFlavor flavour )
 {
 	if( settings.winter_express_show_player_cards )
-		FS_Scenarios_SetupPlayersCards()
+		FS_Scenarios_SetupPlayersCards( true )
 }
 
 void function Client_OnTeamChanged( entity player, int oldTeam, int newTeam )
@@ -667,9 +665,10 @@ void function OnEntitiesDidLoad_Client()
 
 	SurvivalCommentary_SetHost( eSurvivalHostType.MIRAGE )
 	
+	FS_Scenarios_InitPlayersCards()
 	if( GetGameState() == eGameState.Playing ) //Cafe was here
 	{
-		FS_Scenarios_SetupPlayersCards()
+		FS_Scenarios_SetupPlayersCards( false )
 		FS_CreateScoreHUD()
 	}
 }
@@ -1999,8 +1998,7 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 
-	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
-	Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")  
+	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")	
 	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -2013,8 +2011,6 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 
 	foreach( item in STANDARD_INV_LOOT )
 		SURVIVAL_AddToPlayerInventory(player, item, 2)
-
-	PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 
 	if ( player.GetTeam() != TEAM_SPECTATOR )
 	{
@@ -2146,6 +2142,9 @@ void function ResetPlayerInventoryAndLoadoutOnRespawn( entity player, bool shoul
 	// {
 		// CharacterLoadouts_GiveCurrentCharacterLoadoutToPlayer( player, true )
 	// }
+
+	//Setup starting shields
+	PlayerRestoreHP_1v1(player, 100, Equipment_GetDefaultShieldHP() )
 
 	if ( GetCurrentPlaylistVarBool( "infinite_heal_items", false ) )
 		GivePassive( player, ePassives.PAS_INFINITE_HEAL )
@@ -2523,6 +2522,12 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startin
 		// RestoreChargesForPlayer( player )
 
 	Flowstate_GivePlayerLoadoutOnGameStart_Copy( player, startingGame )
+	
+	if( settings.winter_express_show_player_cards && !startingGame )
+	{
+		foreach ( sPlayer in GetConnectedPlayers() )
+			Remote_CallFunction_Replay( sPlayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), true )
+	}
 }
 
 int function GetLastValidTeamToScore()
@@ -2592,7 +2597,7 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 				thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
 				thread ScreenFadeThread( player, lerpAdjustmentTime - 1 )
-				// ResetPlayerInventoryAndLoadoutOnRespawn( player )
+				ResetPlayerInventoryAndLoadoutOnRespawn( player )
 
 				player.SetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange", false )
 
@@ -2718,7 +2723,7 @@ void function WinterExpress_RespawnHoverTank( entity player, bool isGameStartLer
 	thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpFromStationToHoverTank", player, DesertlandsTrain_GetNextStationNode(), GetClosestHovertankEnt_ToPlayer( player ), file.trainRef, isGameStartLerp )
 
-	// ResetPlayerInventoryAndLoadoutOnRespawn( player )
+	ResetPlayerInventoryAndLoadoutOnRespawn( player )
 }
 
 void function WinterExpress_AdjustEyesAfterDelay( float delay, entity player, bool shouldSnapToStation = true )
@@ -4081,7 +4086,7 @@ void function ServerCallback_CL_WinnerDetermined( int team )
 	StopSoundOnEntity( GetLocalClientPlayer(), "Music_LTM32_SpectateCam" )
 	
 	FS_UpdateScoreForTeam( team, 3 )
-	FS_Scenarios_TogglePlayersCardsVisibility( false )
+	FS_Scenarios_TogglePlayersCardsVisibility( false, false )
 	Flowstate_ShowRoundEndTimeUI( -1 )
 }
 
@@ -4096,6 +4101,7 @@ void function ServerCallback_CL_ObserverModeSetToTrain()
 	if ( !IsValid( GetLocalClientPlayer() ) )
 		return
 
+	FS_Scenarios_TogglePlayersCardsVisibility( false, false )
 	UpdateMainHudVisibility( GetLocalClientPlayer() )
 	DeathScreen_SpectatorTargetChanged( GetLocalClientPlayer(), null, null )
 
@@ -4702,7 +4708,6 @@ void function FS_ReloadScoreHUD()
 
 	FS_CreateScoreHUD()
 
-	
 	if( file.localTeamScoreValue > 0 && file.enemyTeamScoreValue <= 3 )
 		FS_UpdateScoreForTeam( TEAM_IMC, file.localTeamScoreValue )
 
@@ -4715,7 +4720,8 @@ void function FS_ReloadScoreHUD()
 	if( settings.winter_express_show_player_cards )
 	{
 		FS_Scenarios_InitPlayersCards()
-		FS_Scenarios_SetupPlayersCards()
+		FS_Scenarios_SetupPlayersCards( true )
+		
 	}
 }
 
@@ -4971,6 +4977,7 @@ void function CameraLerpHovertankThread( entity player, vector stationPos, vecto
 		
 					wait 1
 					
+					FS_Scenarios_TogglePlayersCardsVisibility( true, false )
 					OpenFRChallengesSettingsWpnSelector()
 				}()
 		}
@@ -5052,6 +5059,7 @@ void function CameraLerpTrainThread( entity player, vector estimatedCameraStart,
 				cameraMover.Destroy()
 			}
 
+			FS_Scenarios_TogglePlayersCardsVisibility( true, false )
 			// if( settings.openFlowstateWeaponsOnRespawn )
 				// thread function() : ( player )
 				// {
