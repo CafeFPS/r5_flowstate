@@ -671,7 +671,9 @@ void function ResumeTrainAfterEmergencyStop()
 #if SERVER
 void function SetTrainState( int desiredTrainState )
 {
-	printt( "Train switching state to: %s", GetNameForEnum( eTrainStates, desiredTrainState ) )
+	#if DEVELOPER
+		printt( "Train switching state to: %s", GetNameForEnum( eTrainStates, desiredTrainState ) )
+	#endif
 
 	switch ( desiredTrainState )
 	{

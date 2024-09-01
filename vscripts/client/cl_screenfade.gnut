@@ -148,7 +148,10 @@ void function RegisterDoomProtectionHintDamage( float newAmount )
 		return
 
 	g_doomProtectionHintDamage += newAmount
-	printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
+	
+	#if DEVELOPER
+		printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
+	#endif
 }
 
 

@@ -342,11 +342,6 @@ void function _CustomTDM_Init()
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
 	
-	#if TRACKER 
-		FlagInit( "DeterminePreviousChampion", false )
-		FlagInit( "PreviousChampionDetermined", false )
-	#endif
-	
 	flowstateSettings.bIs1v1ModeEnabled = bIs1v1Mode()
 	if( flowstateSettings.enable_global_chat )
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx

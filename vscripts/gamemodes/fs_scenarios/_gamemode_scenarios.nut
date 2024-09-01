@@ -16,7 +16,7 @@ global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_GetAmountOfTeams
 global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
-global function FS_Scenarios_GetDropshipEnabled
+global function FS_Scenarios_GetDropshipEnabled //?
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
@@ -102,7 +102,8 @@ struct {
 	array<entity> aliveItemDrops
 } file
 
-struct {
+struct
+{
 	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = -1
 	int fs_scenarios_teamAmount = -1
@@ -1026,7 +1027,7 @@ bool function FS_Scenarios_GetInventoryEmptyEnabled()
 	return settings.fs_scenarios_inventory_empty
 }
 
-bool function FS_Scenarios_GetDropshipEnabled()
+bool function FS_Scenarios_GetDropshipEnabled() // ?
 {
 	return settings.fs_scenarios_dropshipenabled
 }

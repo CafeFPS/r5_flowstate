@@ -1426,6 +1426,11 @@ void function PIN_Init()
 	
 	if( file.LogOn )
 	{
+		#if TRACKER 
+			FlagInit( "DeterminePreviousChampion", false )
+			FlagInit( "PreviousChampionDetermined", false )
+		#endif
+		
 		SetServerVar( "tracker_enabled", true )
 		AddCallback_OnTdmStateEnter_InProgress( SetStartLog )
 		FlagInit( "START_LOG", true )
