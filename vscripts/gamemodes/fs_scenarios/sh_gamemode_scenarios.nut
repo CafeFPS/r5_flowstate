@@ -129,6 +129,7 @@ void function FS_Scenarios_Score_System_Init()
 		{
 			AddCallback_UIScriptReset( _UpdateStandingsScriptsFromClient )
 			UpdateStandingsScriptsFromClient( true )
+			AddClientCallback_OnResolutionChanged( OnResolutionChanged_FixRuiSize )
 		}
 	#endif
 	
@@ -559,6 +560,18 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		}
 	}
 
+	void function OnResolutionChanged_FixRuiSize()
+	{
+		if( FS_GetScoreEventTopo() != null )
+		{
+			UISize screenSize = GetScreenSize()
+			TopologyCreateData tcd = BuildTopologyCreateData( true, false )
+			RuiTopology_UpdatePos( FS_GetScoreEventTopo(), tcd.org + <0,screenSize.height * -0.618,0>, tcd.right, tcd.down)
+		}
+		
+		FS_Scenarios_InitPlayersCards()
+		FS_Scenarios_SetupPlayersCards( false )
+	}
 #endif //CLIENT 
 
 ////////////////////////////////////////////////////////

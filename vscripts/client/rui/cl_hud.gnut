@@ -1,3 +1,5 @@
+untyped
+
 global function CLHud_Init
 global function DamageFlyout
 
@@ -11,6 +13,7 @@ global function AddCallback_ModifyDamageFlyoutForScriptName
 global function DEV_DamageFlyout
 
 global function Flowstate_AddCustomScoreEventMessage
+global function FS_GetScoreEventTopo
 
 const bool RUI_ENABLED = true
 
@@ -616,6 +619,11 @@ void function Flowstate_AddCustomScoreEventMessage( string eventText, float dura
 	RuiSetGameTime( rui, "updateTime", Time() )	
 	file.flowstateSmallServerMsg = rui
 	file.flowstateSmallServerMsg_Topo = topo
+}
+
+var function FS_GetScoreEventTopo()
+{
+	return file.flowstateSmallServerMsg_Topo
 }
 
 string function GetFormattedEventText( ScoreEvent scoreEvent, int pointValue, EHI associatedEHI, float valueA, float valueB )

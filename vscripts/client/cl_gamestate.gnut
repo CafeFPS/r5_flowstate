@@ -176,7 +176,7 @@ void function SetCommonScoreRUIVars( var rui )
 			
 			case ePlaylists.fs_scenarios:
 			if( GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", false ) )
-				RuiSetString( rui, "gameModeString", "FS SCENARIOS" )
+				RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
 			else
 				RuiSetString( rui, "gameModeString", "FS FAST BR(FIXME)" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
@@ -301,7 +301,7 @@ void function UpdateCommonScoreRuiTracking( var rui, entity player )
 	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
 	RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 
-	if( Playlist() != ePlaylists.fs_scenarios && Playlist() != ePlaylists.winterexpress )
+	if( Playlist() != ePlaylists.fs_scenarios && Gamemode() != eGamemodes.WINTEREXPRESS )
 		RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "damage" ) )
 	// else
 		// RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )

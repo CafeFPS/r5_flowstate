@@ -30,14 +30,24 @@ global function CreateFullscreenTopology
 
 global function CircularHudEnabled
 global function GetHudDrawGroup
+global function FS_CreateCameraTest
+global function CL_CreateWorldVideo
+global function BuildTopologyCreateData
 
 global var Hud = null
 
 global bool TITAN_CORE_ENABLED = true
 
 
-global function FinisherPrivateFunction
+global function FirstPersonFinishersShowcase
 global function FinisherTestIdk
+
+global struct TopologyCreateData
+{
+	vector org
+	vector right
+	vector down
+}
 
 UISize function GetVirtualScreenSize( int width, int height )
 {
@@ -134,7 +144,6 @@ void function ClientCodeCallback_MapSpawn()
 	SV_CL_Shared_Init()
 }
 
-
 float function GetCockpitRuiHeight()
 {
 	UISize screenSize = GetScreenSize()
@@ -163,6 +172,7 @@ void function PrecacheResFiles()
 	PrecacheRes( "Coop_TeamScoreEventNotification" )
 	PrecacheRes( "control_panel_generic_screen" )
 	PrecacheRes( "flowstate_health_bar" )
+	PrecacheRes( "flowstate_inworld_test" )
 
 	PrecacheRes( "vgui_callsign_menu" )
 }
@@ -183,13 +193,6 @@ int function GetHudDrawGroup( int ifNotCircular = RUI_DRAW_HUD )
 	return CircularHudEnabled() ? RUI_DRAW_COCKPIT : ifNotCircular
 }
 
-
-struct TopologyCreateData
-{
-	vector org
-	vector right
-	vector down
-}
 
 TopologyCreateData function BuildTopologyCreateData( bool isHud, bool isCircular = false )
 {
@@ -289,6 +292,7 @@ void function ClientCodeCallback_RunClientConnectScripts( entity player )
 {
 	Assert( IsValid( player ) )
 	Assert( player == GetLocalClientPlayer() )
+
 	thread RunClientConnectScriptsThreaded( player )
 }
 
@@ -458,13 +462,9 @@ void function FinisherTestIdk(
 	entity victim   = CreateClientSidePropDynamic( refPoint, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
 	entity camera   = null
 
-	// CharacterSkin_Apply( attacker, attackerSkin )
-	// attacker.SetModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
-	
-	attacker.SetModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-	// attacker.SetModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
-	//CharacterSkin_Apply( victim, victimSkin )
-	victim.SetModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
+	CharacterSkin_Apply( attacker, attackerSkin )
+	CharacterSkin_Apply( victim, victimSkin )
+	// victim.SetModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
 
 	float fov = 70.0
 	switch( whichCamera )
@@ -593,7 +593,7 @@ void function FinisherTestIdk(
 	wait 0.25
 }
 
-void function FinisherPrivateFunction( int attackerIndex, int victimIndex, int attackerFinisherIndex, string camera = "firstpersonAttacker" )
+void function FirstPersonFinishersShowcase( int attackerIndex, int victimIndex, string camera = "firstpersonAttacker" )
 {
 	entity player = GetLocalViewPlayer()
 	
@@ -611,12 +611,50 @@ void function FinisherPrivateFunction( int attackerIndex, int victimIndex, int a
 		printt("Total finishers for this attacker: " + AllFinishers.len())
 	#endif
 	
-	if(attackerFinisherIndex > AllFinishers.len()) return
+	if( AllFinishers.len() == 0 )
+		return
 	
+	int attackerFinisherIndex = 0
+
 	ItemFlavor victimCharacter = characterPool[victimIndex]
 
 	ItemFlavor attackerSkin = GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterSkin( attacker  ) ).getrandom()
 	ItemFlavor victimSkin      = GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterSkin( victimCharacter ) ).getrandom()
 	
-	delaythread(0.5) FinisherTestIdk( player.GetOrigin(), attacker, attackerSkin, victimCharacter, victimSkin, AllFinishers[attackerFinisherIndex], camera)
+	while( attackerFinisherIndex <= AllFinishers.len() - 1 )
+	{
+		waitthread FinisherTestIdk( player.GetOrigin(), attacker, attackerSkin, victimCharacter, victimSkin, AllFinishers[attackerFinisherIndex], camera)
+		attackerFinisherIndex++
+		WaitFrame()
+	}
+}
+
+void function FS_CreateCameraTest()
+{
+	entity camera = CreateClientSidePointCamera( <4633.86475, 14011.751, -3678.65308>, <0, -85.4728317, 0>, 100 )
+	camera.SetMonitorZFar( 100000 )
+	camera.SetMonitorExposure( 2 )
+
+	entity vgui = CreateClientsideVGuiScreen( "flowstate_inworld_test", VGUI_SCREEN_PASS_WORLD, <4363.39697, 14038.7949, -4079.90625>+<0,0,256>, <0,0,90>, 500, 500 )
+	vgui.s.panel <- vgui.GetPanel()
+
+	PIPSlotState ornull stancePIPSlotStateOrNull1 = BeginMovingPIP( camera, -1)
+	int stancePIPSlotIndex1 = PIPSlotState_GetSlotID( expect PIPSlotState(stancePIPSlotStateOrNull1) )
+
+	Hud_SetImage(HudElement( "SomePanel0", vgui.s.panel ), CastStringToAsset("vgui/hud/vdu_hud_cam" + stancePIPSlotIndex1))
+}
+
+void function CL_CreateWorldVideo(asset bikname, vector org, vector ang, float width, float height, int RUIID = -1)
+{
+	vector origin = org
+	vector angles = ang
+
+	origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
+	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+	
+	var rui = RuiCreate( $"ui/finisher_video.rpak", topo, RUI_DRAW_WORLD, RUI_SORT_SCREENFADE + 1 )
+	int channel = ReserveVideoChannel()
+
+	RuiSetInt( rui, "channel", channel )
+	StartVideoOnChannel( channel, $"media/respawn.bik", true, 0.0 )
 }

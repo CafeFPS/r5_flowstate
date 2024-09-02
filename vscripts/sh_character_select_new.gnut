@@ -269,7 +269,7 @@ void function CharacterSelectNewMenu_Init()
 {
 	if (FS_ShouldShowCustomCharacterSelect())
 	{
-		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_desertlands_holiday )
 		{
 			PrecacheModel( BACKGROUND_GEO_MODEL )
 		}
@@ -345,7 +345,7 @@ void function OpenCharacterSelectAimTrainer( bool isBrowseMode = false )
 
 	fileLevel.menuEntsExist = true
 	fileLevel.lightEntsExist = DoMenuLightsExist()
-	fileLevel.detailsPanelVisible = false
+	fileLevel.detailsPanelVisible = isBrowseMode
 
 	RunUIScript( "UI_RunCharacterSelect_AimTrainer", fileLevel.isBrowseMode, fileLevel.menuEntsExist )
 	
@@ -402,6 +402,17 @@ void function _OpenCharacterSelectNewMenu_AimTrainer( var menu )
 		{
 			EmitSoundOnEntity( GetLocalClientPlayer(), "ui_menu_focus_legendselectscreen" )
 			UpdateForFocusOnButtonIndex( buttonIndex )
+		}
+	}
+	{
+		if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		{
+			AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnTeammateLoadoutSelectionChanged, false )
+			foreach( ItemFlavor character in GetAllCharacters() )
+			{
+				LoadoutEntry skinSlot = Loadout_CharacterSkin( character )
+				AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( skinSlot, OnTeammateLoadoutSelectionChanged, false )
+			}
 		}
 	}
 }
@@ -1408,7 +1419,7 @@ void function CloseCharacterSelectNewMenu_AimTrainer()
 
 	fileLevel.menuEntsReady = false
 
-	// OnCharacterSelectNewMenuClosed_RemoveCallbacks()
+	OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 }
 void function OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 {
@@ -1426,6 +1437,7 @@ LocPair function FS_ReturnRandomCameraPosForMap()
 	
 	switch(MapName())
 	{
+		case eMaps.mp_rr_desertlands_holiday:
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 		locs.append( NewCameraPair( <-24658.5098, -20805.4355, -4072.05835>, <0, -61.8279648, 0> ) )
@@ -1513,7 +1525,7 @@ void function CreateCharacterSelectClientEnts()
 			Chroma_BeginCharacterSelect()
 			vector r5reloadedOrigin
 			
-			if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx  || MapName() == eMaps.mp_rr_olympus_mu1 )
+			if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx  || MapName() == eMaps.mp_rr_olympus_mu1 || MapName() == eMaps.mp_rr_desertlands_holiday )
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 + fileLevel.camera.GetRightVector() * 40
 			}
@@ -1867,8 +1879,8 @@ void function OnLoadoutButton_Focused( var button )
 
 void function OnLoadoutButton_Focused_AimTrainer( var button )
 {
-	// if ( fileLevel.isBrowseMode && ((Time() - fileLevel.isBrowseModeStartTime) < 0.1) )
-		// return
+	if ( fileLevel.isBrowseMode && ((Time() - fileLevel.isBrowseModeStartTime) < 0.1) )
+		return
 
 	int index = fileLevel.characterButtons.find( button )
 	UpdateForFocusOnButtonIndex( index )
@@ -1892,11 +1904,42 @@ void function DoBrowseModeCharacterSelectEffects()
 
 void function OnLoadoutButton_Activate_AimTrainer( var button )
 {
+	printt( "cafe was here")
 	int buttonIndex      = fileLevel.characterButtons.find( button )
 	ItemFlavor character = fileLevel.buttonIndexCharacterMap[ buttonIndex ]
 
+	if( Gamemode() == eGamemodes.WINTEREXPRESS )
+	{
+		if ( fileLevel.isBrowseMode )
+		{
+			entity player = GetLocalClientPlayer()
+			ItemFlavor currentCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+			if ( character == currentCharacter )
+			{
+				EmitSoundOnEntity( player, "ui_menu_back" )
+				CloseCharacterSelectNewMenu()
+				return
+			}
+		}
+
+		// Someone already locked this character
+		entity ornull playerWithThisCharacterLocked = GetPlayerWithLockedCharacter( character, GetPlayerSquad() )
+		if ( playerWithThisCharacterLocked != null )
+			return
+
+	}
+
 	// // Request this character
 	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
+
+	// Close the menu if we are in browse mode
+	// if ( fileLevel.isBrowseMode )
+	// {
+		// printt(FUNC_NAME() + " isBrowseMode")
+		// CloseCharacterSelectNewMenu()
+		// DoBrowseModeCharacterSelectEffects()
+		// return
+	// }
 
 	// Tell the server you want to lock this class
 	LockCharacter()
@@ -1907,6 +1950,7 @@ void function OnLoadoutButton_Activate_AimTrainer( var button )
 	// Update Scene
 	fileLevel.desiredCharacterOrNull = character
 	SetMenuState( eNewCharacterSelectMenuState.LOCKED )
+	
 }
 
 void function OnLoadoutButton_Activate( var button )
@@ -2368,7 +2412,8 @@ void function UpdateButtonStates()
 		}
 
 		// Browse mode we don't need to show locked-in characters, teammate selctions, or disable buttons, etc.
-		if ( fileLevel.isBrowseMode )
+		// Unless is winter express, or any other mode.
+		if ( fileLevel.isBrowseMode && Gamemode() == eGamemodes.WINTEREXPRESS )
 			continue
 
 		// Team Focused
@@ -3043,7 +3088,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		EndSignal( fileLevel.signalDummy, "UpdatingAnim" )
 		EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
 
-		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_olympus_mu1 )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_olympus_mu1 || MapName() == eMaps.mp_rr_desertlands_holiday )
 				{
 					fileLevel.characterModel.SetLocalOrigin( <-70, 0, 0> )
 				}
@@ -3058,7 +3103,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		if (IsValid(fileLevel.backgroundModelGeo)) 
 			fileLevel.backgroundModelGeo.Destroy()
 
-		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_desertlands_holiday )
 		{
 			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL )
 			fileLevel.backgroundModelGeo.kv.solid = 6
@@ -3884,7 +3929,7 @@ bool function SquadMuteLegendSelectEnabled()
 
 bool function FS_ShouldShowCustomCharacterSelect()
 {
-	if( Playlist() == ePlaylists.fs_scenarios )
+	if( Playlist() == ePlaylists.fs_scenarios || Gamemode() == eGamemodes.WINTEREXPRESS )
 		return true
 
 	return GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )

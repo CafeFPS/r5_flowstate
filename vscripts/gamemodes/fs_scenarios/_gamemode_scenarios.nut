@@ -1718,6 +1718,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 					Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 					Flowstate_AssignUniqueCharacterForPlayer( player, true )
+					if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+					{
+						array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+						CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+					}
 				}
 
 			if( settings.fs_scenarios_ground_loot )
@@ -1900,6 +1905,38 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						
 						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
 						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+					}
+
+					foreach ( newWeapon in player.GetMainWeapons() )
+					{
+						//Cafe was here
+						ItemFlavor ornull weaponSkinOrNull = null
+						array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+						ItemFlavor ornull weaponCharmOrNull 
+						int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+
+						if( newWeapon.e.charmItemFlavorGUID != -1 )
+							chosenCharm = newWeapon.e.charmItemFlavorGUID
+							
+						if( newWeapon.e.skinItemFlavorGUID != -1 )
+						{
+							weaponSkinOrNull = GetItemFlavorByGUID( newWeapon.e.skinItemFlavorGUID )
+						} else if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+						{
+							ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( newWeapon.GetWeaponClassName() )
+							
+							if( weaponFlavor != null )
+							{
+								array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+								if( weaponLegendaryIndexMap.len() > 1 )
+									weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+							}
+						}
+
+						if ( GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) )
+							weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
+
+						WeaponCosmetics_Apply( newWeapon, weaponSkinOrNull, weaponCharmOrNull )
 					}
 					
 					MakeInvincible(player)
@@ -2124,7 +2161,14 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
 			{
 				if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+				{
 					Flowstate_AssignUniqueCharacterForPlayer(player, false)
+					if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+					{
+						array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+						CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+					}
+				}
 			}
 		}
 

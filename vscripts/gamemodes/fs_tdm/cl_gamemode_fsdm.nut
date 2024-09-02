@@ -471,7 +471,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	thread Flowstate_ShowStartTimeUI( new )
 
 	if( Playlist() == ePlaylists.fs_scenarios )
-		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "Final Ring" )
+		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "ZONE WARS BY FLOWSTATE" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
@@ -513,21 +513,24 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
 
-	float startTime = Playlist() == ePlaylists.winterexpress ? Time() : GetGlobalNetTime( "flowstate_DMStartTime" )
+	float startTime = Gamemode() == eGamemodes.WINTEREXPRESS ? Time() : GetGlobalNetTime( "flowstate_DMStartTime" )
 	
 	string main = "Time Remaining: "
 	
 	switch( Playlist() )
 	{
-		case ePlaylists.winterexpress:
-		main = "Round Ending In: "
-		break
-		
 		case ePlaylists.fs_scenarios:
 		main = "Scenario End: "
 		break
 	}
-	
+
+	switch( Gamemode() )
+	{
+		case eGamemodes.WINTEREXPRESS:
+		main = "Round Ending In: "
+		break
+	}
+
 	while ( startTime <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
@@ -578,7 +581,7 @@ void function Flowstate_StartTime_Thread( float endtime )
 	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
 	else if( Playlist() == ePlaylists.fs_scenarios )
-		msg = "Zone Wars Starting in "
+		msg = "Zone War Starting in "
 
 	while ( Time() <= endtime )
 	{
@@ -1957,10 +1960,11 @@ void function FS_Scenarios_InitPlayersCards()
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
 
-	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 || Playlist() == ePlaylists.winterexpress )
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 || Gamemode() == eGamemodes.WINTEREXPRESS )
 	{
-		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
-		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 140, wepSelectorBasePos.y + 2 )
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )	
+		UISize screenSize = GetScreenSize()
+		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 165 * screenSize.width / 1920.0, wepSelectorBasePos.y + 2 * screenSize.height / 1080.0 )
 	}
 
 	for(int i = 0; i<3; i++ )
