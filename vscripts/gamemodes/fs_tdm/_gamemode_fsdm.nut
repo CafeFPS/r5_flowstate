@@ -78,6 +78,10 @@ global function SetChampionShowingState
 global function WaitForChampionToFinish
 global const float SHORT_CHAMPION_CARD_TIME = 7.0
 
+#if DEVELOPER
+	global function DEV_NextRound
+#endif
+
 //Beginning of refactor( supposed to be for next, next release.. )
 global function AddCallback_OnTdmStateEnter_InProgress
 
@@ -1008,6 +1012,24 @@ void function _OnPlayerConnected(entity player)
 	{
 		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
 	}	
+	
+	if( Flowstate_IsHaloMode() )
+	{
+		AddEntityCallback_OnKilled
+		(
+			player,
+			void function( entity player, var damageInfo )
+			{
+				if( !IsValid( player ) )
+					return 
+					
+				entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+				
+				if ( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
+					ReloadTactical( attacker )
+			}
+		)
+	}
 	
 	if( is1v1EnabledAndAllowed() )
 	{
@@ -5566,6 +5588,15 @@ bool function ClientCommand_CircleNow(entity player, array<string> args)
 
 	return true
 }
+
+#if DEVELOPER 
+	void function DEV_NextRound( int mapIndex )
+	{
+		file.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < file.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, file.locationSettings.len() - 1))
+		file.mapIndexChanged = true
+		file.tdmState = eTDMState.NEXT_ROUND_NOW
+	}
+#endif 
 
 bool function ClientCommand_God(entity player, array<string> args)
 {

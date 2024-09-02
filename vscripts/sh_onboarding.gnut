@@ -1547,7 +1547,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 #endif
 
 
-#if SERVER && DEVELOPER
+#if SERVER
 	table<int,table> movementLookupTable = {}
 	bool bMovementLookupTableSet = false
 
@@ -1599,6 +1599,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		foreach( player in players )
 			SetPlayerSettings( player, movementLookupTable[ enumVal ] )
 			
+		file.flowstate_modified_movement = enumVal
 		string eMovementType = GetEnumString( "eMovementType", enumVal )
 		Warning( "Player Movement set to: " + eMovementType )
 	}

@@ -570,6 +570,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	#endif
 	
 	array<BannerImageData> banners = DeepCopyBanner( groupData.groupBanners )
+	groupData.groupBanners = banners
 	
 	if( banners.len() == 0 )
 	{

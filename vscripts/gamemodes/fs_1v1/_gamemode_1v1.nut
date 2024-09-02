@@ -57,6 +57,7 @@ global function FS_1v1_GetPlayersResting
 global function is3v3Mode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
+global function ReloadTactical
 
 //utility
 global function ValidateBlacklistedWeapons
