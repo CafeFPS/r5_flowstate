@@ -1504,7 +1504,7 @@ playlists
 				fs_scenarios_playersPerTeam						3
 				fs_scenarios_teamAmount							3
 				fs_scenarios_ground_loot						1
-				fs_scenarios_inventory_empty					0 	// 0 won't give weapons, 1 will give wepons
+				fs_scenarios_inventory_empty					0 	// 0 will give weapons, 1 won't give wepons
 				fs_scenarios_deathboxes_enabled					1
 				deathbox_ondeath_enabled 						1
 				drop_loot_on_death								1
