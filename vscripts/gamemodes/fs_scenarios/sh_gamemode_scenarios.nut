@@ -570,6 +570,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 		}
 		
 		FS_Scenarios_InitPlayersCards()
+		FS_Scenarios_SetupPlayersCards( false )
 	}
 #endif //CLIENT 
 
