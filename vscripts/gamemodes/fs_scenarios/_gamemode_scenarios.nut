@@ -1847,6 +1847,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							// player.UnfreezeControlsOnServer()
 							ClearInvincible(player)
 							Highlight_ClearEnemyHighlight( player )
+							
+							array<string> loot = ["optic_cq_hcog_bruiser", "optic_ranged_hcog", "optic_ranged_aog_variable", "health_pickup_combo_full", "health_pickup_combo_large", "health_pickup_combo_large", "health_pickup_health_large", "health_pickup_health_large", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_health_small", "health_pickup_health_small", "mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "mp_weapon_thermite_grenade"]
+								foreach(item in loot)
+									SURVIVAL_AddToPlayerInventory(player, item)
+
+							SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+							Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 							if( !newGroup.IsFinished )
 							{
