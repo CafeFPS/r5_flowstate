@@ -14,7 +14,8 @@ playlists
 				//// Custom General Settings (Flowstate Custom)
 				///////////////////////////////////////////////////////////////////////////////////
 				sentinel_enable_charging						1
-				flowstate_giveskins_weapons						0 // if you host with these you will be banned
+				flowstate_giveskins_characters 					0
+				flowstate_giveskins_weapons						0
 				flowstate_givecharms_weapons 					1
 				force_plane_to_spawn_without_players 			0
 				flyers_to_spawn 								100 //retail value: 8
@@ -550,8 +551,7 @@ playlists
 
 				enable_global_chat								1
 				flowstate_enable_punch_boosting					0
-				flowstate_giveskins_weapons 					0 // if you host with these you will be banned
-				flowstate_giveskins_characters 					1 // if you host with these you will be banned
+
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_modified_movement						0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 				flowstate_enable_bullet_slow					1
@@ -629,7 +629,8 @@ playlists
 				flowstate_give_random_custom_models_toall	0
 				
 				flowstate_modified_movement					4 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
-			}
+				drop_loot_on_death							1
+				deathbox_ondeath_enabled					0			}
 			gamemodes { fs_snd { maps {
 				mp_rr_arena_empty                   			1
 				mp_rr_arena_composite                          	1
@@ -675,10 +676,6 @@ playlists
 				max_players                                    9
 				min_players                                    9
 
-				//flowstate
-				flowstate_giveskins_weapons 					1 // if you host with these you will be banned
-				flowstate_giveskins_characters 					1 // if you host with these you will be banned
-				
 				flowstate_weapon_selector_enabled 			1 //Weapon selector on hovertanks
 				flowstate_disable_all_map_triggers			0
 				survival_infinite_ammo            			1
@@ -710,6 +707,9 @@ playlists
 				winter_express_wave_respawn_interval 		10
 				
 				winter_express_round_based_respawn 1
+				winter_express_show_player_cards 1
+
+				// flowstate_modified_movement		1 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode		
 			}
 			gamemodes { winterexpress { maps {
 				mp_rr_desertlands_holiday 1
@@ -1510,6 +1510,9 @@ playlists
 				fs_scenarios_ground_loot						1
 				fs_scenarios_inventory_empty					0 	// 0 won't give weapons, 1 will give wepons
 				fs_scenarios_deathboxes_enabled					1
+				deathbox_ondeath_enabled 						1
+				drop_loot_on_death								1
+
 				fs_scenarios_bleedout_enabled					1
 				fs_scenarios_show_death_recap_onkilled			1
 				fs_scenarios_zonewars_ring_mode					1
@@ -1575,7 +1578,7 @@ playlists
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_desertlands_64k_x_64k 1
-				mp_rr_canyonlands_64k_x_64k                    	1
+				//mp_rr_canyonlands_64k_x_64k                    	1
 				mp_rr_olympus_mu1								1
 			} } }
 		}
@@ -1612,7 +1615,7 @@ playlists
 				survival_jumpkit_enabled           0
 				survival_wallrun_enabled           0
 				
-				survival_infinite_ammo             0 
+				survival_infinite_ammo             1
 				survival_custom_deploy             1
 				character_select_time_min          0
 				character_select_time_max          0
@@ -1636,7 +1639,7 @@ playlists
 				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
 				
 				flowstateAutoChangeLevelEnable			1
-				flowstateRoundsBeforeChangeLevel		1 //2
+				flowstateRoundsBeforeChangeLevel		2
 				
 				flowstateAdminTgive 					0 // 0 will enable dev menu weapons for players
 				flowstate1v1MatchLoadout				0
@@ -2724,7 +2727,6 @@ playlists
 				
 				enable_global_chat								1
 				flowstate_enable_punch_boosting					0
-				flowstate_giveskins_characters 					0 // if you host with these you will be banned
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_spectator_team_only					0
 				
@@ -3237,8 +3239,7 @@ playlists
 
 				enable_global_chat								1
 				flowstate_enable_punch_boosting					0
-				flowstate_giveskins_weapons 					0 // if you host with these you will be banned
-				flowstate_giveskins_characters 					0 // if you host with these you will be banned
+
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_modified_movement						0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 				flowstate_enable_bullet_slow					1
@@ -3323,7 +3324,7 @@ playlists
 			"Language" "english"
 			"Tokens"
 			{
-				"MP_RR_DESERTLANDS_HOLIDAY"			"World's Edge"
+				"MP_RR_DESERTLANDS_HOLIDAY"			"WINTER EXPRESS"
 				"MP_RR_CONSTRUCT"					"Creative - Construct"
 				"MP_RR_OLYMPUS_MU1"					  "Olympus MU1"
 				"MP_FLOWSTATE"						  "Creative"
