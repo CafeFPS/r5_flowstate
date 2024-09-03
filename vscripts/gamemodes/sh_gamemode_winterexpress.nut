@@ -3435,7 +3435,7 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 void function AddSelectMenuPromptRui( string hintText)
 {
 	UISize screenSize = GetScreenSize()
-	var topo = RuiTopology_CreatePlane( < 300 * screenSize.width / 1920.0, 490 * screenSize.height / 1080.0 , 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0>, false )
+	var topo = RuiTopology_CreatePlane( < 490 * screenSize.width / 1920.0, 300 * screenSize.height / 1080.0 , 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0>, false )
 	var hintRui = RuiCreate( $"ui/announcement_quick_right.rpak", topo, RUI_DRAW_HUD, 0 )
 	
 	RuiSetGameTime( hintRui, "startTime", Time() )
@@ -4627,7 +4627,7 @@ void function FS_ReloadScoreHUD()
 	{
 		UISize screenSize = GetScreenSize()
 		TopologyCreateData tcd = BuildTopologyCreateData( true, false )
-		RuiTopology_UpdatePos( file.legendSelectMenuPromptRuiTopo, < screenSize.width + ( 0.35 * screenSize.width / 1920.0 ) , screenSize.height + ( 0.40 * screenSize.height / 1080.0 ), 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0> )
+		RuiTopology_UpdatePos( file.legendSelectMenuPromptRuiTopo, < 490 * screenSize.width / 1920.0, 300 * screenSize.height / 1080.0 , 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0> )
 	}
 
 	if( settings.scoreLimit != 3 )
