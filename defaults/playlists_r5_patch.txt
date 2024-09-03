@@ -37,6 +37,17 @@ playlists
 				
 				sv_autoReloadRate 9000 //time in seconds to auto refresh server
 				
+				enable_banner_assets 1
+				
+				// Comma-separated list of assets
+				banner_assets "rui/world/flowstate1v1_banner01,rui/world/karma_banner_01,rui/world/flowstate1v1_banner02"
+				
+				enable_motd 		1  //enables message of the day for server.
+				
+				// ADMINS for cc command (reccomended to list in r5r.dev_config file if has tracker dll)
+				// usage: "adminname-oid,anotheradmin-oid"	
+				admins_list "R5mkos-1007946891142"
+				
 				///////////////////////////////////////////////////////////////////////////////////
 				//////////			Modded weapons - JANU's framework 		 			 //////////
 				/////////////////////////////////////////////////////////////////////////////////// 
@@ -51,13 +62,12 @@ playlists
 				//////////////////////////////////////////////////////////////
 				
 				logging_enabled 								1 // Tracker will not run without this. //Todo( renameto: tracker_enabled )
-				logging_encryption								1 // Todo( renameto: tracker_encryption
+				logging_encryption								1 // 
 				logging_shipstats 								1 // Enabling this will transfer data at end of match //Todo( renameto: tracker_shipstats )
 				cc_administration								1 // Enabling this enables admins to use 'cc' client commands.
 				ea_verify_server								1 // Todo(dw): use QueryData to auto determine if at all, remove from playlists file ( only applies to official r5r.dev servers )
 				use_global_stats								1 // Disabling this will disable api data ( api data only transfer at start/end of match. )
 				
-				enable_motd 		1  
 				use_online_motd 	0  // 1 for online, 0 for local	 //for online, must have tracker dll	
 				
 				// for local motd: [ NOT RECCOMENDED (leave blank) ] - This will create unncessary remote calls on client connect, preferably use FS_PLAYLIST_MOTD at the bottom of this file.
@@ -66,22 +76,17 @@ playlists
 
 				// restricted servers	
 				restricted_server 				0			// 1 = restrictions enabled
-				restricted_join_message 		"Welcome to the R5R.DEV elite server. \n\n You meet the minimum requirements to play on this server."
-				restricted_whitelist_message 	"You're whitelisted for the R5R.DEV elite server"
+				restricted_join_message 		"Welcome to a restricted server. \n\n You meet the minimum requirements to play on this server."
+				restricted_whitelist_message 	"You're whitelisted for this server"
 				restricted_kills 				500		// minimum kills required to play
 				restricted_kd 					0.7  			// minimum kd ratio
 				restricted_playtime 			10000 	// minimum play time in seconds
 				restricted_gamesplayed 			10 // minimum games played
 				restricted_rank 				200  		//minimum rank allowed to join	
-				restricted_kick_log 			1
-					
-					
-				//ADMINS for cc command (reccomended to list in r5r.dev_config file if has tracker dll)
-				// usage: "adminname-oid,anotheradmin-oid"	
-				admins_list "R5mkos-1007946891142"
-
+				restricted_kick_log 			1			
 				
 				
+				// configure in r5rdev_config.json
 				stats_discord_webhook_player_count		0 // Sends player join and disconnect data to a discord channel
 				stats_discord_webhook_matches_enabled	0 // Sends Recap Data to a discord webhook
 
@@ -623,9 +628,7 @@ playlists
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall	0
 				
-				flowstate_modified_movement					0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
-				drop_loot_on_death							1
-				deathbox_ondeath_enabled					0
+				flowstate_modified_movement					4 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
 			}
 			gamemodes { fs_snd { maps {
 				mp_rr_arena_empty                   			1
@@ -1459,6 +1462,7 @@ playlists
 				skydive_ziplines_enabled           1
 				ground_loot_enable 				   0
 				lootbin_loot_enable                0
+				survival_infinite_ammo   		   0 	//Disable if using groundloot / stack counts
 				
 				survival_jumpkit_enabled           0
 				survival_wallrun_enabled           0
@@ -1506,8 +1510,6 @@ playlists
 				fs_scenarios_ground_loot						1
 				fs_scenarios_inventory_empty					0 	// 0 won't give weapons, 1 will give wepons
 				fs_scenarios_deathboxes_enabled					1
-				deathbox_ondeath_enabled 						1
-				drop_loot_on_death								1
 				fs_scenarios_bleedout_enabled					1
 				fs_scenarios_show_death_recap_onkilled			1
 				fs_scenarios_zonewars_ring_mode					1
@@ -1518,7 +1520,6 @@ playlists
 				fs_scenarios_characterselect_enabled			1
 				fs_scenarios_characterselect_time_per_player	3.5
 				fs_scenarios_ringclosing_maxtime				100
-				survival_infinite_ammo   						1 	//Disable if ground loot is enabled above
 				flowstateBubble 								"111, 66, 245"	
 				// fs_scenarios_max_queuetime 150.0 //not implemented atm
 				// fs_scenarios_minimum_team_allowed 1 // used only when max_queuetime is triggered
@@ -1537,9 +1538,7 @@ playlists
 				superglide_counter_msg					1 // Shows players superglide count
 				custom_superglide_msg					"Kewl beans" //shows custom msg under counter.
 				
-				maplist "mp_rr_arena_composite,mp_rr_aqueduct,mp_rr_party_crasher" //cycle these maps
-				
-				rotate_map 								1 // rotatesmaps in maplist
+				rotate_map 								1 // rotatesmaps in enabled maps section.  
 				rest_grace 								5.0 // time required from start of fight 
 															// or since last damage to rest during a fight 
 															// if player tries to rest, it will send them to rest after fight 
@@ -1555,6 +1554,7 @@ playlists
 				enable_chat_commands					1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
+				give_weapon_stack_count_amount			3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
 				
 				///////////////////////////////////////////////////////////////////////////////			
 				
@@ -1612,7 +1612,7 @@ playlists
 				survival_jumpkit_enabled           0
 				survival_wallrun_enabled           0
 				
-				survival_infinite_ammo             1
+				survival_infinite_ammo             0 
 				survival_custom_deploy             1
 				character_select_time_min          0
 				character_select_time_max          0
@@ -1636,7 +1636,7 @@ playlists
 				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
 				
 				flowstateAutoChangeLevelEnable			1
-				flowstateRoundsBeforeChangeLevel		2
+				flowstateRoundsBeforeChangeLevel		1 //2
 				
 				flowstateAdminTgive 					0 // 0 will enable dev menu weapons for players
 				flowstate1v1MatchLoadout				0
@@ -1645,7 +1645,7 @@ playlists
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
 				flowstate_give_random_custom_models_toall			1
 				
-				flowstateRoundtime 						800
+				flowstateRoundtime 						600
 				
 				/////////////////////////
 				// mkos added features //
@@ -1658,7 +1658,6 @@ playlists
 				default_ibmm_wait						0 //0 for instant queue any input
 				ibmm_wait_limit							30 //maximum wait time allowed to match input
 				
-				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
 				enable_ping_kick						0 // 0 disables ping kick for this mode
 				enable_afk_thread 						1 //0 disables afk thread for this mode
@@ -1694,8 +1693,7 @@ playlists
 				challenge_recap_server_message			1 //enables quick kill/death recap msg in chat (requires chat bot enabled in r5rdev_config.json)
 				custom_weapons_challenge_only			1 //restricts custom weapons to during challenge only ( dev menu/weapon menu )
 				
-				maplist "mp_rr_arena_composite,mp_rr_aqueduct,mp_rr_party_crasher" //maps you want cycled
-				rotate_map 								1 // rotatesmaps in maplist 
+				rotate_map 								1 // rotatesmaps in enabled maps section. 
 				
 				disable_lag_comp						0 //not advised
 				
@@ -1714,6 +1712,8 @@ playlists
 				enable_chat_commands					1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
+				give_weapon_stack_count_amount			3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
+				player_collision_enabled				0 // 0 disables players colliding with each other.
 				
 				//The following is for when 
 				//installing or enabling extra spawn paks
@@ -1736,14 +1736,14 @@ playlists
 				custom_playlist_spawnpak		""  // string, custom playlist override (fs_1v1, fs_scenarios, etc. )  loads spawns for this gametype instead of game loaded gametype
 			}
 			gamemodes { fs_dm { maps {
-				mp_rr_canyonlands_64k_x_64k                    	1
-				mp_rr_aqueduct									1
-				mp_rr_aqueduct_night							1
-				mp_rr_arena_composite							1
-				mp_rr_arena_phase_runner						1
-				mp_rr_olympus_mu1								1
-				mp_rr_arena_skygarden							1
-				mp_rr_party_crasher								1
+				mp_rr_canyonlands_64k_x_64k 1
+				mp_rr_aqueduct 1
+				mp_rr_aqueduct_night 1
+				mp_rr_arena_composite 1
+				mp_rr_arena_phase_runner 1
+				mp_rr_olympus_mu1 1
+				mp_rr_arena_skygarden 1
+				mp_rr_party_crasher 1
 			} } }
 		}
 
@@ -1819,7 +1819,6 @@ playlists
 				ibmm_wait_limit							15 //maximum wait time allowed to match input
 				lg_duel_mode_60p						0  //enables beta lg mode
 							
-				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
 				enable_ping_kick						0 // 0 disables ping kick for this mode
 				enable_afk_thread 						1 //0 disables afk thread for this mode
@@ -1932,7 +1931,6 @@ playlists
 				default_ibmm_wait						0 //0 for instant queue any input
 				ibmm_wait_limit							30 //maximum wait time allowed to match input
 				
-				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
 				enable_ping_kick						0 // 0 disables ping kick for this mode
 				enable_afk_thread 						1 //0 disables afk thread for this mode
@@ -1954,8 +1952,7 @@ playlists
 				challenge_recap_server_message			1 //enables quick kill/death recap msg in chat (requires chat bot enabled in r5rdev_config.json)
 				custom_weapons_challenge_only			1 //allows custom weapons during challenge only
 				
-				maplist "mp_rr_arena_composite,mp_rr_aqueduct,mp_rr_party_crasher"
-				rotate_map 								1 // rotatesmaps in maplist
+				rotate_map 								1 // rotatesmaps in enabled maps section. 
 				disable_lag_comp						0
 				rest_grace 								5.0 // time required from start of fight 
 															// or since last damage to rest during a fight 
@@ -2076,7 +2073,6 @@ playlists
 				ibmm_wait_limit							30 //maximum wait time allowed to match input
 				lg_duel_mode							1 //enables lg duels
 				
-				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
 				enable_ping_kick						0 // 0 disables ping kick for this mode
 				enable_afk_thread 						1 //0 disables afk thread for this mode
@@ -2098,9 +2094,7 @@ playlists
 				challenge_recap_server_message			1 //enables quick kill/death recap msg in chat (requires chat bot enabled in r5rdev_config.json)
 				custom_weapons_challenge_only			0 //allows custom weapons during challenge only
 				
-				maplist "mp_rr_canyonlands_staging"
-				
-				rotate_map 								1 // rotatesmaps in maplist
+				rotate_map 								1 // rotatesmaps in enabled maps section. 
 				disable_lag_comp						0
 				rest_grace 								5.0 // time required from start of fight 
 															// or since last damage to rest during a fight 
@@ -2174,7 +2168,7 @@ playlists
 				survival_enable_squad_intro        0
 				survival_enable_gladiator_intros   0
 				jump_from_plane_enabled            0
-				replay_enabled                     0  
+				replay_enabled                     1  
 				replay_delay                       5
 				enable_small_pheonix			   0
 				match_ending_enabled               0
@@ -2214,7 +2208,7 @@ playlists
 				Admins 									"r5r_ColombiaFPS"
 				respawn_delay 							5
 				
-				flowstateRoundtime 						30 //600
+				flowstateRoundtime 						600
 				
 				flowstateBubble 						"252, 140, 3" //ring color
 				flowstateResetKills 					1

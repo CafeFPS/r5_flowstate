@@ -4841,7 +4841,7 @@ void function PIN_PlayerLeft( entity player, string reason )
 		{
 			if ( file.update_discord_player_counts )
 			{
-				string count = ( GetNumHumanPlayers() - 1).tostring()
+				string count = ( GetNumHumanPlayers() - 1 ).tostring()
 				thread PlayerCounts( "Left", playerName, OID, count )		
 			}
 			

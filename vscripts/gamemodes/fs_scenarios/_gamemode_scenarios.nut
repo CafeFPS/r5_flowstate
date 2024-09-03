@@ -1855,7 +1855,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 							if( !newGroup.IsFinished )
 							{
-								//this is just a test to see how spawn metadata would be used for a game mode
+								//this is just a test to see how spawn metadata would be used for a game mode ~mkos
 								string spawnName = newGroup.groupLocStruct.name
 								string ids = newGroup.groupLocStruct.ids
 								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
@@ -2517,7 +2517,7 @@ LocPairData function CustomSpawns()
 	Scenarios_SetWaitingRoomRadius( 1650 )
 	SpawnFlowstateLobbyProps( mapCenter + <0,0,50000> )
 	
-	LocPair waitingRoom = NewLocPair( mapCenter + <0,0,50072>, < 0, -83.0441132, 0 > ) 
+	LocPair waitingRoom = NewLocPair( mapCenter + <0,0,50072>, < 0, 90, 0 > )
 	
 	return SpawnSystem_CreateLocPairObject( spawns, true, waitingRoom, null, metaData )
 }

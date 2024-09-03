@@ -1604,6 +1604,16 @@ struct {
 				
 				break
 				
+			case "kill_banners":
+			
+				BannerAssets_KillAllBanners()
+				break 
+				
+			case "start_banners":
+			
+				BannerAssets_Restart()
+				break
+				
 			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;

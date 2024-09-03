@@ -171,6 +171,7 @@ struct
 	bool flowstate_evo_shields
 	bool survival_infinite_ammo
 	bool survival_drop_equipment
+	bool survival_drop_item
 	
 } settings 
 
@@ -251,6 +252,7 @@ void function SurvivalLoot_Settings_Init()
 	settings.flowstate_evo_shields		= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
 	settings.survival_infinite_ammo		= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
 	settings.survival_drop_equipment	= GetCurrentPlaylistVarBool( "survival_drop_equipment", true )
+	settings.survival_drop_item			= GetCurrentPlaylistVarBool( "survival_drop_item", true )
 }
 
 void function LoadLootZonesForMap()
@@ -1111,7 +1113,7 @@ array<string> function Flowstate_GetLootToRemoveFromBackpackLimit( entity player
 
 bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> args )
 {
-	if ( !GetCurrentPlaylistVarBool( "survival_drop_item", true ) )
+	if ( !settings.survival_drop_item )
 		return true
 	
 	if ( !IsValid( player ) || !IsAlive( player ) )

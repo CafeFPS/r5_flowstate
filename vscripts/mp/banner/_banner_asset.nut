@@ -13,6 +13,7 @@ global function BannerAssets_Lock				// ( int groupId )
 global function BannerAssets_Unlock				// ( int groupId )
 global function BannerAssets_KillAllBanners		// ()
 global function BannerAssets_Restart			// ()
+global function BannerAssets_BannerVisibilityMover
 
 global const MAX_VIDEO_CHANNELS = 10 //this must not surpass engine internals.
 global const CURRENT_RESERVED_CHANNELS = 5 //this is the limit we start from. (todo: disable systems where posible)
@@ -78,7 +79,10 @@ struct
 } file 
 
 void function BannerAssets_Init()
-{	
+{
+	if( !GetCurrentPlaylistVarBool( "enable_banner_assets", false ) )
+		return 
+		
 	file.dummyEnt = CreateEntity( "info_target" )
 
 	RegisterSignal( "KillAllBannerGroups" )
@@ -559,6 +563,107 @@ array<BannerImageData> function DeepCopyBanner( array<BannerImageData> banners )
 	}
 
     return returnBanners
+}
+
+vector function BannerAssets_BannerVisibilityMover( vector initialPosition, vector initialAngles, float bannerWidth, float bannerHeight, float adjustmentDistance = 5.0, float maxIterations = 1000 ) 
+{
+	array<vector> corners
+	vector forward, right, up, simulateEyePos, playerEyeAngles
+
+	float halfWidth = bannerWidth * 0.5
+	float halfHeight = bannerHeight * 0.5
+
+	vector currentPosition = initialPosition
+	
+	corners.resize(4)
+	
+	forward 	= AnglesToForward( initialAngles )
+	right 		= AnglesToRight( initialAngles )
+	up			= AnglesToUp( initialAngles )
+
+	simulateEyePos 	= getWaitingRoomLocation().origin
+	playerEyeAngles = getWaitingRoomLocation().angles
+	
+	int iter = 0
+    while ( iter < maxIterations ) 
+	{
+		#if DEVELOPER
+			Warning( "Adjusting..." )
+		#endif
+
+        corners[ 0 ] = currentPosition + ( forward * halfHeight ) - ( right * halfWidth )
+        corners[ 1 ] = currentPosition + ( forward * halfHeight ) + ( right * halfWidth )
+        corners[ 2 ] = currentPosition - ( forward * halfHeight ) - ( right * halfWidth )
+        corners[ 3 ] = currentPosition - ( forward * halfHeight ) + ( right * halfWidth )
+
+        bool allCornersVisible = true
+
+		for ( int i = 0; i < 4; i++ ) 
+		{
+			vector corner = corners[ i ]
+			TraceResults traceResult = TraceLine( simulateEyePos, corner, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+			
+			float distanceToCorner = Distance( simulateEyePos, corner )
+			float traceEndDistance = Distance( simulateEyePos, traceResult.endPos )
+
+			if ( traceResult.fraction < 1.0 && traceEndDistance < distanceToCorner ) 
+			{
+				allCornersVisible = false
+				break
+			}
+		}
+
+        if ( allCornersVisible ) 
+		{
+			#if DEVELOPER
+				Warning( "FOUND A GOOD POSITION: " + currentPosition )
+			#endif
+			
+            return currentPosition
+        }
+
+		currentPosition = AdjustBannerPosition( currentPosition, initialAngles, simulateEyePos, adjustmentDistance )
+		adjustmentDistance += 5
+
+		iter++
+	}
+
+	return initialPosition
+}
+
+vector function AdjustBannerPosition( vector currentPosition, vector currentAngles, vector simulateEyePos, float adjustmentDistance ) 
+{
+	array<vector> adjustments
+	
+	//adjustments.append( AnglesToForward( currentAngles ) * -adjustmentDistance )
+	adjustments.append( <0, 0, adjustmentDistance> )
+	adjustments.append( <0, 0, -adjustmentDistance> )
+	adjustments.append( AnglesToRight( currentAngles ) * adjustmentDistance )
+	adjustments.append( AnglesToRight( currentAngles ) * -adjustmentDistance )
+	adjustments.append( AnglesToForward( currentAngles ) * adjustmentDistance )
+    
+	int adjustmentsLen = adjustments.len()
+	for ( int i = 0; i < adjustmentsLen; i++ ) 
+	{
+		vector adjustment = adjustments[ i ]
+		vector newPosition = currentPosition + adjustment
+	
+		if ( IsPositionClear( newPosition, simulateEyePos ) )  
+			return newPosition
+	}
+
+	#if DEVELOPER
+		Warning( "Failed to find a good position" )
+	#endif
+
+	return currentPosition
+}
+
+
+bool function IsPositionClear( vector position, vector simulateEyePos ) 
+{
+	TraceResults traceResult = TraceLine( simulateEyePos, position, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	return traceResult.fraction == 1.0
 }
 
 void function __Singlethread( entity player, BannerGroupData groupData )

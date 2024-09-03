@@ -1716,8 +1716,7 @@ int function SURVIVAL_AddToInventory( array<ConsumableInventoryItem> inventory, 
 
 
 int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count = 1, bool reallyAdd = true )
-{
-	                                                                                                 
+{                                                                                                
 	if ( !SURVIVAL_Loot_IsRefValid (ref) )                             
 	{
 		Warning( "Trying to add non-valid loot to player inventory" )

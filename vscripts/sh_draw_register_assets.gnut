@@ -109,8 +109,8 @@ void function WorldDrawAsset_RegisterAllAssets()
 				entity player = GetLocalClientPlayer()
 				if( !IsValid( player ) )
 					return
-					
-				waitthread CheckVideoAssets_expensive( player, videoAssetsToCheck )
+				
+				CheckVideoAssets_expensive( player, videoAssetsToCheck ) //was: waitthread
 				invalidAssets.extend( file.invalidVideoAssets )
 				
 				string cmd
@@ -255,9 +255,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 		return file.invalidVideoAssets.contains( assetId )
 	}
 #endif
-
-//PauseVideoOnChannel
-//VideoChannelHasVideoAssigned
 
 #if SERVER	
 	void function WorldDrawAsset_TransmitDesiredAssets()

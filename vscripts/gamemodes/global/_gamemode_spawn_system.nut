@@ -610,7 +610,7 @@ LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom,
 
 void function SetCallback_FlowstateSpawnsOffset( LocPair functionref() callbackFunc )
 {
-	mAssert( file.mapGamemodeBasedOffsetFunc == null, "Tried to set " + string( callbackFunc ) + " in mapGamemodeBasedOffsetFunc but func was already set to " + string( file.mapGamemodeBasedOffsetFunc ) + " in " + FUNC_NAME() + "()" )
+	mAssert( file.mapGamemodeBasedOffsetFunc == null, "Tried to set " + string( callbackFunc ) + " in mapGamemodeBasedOffsetFunc but func was already set to " + string( file.mapGamemodeBasedOffsetFunc ) + " in " + FUNC_NAME(2) + "()" )
 	file.mapGamemodeBasedOffsetFunc = callbackFunc 
 }
 

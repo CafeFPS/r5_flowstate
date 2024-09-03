@@ -555,7 +555,7 @@ void function RespawnBehavior_Init()
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
 	#if DEVELOPER
-		//Warning("DecideRespawnPlayer: " + string( player ) )
+		Warning( "DecideRespawnPlayer: " + string( player ) )
 		DumpStack()
 		mAssert( script_bRespawnInitComplete, "RespawnBehavior_Init() --- wasn't ready in DecideRespawnPlayer()" )
 	#endif

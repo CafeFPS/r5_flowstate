@@ -1484,7 +1484,7 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			player.SetShieldHealthMax( 0 )
 			Inventory_SetPlayerEquipment(player, "", "armor")
 			
-			thread function () : ( player )
+			thread function () : ( player ) //jfc
 			{
 				EndSignal( player, "OnDestroy" )
 				EndSignal( player, "OnDeath" )
@@ -3749,16 +3749,17 @@ void function SimpleChampionUI()
 
 		if ( flowstateSettings.rotate_map )
 		{
-			array<string> maplist = split( flowstateSettings.maplist, "," )
-			int countmaps = maplist.len()
+			int countmaps = GetCurrentPlaylistMapsCount()
 			int i;
 
-			for ( i = 0; i < countmaps; i++ ) 
+			for ( i = 0; i < countmaps; i++ )
 			{
-				if ( GetMapName() == maplist[i] ) 
+				string foundMap = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, i )
+				
+				if ( GetMapName() == foundMap ) 
 				{
-					int index = (i + 1) % countmaps	
-					to_map = maplist[index]
+					int index = (i + 1) % countmaps
+					to_map = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, index )
 					break
 				}
 			}

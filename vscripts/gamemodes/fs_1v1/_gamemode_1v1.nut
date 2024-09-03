@@ -41,7 +41,7 @@ global function Gamemode1v1_SetPlayerGamestate
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
-global function GiveWeaponsToGroup
+//global function GiveWeaponsToGroup
 global function deleteWaitingPlayer
 global function deleteSoloPlayerResting
 global function getAvailableRealmSlotIndex
@@ -215,6 +215,8 @@ struct
 	bool bAllowWeaponsMenu
 	array<string> hostSetAttachments
 	int playerMaxFightDistance = 2000
+	int give_weapon_stack_count_amount
+	bool player_collision_enabled
 	
 } settings
 
@@ -488,7 +490,7 @@ bool function isPlayerInProgress( entity player )
 	return false 
 }
 
-void function EquipHostSetInvetoryAttachments( entity player )
+void function EquipHostSetInventoryAttachments( entity player )
 {
 	foreach ( optic in settings.hostSetAttachments )
 		SURVIVAL_AddToPlayerInventory( player, optic )
@@ -539,7 +541,7 @@ void function SetHostInvetoryAttachments()
 
 void function INIT_PlaylistSettings()
 {
-	settings.bGiveSameRandomLegendToBothPlayers		= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
+	settings.bGiveSameRandomLegendToBothPlayers		= GetCurrentPlaylistVarBool( "give_random_legend_on_spawn", false )
 	settings.bAllowLegend 							= GetCurrentPlaylistVarBool( "give_legend", true )
 	settings.bAllowAbilities 						= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
 	settings.bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
@@ -551,6 +553,8 @@ void function INIT_PlaylistSettings()
 	settings.roundTime								= float ( FlowState_RoundTime() )
 	settings.bAllowWeaponsMenu						= !FlowState_AdminTgive()
 	settings.playerMaxFightDistance					= GetCurrentPlaylistVarInt( "player_max_fight_distance", 2000 )
+	settings.give_weapon_stack_count_amount			= GetCurrentPlaylistVarInt( "give_weapon_stack_count_amount", 0 )
+	settings.player_collision_enabled				= GetCurrentPlaylistVarBool( "player_collision_enabled", true )
 }
 
 bool function isCustomWeaponAllowed()
@@ -2590,6 +2594,8 @@ void function soloModePlayerToWaitingList( entity player )
 			Signal( player, "BleedOut_OnRevive" )
 	}
 
+	SetPlayerInventory( player, [] ) //clear inventory.
+
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
@@ -3074,14 +3080,9 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	{
 		PlayerRestoreHP_1v1( player, 100, player.GetShieldHealthMax().tofloat() )
 	}
-
-	//re-enable for inventory. 
-	Survival_SetInventoryEnabled( player, true )
-	SetPlayerInventory( player, [] ) //possible healing item choice by host
-	EquipHostSetInvetoryAttachments( player )
 	
 	wait 0.1
-	ReCheckGodMode(player)
+	ReCheckGodMode(player) //todo: fix and remove the need for this.
 }
 
 void function _decideLegend( soloGroupStruct group )
@@ -3166,6 +3167,68 @@ vector function Gamemode1v1_FetchNotificationPanelAngles()
 	return Gamemode1v1_NotificationPanel_Angles
 }
 
+
+#if SCRIPT_GAME_VERSION__RELEASE
+void function BannerImages_1v1Init()
+{
+	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
+	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,267 >
+	
+	vector testOrigin 	= main_banner__Coordinates.origin + <0,0,16> //height offset for player eyes.
+	vector testAngles 	= main_banner__Coordinates.angles
+	float defaultWidth 	= 480 //todo playlistvar
+	float defaultHeight	= 270 //todo playlistvar
+	
+	LocPair setBannerLoc = NewLocPair( BannerAssets_BannerVisibilityMover( testOrigin, testAngles, defaultWidth, defaultHeight ), testAngles )
+	
+	BannerAssets_SetAllGroupsFunc
+	(
+		void function() : ( setBannerLoc, defaultWidth, defaultHeight )
+		{
+			BannerAssets_RegisterGroup
+			(
+				"main_banner",
+				setBannerLoc,
+				defaultWidth,
+				defaultHeight,
+				.95,
+				5
+			)
+		}
+	)
+	
+	BannerAssets_SetAllAssetsFunc
+	(
+		void function()
+		{
+			try
+			{
+				string assetList = GetCurrentPlaylistVarString( "banner_assets", "" )
+				
+				if( !empty( assetList ) )
+				{	
+					array<string> playlistBannerAssets = StringToArray( assetList )
+					
+					foreach( assetRef in playlistBannerAssets )
+					{
+						BannerAssets_GroupAppendAsset
+						(
+							"main_banner",
+							WorldDrawAsset_AssetRefToID( assetRef )
+						)
+					}
+				}
+			}
+			catch(e)
+			{
+				sqerror( "ERROR: " + e )
+			}
+		}
+	)
+	
+	BannerAssets_Init()
+}
+#else //endif SCRIPT_GAME_VERSION__RELEASE
 void function BannerImages_1v1Init()
 {
 	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
@@ -3276,6 +3339,7 @@ void function BannerImages_1v1Init()
 	
 	BannerAssets_Init() //conectoutput?
 }
+#endif // else !SCRIPT_GAME_VERSION__RELEASE
 
 void function INIT_PregameCallbacks()
 {
@@ -3341,6 +3405,9 @@ void function Gamemode1v1_Init( int eMap )
 		AddSpawnCallback( "prop_survival", Gamemode1v1_DissolveDropable )
 	
 	REST_GRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
+	
+	if( !settings.player_collision_enabled )
+		AddCallback_OnPlayerRespawned( DisablePlayerCollision )
 	
 	file.characters = GetAllCharacters()
 	characterslist = [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
@@ -3410,14 +3477,18 @@ void function Gamemode1v1_Init( int eMap )
 	
 	}
 
-	foreach(weapon in WeaponsSecondary)
-	{
-		array<string> weaponfullstring = split( weapon , " ")
-		string weaponName = weaponfullstring[0]
+	//R5RDEV-1
+	
+	// foreach(weapon in WeaponsSecondary)
+	// {
+		// array<string> weaponfullstring = split( weapon , " ")
+		// string weaponName = weaponfullstring[0]
 		
-		if(GetBlackListedWeapons().find(weaponName) != -1)
-				WeaponsSecondary.removebyvalue(weapon)
-	}
+		// if(GetBlackListedWeapons().find(weaponName) != -1)
+				// WeaponsSecondary.removebyvalue(weapon)
+	// }
+	
+	WeaponsSecondary = ValidateBlacklistedWeapons( WeaponsSecondary )
 	
 	//FlagWait( "EntitiesDidLoad" ) //creates timing issues to wait here
 	
@@ -4590,6 +4661,7 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 
 void function GiveWeaponsToGroup( array<entity> players )
 {
+	printw( "giving weapons for players: ", players[0], players[1] )
 	thread function () : ( players )
 	{
 		foreach( player in players )
@@ -4636,10 +4708,15 @@ void function GiveWeaponsToGroup( array<entity> players )
 				CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
 			}
 			
-			
 			DeployAndEnableWeapons( player )
+			
+			//re-enable for inventory. 
+			Survival_SetInventoryEnabled( player, true )
+			Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+			SetPlayerInventory( player, [] ) //clear
+			EquipHostSetInventoryAttachments( player )
 
-			if ( ( settings.bNoCustomWeapons && !bInChallenge ) ||  !(player.p.name in weaponlist))//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
+			if ( ( settings.bNoCustomWeapons && !bInChallenge ) || !( player.p.name in weaponlist ) )//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
 			{
 				TakeAllWeapons(player)
 
@@ -4658,13 +4735,13 @@ void function GiveWeaponsToGroup( array<entity> players )
 			{	
 				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-			}	
+			}
 		}
 		
 		if( bInChallenge )
 		{
 			_decideLegend( group )	
-		}
+		}	
 	}()
 }
 
@@ -4696,15 +4773,18 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 			continue
 
 		TakeAllWeapons(player)
-
+		Survival_SetInventoryEnabled( player, true )
+		SetPlayerInventory( player, [] ) //clear
+		
+		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
+		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+		
 		if( !FS_Scenarios_GetInventoryEmptyEnabled() )
 		{
+			EquipHostSetInventoryAttachments( player )
 			GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 			GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		}
-
-		Survival_SetInventoryEnabled( player, true )
-		SetPlayerInventory( player, [] )
 
 		//RechargePlayerAbilities( player )
 		TakeAllPassives( player ) //passives given after legend selection
@@ -4712,11 +4792,8 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 
-		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
-		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-
 		foreach( item in STANDARD_INV_LOOT )
-			SURVIVAL_AddToPlayerInventory(player, item, 2)
+			SURVIVAL_AddToPlayerInventory( player, item, 2 )
 
 		//Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
 		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
@@ -4724,21 +4801,22 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )		
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )	
 	}
 }
 
-void function Gamemode1v1_GiveWeapon( entity player, string weapon, int slot  )
+void function Gamemode1v1_GiveWeapon( entity player, string weapon, int slot  ) //global exposed
 {
 	GivePrimaryWeapon_1v1( player, weapon, slot )
 }
 
-void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot )
+void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot ) //not global
 {
 	array<string> Data = split(weapon, " ")
 	string weaponclass = Data[0]
 	
-	if(weaponclass == "tgive") return
+	if( weaponclass == "tgive" ) 
+		return
 	
 	array<string> Mods
 	foreach(string mod in Data)
@@ -4747,11 +4825,9 @@ void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot )
 		    Mods.append( strip(mod) )
 	}
 
-	entity weaponNew = player.GiveWeapon( weaponclass , slot, Mods, false )
+	entity weaponNew = player.GiveWeapon( weaponclass, slot, Mods, false )
 	//entity weaponNew = player.GiveWeapon_NoDeploy( weaponclass , slot, Mods, false )
 
-	//SetupInfiniteAmmoForWeapon( player, weaponNew )
-	
 	int ammoType = weaponNew.GetWeaponAmmoPoolType()
 
 	if( InfiniteAmmoEnabled() )
@@ -4759,13 +4835,17 @@ void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot )
 		player.AmmoPool_SetCapacity( 65535 )
 		player.AmmoPool_SetCount( ammoType, 9999 )
 	}
+	else if( settings.give_weapon_stack_count_amount )
+	{	
+		player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
+		SetupPlayerReserveAmmo( player, weaponNew, settings.give_weapon_stack_count_amount )
+	}
 
 	player.ClearFirstDeployForAllWeapons()
 	player.DeployWeapon()
 
 	if( weaponNew.UsesClipsForAmmo() )
-		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax() )
-		
+		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax() )	
 
 	if( weaponNew.LookupAttachment( "CHARM" ) != 0 )
 		weaponNew.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
@@ -5160,7 +5240,7 @@ void function TakeUltimate( entity player )
 void function Init_IBMM( entity player )
 {
 	#if TRACKER && HAS_TRACKER_DLL
-		if( player == GetMessageBotEnt() )
+		if( player == GetMessageBotEnt() ) //Todo: nuke.
 			return 
 	#endif
 		
@@ -5688,8 +5768,6 @@ void function Gamemode1v1_OnSpawned( entity player )
 	
 	maki_tp_player( player, waitingRoomLocation )
 	player.UnfreezeControlsOnServer()
-	
-	return
 }
 
 void function Gamemode1v1_DissolveDropable( entity prop )
@@ -5729,4 +5807,29 @@ array<string> function ValidateBlacklistedWeapons( array<string> Weapons )
 	}
 	
 	return Weapons
+}
+
+void function DisablePlayerCollision( entity player )
+{
+	player.kv.contents = CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_HITBOX | CONTENTS_BLOCKLOS | CONTENTS_PHYSICSCLIP; //CONTENTS_PLAYERCLIP
+}
+
+void function SetupPlayerReserveAmmo( entity player, entity weapon, int amount )
+{
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+	player.AmmoPool_SetCount( ammoType, 0 ) //always reset
+
+	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ammoRef )
+	
+	int amountToGive = amount * data.inventorySlotCount
+	int amountToAdd = SURVIVAL_AddToPlayerInventory( player, ammoRef, amountToGive, false ) //don't actually add it here.
+	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )	
+	int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+
+	player.AmmoPool_SetCount( ammoType, ammoInInventory + amountToAdd ) //add here.
+	
+	#if DEVELOPER
+		printw( "added", amountToAdd, "for ref", ammoRef, "to player", string( player ) )
+	#endif
 }
