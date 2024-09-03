@@ -70,7 +70,6 @@ global function DissolveItem
 //R5R.DEV Tracker
 global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
-global function RotateMap
 global function Tracker_SetChampionOnPersistenceLoad
 global float g_fCurrentRoundEndTime
 global function GetChampionShowingState
@@ -291,33 +290,6 @@ int function GetCurrentRound()
 { 
     return file.currentRound;
 }
-
-
-void function RotateMap()
-{
-	string to_map = GetMapName()
-	
-	array<string> maplist = split( flowstateSettings.maplist, "," )
-	
-	int countmaps = maplist.len()
-	int i;
-
-	if( countmaps > 0 )
-	{
-		for ( i = 0; i < countmaps; i++ ) 
-		{
-			if ( GetMapName() == maplist[i] ) 
-			{
-				int index = (i + 1) % countmaps	
-				to_map = maplist[index]
-				break
-			}
-		}
-	}
-	
-	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
-}
-
 
 bool function bIs1v1Mode()
 {
@@ -3748,22 +3720,7 @@ void function SimpleChampionUI()
 		string to_map = GetMapName()
 
 		if ( flowstateSettings.rotate_map )
-		{
-			int countmaps = GetCurrentPlaylistMapsCount()
-			int i;
-
-			for ( i = 0; i < countmaps; i++ )
-			{
-				string foundMap = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, i )
-				
-				if ( GetMapName() == foundMap ) 
-				{
-					int index = (i + 1) % countmaps
-					to_map = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, index )
-					break
-				}
-			}
-		}
+			to_map = Tracker_DetermineNextMap()
 
 		waitthread g__InternalCheckReload()
 		

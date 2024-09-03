@@ -39,6 +39,7 @@ global function VerifyAdmin
 global function IsSafeString
 global function GetPlaylistMaps
 global function TP
+global function Tracker_DetermineNextMap
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -1409,7 +1410,8 @@ struct {
 				
 			case "nextmap":
 			
-				RotateMap()
+				string to_map = Tracker_DetermineNextMap()
+				GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 				return true
 			
 			case "fetchsetting":
@@ -1423,7 +1425,7 @@ struct {
 					return true 
 				}
 				
-				if( IsValid( p ))
+				if( IsValid( p ) )
 				{
 					Message( player, "Data for: " + param, Tracker_FetchPlayerData( p.p.UID, param2 ) )
 				}
@@ -2556,4 +2558,24 @@ void function TP( entity player, LocPair data )
 	player.SetVelocity( Vector( 0,0,0 ) )
 	player.SetAngles( data.angles )
 	player.SetOrigin( data.origin )
+}
+
+string function Tracker_DetermineNextMap()
+{
+	string to_map = GetMapName()
+	int countmaps = GetCurrentPlaylistMapsCount()
+
+	for ( int i = 0; i < countmaps; i++ )
+	{
+		string foundMap = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, i )
+		
+		if ( GetMapName() == foundMap ) 
+		{
+			int index = (i + 1) % countmaps
+			to_map = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, index )
+			break
+		}
+	}
+	
+	return to_map
 }

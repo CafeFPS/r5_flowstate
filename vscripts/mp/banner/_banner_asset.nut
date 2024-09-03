@@ -1,19 +1,20 @@
 // banner assets															//mkos
 
 global function BannerAssets_Init
-global function BannerAssets_RegisterGroup		// ( string name, LocPair groupLoc, float width, float height, float alpha = 1.0, bool visible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 0.0, int fadeSpeed = SLOWEST )
-global function BannerAssets_SetAllGroupsFunc	// ( void functionref() callbackFunc )
-global function BannerAssets_SetAllAssetsFunc 	// ( void functionref() callbackFunc )
-global function BannerAssets_GroupAppendAsset 	// ( string groupName, int assetIdRef, bool bLoopVideo = false, string assetName = "", string assetResourceRef = "" )
-global function BannerAssets_ModifyGroupData 	// ( string groupName, table tbl )
-global function BannerAssets_SyncAllPlayers		// ( int assetRefId = -1, string assetRef = "" )
-global function BannerAssets_DoesSignalExist    // ( string signal )
-global function BannerAssets_LockGroupsTo		// ( int assetId, int groupId = -1 )
-global function BannerAssets_Lock				// ( int groupId )
-global function BannerAssets_Unlock				// ( int groupId )
-global function BannerAssets_KillAllBanners		// ()
-global function BannerAssets_Restart			// ()
-global function BannerAssets_BannerVisibilityMover
+global function BannerAssets_RegisterGroup			// ( string name, LocPair groupLoc, float width, float height, float alpha = 1.0, bool visible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 0.0, int fadeSpeed = SLOWEST )
+global function BannerAssets_SetAllGroupsFunc		// ( void functionref() callbackFunc )
+global function BannerAssets_SetAllAssetsFunc 		// ( void functionref() callbackFunc )
+global function BannerAssets_GroupAppendAsset 		// ( string groupName, int assetIdRef, bool bLoopVideo = false, string assetName = "", string assetResourceRef = "" )
+global function BannerAssets_ModifyGroupData 		// ( string groupName, table tbl )
+global function BannerAssets_SyncAllPlayers			// ( int assetRefId = -1, bool bLocked = false, int groupId = -1, string assetRef = "",  )
+global function BannerAssets_DoesSignalExist    	// ( string signal )
+global function BannerAssets_LockGroupsTo			// ( int assetId, int groupId = -1 )
+global function BannerAssets_Lock					// ( int groupId )
+global function BannerAssets_Unlock					// ( int groupId )
+global function BannerAssets_KillAllBanners			// ()
+global function BannerAssets_Restart				// ()
+global function BannerAssets_IsEnabled				// ()
+global function BannerAssets_BannerVisibilityMover 	// ( vector initialPosition, vector initialAngles, float bannerWidth, float bannerHeight, float adjustmentDistance = 5.0, float maxIterations = 1000 ) 
 
 global const MAX_VIDEO_CHANNELS = 10 //this must not surpass engine internals.
 global const CURRENT_RESERVED_CHANNELS = 5 //this is the limit we start from. (todo: disable systems where posible)
@@ -75,20 +76,19 @@ struct
 	void functionref() runImageAppendtoGroupsFunc
 	
 	entity dummyEnt
+	bool isEnabled
 	
 } file 
 
 void function BannerAssets_Init()
 {
-	if( !GetCurrentPlaylistVarBool( "enable_banner_assets", false ) )
-		return 
-		
+	file.isEnabled = GetCurrentPlaylistVarBool( "enable_banner_assets", false )	
 	file.dummyEnt = CreateEntity( "info_target" )
 
 	RegisterSignal( "KillAllBannerGroups" )
 	RegisterSignal( "VisibilityChanged" )
 	
-	if( file.groupsInitCallbackFunc != null )
+	if( file.isEnabled && file.groupsInitCallbackFunc != null )
 	{	
 		file.groupsInitCallbackFunc()
 		
@@ -298,7 +298,7 @@ void function BannerAssets_KillAllBanners()
 
 void function BannerAssets_LockGroupsTo( int assetId, int groupId = -1 )
 {
-	BannerAssets_SyncAllPlayers( assetId, true, "", groupId )
+	BannerAssets_SyncAllPlayers( assetId, true, groupId, "" )
 }
 
 void function BannerAssets_Lock( int groupId )
@@ -424,7 +424,7 @@ void function __SetupThreads()
 	}
 }
 
-void function BannerAssets_SyncAllPlayers( int assetRefId = -1, bool bLocked = false, string assetRef = "", int groupId = -1 )
+void function BannerAssets_SyncAllPlayers( int assetRefId = -1, bool bLocked = false, int groupId = -1, string assetRef = "" )
 {
 	if( !empty( assetRef ) )
 	{
@@ -659,11 +659,15 @@ vector function AdjustBannerPosition( vector currentPosition, vector currentAngl
 	return currentPosition
 }
 
-
 bool function IsPositionClear( vector position, vector simulateEyePos ) 
 {
 	TraceResults traceResult = TraceLine( simulateEyePos, position, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 	return traceResult.fraction == 1.0
+}
+
+bool function BannerAssets_IsEnabled()
+{
+	return file.isEnabled
 }
 
 void function __Singlethread( entity player, BannerGroupData groupData )
@@ -730,7 +734,6 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		iter = 0
 		foreach( banner in banners )
 		{
-			//++iter
 			switch( banner.assetType )
 			{
 				case eAssetType.IMAGE:
