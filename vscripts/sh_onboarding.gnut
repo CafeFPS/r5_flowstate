@@ -386,7 +386,7 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	
 	CharacterSelect_AssignCharacter( player, initialCharacter )
 	
-	if( !lock || IsDevGamemode() )
+	if( !lock || IsDevGamemode() || Gamemode() == eGamemodes.WINTEREXPRESS )
 		player.SetPlayerNetBool( "hasLockedInCharacter", false )
 }
 

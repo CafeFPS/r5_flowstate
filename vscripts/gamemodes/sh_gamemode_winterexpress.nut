@@ -1,5 +1,5 @@
 // WINTER EXPRESS
-// ported by @CafeFPS
+// ported & implemented by @CafeFPS
 // mp_rr_desertlands_holiday map by zee_x64
 
 // fix custom waypoint for train
@@ -36,6 +36,7 @@ global function WinterExpress_IsTeamWinning
 
 global function FS_CreateScoreHUD
 global function FS_UpdateScoreForTeam
+global function DEV_UpdateTopoPos
 #endif
 
 #if UI
@@ -248,6 +249,7 @@ struct {
 		var activeSpectateMusic = null
 		bool OpenMenuGameplayButtonCallbackRegistered = false
 		var legendSelectMenuPromptRui = null
+		var legendSelectMenuPromptRuiTopo = null
 		var customCaptureProgressRui = null
 
 		//By @CafeFPS
@@ -335,12 +337,7 @@ void function WinterExpress_Init()
 		AddCallback_PlayerClassChanged( OnPlayerClassChanged )
 
 		// AbilityCarePackage_SetContentOverrideCallback(WinterExpress_OverrideAbilityCarePackage)
-		// if ( IsUsingLoadoutSelectionSystem() )
-		// {
-			// AddCallback_LoadoutSelection_OnLoadoutUpdated( WinterExpress_OnLoadoutUpdated )
-			// AddCallback_LoadoutSelection_OnLoadoutSelected( WinterExpress_OnLoadoutSelected )
-			AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
-		// }
+		AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
 
 		RegisterSignal( "WinterExpress_ObjectiveCaptureCancelled" )
 		RegisterSignal( "WinterExpress_RoundOver" )
@@ -416,7 +413,6 @@ void function WinterExpress_Init()
 
 		AddCallback_OnScoreboardCreated( FinishGamestateRui )
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad_Client )
-		AddCallback_OnCharacterSelectMenuClosed( WinterExpress_OnCharacterSelectMenuClosed )
 		Survival_SetVictorySoundPackageFunction( GetVictorySoundPackage )
 
 		RegisterDisabledBattleChatterEvents( WINTER_EXPRESS_DISABLED_BATTLE_CHATTER_EVENTS )
@@ -2082,20 +2078,6 @@ void function GivePlayerLoadoutOnGameStart( entity player )
 
 	bool isPlayerOnHoverTankAtStart = file.playersOnHovertank.contains( player ) ? true : false
 
-	// Open the Loadout Select Menu the first time players enter the game
-	// if ( IsUsingLoadoutSelectionSystem() && !player.IsBot() )
-	// {
-		// if ( isPlayerOnHoverTankAtStart )
-			// wait 11.0
-
-		// if ( IsValid( player ) )
-		// {
-			// LoadoutSelection_UpdateLoadoutInfoForMenus( player )
-			// Remote_CallFunction_UI( player, "LoadoutSelectionMenu_OpenLoadoutMenu", false )
-			// player.WaitSignal( "LoadoutSelection_LoadoutSelectMenuClosed" )
-		// }
-	// }
-
 	if ( IsValid( player ) )
 	{
 		// Only assume the player state is normal if the player is still on the hovertank or never spawned on it.
@@ -3349,15 +3331,11 @@ void function UI_UpdateOpenMenuButtonCallbacks_Spectate( int newLifeState, bool 
 
 	if ( newLifeState == LIFE_ALIVE )
 	{
-		// if ( shouldCloseMenu )
-			// RunClientScript( "CloseCharacterSelectMenu" )
+		if ( shouldCloseMenu )
+			RunClientScript( "CloseCharacterSelectNewMenu" )
 
-
-		// if ( IsUsingLoadoutSelectionSystem() )
-		// {
-			// if ( shouldCloseMenu && LoadoutSelectionMenu_IsLoadoutMenuOpen())
-				// LoadoutSelectionMenu_CloseLoadoutMenu()
-		// }
+		if ( shouldCloseMenu )
+			CloseFRChallengesSettingsWpnSelector()
 	}
 }
 
@@ -3424,22 +3402,22 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 	if ( !isLegendSelectAvailable && file.OpenMenuGameplayButtonCallbackRegistered )
 	{
 		DeregisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
+		CloseCharacterSelectNewMenu()
 
-		// if( CharacterSelect_MenuIsOpen() )
-			CloseCharacterSelectNewMenu()
+		if ( file.legendSelectMenuPromptRui != null )
+		{
+			RuiDestroy( file.legendSelectMenuPromptRui )
+			file.legendSelectMenuPromptRui = null
+		}
+		
+		if ( file.legendSelectMenuPromptRuiTopo != null )
+		{
+			RuiTopology_Destroy( file.legendSelectMenuPromptRuiTopo )
+			file.legendSelectMenuPromptRuiTopo = null
+		}
 
-		// if ( file.legendSelectMenuPromptRui != null )
-		// {
-			// RuiDestroy( file.legendSelectMenuPromptRui )
-			// file.legendSelectMenuPromptRui = null
-		// }
-
-		// // if ( IsUsingLoadoutSelectionSystem() )
-		// // {
-			// // DeregisterConCommandTriggeredCallback( "+offhand4", WinterExpress_CL_TryOpenLoadoutSelect )
-			// // RunUIScript( "LoadoutSelectionMenu_CloseLoadoutMenu" )
-
-		// // }
+		DeregisterConCommandTriggeredCallback( "+offhand4", WinterExpress_CL_TryOpenLoadoutSelect )
+		RunUIScript( "CloseFRChallengesSettingsWpnSelector" )
 
 		file.OpenMenuGameplayButtonCallbackRegistered = false
 	}
@@ -3447,22 +3425,38 @@ void function WinterExpress_UpdateOpenMenuButtonCallbacks_Gameplay( bool isLegen
 	if ( isLegendSelectAvailable && !file.OpenMenuGameplayButtonCallbackRegistered && player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
 	{
 		RegisterConCommandTriggeredCallback( "+offhand1", WinterExpress_CL_TryOpenCharacterSelect )
+		RegisterConCommandTriggeredCallback( "+offhand4", WinterExpress_CL_TryOpenLoadoutSelect )
 
-		// var rui = CreateFullscreenRui( $"ui/winter_express_change_prompt_screen.rpak", 100 )
-		// file.legendSelectMenuPromptRui = rui
-
-		// // if ( IsUsingLoadoutSelectionSystem() )
-		// // {
-			// // RegisterConCommandTriggeredCallback( "+offhand4", WinterExpress_CL_TryOpenLoadoutSelect )
-		// // }
-
-		// WinterExpress_UpdateCurrentLoadoutHUD()
+		AddSelectMenuPromptRui( "%offhand1% Open Character Select\n%offhand4% Open Weapon Selector" )
 		file.OpenMenuGameplayButtonCallbackRegistered = true
 	}
 }
 
+void function AddSelectMenuPromptRui( string hintText)
+{
+	UISize screenSize = GetScreenSize()
+	var topo = RuiTopology_CreatePlane( < 300 * screenSize.width / 1920.0, 490 * screenSize.height / 1080.0 , 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0>, false )
+	var hintRui = RuiCreate( $"ui/announcement_quick_right.rpak", topo, RUI_DRAW_HUD, 0 )
+	
+	RuiSetGameTime( hintRui, "startTime", Time() )
+	RuiSetString( hintRui, "messageText", hintText )
+	RuiSetFloat( hintRui, "duration", 9999999 )
+	RuiSetFloat3( hintRui, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
+	
+    file.legendSelectMenuPromptRui = hintRui
+	file.legendSelectMenuPromptRuiTopo = topo
+}
 
+void function DEV_UpdateTopoPos( float voffset, float hoffset ) //Cafe was here
+{
+	if( file.legendSelectMenuPromptRuiTopo != null )
+	{
+		UISize screenSize = GetScreenSize()
+		TopologyCreateData tcd = BuildTopologyCreateData( true, false )
+		RuiTopology_UpdatePos( file.legendSelectMenuPromptRuiTopo, < hoffset * screenSize.width / 1920.0, voffset * screenSize.height / 1080.0 , 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0> )
+	}
 
+}
 // Request open character select screen on the Client
 void function WinterExpress_CL_TryOpenCharacterSelect( var button )
 {
@@ -3477,76 +3471,11 @@ void function WinterExpress_CL_TryOpenCharacterSelect( var button )
 	UICallback_WinterExpress_OpenCharacterSelect()
 }
 
-// Callback when the character select menu is closed, we need to wait a bit before updating the Hud to show the right character portrait
-void function WinterExpress_OnCharacterSelectMenuClosed()
-{
-	thread WinterExpress_OnCharacterSelectMenuClosed_Thread()
-}
-
-void function WinterExpress_OnCharacterSelectMenuClosed_Thread()
-{
-	entity clientPlayer = GetLocalClientPlayer()
-	clientPlayer.EndSignal( "OnDestroy" )
-
-	OnThreadEnd(
-		function() : ( clientPlayer )
-		{
-			if ( IsValid( clientPlayer ) )
-				WinterExpress_UpdateCurrentLoadoutHUD()
-		}
-	)
-
-	wait 0.3
-}
-
 // Server callback to Update the text/icons for the currently selected Loadout
 void function ServerCallback_CL_UpdateCurrentLoadoutHUD()
 {
-	WinterExpress_UpdateCurrentLoadoutHUD()
-}
-
-// Update the text/icons for the currently selected Loadout or character
-void function WinterExpress_UpdateCurrentLoadoutHUD()
-{
-	// entity player = GetLocalClientPlayer()
-
-	// if ( !IsValid( player ) )
-		// return
-
-	// var legendSelectPromptRui = file.legendSelectMenuPromptRui
-
-	// // Update loadout images
-	// // if ( IsUsingLoadoutSelectionSystem() )
-	// // {
-		// // int currentLoadout = LoadoutSelection_GetSelectedLoadoutSlotIndex_CL_UI()
-
-		// // if ( legendSelectPromptRui != null )
-		// // {
-			// // RuiSetBool( legendSelectPromptRui, "hasLoadoutSelect", true )
-			// // RuiSetString( legendSelectPromptRui, "currentLoadoutHeaderText", LoadoutSelection_GetLocalizedLoadoutHeader( currentLoadout ) )
-			// // RuiSetImage( legendSelectPromptRui, "weapon0Icon", LoadoutSelection_GetItemIcon( currentLoadout, 0, -1 ) )
-			// // RuiSetInt( legendSelectPromptRui, "weapon0LootTier", LoadoutSelection_GetWeaponLootTeir( currentLoadout, 0) )
-			// // RuiSetImage( legendSelectPromptRui, "weapon1Icon", LoadoutSelection_GetItemIcon( currentLoadout, 1, -1 ) )
-			// // RuiSetInt( legendSelectPromptRui, "weapon1LootTier", LoadoutSelection_GetWeaponLootTeir( currentLoadout, 1) )
-			// // RuiSetImage( legendSelectPromptRui, "consumable0Icon", LoadoutSelection_GetItemIcon( currentLoadout, -1, 0 ) )
-			// // RuiSetImage( legendSelectPromptRui, "consumable1Icon", LoadoutSelection_GetItemIcon( currentLoadout, -1, 1 ) )
-			// // RuiSetImage( legendSelectPromptRui, "consumable2Icon", LoadoutSelection_GetItemIcon( currentLoadout, -1, 2 ) )
-			// // RuiSetBool( GetCompassRui(), "isVisible", false )
-			// // file.legendSelectMenuPromptRui = legendSelectPromptRui
-		// // }
-		// // else
-			// // RuiSetBool( GetCompassRui(), "isVisible", true )
-	// // }
-
-	// // Update character images
-	// if ( legendSelectPromptRui != null && LoadoutSlot_IsReady( ToEHI( player ), Loadout_Character() ) )
-	// {
-		// ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_Character() )
-		// RuiSetBool( legendSelectPromptRui, "hasLegendSelect", true )
-		// RuiSetImage( legendSelectPromptRui, "legendIcon", CharacterClass_GetGalleryPortrait( character ) )
-
-		// file.legendSelectMenuPromptRui = legendSelectPromptRui
-	// }
+	// WinterExpress_UpdateCurrentLoadoutHUD()
+	ServerCallback_RefreshInventoryAndWeaponInfo()
 }
 
 // Open the Loadout Selection Menu
@@ -3563,7 +3492,7 @@ void function WinterExpress_CL_TryOpenLoadoutSelect( var button )
 	if ( GetGameState() != eGameState.Playing )
 		return
 
-	// RunUIScript( "LoadoutSelectionMenu_OpenLoadoutMenu", false )
+	OpenFRChallengesSettingsWpnSelector()
 }
 
 
@@ -3574,12 +3503,7 @@ void function OnWaitingForPlayers_Client()
 
 	SurvivalCommentary_SetHost( eSurvivalHostType.MIRAGE )
 
-	// file.gameStartRui = RuiCreate( $"ui/winter_express_game_start.rpak", clGlobal.topoFullScreen, RUI_DRAW_POSTEFFECTS, 1 )
-	// RuiSetString( file.gameStartRui, "gameModeString", GetCurrentPlaylistVarString( "name", "#PLAYLIST_UNAVAILABLE" ) )
-	// RuiSetString( file.gameStartRui, "mapNameString", GetCurrentPlaylistVarString( "map_name", "#PLAYLIST_UNAVAILABLE" ) )
-	// RuiSetImage( file.gameStartRui , "gameModeIcon", GetGamemodeLogoFromImageMap( GetCurrentPlaylistVarString( "gamemode_logo", "BATTLE_ROYALE" )) )
-
-	// EmitSoundOnEntity( GetLocalClientPlayer(), GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket_WinterExpressCustom( eSurvivalCommentaryBucket.MATCH_INTRO ) ) )
+	EmitSoundOnEntity( GetLocalClientPlayer(), GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket_WinterExpressCustom( eSurvivalCommentaryBucket.MATCH_INTRO ) ) )
 
 	file.gameStartRuiCreated = true
 }
@@ -3704,13 +3628,13 @@ void function UICallback_WinterExpress_OpenCharacterSelect()
 	entity viewPlayer = GetLocalViewPlayer()
 
 	//safety so if this gets called outside of the mode due to a button callback, we can cancel the state
-	// if ( !GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_WINTEREXPRESS ) )
-		// return
+	if ( Gamemode() != eGamemodes.WINTEREXPRESS )
+		return
 
 	const bool browseMode = true
 	const bool showLockedCharacters = true
 	HideScoreboard()
-	OpenCharacterSelectNewMenu( browseMode ) //, showLockedCharacters )
+	OpenCharacterSelectAimTrainer( browseMode )
 }
 
 bool function WinterExpress_ShouldShowDeathScreen()
@@ -4699,6 +4623,13 @@ void function FS_CaptureProgressUI( float starttime, float endtime )
 
 void function FS_ReloadScoreHUD()
 {
+	if( file.legendSelectMenuPromptRuiTopo != null )
+	{
+		UISize screenSize = GetScreenSize()
+		TopologyCreateData tcd = BuildTopologyCreateData( true, false )
+		RuiTopology_UpdatePos( file.legendSelectMenuPromptRuiTopo, < screenSize.width + ( 0.35 * screenSize.width / 1920.0 ) , screenSize.height + ( 0.40 * screenSize.height / 1080.0 ), 0>, <float( screenSize.width ), 0, 0> , <0, float( screenSize.height ), 0> )
+	}
+
 	if( settings.scoreLimit != 3 )
 		return
 
@@ -4721,7 +4652,6 @@ void function FS_ReloadScoreHUD()
 	{
 		FS_Scenarios_InitPlayersCards()
 		FS_Scenarios_SetupPlayersCards( true )
-		
 	}
 }
 
@@ -4978,7 +4908,6 @@ void function CameraLerpHovertankThread( entity player, vector stationPos, vecto
 					wait 1
 					
 					FS_Scenarios_TogglePlayersCardsVisibility( true, false )
-					OpenFRChallengesSettingsWpnSelector()
 				}()
 		}
 	)

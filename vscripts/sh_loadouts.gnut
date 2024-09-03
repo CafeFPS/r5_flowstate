@@ -1908,6 +1908,9 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 	// 1: [loadout slot entry index]
 	// 2: [slot contents index]
 
+	if ( !IsValid( player ) || !CheckRate( player ) || Gamemode() == eGamemodes.WINTEREXPRESS && !player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) ) 
+		return false
+
 	EHI playerEHI = ToEHI( player )
 
 	const int EXPECTED_ARG_COUNT = 3
@@ -1946,6 +1949,12 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 		// This could happen if two people try to select the same character at the same time
 		//Assert( false, "'loadouts_set' received item flavor \"" + ItemFlavor_GetRef( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
 		Warning( "'loadouts_set' received item flavor \"" + DEV_DescItemFlavor( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
+		return true
+	}
+	
+	if( ItemFlavor_GetType( itemFlavor ) == eItemType.character && Gamemode() == eGamemodes.WINTEREXPRESS && IsValid( GetPlayerWithLockedCharacter( itemFlavor, GetPlayerArrayOfTeam( player.GetTeam() ) ) ) ) //Cafe was here
+	{
+		//A player already has that character.
 		return true
 	}
 	SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
