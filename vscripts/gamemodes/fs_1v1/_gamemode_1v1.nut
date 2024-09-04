@@ -220,16 +220,17 @@ struct
 	
 } settings
 
-//script vars 
+
 global bool mGroupMutexLock
 global array<LocPair> g_randomWaitingSpawns
 
+//local script vars 
 array<string> Weapons = []
 array<string> WeaponsSecondary = []
 vector Gamemode1v1_NotificationPanel_Coordinates
 vector Gamemode1v1_NotificationPanel_Angles
 
-float REST_GRACE = 5.0
+float s_RESTGRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
 const float MODE1V1_ITEM_DISSOLVE_TIME = 4.0
@@ -810,10 +811,10 @@ soloGroupStruct function returnSoloGroupOfPlayer( entity player )
 {
 	soloGroupStruct group;	
 	
-	if(!IsValid (player) )
+	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("returnSoloGroupOfPlayer entity was invalid")
+			sqprint("returnSoloGroupOfPlayer entity was invalid")
 		#endif
 		
 		return group; 
@@ -832,7 +833,7 @@ soloGroupStruct function returnSoloGroupOfPlayer( entity player )
 	catch(e)
 	{
 		#if DEVELOPER
-		sqprint("returnSoloGroupOfPlayer crash " + e)
+			sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
 	return group;
@@ -906,7 +907,7 @@ void function removeGroupByHandle( int handle )
 	}
 	else
 	{
-		if(!handle)
+		if( !handle )
 		{
 			sqerror("[removeGroupByHandle] ERROR: handle was null")
 		}
@@ -2336,27 +2337,27 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				
 				bool start_grace_exceeded = false
 				
-				if( ( timeNow - group.startTime ) > REST_GRACE )
+				if( ( timeNow - group.startTime ) > s_RESTGRACE )
 				{
 					start_grace_exceeded = true
 				}
 				
-				if( difference < REST_GRACE || !start_grace_exceeded )
+				if( difference < s_RESTGRACE || !start_grace_exceeded )
 				{	
 					float fTryAgainIn;
 					
 					if( start_grace_exceeded )
 					{
-						fTryAgainIn = REST_GRACE - ( timeNow - lastHitTime )
+						fTryAgainIn = s_RESTGRACE - ( timeNow - lastHitTime )
 					}
 					else 
 					{
-						fTryAgainIn = REST_GRACE - ( timeNow - group.startTime )
+						fTryAgainIn = s_RESTGRACE - ( timeNow - group.startTime )
 					}
 					
 					string sTryAgain = format( " %d", floor( fTryAgainIn.tointeger() ) )
 					#if DEVELOPER
-						sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
+						sqprint(format( "Time was too soon: difference:  %d, s_RESTGRACE: %d ", difference, s_RESTGRACE ))
 					#endif
 					
 					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", eMsgUI.DEFAULT, 5, "", sTryAgain )
@@ -2366,11 +2367,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				else
 				{
 					#if DEVELOPER
-						sqprint(format("Time was good: difference: %d, REST_GRACE: %d ", difference, REST_GRACE ))
+						sqprint(format("Time was good: difference: %d, s_RESTGRACE: %d ", difference, s_RESTGRACE ))
 					#endif
 					
 					restText = "#FS_RestGrace";
-					restFlag = REST_GRACE.tostring()
+					restFlag = s_RESTGRACE.tostring()
 				}
 			}
 		}
@@ -3404,7 +3405,7 @@ void function Gamemode1v1_Init( int eMap )
 	else
 		AddSpawnCallback( "prop_survival", Gamemode1v1_DissolveDropable )
 	
-	REST_GRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
+	s_RESTGRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
 	
 	if( !settings.player_collision_enabled )
 		AddCallback_OnPlayerRespawned( DisablePlayerCollision )
@@ -4117,7 +4118,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 							Tracker_AddDamageEventsToDeleteQueue( group.player1_handle, group.player2_handle )
 						#endif
 						
-						if( IsValid( group.player2 ) && processRestRequest( group.player1 ) ){ continue }	
+						//if( IsValid( group.player2 ) && processRestRequest( group.player1 ) ){ continue }	
 						soloModePlayerToWaitingList( group.player1 ) //back to waiting list
 						HolsterAndDisableWeapons( group.player1 )
 						LocalMsg( group.player1, Text5 )
@@ -4129,7 +4130,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 							Tracker_AddDamageEventsToDeleteQueue( group.player2_handle, group.player1_handle )
 						#endif 
 						
-						if( IsValid( group.player1 ) && processRestRequest( group.player2 ) ){ continue }
+						//if( IsValid( group.player1 ) && processRestRequest( group.player2 ) ){ continue }
 						soloModePlayerToWaitingList( group.player2 ) //back to waiting list
 						HolsterAndDisableWeapons( group.player2 )
 						LocalMsg( group.player2, Text5 )
@@ -4411,7 +4412,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					//mkos - keep building a list of candidates who are not timed out with same input
 					if( playerSelf.p.input != eachOpponent.p.input && ( player_IBMM_timeout == false || opponent_IBMM_timeout == false ) )
 					{
-						sqprint("Waiting for input match...");
+						//sqprint("Waiting for input match...");
 						continue		
 					}	
 				}
@@ -5713,13 +5714,13 @@ void function Gamemode1v1_OnPlayerDied( entity victim, entity attacker, var dama
 		ClearInvincible( victim )
 		maki_tp_player( victim, waitingRoomLocation )
 		
-		if( IsValid( attacker ) && IsValid( victim ) )
+		if( IsValid( attacker ) ) )
 			victim.p.lastKiller = attacker
 			
 		return
 	}
 
-	if( IsValid( attacker ) && IsValid( victim ) )
+	if( IsValid( attacker ) )
 		victim.p.lastKiller = attacker
 	
 	if( !is3v3Mode() )

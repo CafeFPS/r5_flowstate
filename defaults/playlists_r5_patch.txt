@@ -41,7 +41,7 @@ playlists
 				enable_banner_assets 1
 				
 				// Comma-separated list of assets
-				banner_assets "rui/world/flowstate1v1_banner01,rui/world/karma_banner_01,rui/world/flowstate1v1_banner02"
+				banner_assets "rui/world/flowstate1v1_banner02"
 				
 				enable_motd 		1  //enables message of the day for server.
 				
