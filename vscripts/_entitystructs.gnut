@@ -824,9 +824,11 @@ global struct ServerPlayerStruct
 	bool bannersValidated		= false
 	table< table<int, int> > groupTypeToRuiID = {}
 	
-	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks
+	
+	//For adding specific spawn behavior that fires once.
+	array<void functionref(entity)> playerSpawnedCallbacks_FireOnce
 	
 	//framework for confirm ( this is bad and experimental )
 	bool bInRetry 				= false

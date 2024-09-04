@@ -56,8 +56,8 @@
         navUp					SwchCustomADSEnabled
         navDown					SldADSAdvancedSensitivity1
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_0"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -84,8 +84,8 @@
         navUp					SldADSAdvancedSensitivity0
         navDown					SldADSAdvancedSensitivity2
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_1"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -112,8 +112,8 @@
         navUp					SldADSAdvancedSensitivity1
         navDown					SldADSAdvancedSensitivity3
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_2"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -140,8 +140,8 @@
         navUp					SldADSAdvancedSensitivity2
         navDown					SldADSAdvancedSensitivity4
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_3"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -168,8 +168,8 @@
         navUp					SldADSAdvancedSensitivity3
         navDown					SldADSAdvancedSensitivity5
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_4"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -196,8 +196,8 @@
         navUp					SldADSAdvancedSensitivity4
         navDown					SldADSAdvancedSensitivity6
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_5"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0
@@ -223,8 +223,8 @@
         pin_to_sibling_corner	BOTTOM_LEFT
         navUp					SldADSAdvancedSensitivity5
         conCommand				"gamepad_ads_advanced_sensitivity_scalar_6"
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
         inverseFill             0
         showLabel               0

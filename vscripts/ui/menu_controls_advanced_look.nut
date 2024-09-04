@@ -11,6 +11,8 @@ struct
 	table<var, string> buttonDescriptions
 	var                detailsPanel
 	var                contentPanel
+	
+	table <string, table<string, var > > textEntryFields
 
 	array<ConVarData> conVarDataList
 
@@ -45,9 +47,9 @@ void function InitAdvancedLookControlsPanel( var panel )
 	SetupButtonBase( button, "#GAMEPADCUSTOM_ENABLED", "#GAMEPADCUSTOM_ENABLED_DESC" )
 	AddButtonEventHandler( button, UIE_CHANGE, Button_Toggle_CustomEnabled )
 
-	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneIn" ), "#GAMEPADCUSTOM_DEADZONE_IN", "#GAMEPADCUSTOM_DEADZONE_IN_DESC" ) )
-	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneOut" ), "#GAMEPADCUSTOM_DEADZONE_OUT", "#GAMEPADCUSTOM_DEADZONE_OUT_DESC" ) )
-	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomCurve" ), "#GAMEPADCUSTOM_CURVE", "#GAMEPADCUSTOM_CURVE_DESC" ) )
+	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneIn" ), "#GAMEPADCUSTOM_DEADZONE_IN", "#GAMEPADCUSTOM_DEADZONE_IN_DESC", "gamepad_custom_deadzone_in", "TextGamepadCustomDeadzoneIn" ) )
+	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneOut" ), "#GAMEPADCUSTOM_DEADZONE_OUT", "#GAMEPADCUSTOM_DEADZONE_OUT_DESC", "gamepad_custom_deadzone_out", "TextGamepadCustomDeadzoneOut" ) )
+	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomCurve" ), "#GAMEPADCUSTOM_CURVE", "#GAMEPADCUSTOM_CURVE_DESC", "gamepad_custom_curve", "TextGamepadCustomCurve" ) )
 
 	//TODO(dw): not implemented in res file, commenting for now ~mkos
 	
@@ -55,20 +57,20 @@ void function InitAdvancedLookControlsPanel( var panel )
 	//AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
 	//file.enableItems.append( perScopeButton )
 
-	//
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipPitch" ),		"#GAMEPADCUSTOM_HIP_PITCH",			"#GAMEPADCUSTOM_HIP_PITCH_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnYaw" ),	"#GAMEPADCUSTOM_HIP_TURN_YAW",		"#GAMEPADCUSTOM_HIP_TURN_YAW_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnPitch" ),	"#GAMEPADCUSTOM_HIP_TURN_PITCH",	"#GAMEPADCUSTOM_HIP_TURN_PITCH_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnTime" ),	"#GAMEPADCUSTOM_HIP_TURN_TIME",		"#GAMEPADCUSTOM_HIP_TURN_TIME_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnDelay" ),	"#GAMEPADCUSTOM_HIP_TURN_DELAY",	"#GAMEPADCUSTOM_HIP_TURN_DELAY_DESC" )
+	// ( element, nameToken, descriptionToken, conVar, textElement ) ~mkos
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC",			"gamepad_custom_hip_yaw",			"TextGamepadCustomHipYaw" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipPitch" ),		"#GAMEPADCUSTOM_HIP_PITCH",			"#GAMEPADCUSTOM_HIP_PITCH_DESC",		"gamepad_custom_hip_pitch",			"TextGamepadCustomHipPitch" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnYaw" ),	"#GAMEPADCUSTOM_HIP_TURN_YAW",		"#GAMEPADCUSTOM_HIP_TURN_YAW_DESC",		"gamepad_custom_hip_turn_yaw",		"TextGamepadCustomHipTurnYaw" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnPitch" ),	"#GAMEPADCUSTOM_HIP_TURN_PITCH",	"#GAMEPADCUSTOM_HIP_TURN_PITCH_DESC",	"gamepad_custom_hip_turn_pitch",	"TextGamepadCustomHipTurnPitch" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnTime" ),	"#GAMEPADCUSTOM_HIP_TURN_TIME",		"#GAMEPADCUSTOM_HIP_TURN_TIME_DESC",	"gamepad_custom_hip_turn_time",		"TextGamepadCustomHipTurnTime" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnDelay" ),	"#GAMEPADCUSTOM_HIP_TURN_DELAY",	"#GAMEPADCUSTOM_HIP_TURN_DELAY_DESC",	"gamepad_custom_hip_turn_delay",	"TextGamepadCustomHipTurnDelay" )
 
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSYaw" ),		"#GAMEPADCUSTOM_ADS_YAW",			"#GAMEPADCUSTOM_ADS_YAW_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSPitch" ),		"#GAMEPADCUSTOM_ADS_PITCH",			"#GAMEPADCUSTOM_ADS_PITCH_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnYaw" ),	"#GAMEPADCUSTOM_ADS_TURN_YAW",		"#GAMEPADCUSTOM_ADS_TURN_YAW_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnPitch" ),	"#GAMEPADCUSTOM_ADS_TURN_PITCH",	"#GAMEPADCUSTOM_ADS_TURN_PITCH_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnTime" ),	"#GAMEPADCUSTOM_ADS_TURN_TIME",		"#GAMEPADCUSTOM_ADS_TURN_TIME_DESC" )
-	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnDelay" ),	"#GAMEPADCUSTOM_ADS_TURN_DELAY",	"#GAMEPADCUSTOM_ADS_TURN_DELAY_DESC" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSYaw" ),		"#GAMEPADCUSTOM_ADS_YAW",			"#GAMEPADCUSTOM_ADS_YAW_DESC",			"gamepad_custom_ads_yaw",			"TextGamepadCustomADSYaw" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSPitch" ),		"#GAMEPADCUSTOM_ADS_PITCH",			"#GAMEPADCUSTOM_ADS_PITCH_DESC",		"gamepad_custom_ads_pitch",			"TextGamepadCustomADSPitch" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnYaw" ),	"#GAMEPADCUSTOM_ADS_TURN_YAW",		"#GAMEPADCUSTOM_ADS_TURN_YAW_DESC",		"gamepad_custom_ads_turn_yaw",		"TextGamepadCustomADSTurnYaw" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnPitch" ),	"#GAMEPADCUSTOM_ADS_TURN_PITCH",	"#GAMEPADCUSTOM_ADS_TURN_PITCH_DESC",	"gamepad_custom_ads_turn_pitch",	"TextGamepadCustomADSTurnPitch" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnTime" ),	"#GAMEPADCUSTOM_ADS_TURN_TIME",		"#GAMEPADCUSTOM_ADS_TURN_TIME_DESC",	"gamepad_custom_ads_turn_time",		"TextGamepadCustomADSTurnTime" )
+	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomADSTurnDelay" ),	"#GAMEPADCUSTOM_ADS_TURN_DELAY",	"#GAMEPADCUSTOM_ADS_TURN_DELAY_DESC",	"gamepad_custom_ads_turn_delay",	"TextGamepadCustomADSTurnDelay" )
 
 	file.graphs.append( Hud_GetChild( panel, "DeadzonesGraph" ) )
 	file.graphs.append( Hud_GetChild( panel, "CurveGraph" ) )
@@ -124,11 +126,37 @@ void function OnOpenControlsAdvancedLookMenu()
 		UI_SetPresentationType( ePresentationType.WEAPON_CATEGORY )
 	SetBlurEnabled( true )
 
+	LoadPrecision()
 	ShowPanel( Hud_GetChild( file.menu, "AdvancedLookControlsPanel" ) )
 
 	Button_Toggle_CustomEnabled( null )
+	
 }
 
+void function LoadPrecision()
+{
+	foreach( string textField, table<string,var> conVarTbl in file.textEntryFields )
+	{
+		foreach( string convarName, var element in conVarTbl )
+		{
+			//Warning( "" + GetConVarFloat( convarName ) )
+			string value = truncate( string( GetConVarFloat( convarName ) ), 10 )
+			//printw( "setting element for convar", convarName, "to:", value )
+			Hud_SetText( element, value )
+		}
+	}
+}
+
+void function ToggleTextFieldsVisibility( bool isEnabled )
+{
+	foreach( string elementName, table<string, var> conVarTbl in file.textEntryFields )
+	{
+		foreach( string convarName, var element in conVarTbl )
+		{
+			Hud_SetVisible( element, isEnabled )
+		}
+	}
+}
 
 void function Button_Toggle_CustomEnabled( var button )
 {
@@ -136,6 +164,8 @@ void function Button_Toggle_CustomEnabled( var button )
 
 	foreach ( var item in file.enableItems )
 		Hud_SetVisible( item, isEnabled )
+
+	ToggleTextFieldsVisibility( isEnabled )
 
 	var btnGamepadCustomEnabled = Hud_GetChild( file.contentPanel, "SwchGamepadCustomEnabled" )
 	var sldGamepadCustomDeadzoneIn = Hud_GetChild( file.contentPanel, "SldGamepadCustomDeadzoneIn" )
@@ -165,11 +195,21 @@ var function SetupButton( var button, string buttonText, string description )
 	return button
 }
 
-
-var function SetupSlider( var slider, string buttonText, string description )
+var function SetupSlider( var slider, string buttonText, string description, string convarName = "", string textField = "")
 {
 	var button = Hud_GetChild( slider, "BtnDropButton" )
-
+	
+	if( !empty( convarName ) && !empty( textField ) )
+	{
+		if( !( textField in file.textEntryFields ) )
+			file.textEntryFields[ textField ] <- {}
+			
+		if( convarName in file.textEntryFields[ textField ] )
+			mAssert( false, "file.textEntryFields already contains \"" + convarName + "\"" )
+		
+		file.textEntryFields[ textField ][ convarName ] <- Hud_GetChild( file.contentPanel, textField )
+	}
+	
 	file.enableItems.append( slider )
 
 	SetButtonRuiText( button, buttonText )
@@ -181,7 +221,6 @@ var function SetupSlider( var slider, string buttonText, string description )
 
 	return button
 }
-
 
 bool function RequiresGraphDisplay( var button )
 {

@@ -58,6 +58,8 @@ global function AddCallback_OnThreatEventStateChange
 
 global function AddEntityCallback_OnPlayerRespawned
 global function RemoveEntityCallback_OnPlayerRespawned
+global function AddEntityCallback_OnPlayerRespawned_FireOnce
+global function RemoveEntityCallback_OnPlayerRespawned_FireOnce
 
 // Register functions are called when an entity spawns.
 global function RegisterForDamageDeathCallbacks
@@ -158,6 +160,22 @@ void function RemoveEntityCallback_OnPlayerRespawned( entity player, void functi
 	player.p.playerSpawnedCallbacks.removebyvalue( callbackFunc )
 }
 
+void function AddEntityCallback_OnPlayerRespawned_FireOnce( entity player, void functionref( entity ) callbackFunc )
+{
+	if( player.p.playerSpawnedCallbacks_FireOnce.contains( callbackFunc ) )
+		return
+		
+	player.p.playerSpawnedCallbacks_FireOnce.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPlayerRespawned_FireOnce( entity player, void functionref( entity ) callbackFunc )
+{
+	if( !player.p.playerSpawnedCallbacks_FireOnce.contains( callbackFunc ) )
+		return 
+		
+	player.p.playerSpawnedCallbacks_FireOnce.removebyvalue( callbackFunc )
+}
+
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
@@ -196,8 +214,16 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 		// callbackFunc( player )
 	// }
 
+	// Added via AddEntityCallback_OnPlayerRespawned
 	foreach ( func in player.p.playerSpawnedCallbacks )
 		func( player )
+		
+	// Added via AddEntityCallback_OnPlayerRespawned_FireOnce
+	foreach ( func in player.p.playerSpawnedCallbacks_FireOnce )
+	{
+		func( player )
+		RemoveEntityCallback_OnPlayerRespawned_FireOnce( player, func )
+	}
 
 	player.e.lastAttacker = null
 	player.e.canBurn = true

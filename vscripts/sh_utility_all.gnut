@@ -2617,6 +2617,8 @@ FXHandle function CleanupFXHandle( FXHandle fxHandle, bool doRemoveAllParticlesN
 }
 #endif
 
+
+//more mkos func
 bool function empty( string s )
 {
 	return s == ""
@@ -2639,3 +2641,76 @@ bool function empty( string s )
 		#endif
 	}
 #endif
+
+//////////////////////////////////////////////////
+//												//
+//				string to array			 		//
+//												//
+//	format of:									//												
+//					"string1, also string"		//
+// 												//
+//	into an array:  							//
+//					['string1','also string']	//
+//												//
+//												//
+// CALLING FUNCTION responsible for error catch //
+//////////////////////////////////////////////////
+
+array<string> function StringToArray( string str, int arrayStringMaxLength = 128 ) 
+{		
+	int item_index = 0
+	int length_check
+	string t_str = strip( str )
+	
+    if ( t_str == "" )
+	{
+        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
+	}
+	
+    array<string> arr = split( str, "," )
+	array<string> valid = []
+	
+	/*debug
+	foreach (index, item in arr) 
+	{
+		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
+	}
+	*/
+	
+    foreach ( item in arr ) 
+	{	
+		item_index++
+		item = strip( item )
+		length_check = item.len()
+	
+        if ( item == "" ) 
+		{   
+            Warning( "Empty item in the list for item # " + ( item_index ) + " removed. " )			
+        } 
+		else if ( length_check >= arrayStringMaxLength )
+		{
+			Warning( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + arrayStringMaxLength + " chars" )	
+		} 
+		else
+		{		
+			valid.append( item )		
+		}
+    }
+	
+	if ( valid.len() <= 0 ) 
+	{
+        throw "Array empty after conversion";
+    }
+
+    return valid
+}
+
+string function truncate( string str, int limit ) 
+{
+    if ( str.len() > limit ) 
+	{
+        return str.slice( 0, limit )
+    }
+    
+    return str;
+}

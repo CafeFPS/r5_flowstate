@@ -1,6 +1,6 @@
 global function GetAdminList																	//~mkos
 global function EnableVoice
-global function StringToArray
+//global function StringToArray
 global function trim
 global function Concatenate
 global function IsNumeric
@@ -32,7 +32,7 @@ global function GetDefaultIBMM
 global function SetDefaultIBMM
 global function IsTrackerAdmin
 global function PlayTime
-global function truncate
+//global function truncate
 global function DEV_PrintTrackerWeapons
 global function ValidateIBMMWaitTime
 global function VerifyAdmin
@@ -1865,71 +1865,6 @@ string function trim( string str )
 	*/
 }
 
-
-//////////////////////////////////////////////////
-//												//
-//				string to array			 		//
-//												//
-//	format of:									//												
-//					"string1, also string"		//
-// 												//
-//	into an array:  							//
-//					['string1','also string']	//
-//												//
-//												//
-// CALLING FUNCTION responsible for error catch //
-//////////////////////////////////////////////////
-
-array<string> function StringToArray( string str, int MAX_LENGTH = 128 ) 
-{		
-	int item_index = 0;
-	int length_check;
-	string t_str = trim( str )
-	
-    if ( t_str == "" )
-	{
-        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
-	}
-	
-    array<string> arr = split( str, "," )
-	array<string> valid = []
-	
-	/*debug
-	foreach (index, item in arr) 
-	{
-		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
-	}
-	*/
-	
-    foreach ( item in arr ) 
-	{		
-		item_index++
-		item = trim( item )
-		length_check = item.len()
-	
-        if ( item == "" ) 
-		{   
-            sqerror( "Empty item in the list for item # " + ( item_index ) + " removed. " )			
-        } 
-		else if ( length_check >= MAX_LENGTH )
-		{
-			sqerror( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + MAX_LENGTH + " chars")	
-		} 
-		else
-		{		
-			valid.append( item )		
-		}	
-    }
-	
-	if ( valid.len() <= 0 ) 
-	{
-        throw "Array empty after conversion";
-    }
-
-    return valid;
-}
-
-
 string function Concatenate( string str1, string str2 ) 
 {	
 	int str1_length = str1.len()
@@ -2321,16 +2256,6 @@ string function sanitize(string str)
 	}
 
 	return sanitized;	
-}
-
-string function truncate( string str, int limit ) 
-{
-    if ( str.len() > limit ) 
-	{
-        return str.slice( 0, limit )
-    }
-    
-    return str;
 }
 
 void function print_string_array( array<string> args )

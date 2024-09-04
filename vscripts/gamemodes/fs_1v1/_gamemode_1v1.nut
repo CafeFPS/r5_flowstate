@@ -3305,23 +3305,11 @@ void function BannerImages_1v1Init()
 				WorldDrawAsset_AssetRefToID( "rui/world/flowstate1v1_banner02" )
 			)
 			
-			//testbanner group
+			// testbanner group
 			BannerAssets_GroupAppendAsset
 			(
 				"test_banner",
 				WorldDrawAsset_AssetRefToID( "media/respawn.bik" )
-			)
-			
-			BannerAssets_GroupAppendAsset
-			(
-				"test_banner",
-				WorldDrawAsset_AssetRefToID( "rui/balls_image" )
-			)
-			
-			BannerAssets_GroupAppendAsset
-			(
-				"test_banner",
-				WorldDrawAsset_AssetRefToID( "balls.bik" )
 			)
 			
 			BannerAssets_GroupAppendAsset
@@ -4662,7 +4650,7 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 
 void function GiveWeaponsToGroup( array<entity> players )
 {
-	printw( "giving weapons for players: ", players[0], players[1] )
+	//printw( "giving weapons for players: ", players[0], players[1] )
 	thread function () : ( players )
 	{
 		foreach( player in players )
@@ -4671,6 +4659,8 @@ void function GiveWeaponsToGroup( array<entity> players )
 				continue
 
 			TakeAllWeapons(player)
+			
+			Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCHING )
 		}
 
 		wait 0.2
@@ -5120,7 +5110,7 @@ const array<int> LEGEND_GUID_ENABLED_ULTIMATES =
 void function Init_ValidLegendRange()
 {
 	int min = -1
-	int max = file.characters.len()
+	int max = file.characters.len() //ValidLegendRange uses > < expr
 	
 	if( max <= 0 )
 	{
@@ -5267,7 +5257,7 @@ void function Init_IBMM( entity player )
 
 
 //Made by @CafeFPS - don't ask wtf is this just enjoy it
-//modified by mkos
+//modified by mkos ( Todo: Move to code )
 void function Thread_CheckInput( entity player )
 {
 	int timesCheckedForNewInput = 0
@@ -5714,7 +5704,7 @@ void function Gamemode1v1_OnPlayerDied( entity victim, entity attacker, var dama
 		ClearInvincible( victim )
 		maki_tp_player( victim, waitingRoomLocation )
 		
-		if( IsValid( attacker ) ) )
+		if( IsValid( attacker ) )
 			victim.p.lastKiller = attacker
 			
 		return

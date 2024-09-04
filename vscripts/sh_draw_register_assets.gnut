@@ -20,23 +20,11 @@ const RPAK_MP_TEMP_PATH = ""
 struct
 {
 	//these must match on server/client ( until a transfer sdk implemention this is static )
-	array<string> assets = 
-	[
-		"rui/flowstate_custom/mkos/1v1banner",
-		"media/respawn.bik",
-		"rui/world/flowstate1v1_banner01",
-		"rui/world/flowstate1v1_banner02",
-		"rui/world/flowstate1v1_rdiffs",
-		"rui/world/flowstate1v1_banner03",
-		"rui/world/karma_banner_01",
-		"rui/balls_image",
-		"balls.bik",
-		"media/karma-r5r-video.bik",
-	]
+	array<string> assets
 	
-	#if SERVER 
+	#if SERVER
 		array<int> invalidAssets
-	#endif 
+	#endif
 	
 	#if CLIENT
 		bool bShouldWaitForRpak = false
@@ -50,6 +38,28 @@ struct
 
 void function WorldDrawAsset_RegisterAllAssets()
 {
+	#if SERVER || CLIENT 
+		try 
+		{
+			#if CLIENT 
+				while( !IsConnected() )
+					WaitFrame()
+			#endif 
+			
+			string assetList = GetCurrentPlaylistVarString( "banner_assets", "" )
+			
+			if( !empty( assetList ) )
+			{
+				array<string> assets = StringToArray( assetList )	
+				file.assets = assets
+			}
+		}
+		catch( e )
+		{
+			Warning( "Warning: Assets improperly configured in playlists from server." )
+		}
+	#endif 
+
 	#if SERVER 
 		AddClientCommandCallback( "assetIntegrityCheck", ClientCommand_AssetIntegrityCheck )
 	#endif
@@ -252,7 +262,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 		if( !file.videoValidationComplete )
 			mAssert( false, "Tried to check if video exists before validator has ran." )
 			
-		return file.invalidVideoAssets.contains( assetId )
+		return !file.invalidVideoAssets.contains( assetId )
 	}
 #endif
 

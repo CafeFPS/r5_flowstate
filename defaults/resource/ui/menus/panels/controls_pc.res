@@ -26,19 +26,26 @@
         ypos                    0
 
         navDown					SldMouseSensitivityZoomed
-        minValue				0.2
-        maxValue				20.0
+		
+        minValue				0.200000
+        maxValue				20.000000
+		
         stepSize				0.2
         conCommand				"mouse_sensitivity"
         tabPosition				1
     }
+	
     TextEntryMouseSensitivity
     {
         ControlName				TextEntry
-        InheritProperties       SliderControlTextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
         syncedConVar            "mouse_sensitivity"
         showConVarAsFloat		1
-
+		
+        minValue				0.200000
+        maxValue				20.000000
+		
         pin_to_sibling			SldMouseSensitivity
         pin_corner_to_sibling	RIGHT
         pin_to_sibling_corner	RIGHT
@@ -53,19 +60,23 @@
         pin_to_sibling_corner	BOTTOM_LEFT
         navUp					SldMouseSensitivity
         navDown					SwchMouseAcceleration
-        minValue				0.2
-        maxValue				10.0
+        minValue				0.200000
+        maxValue				10.000000
         stepSize				0.2
 
         conCommand				"mouse_zoomed_sensitivity_scalar_0"
         visible 0
     }
+	
     TextEntryMouseSensitivityZoomed
     {
         ControlName				TextEntry
-        InheritProperties       SliderControlTextEntry
+        InheritProperties       SliderControlTextEntrySmall
         syncedConVar            "mouse_zoomed_sensitivity_scalar_0"
         showConVarAsFloat		1
+
+		minValue				0.200000
+		maxValue				10.000000
 
         pin_to_sibling			SldMouseSensitivityZoomed
         pin_corner_to_sibling	RIGHT

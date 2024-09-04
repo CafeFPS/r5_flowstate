@@ -127,9 +127,9 @@ void function BannerAssets_Init()
 			// }
 			
 			file.__channelRequiredGroups = groups
-			__SetupChannels()
+			__SetupChannels()	
 		}
-			
+		
 		__SetupThreads()
 	}
 	
