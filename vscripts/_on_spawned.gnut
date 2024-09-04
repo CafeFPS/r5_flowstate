@@ -336,7 +336,6 @@ void function CodeCallback_OnSpawned( entity ent )
 	*/
 
 	RegisterForDamageDeathCallbacks( ent )
-
 	RunMySpawnFunctions( ent )
 }
 

@@ -1174,13 +1174,13 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 	float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 	float basedamage = DamageInfo_GetDamage( damageInfo )/headshotMultiplier
 	
-	if(IsValidHeadShot( damageInfo, dummy ) )
+	if( IsValidHeadShot( damageInfo, dummy ) )
 	{
 		int headshot = int(basedamage*(file.helmet_lv4+(1-file.helmet_lv4)*headshotMultiplier))
 		DamageInfo_SetDamage( damageInfo, headshot)
 	}
 
-	if( file.bAutoRefilAmmoOnHit && attacker.IsPlayer() )
+	if( file.bAutoRefilAmmoOnHit )
 		attacker.RefillAllAmmo()
 }
 

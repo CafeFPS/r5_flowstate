@@ -30,6 +30,7 @@ const DEATH_RECAP_DAMAGE_HISTORY_TIME = 30    // how many seconds back in time w
 const DEATH_REACP_GROUP_MAX_TIME = 1.0        // max time for a grouping of damage events
 const DEATH_REACP_GROUP_MAX_HITS = 9          // max number of hits per group
 const INVALID_EHANDLE = -1
+const DEBUG_DAMAGE_HISTORY = false
 
 global enum eDamageHistorySet
 {
@@ -110,6 +111,7 @@ void function ClearRecentDamageHistory( entity player )
 #if SERVER
 DamageHistoryStruct function StoreDamageHistoryAndUpdate( entity storeEnt, float maxTime, float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker = null, array<string> mods = [] )
 {
+	//Warning( "Incoming damage from: " + string( attacker ) + " Damage: " + damage )
 	DamageHistoryStruct damageHistory
 
 	float time = Time()
@@ -1202,10 +1204,14 @@ float function GetTotalDamageTakenByPlayer( entity player, entity attacker ) // 
 	Assert( IsValid( attacker ) )
 	// remove old damage history entries
 	int i
-
+	
 	float total = 0
 	foreach ( history in player.e.recentDamageHistory )
 	{
+		#if DEVELOPER && DEBUG_DAMAGE_HISTORY
+			printt( "history.damage =", history.damage, "history.attacker=", string( history.attacker ) )
+		#endif
+		
 		if ( history.attacker != attacker )
 			continue
 
