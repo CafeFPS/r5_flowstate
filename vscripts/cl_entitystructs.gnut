@@ -208,6 +208,9 @@ global struct ClientPlayerStruct
 	entity launcherVictim
 	bool launcherStarted
 	int cryonadeFx
+	
+	//lightning gun 
+	bool lightningGunReady
 }
 
 

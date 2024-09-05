@@ -63,7 +63,9 @@ void function InitPreSpawnSystemSettings()
 void function INIT_LGDuels_Player( entity player )
 {
 	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
-	AddEntityCalllback_OnPlayerGamestateChange_1v1( player, Player1v1Gamestate )
+	
+	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+		AddEntityCalllback_OnPlayerGamestateChange_1v1( player, Player1v1Gamestate )
 	
 	if( !EntityCallback_Exists( player, ZeroDamage ) )
 		AddEntityCallback_OnDamaged( player, ZeroDamage )
