@@ -113,6 +113,7 @@ void function DEV_PrintBeams()
 		printt( ent + " --- " + i )
 	}
 }
+#endif 
 
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 {
