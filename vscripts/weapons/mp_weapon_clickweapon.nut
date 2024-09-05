@@ -113,8 +113,9 @@ void function DEV_PrintBeams()
 		printt( ent + " --- " + i )
 	}
 }
-#endif 
+#endif //DEVELOPER && CLIENT
 
+#if CLIENT
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 {
 	CheckBeamSettingsExist() //maybe only init in playercreated
