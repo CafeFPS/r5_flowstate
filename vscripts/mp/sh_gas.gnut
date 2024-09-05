@@ -254,7 +254,9 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 	if ( target.e.gasLastExpoTime == Time() )
 		return
 
-	int emitterTeam = -1
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	int emitterTeam = inflictor.GetTeam()
+	
 	//If the target was not previously touching gas. Note the time at which they entered the gas.
 	bool newGasExposure = false
 	if ( target.e.gasEnterTime == -1 )
@@ -264,11 +266,8 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 
 		if ( file.caustic_teammate_forgiveness )
 		{
-			entity inflictor = DamageInfo_GetInflictor( damageInfo )
-			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
-			{
-				emitterTeam = inflictor.GetTeam()
-				
+			if ( IsFriendlyTeam( emitterTeam, target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
+			{			
 				if ( StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection ) == 0 )
 				{	
 					StatusEffect_AddTimed( target, eStatusEffect.gas_slow_protection, 1.0, 2.0, 1.0 )
@@ -313,6 +312,9 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 	if ( target.e.gasLastExpoTime == Time() )
 		return
 
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	int emitterTeam = inflictor.GetTeam()
+	
 	//If the target was not previously touching gas. Note the time at which they entered the gas.
 	bool newGasExposure = false
 	if ( target.e.gasEnterTime == -1 )
@@ -320,10 +322,9 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 		newGasExposure = true
 		target.e.gasEnterTime = Time()
 
-		if ( GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true ) )
-		{
-			entity inflictor = DamageInfo_GetInflictor( damageInfo )
-			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
+		if ( file.caustic_teammate_forgiveness )
+		{	
+			if ( IsFriendlyTeam( emitterTeam, target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
 			{
 				if ( StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection ) == 0 )
 					StatusEffect_AddTimed( target, eStatusEffect.gas_slow_protection, 1.0, 2.0, 1.0 )
@@ -337,7 +338,7 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 	//If the target was not already exposed to gas, start gas exposure update.
 	if ( newGasExposure )
 	{
-		thread GasExposureUpdate( target )
+		thread GasExposureUpdate( target, emitterTeam )
 	}
 }
 
