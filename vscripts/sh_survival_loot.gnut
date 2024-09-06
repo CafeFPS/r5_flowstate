@@ -2159,6 +2159,7 @@ array<entity> function SURVIVAL_GetPrimaryWeapons( entity player )
 		entity weapon = player.GetNormalWeapon( slot )
 		if ( !IsValid( weapon ) )
 			continue
+			
 		Assert( SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
 
 		results.append( weapon )

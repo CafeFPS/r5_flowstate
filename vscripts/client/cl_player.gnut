@@ -67,7 +67,8 @@ global function BloodSprayDecals_Toggle
 const float DEFAULT_GAMEMODE_ANNOUNCEMENT_DURATION = 5.0
 const float WAIT_TO_HIDE_HEALTHBAR = 1.4
 
-struct {
+struct 
+{
 	entity lastEarnedReward // primarily used to check if we should still show the reward message after a delay
 	bool   hideCrosshairHitIndicatorOverride = false
 	entity crosshairTarget
@@ -82,6 +83,7 @@ struct {
 
 	table<entity, entity> healthBars
 	table<entity, float> onPlayerDamagedTimes
+	
 } file
 
 struct BloodDecalParams

@@ -1108,7 +1108,9 @@ void function RemoteFunctions_Init_Begin()
 	RegisterServerVar( "tracker_enabled", false )
 	Remote_RegisterUIFunction( "UI_Callback_MOTD" )
 	
-	if ( IsLobby())
+	Remote_RegisterClientFunction( "Flowstate_ShowRespawnTimeUI", "int", -2, 1200 )
+	
+	if ( IsLobby() )
 	{
 		//Register networked variables for the lobby
 	}

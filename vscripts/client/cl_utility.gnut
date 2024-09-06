@@ -872,11 +872,11 @@ float function GetNextRespawnTime( entity player )
 }
 
 #if DEVELOPER
-void function TwoPinTest()
-{
-	entity player = gp()[0]
-	var rui = RuiCreate( $"ui/twopin_test.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-}
+	void function TwoPinTest()
+	{
+		entity player = gp()[0]
+		var rui = RuiCreate( $"ui/twopin_test.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	}
 #endif
 
 AttackerDisplayNameStruct function GetAttackerDisplayNamesFromClassname( entity ent, bool isAttacker = false )
@@ -1595,15 +1595,15 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 }
 
 #if DEVELOPER
-void function DumpFullscreenRuis()
-{
-	printt( "DumpFullscreenRuis" )
-	foreach ( k, v in clGlobal.fullscreenRuiSet )
+	void function DumpFullscreenRuis()
 	{
-		printt( "\t", v )
+		printt( "DumpFullscreenRuis" )
+		foreach ( k, v in clGlobal.fullscreenRuiSet )
+		{
+			printt( "\t", k, v )
+		}
+		printt( "Done" )
 	}
-	printt( "Done" )
-}
 #endif
 
 bool function IsMenuOpen()

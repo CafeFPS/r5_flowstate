@@ -533,7 +533,7 @@ bool function ClientCommand_PlayAnimInSlot( entity player, array<string> args )
 	if( !IsValid( player ) )
 		return false
 		
-	if( args.len() == 0)
+	if( args.len() == 0 )
 		return false
 	
 	int slot = 0
@@ -707,7 +707,7 @@ void function StartRecordingAnimation( entity player )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, true, -1 )
 	}
 	
-	asset playermodel = player.GetModelName() //?
+	//asset playermodel = player.GetModelName() //?
 	
 	//MovementRecorder_SetStartRecordingTime( player, Time() )
 	player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
@@ -792,13 +792,13 @@ void function StopRecordingAnimation( entity player )
 	}
 }
 
-const array<string> r5rDevs = [
+const array<string> r5rDevs = 
+[
 	"CafeFPS",
 	"DEAFPS",
 	"AyeZee",
 	"Makimakima",
 	"Endergreen12",
-	"Zer0Bytes",
 	"Julefox",
 	"amos_x64",
 	"rexx_x64",

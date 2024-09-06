@@ -117,7 +117,10 @@ table playersInfo
 //solo mode
 global function CheckForObservedTarget
 
-struct {
+const float STATIC_WAIT_TIME = 1.0
+
+struct 
+{
 	string scriptversion = ""
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
@@ -386,11 +389,6 @@ void function _CustomTDM_Init()
 
         UpdatePlayerCounts()		
     })
-	
-	//Todo: Dissolve items by adding callback in mode init. ~mkos
-	// if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
-		// AddSpawnCallback( "prop_survival", DissolveItem )
-
 
 	//Todo: Add callback per mode.
     AddCallback_OnPlayerKilled
@@ -480,6 +478,9 @@ void function _CustomTDM_Init()
 	{		
 		thread Gamemode1v1_Init( MapName() )
 	}
+	
+	if( Flowstate_ModeDissolveItems() && Flowstate_GetDissolveTime() > 0.0 )
+		AddSpawnCallback( "prop_survival", Common_DissolveDropable )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -1004,9 +1005,7 @@ void function _OnPlayerConnected(entity player)
 	}
 	
 	if( is1v1EnabledAndAllowed() )
-	{
 		thread soloModefixDelayStart( player )
-	}
 }
 
 bool function is1v1EnabledAndAllowed()
@@ -1126,10 +1125,10 @@ void function Flowstate_SaveBattleLogToFile_Linux() //Use parser
 	file.battlelog.clear()
 }
 
-void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
+void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 {
-	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
-		CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+	if ( FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes() )
+		CreateFlowStateDeathBoxForPlayer( victim, attacker, damageInfo )
 
 	if( victim.p.isSpectating )
 		return
@@ -1137,17 +1136,44 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if( flowstateSettings.BattleLogEnable && victim != attacker)
 		Flowstate_AppendBattleLogEvent(attacker, victim)
 
-	switch(GetGameState())
+	switch( GetGameState() )
     {
         case eGameState.Playing:
             // Víctim
-            void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) 
+            void functionref() victimHandleFunc = void function() : ( victim, attacker, damageInfo ) 
 			{
+				// Respawn timer calculation
+				float decidedWaitTime = 0.0
+				
+				bool bShouldShowReplay = false
+				if( Spectator_GetReplayIsEnabled() && IsValid( attacker ) && attacker.IsPlayer() && attacker != victim )
+				{
+					if( !Flowstate_IsFastInstaGib() && ShouldSetObserverTarget( attacker ) )
+					{
+						decidedWaitTime 	= Spectator_GetReplayDelay()
+						bShouldShowReplay 	= true
+					}
+					else 
+					{
+						if( !Flowstate_IsFastInstaGib() )
+							decidedWaitTime = Deathmatch_GetRespawnDelay()
+						else
+							decidedWaitTime = STATIC_WAIT_TIME
+					}
+				}
+				else 
+				{
+					decidedWaitTime = Deathmatch_GetRespawnDelay()
+				}
 				
 				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
+				
+				// I originally intended this to be apart of a lifestate change or YouDied callback, and setting UpdateNextRespawnTime( entity player, float time ), client using: GetNextRespawnTime( player )  but due to various mode behavior, it's better left as a remote func call. ~mkos
+				Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", int( DEATHCAM_TIME_SHORT + decidedWaitTime ) )//+ DEATHCAM_TIME_SHORT ) )
 
-				if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+				if( flowstateSettings.is_halo_gamemode )
 				{
+					SURVIVAL_Death_DropLoot( victim, damageInfo )
 					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
 
@@ -1166,7 +1192,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 					return
 
-				if( !IsValid(victim) )
+				if( !IsValid( victim ) )
 					return
 				
 				if ( !Flowstate_IsLGDuels() )
@@ -1175,47 +1201,47 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 						PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
 				}
 			
-	    		if( victim == attacker || !IsValid(attacker))
+	    		if( !bShouldShowReplay )
 				{
 					thread function () : ( victim )
 					{
 						if( !Flowstate_IsFastInstaGib() )
 							wait Deathmatch_GetRespawnDelay()
 						else
-							wait 1
+							wait STATIC_WAIT_TIME
 						
-						if(file.tdmState != eTDMState.IN_PROGRESS || !IsValid( victim ) )
+						if( file.tdmState != eTDMState.IN_PROGRESS || !IsValid( victim ) )
 							return
 
 						_HandleRespawn( victim )
-						ClearInvincible(victim)
+						ClearInvincible( victim )
 					}()
 					return
 				}
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && !Flowstate_IsFastInstaGib() )
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay )
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
-	    			victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT )
+	    			victim.SetSpecReplayDelay( Spectator_GetReplayDelay() ) //2 + DEATHCAM_TIME_SHORT )
 	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
 	    			//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 					Remote_CallFunction_ByRef( victim, "ServerCallback_KillReplayHud_Activate" )
 					thread CheckForObservedTarget(victim)
 	    		}
 
-				if(FlowState_RandomGunsEverydie())
+				if( FlowState_RandomGunsEverydie() )
 	    		    UpgradeShields(victim, true)
 
 	    		//if(FlowState_Gungame())
 	    		    //KillStreakAnnouncer(victim, true)
 
-	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay )
 				{
 					if( !Flowstate_IsFastInstaGib() )
-						wait Deathmatch_GetRespawnDelay()
+						wait Spectator_GetReplayDelay()
 					else
-						wait 1
+						wait STATIC_WAIT_TIME
 				}
 				
 				if( !IsValid( victim ) ) return
@@ -7015,4 +7041,18 @@ void function WaitForChampionToFinish()
 {
 	while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
 		WaitFrame()
+}
+
+void function Common_DissolveDropable( entity prop )
+{
+	thread
+	(
+		void function() : ( prop )
+		{
+			wait Flowstate_GetDissolveTime()
+			
+			if( IsValid( prop ) )
+				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
+		}
+	)()
 }

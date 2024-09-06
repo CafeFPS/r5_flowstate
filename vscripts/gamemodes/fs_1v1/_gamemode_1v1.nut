@@ -5346,7 +5346,6 @@ bool function InvalidInput( int input_type, int movevalue )
 // not currently used ~mkos
 void function HandlePlayer( entity player )
 {
-	
 	string id = player.GetPlatformUID()
 	int action = GetCurrentPlaylistVarInt( "invalid_input_action", 1 )
 	string msg = GetCurrentPlaylistVarString( "invalid_input_msg", "Invalid Input Device" )
@@ -5369,7 +5368,6 @@ void function HandlePlayer( entity player )
 			break
 	
 	}
-	
 }
 
 //Made by @CafeFPS
@@ -5691,11 +5689,14 @@ void function Gamemode1v1_OnPlayerDied( entity victim, entity attacker, var dama
 {
 	victim.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
+	if( IsValid( attacker ) )
+		victim.p.lastKiller = attacker
+
 	if( isPlayerInWaitingList( victim ) )
 	{
 		LocPair waitingRoomLocation = getWaitingRoomLocation()
 		
-		if ( !IsValid( waitingRoomLocation ) ) 
+		if ( !IsValid( waitingRoomLocation ) )  //this should never be hit...
 			return
 
 		if( !IsAlive( victim ) )
@@ -5703,15 +5704,9 @@ void function Gamemode1v1_OnPlayerDied( entity victim, entity attacker, var dama
 			
 		ClearInvincible( victim )
 		maki_tp_player( victim, waitingRoomLocation )
-		
-		if( IsValid( attacker ) )
-			victim.p.lastKiller = attacker
 			
 		return
 	}
-
-	if( IsValid( attacker ) )
-		victim.p.lastKiller = attacker
 	
 	if( !is3v3Mode() )
 		HandleGroupIsFinished( victim ) //, damageInfo )

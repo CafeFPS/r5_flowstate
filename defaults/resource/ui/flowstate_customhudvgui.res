@@ -4252,4 +4252,40 @@ Resource/UI/flowstate_customhudvgui.res
 		pin_corner_to_sibling   TOP_LEFT
 		pin_to_sibling_corner   TOP_LEFT
 	}
+	
+	"FS_Respawn_Countdown_Frame_Center"
+	{
+		ControlName				RuiPanel
+		wide					286
+		tall					66
+		ypos 					-500
+		xpos 					-32
+		zpos 					0
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP
+		pin_to_sibling_corner   TOP
+	}
+	
+	"FS_Respawn_Countdown_Center"
+	{
+		ControlName				Label
+		labelText				"Respawning in 0"
+		visible                 0
+		zpos 					2
+		tall					60
+		wide 					420
+		fontHeight				60
+		font					"Default_34_ShadowGlow"
+		fgcolor_override		"255 255 255 225"
+		ypos                    355
+		xpos					0
+		textAlignment			center
+		allcaps					1
+		pin_to_sibling          FS_DMCountDown_Frame_Center
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
 }

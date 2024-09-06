@@ -172,6 +172,19 @@ struct
 	bool survival_infinite_ammo
 	bool survival_drop_equipment
 	bool survival_drop_item
+	bool deathbox_ondeath_enabled
+	bool death_box_dist_check
+	bool drop_loot_on_death
+	bool thank_for_loot_ping_enabled
+	bool flowstate_giveskins_weapons
+	bool sur_dev_disable_hibernation
+	bool survival_weapon_spawn_with_ammo
+	bool flowstate_givecharms_weapons
+	bool survival_transfer_attachment
+	bool survival_unequip_attachment
+	bool survival_equip_attachment
+	bool ketchup_1
+	int deathbox_items_per_server_frame
 	
 } settings 
 
@@ -243,16 +256,29 @@ void function SV_Survival_Loot_Init()
 
 void function SurvivalLoot_Settings_Init()
 {
-	settings.ground_loot_enable 		= GetCurrentPlaylistVarBool( "ground_loot_enable", true )
-	settings.hot_zone_enable 			= GetCurrentPlaylistVarBool( "hot_zone_enable", true )
-	settings.survival_pickup_item		= GetCurrentPlaylistVarBool( "survival_pickup_item", true )
-	settings.survival_swap_item			= GetCurrentPlaylistVarBool( "survival_swap_item", true )
-	settings.lsm_mod1					= GetCurrentPlaylistVarBool( "lsm_mod1", false ) 
-	settings.lsm_mod9					= GetCurrentPlaylistVarBool( "lsm_mod9", false )
-	settings.flowstate_evo_shields		= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
-	settings.survival_infinite_ammo		= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
-	settings.survival_drop_equipment	= GetCurrentPlaylistVarBool( "survival_drop_equipment", true )
-	settings.survival_drop_item			= GetCurrentPlaylistVarBool( "survival_drop_item", true )
+	settings.ground_loot_enable 				= GetCurrentPlaylistVarBool( "ground_loot_enable", true )
+	settings.hot_zone_enable 					= GetCurrentPlaylistVarBool( "hot_zone_enable", true )
+	settings.survival_pickup_item				= GetCurrentPlaylistVarBool( "survival_pickup_item", true )
+	settings.survival_swap_item					= GetCurrentPlaylistVarBool( "survival_swap_item", true )
+	settings.lsm_mod1							= GetCurrentPlaylistVarBool( "lsm_mod1", false ) 
+	settings.lsm_mod9							= GetCurrentPlaylistVarBool( "lsm_mod9", false )
+	settings.flowstate_evo_shields				= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
+	settings.survival_infinite_ammo				= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
+	settings.survival_drop_equipment			= GetCurrentPlaylistVarBool( "survival_drop_equipment", true )
+	settings.survival_drop_item					= GetCurrentPlaylistVarBool( "survival_drop_item", true )
+	settings.deathbox_items_per_server_frame	= GetCurrentPlaylistVarInt( "deathbox_items_per_server_frame", 8 )
+	settings.deathbox_ondeath_enabled			= GetCurrentPlaylistVarBool( "deathbox_ondeath_enabled", true )
+	settings.death_box_dist_check				= GetCurrentPlaylistVarBool( "death_box_dist_check", true  )
+	settings.thank_for_loot_ping_enabled		= GetCurrentPlaylistVarBool( "thank_for_loot_ping_enabled", true )
+	settings.flowstate_giveskins_weapons		= GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false )
+	settings.sur_dev_disable_hibernation		= ( GetCurrentPlaylistVarInt( "sur_dev_disable_hibernation", 0 ) == 1 )
+	settings.drop_loot_on_death					= GetCurrentPlaylistVarBool( "drop_loot_on_death", true )
+	settings.survival_weapon_spawn_with_ammo	= ( GetCurrentPlaylistVarInt( "survival_weapon_spawn_with_ammo", 1 ) != 0 )
+	settings.flowstate_givecharms_weapons		= GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false )
+	settings.survival_transfer_attachment		= GetCurrentPlaylistVarBool( "survival_transfer_attachment", true )
+	settings.survival_unequip_attachment		= GetCurrentPlaylistVarBool( "survival_unequip_attachment", true )
+	settings.survival_equip_attachment			= GetCurrentPlaylistVarBool( "survival_equip_attachment", true )
+	settings.ketchup_1							= GetCurrentPlaylistVarBool( "ketchup_1", false )
 }
 
 void function LoadLootZonesForMap()
@@ -657,7 +683,7 @@ bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args 
 			return true
 	}
 
-	if ( GetCurrentPlaylistVarBool( "death_box_dist_check", true  )  )
+	if ( settings.death_box_dist_check )
 	{
 		if ( IsValid( deathBox ) )
 		{
@@ -685,7 +711,9 @@ void function SURVIVAL_PlaceGroundItems()
 		startLootEnt = Entities_FindByClassname( startLootEnt, "script_ref" )
 	}
 
-	printt( "Trying to spawn", itemEnts.len(), "ground items" )
+	#if DEVELOPER
+		printt( "Trying to spawn", itemEnts.len(), "ground items" )
+	#endif
 
 	foreach( ent in itemEnts )
 	{
@@ -802,7 +830,7 @@ void function OnGroundLootSpawned( entity ent )
 			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
 			LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
 
-			if( GetCurrentPlaylistVarBool( "ketchup_1", false ) )
+			if( settings.ketchup_1 )
 			{
 				if ( lootData.tier < 3 && lootData.lootType != eLootType.AMMO && lootData.lootType != eLootType.MAINWEAPON || lootData.lootType == eLootType.MAINWEAPON && CoinFlip() )
 				{
@@ -819,7 +847,11 @@ void function OnGroundLootSpawned( entity ent )
 							i--
 							continue
 						}
-						printt( "valid gold weapon", itemRef )
+						
+						#if DEVELOPER
+							printt( "valid gold weapon", itemRef )
+						#endif 
+						
 						lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
 					}
 				}
@@ -1104,7 +1136,10 @@ array<string> function Flowstate_GetLootToRemoveFromBackpackLimit( entity player
 			ConsumableInventoryItem invItem = playerInventory[i]
 			LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
 			lootToRemove.append( data.ref )
-			printt( "adding item to backpack for posterior drop: " + data.ref )
+			
+			#if DEVELOPER
+				printt( "adding item to backpack for posterior drop: " + data.ref )
+			#endif
 		}
 	}
 	
@@ -1148,7 +1183,7 @@ bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> a
 
 bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> args )
 {
-	if ( !GetCurrentPlaylistVarBool( "survival_equip_attachment", true ) )
+	if ( !settings.survival_equip_attachment )
 		return true
 
 	if ( !IsValid( player ) || !IsAlive( player ) )
@@ -1341,7 +1376,7 @@ void function SURVIVAL_RemoveAllAttachmentsFromWeapon( entity player, int slot, 
 
 bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> args )
 {
-	if ( !GetCurrentPlaylistVarBool( "survival_unequip_attachment", true ) )
+	if ( !settings.survival_unequip_attachment )
 		return true
 
 	if ( !IsValid( player ) || !IsAlive( player ) )
@@ -1375,7 +1410,7 @@ bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> 
 
 bool function ClientCommand_Sur_TransferAttachment( entity player, array<string> args )
 {
-	if ( !GetCurrentPlaylistVarBool( "survival_transfer_attachment", true ) )
+	if ( !settings.survival_transfer_attachment )
 		return true
 
 	if ( !IsValid( player ) || !IsAlive( player ) )
@@ -1875,9 +1910,10 @@ void function EquipAttachments_Internal( entity player, entity weapon, string mo
 	}
 
 	#if DEVELOPER
-	foreach( i, mod in mods )
-		printt(i+1, "Trying to set mods on weapon", mod )
+		foreach( i, mod in mods )
+			printt(i+1, "Trying to set mods on weapon", mod )
 	#endif
+	
 	weapon.SetMods( mods )
 
 	if ( attachPoint == "mag" ) // Return extra ammo from extended mags to the player
@@ -2118,7 +2154,10 @@ entity function SURVIVAL_ThrowLootFromPointEx( ThrowLootParams params )
 		{
 			vel = params.fwd
 		}
-		printt( "will throw with vel", vel )
+		#if DEVELOPER
+			printt( "will throw with vel", vel )
+		#endif 
+		
 		FakePhysicsThrow_Retail( player, ent, vel, true )
 	}
 
@@ -2251,7 +2290,10 @@ bool function DismantleModsOnWeapon( entity pickup, entity player, int pickupFla
 void function DismantleWeaponModsAfterInterval( entity weapon, float interval, int extraAmmoToSpawn, bool spawnLoot = true )
 {
 	weapon.EndSignal( "OnDestroy" )
-	printt( "%s", GetStack() )
+	
+	#if DEVELOPER
+		printt( "%s", GetStack() )
+	#endif
 
 	wait interval
 
@@ -2420,7 +2462,8 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 	if( pickup.e.skinItemFlavorGUID != -1 )
 	{
 		weaponSkinOrNull = GetItemFlavorByGUID( pickup.e.skinItemFlavorGUID )
-	} else if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+	} 
+	else if ( settings.flowstate_giveskins_weapons )
 	{
 		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( pickupRef )
 		
@@ -2432,7 +2475,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		}
 	}
 
-	if ( GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) )
+	if ( settings.flowstate_givecharms_weapons )
 		weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
 
 	WeaponCosmetics_Apply( newWeapon, weaponSkinOrNull, weaponCharmOrNull )
@@ -2894,7 +2937,7 @@ void function ReturnWeaponAmmoToPlayer( entity player, entity dropWeapon )
 
 bool function WeaponsSpawnWithAmmo()
 {
-	return (GetCurrentPlaylistVarInt( "survival_weapon_spawn_with_ammo", 1 ) != 0)
+	return ( settings.survival_weapon_spawn_with_ammo )
 }
 
 vector function GetThrowOrigin( entity player )
@@ -2913,7 +2956,7 @@ vector function GetThrowOrigin( entity player )
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
 {
-	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+	if( settings.flowstate_evo_shields )
 	{
 		switch( entryRef )
 		{
@@ -3005,10 +3048,11 @@ entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngl
 			}
 		}
 		
-		// #if DEVELOPER
-		foreach( i, mod in mods )
-			printt( "adding ", i, mod, "to weapon", ent )
-		// #endif
+		#if DEVELOPER
+			foreach( i, mod in mods )
+				printt( "adding ", i, mod, "to weapon", ent )
+		#endif
+		
 		ent.SetWeaponMods( mods )
 		// TEMP HACK
 		//okay then, let's un-hack it? - johodgson
@@ -3034,7 +3078,7 @@ entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngl
 		ShowDefaultBodygroupsOnFakeWeapon( ent, baseWeapon )
 	}
 
-	if ( GetCurrentPlaylistVarInt( "sur_dev_disable_hibernation", 0 ) == 1 )
+	if ( settings.sur_dev_disable_hibernation )
 	{
 		ent.DisableHibernation()
 	}
@@ -3616,7 +3660,10 @@ void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity phys
 			drop2.SetAngles( <0,0,0> )
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
-		printt( vel )
+		
+		#if DEVELOPER
+			printt( vel )
+		#endif
 		
 		if( vel < 0.8 )
 		{
@@ -3659,7 +3706,10 @@ void function Flowstate_CheckBombPhysics( entity drop, entity physics )
 		drop.SetAngles( <0,0,0> )
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
-		printt( vel )
+		
+		#if DEVELOPER
+			printt( vel )
+		#endif
 		
 		if( vel < 0.8 )
 		{
@@ -3794,7 +3844,7 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 		weapon.SetParent( trace.hitEnt, "", true, 0 )
 	}
 
-	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+	if ( settings.flowstate_giveskins_weapons )
 	{
 		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weaponName )
 		ItemFlavor ornull weaponSkinOrNull = null
@@ -4571,7 +4621,7 @@ void function TryThankForLoot( entity player, entity wp, entity pingEnt, int pin
 	if ( !IsValid( pingEnt ) )
 		return
 
-	if ( !GetCurrentPlaylistVarBool( "thank_for_loot_ping_enabled", true ) )
+	if ( !settings.thank_for_loot_ping_enabled )
 		return
 
 	thread function() : ( player, wp, pingEnt )
@@ -4709,7 +4759,6 @@ void function SURVIVAL_Death_DropLoot( entity player, var damageInfo )
 	waitthread SURVIVAL_Death_DropLoot_Internal( player, attacker, damageSourceId, false )
 }
 
-
 void function Dev_ForceDropDeathbox( entity player )
 {
 	thread SURVIVAL_Death_DropLoot_Internal( player, null, 100, true )
@@ -4747,10 +4796,8 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		if ( !PositionIsInMapBounds( player.GetOrigin() ) )
 			return
 
-		if ( !GetCurrentPlaylistVarBool( "drop_loot_on_death", true ) )
-		{
+		if ( !settings.drop_loot_on_death )
 			return
-		}
 
 		// if ( Freelance_IsHubLevel() )
 			// return
@@ -4762,7 +4809,7 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	if ( player.IsPlayback() )
 		return
 
-	bool dropBox = GetCurrentPlaylistVarBool( "deathbox_ondeath_enabled", true )
+	bool dropBox = settings.deathbox_ondeath_enabled
 
 	vector vOffset         = <0, 0, 32>
 	vector savedOrigin     = player.GetOrigin() + vOffset
@@ -4785,9 +4832,12 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
 	LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
 
-	if( mainWeapons.len() > 0 )
+	if( mainWeapons.len() == 0 ) //why was this expr > 0 to override??? ~mkos
 	{
-		printt( "weapons to drop overriden") 
+		#if DEVELOPER
+			printt( "weapons to drop overriden") 
+		#endif 
+		
 		playerWeapons = []
 		mainWeapons = []
 	}
@@ -4807,11 +4857,13 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 			weaponData.originalOwner       = w.e.firstOwner
 			weaponData.stockpile           = 0
 
-			printt( "LIST OF MODS STAGE 1" )
-			foreach ( string mod in weaponData.mods )
-			{
-				printt( "WEAPON MOD: " + mod )
-			}
+			#if DEVELOPER
+				printt( "LIST OF MODS STAGE 1" )
+				foreach ( string mod in weaponData.mods )
+				{
+					printt( "WEAPON MOD: " + mod )
+				}
+			#endif
 
 			if ( w.GetActiveAmmoSource() == AMMOSOURCE_POOL )
 			{
@@ -4949,8 +5001,13 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	if ( IsValid( player ) )
 		ResetPlayerInventory( player )
 
-	int itemsPerFrame  = GetCurrentPlaylistVarInt( "deathbox_items_per_server_frame", 8 )
+	int itemsPerFrame  = settings.deathbox_items_per_server_frame
 	int itemFrameCount = 0
+	
+	//Todo: Create separate loot dropper function for halomode. 
+	if( Flowstate_IsHaloMode() )
+		RemoveRefs( VALID_FOR_HALO, playerWeapons )
+		
 	for ( int i = 0; i < playerWeapons.len(); i++ )
 	{
 		vector throwDir = <sin( throwData.throwAngle ), cos( throwData.throwAngle ), 0> * throwData.throwScale
@@ -4971,10 +5028,18 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		}
 	}
 
+	//Todo: Create separate loot dropper function for halomode. 
+	if( Flowstate_IsHaloMode() )
+		RemoveRefs( VALID_FOR_HALO, playerEquipment )
+
 	foreach ( itemName in playerEquipment )
 	{
 		if ( !SURVIVAL_Loot_IsRefValid( itemName ) )
 		{
+			#if DEVELOPER 
+				printw( "Invalid loot ref:", itemName )
+			#endif
+			
 			continue
 		}
 
@@ -5043,6 +5108,10 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		}
 	}
 
+	//Todo: Create separate loot dropper function for halomode. 
+	if( Flowstate_IsHaloMode() )
+		RemoveRefs_Loot( VALID_FOR_HALO, playerInventory )
+		
 	foreach ( invItem in playerInventory )
 	{
 		LootData data   = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
@@ -5067,7 +5136,8 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		}
 	}
 
-	if ( playerBackpack != "" && SURVIVAL_Loot_IsRefValid( playerBackpack ) )
+	//Todo: Create separate loot dropper function for halomode. 
+	if ( !Flowstate_IsHaloMode() && playerBackpack != "" && SURVIVAL_Loot_IsRefValid( playerBackpack ) )
 	{
 		savedOrigin = IsValid( player ) ? player.GetOrigin() + vOffset : savedOrigin
 		entity itemEnt = SpawnGenericLoot( playerBackpack, savedOrigin )
@@ -5107,7 +5177,9 @@ void function Death_DropPlayerItems( entity deathBox, entity player, string item
 
 	LootData lootData = SURVIVAL_Loot_GetLootDataByRef( item )
 
-	printt( "Death_DropPlayerItems", item )
+	#if DEVELOPER
+		printt( "Death_DropPlayerItems", item )
+	#endif
 
 	int clipCount
 	int stockpileCount
@@ -5203,7 +5275,9 @@ void function Death_DropPlayerItems( entity deathBox, entity player, string item
 			zoffset += additionalOffset
 		}
 
-		printt( "Dropping:", item )
+		#if DEVELOPER
+			printt( "Dropping:", item )
+		#endif
 
 		if ( mergeItems )
 			break
@@ -5252,7 +5326,8 @@ void function SURVIVAL_RefreshWeaponSkinAndModel( entity weapon, entity player )
 			Assert( ItemFlavor_GetType( skin ) == eItemType.weapon_skin )
 			WeaponCosmetics_ApplyModelAndSkin( weapon, skin )
 		}
-	} else //Cafe was here
+	} 
+	else //Cafe was here
 	{
 		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon.GetWeaponClassName() )
 		
@@ -5434,5 +5509,69 @@ void function RemoveCallback_LootPhysicsParented( entity ent, void functionref( 
 	if ( ent in file.Callbacks_OnLootPhysicsParented )
 	{
 		file.Callbacks_OnLootPhysicsParented[ent].removebyvalue( callbackFunc )
+	}
+}
+
+//TODO: Create separate logic for halo specific loot dropping.
+const array<string> VALID_FOR_HALO = 
+[ 
+	"mp_weapon_grenade_emp", 
+	"mp_weapon_frag_grenade", 
+	"mp_weapon_haloassaultrifle",  
+	"mp_weapon_haloshotgun", 
+	"mp_weapon_halosmg", 
+	"mp_weapon_halomagnum", 
+	"mp_weapon_halodmr", 
+	"mp_weapon_halobattlerifle", 
+	"mp_weapon_haloassaultrifle", 
+	"mp_weapon_halosniperrifle", 
+	"mp_weapon_haloneedler", 
+	"mp_weapon_energysword", 
+	"mp_weapon_frag_grenade_halomod", 
+	"mp_weapon_plasma_grenade_halomod", 
+	"mp_weapon_oddball_primary"
+]
+
+void function RemoveRefs( array<string> refsToKeep, array<string> arrayToRemoveFrom )
+{
+	for( int i = arrayToRemoveFrom.len() -1; i >= 0; i-- )
+	{
+		if( !refsToKeep.contains( arrayToRemoveFrom[ i ] ) )
+		{
+			#if DEVELOPER
+				printt( "refstokeep does not contain", arrayToRemoveFrom[ i ], "and was removed" )
+			#endif 
+			
+			arrayToRemoveFrom.remove( i )
+		}
+		else 
+		{
+			#if DEVELOPER
+				printt( "refstokeep contains", arrayToRemoveFrom[ i ], "and was kept" )
+			#endif 
+		}
+	}
+}
+
+void function RemoveRefs_Loot( array<string> refsToKeep, array<ConsumableInventoryItem> arrayToRemoveFrom )
+{
+	for( int i = arrayToRemoveFrom.len() -1; i >= 0; i-- )
+	{
+		LootData data   = SURVIVAL_Loot_GetLootDataByIndex( arrayToRemoveFrom[ i ].type )
+		
+		if( !refsToKeep.contains( data.ref ) )
+		{
+			#if DEVELOPER
+				printt( "refstokeep_loot does not contain", data.ref, "and was removed" )
+			#endif 
+			
+			arrayToRemoveFrom.remove( i )
+		}
+		else 
+		{
+			#if DEVELOPER
+				printt( "refstokeep_loot contains", data.ref, "and was kept" )
+			#endif 
+		}
 	}
 }

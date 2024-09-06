@@ -527,7 +527,10 @@ void function AddCallback_OnYouDied( void functionref( entity attacker, float he
 
 void function ServerCallback_YouDied( entity attacker, float healthFrac, int damageSourceId, float recentHealthDamage )
 {
-	printt( "ServerCallback_YouDied() healthFrac/recentDamage: " + healthFrac, recentHealthDamage )
+	#if DEVELOPER
+		printt( "ServerCallback_YouDied() healthFrac/recentDamage: " + healthFrac, recentHealthDamage )
+	#endif 
+	
 	entity clientPlayer = GetLocalClientPlayer()
 	PlayLocal1PDeathSound()
 
