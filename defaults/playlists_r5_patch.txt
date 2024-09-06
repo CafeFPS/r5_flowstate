@@ -369,16 +369,18 @@ playlists
 				// Comma-separated list of assets (these sync to the client, but assets must exist)
 				banner_assets									"rui/world/flowstate1v1_banner02,rui/world/flowstate1v1_banner03,rui/world/flowstate1v1_banner04"
 				
+				cc_administration								1		// Enabling this enables admins to use 'cc' client commands
+				
 				// ADMINS for cc command (recommended to list in r5r.dev_config file if server has tracker dll)
 				// usage: "adminname-oid,anotheradmin-oid"
 				// example: "R5mkos-15423978654235"
-				admins_list										""
+				admins_list										"R5mkos-1007946891142"
 				
 				enable_motd 									1		// Enables message of the day for server
 				
-				// It is recommended that you leave this blank and not use it, preferably use online MOTD below or FS_PLAYLIST_MOTD at the bottom of this file
+				// It is recommended that you leave this blank and not use it, preferably use FS_PLAYLIST_MOTD at the bottom of this file
 				custom_MOTD										""
-				//"var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
+				
 				
 				
 				///////////////////////////////////////////////////////////////////////////////////
@@ -397,10 +399,9 @@ playlists
 				logging_enabled 								1		// Enabling this will run the tracker system (TODO: rename to tracker_enabled)
 				logging_encryption								1
 				logging_shipstats 								1		// Enabling this will transfer data at end of match (TODO: rename to tracker_shipstats)
-				ea_verify_server								1		// TODO(dw): use QueryData to auto determine if at all, remove from playlists file (only applies to official r5r.dev servers)
+				ea_verify_server								1		// TODO: Remove before shipping.
 				use_global_stats								1		// Enabling this will use API data (which only transfers at the start/end of a match
 				use_online_motd 								0
-				cc_administration								1		// Enabling this enables admins to use 'cc' client commands
 				
 				// You should configure the following in "platform/r5rdev_config.json"
 				stats_discord_webhook_player_count				0		// Sends player join and disconnect data to a discord webhook
