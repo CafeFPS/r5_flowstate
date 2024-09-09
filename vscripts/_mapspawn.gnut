@@ -527,6 +527,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash
 			thread FS_TrackPlayersPositionInScoreboard()
 		break
+
+		case "fs_rankupmapmovementpractice":
+		rankupmap_init()
+		break
 	}
 	
 	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
