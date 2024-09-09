@@ -12,10 +12,10 @@ global const SCRIPT_GAME_VERSION__RELEASE = true
 
 //r5r.dev
 global const bool TRACKER 					= false
-global const bool HAS_TRACKER_DLL 			= false
+global const bool HAS_TRACKER_DLL 			= true
 global const bool MULTIPLAYER_DEBUG_PRINTS 	= false
 global const bool NOTIFY_RATELIMIT_FAILED	= false
-global const bool MKOS						= false
+global const bool MKOS						= true
 global const bool ENTITYVAR_DEPRECATED		= true
 
 global const int INT_MIN = (1<<31)
@@ -640,7 +640,7 @@ global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
 global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
 global const KILL_REPLAY_AFTER_KILL_TIME 				= 2.0
 
-global const DEATHCAM_TIME_SHORT 						= 3.0
+global const DEATHCAM_TIME_SHORT 						= 3.0 //?
 global const KILL_REPLAY_BEFORE_KILL_TIME_SHORT 		= 3.5
 global const KILL_REPLAY_AFTER_KILL_TIME_SHORT 			= 1.0
 global const RESPAWN_BUTTON_BUFFER 						= 0.0 // the amount of time before you're allowed to respawn, after DEATHCAM_TIME

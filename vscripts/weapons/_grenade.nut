@@ -185,34 +185,16 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 {
 	entity weaponOwner = weapon.GetWeaponOwner()
 	weapon.OverrideNextAttackTime( 0.0 )
-	
-	#if CLIENT
-		thread
-		(
-			void function() : ( weaponOwner, weapon )
-			{
-				#if DEVELOPER 
-					OnThreadEnd
-					(
-						void function()
-						{
-							printw( "thread for grenade is down" )
-						}
-					)
-				#endif 
-				weapon.EndSignal( "WeaponDeactivateEvent", "OnDestroy" )
-				weaponOwner.EndSignal( "ThrowGrenade", "OnDestroy", "OnDeath" )
-				
-				wait 0.35
-				
-				printw( "firing" )
-				weaponOwner.ClientCommand( "+attack; -attack" )
-			}
-		)()
-	// #elseif SERVER 
-		// printw( "firing" )
-		// ClientCommand( weaponOwner, "+attack; -attack" )
-	#endif
+
+	WeaponPrimaryAttackParams attackParams
+
+	attackParams.dir = weaponOwner.GetViewVector()
+	attackParams.pos = weaponOwner.UseableEyePosition( weaponOwner )
+	attackParams.firstTimePredicted = true
+
+	float directionScale = 1.0
+
+	Grenade_OnWeaponToss_Halo( weapon, attackParams, directionScale )
 }
 
 int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
