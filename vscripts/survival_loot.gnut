@@ -66,6 +66,8 @@ global function SURVIVAL_Death_DropLoot_Internal
 global function AddCallback_OnPlayerWeaponAttachmentChanged
 global function RemoveCallback_OnPlayerWeaponAttachmentChanged 
 
+global function GetGroundPosition
+
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this //wtf lmao ~mkos
 
 global const LOOT_COLLISION_GROUP = 1
@@ -866,7 +868,7 @@ void function OnGroundLootSpawned( entity ent )
 				}
 			}
 
-			if(  lootData.lootType == eLootType.ARMOR || itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
+			if( itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
 			{
 				i--
 				continue
@@ -914,7 +916,7 @@ void function OnGroundLootSpawned( entity ent )
 			return
 		}
 		
-		loot = lt.specialCaseSpawnFunction( itemRef, newOrigin )
+		loot = lt.specialCaseSpawnFunction( itemRef, newOrigin, -1 ) //Fix realms if needed. Cafe
 		return
 	}
 	else
@@ -2014,17 +2016,87 @@ void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
 	EmitSoundOnEntityExceptToPlayer( player, player, itemData.pickupSound_3p )
 }
 
-void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
+int function AddRoundsToWeapon( entity player, entity weapon, int rounds )
 {
-	if ( weapon.UsesClipsForAmmo() )
-		weapon.SetWeaponPrimaryClipCount( int( min( weapon.GetWeaponPrimaryClipCount() + numRounds, weapon.GetWeaponPrimaryClipCountMax() ) ) )
-	else {
-		int ammoType = weapon.GetWeaponAmmoPoolType()
+	int ammoPerClip = weapon.GetWeaponPrimaryClipCountMax()
+	int gainedAmmo  = 0
 
-		player.AmmoPool_SetCapacity( 65535 )
-		player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + numRounds )
+	switch ( weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) )
+	{
+		case eWeaponFireMode.offhand:
+		case eWeaponFireMode.offhandHybrid:
+		case eWeaponFireMode.offhandInstant:
+			// offhand weapons typically cant store ammo, so refill the current clip
+			if ( ammoPerClip > 0 )
+			{
+				int primaryAmmoInClipCount = weapon.GetWeaponPrimaryClipCount()
+				int newAmmo                = minint( ammoPerClip, primaryAmmoInClipCount + rounds )
+				if ( newAmmo > primaryAmmoInClipCount )
+				{
+					weapon.SetWeaponPrimaryClipCount( newAmmo )
+					gainedAmmo = weapon.GetWeaponPrimaryClipCount() - primaryAmmoInClipCount
+				}
+			}
+			break
+
+		default:
+			if ( weapon.GetWeaponSettingInt( eWeaponVar.ammo_stockpile_max ) > 0 )
+			{
+				/*
+					NOTE: If the flare gun isn't removed once empty, there will need to be a step in this function where the flaregun clip is filled first, then stockpile.
+					Currently, if it's not removed, the ammo just goes to stockpile. And the flaregun is drawn unloaded.
+				*/
+				int primaryAmmoCount = weapon.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE )
+				// this weapon has off-clip ammo storage, so add ammo to storage
+				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, primaryAmmoCount + rounds )
+				gainedAmmo = weapon.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE ) - primaryAmmoCount
+			}
+			// Need a better way to tell ordnance apart. Maybe split this into three functions. One for abilities (first set of cases), one for normal weapons (above case), one for ordnances (below.
+			// The functions calling this know which they should go to.
+			else
+			{
+				int primaryAmmoCount = weapon.GetWeaponPrimaryClipCount()
+				// this weapon has off-clip ammo storage, so add ammo to storage
+				weapon.SetWeaponPrimaryClipCount( primaryAmmoCount + rounds )
+				gainedAmmo = weapon.GetWeaponPrimaryClipCount() - primaryAmmoCount
+			}
+			break
 	}
+
+	return gainedAmmo
 }
+
+
+int function AddClipToWeapon( entity player, entity weapon )
+{
+	int ammoPerClip = weapon.GetWeaponPrimaryClipCountMax()
+	int gainedAmmo  = 0
+
+	switch ( weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) )
+	{
+		case eWeaponFireMode.offhand:
+		case eWeaponFireMode.offhandHybrid:
+		case eWeaponFireMode.offhandInstant:
+			// offhand weapons typically cant store ammo, so refill the current clip
+			if ( ammoPerClip > 0 )
+			{
+				int primaryClipCount = weapon.GetWeaponPrimaryClipCount()
+				weapon.SetWeaponPrimaryClipCount( ammoPerClip )
+				gainedAmmo = weapon.GetWeaponPrimaryClipCount() - primaryClipCount
+			}
+			break
+
+		default:
+			int primaryAmmoCount = weapon.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE )
+			// this weapon has off-clip ammo storage, so add ammo to storage
+			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, primaryAmmoCount + ammoPerClip )
+			gainedAmmo = weapon.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE ) - primaryAmmoCount
+			break
+	}
+
+	return gainedAmmo
+}
+
 
 void function Survival_SetInventoryEnabled( entity player, bool state )
 {
@@ -3824,12 +3896,17 @@ void function SURVIVAL_GivePlayerEquipment( entity player, string ref, int prope
 		PlayPickupSound( player, ref )
 }
 
-entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
+entity function SpawnWeaponAndAmmo( string weaponName, vector origin, int realm )
 {
 	vector newOrigin = origin + <0, 0, 2>
 
 	entity weapon = SpawnGenericLoot( weaponName, newOrigin, < 0, RandomFloatRange( 0, 360 ), 90 >, -1 )
 
+	if( realm != -1 )
+	{
+		weapon.RemoveFromAllRealms()
+		weapon.AddToRealm( realm )
+	}
 	//Check for moving geo
 	TraceResults trace = TraceLineHighDetail( weapon.GetOrigin(), weapon.GetOrigin() - <0, 0, 88>, weapon, LOOT_TRACE, LOOT_COLLISION_GROUP )
 	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
@@ -3861,8 +3938,8 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 	
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( weaponName )
 
-	// if ( SURVIVAL_Loot_IsAmmoSpawningDisabled() )
-		// return weapon
+	if ( SURVIVAL_Loot_IsAmmoSpawningDisabled() )
+		return weapon
 
 	if ( GetWeaponInfoFileKeyField_GlobalBool( data.baseWeapon, "uses_ammo_pool" ) )
 	{
@@ -3886,8 +3963,8 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 
 void function DelayedSpawnAmmo( entity weapon, string ammoType, vector origin, float scale )
 {
-	// if ( SURVIVAL_Loot_IsAmmoSpawningDisabled() )
-		// return
+	if ( SURVIVAL_Loot_IsAmmoSpawningDisabled() )
+		return
 
 	float angle       = RandomFloat( 360.0 )
 	float upZ        = 32.0
@@ -3974,12 +4051,17 @@ TraceResults function GetGroundPosition( vector startOrigin, vector endOrigin, a
 	return bestTrace
 }
 
-entity function SpawnArmor( string armorRef, vector origin )
+entity function SpawnArmor( string armorRef, vector origin, int realm )
 {
 	vector newOrigin = origin + <0, 0, 2> // OriginToGround(origin) + <0,0,2>
 
 	entity armor = SpawnGenericLoot( armorRef, newOrigin )
 
+	if( realm != -1 )
+	{
+		armor.RemoveFromAllRealms()
+		armor.AddToRealm( realm )
+	}
 	if( IsValid( armor  ) )
 		armor.AddUsableValue( USABLE_BLOCK_CONTINUOUS_USE )
 

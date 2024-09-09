@@ -923,59 +923,37 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 				continue
 			}
 		}
+	
+		entity loot
 
-		TraceResults traceResult = TraceLine(  spawn + < 0, 0, 32 >, spawn - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-		spawn = traceResult.endPos
-
-		int zangle = 0
+		int lootType = SURVIVAL_Loot_GetLootDataByRef( itemRef ).lootType
+		vector origin = spawn
+		vector startOrigin = origin + <0, 0, 8>
+		vector endOrigin   = origin - <0, 0, 20000>
+		vector newOrigin   = GetGroundPosition( startOrigin, endOrigin ).endPos
 
 		if( lootData.lootType == eLootType.MAINWEAPON )
 		{
-			weapons++
-			string ammoType = lootData.ammoType
-			
-			if ( !SURVIVAL_Loot_IsRefValid( ammoType ) )
-				continue
-
-			int countperdrop = SURVIVAL_Loot_GetLootDataByRef( ammoType ).countPerDrop
-			array<TraceResults> circlePositions
-			
-			for(int i = 0; i < 8; i++)
-			{
-				float r = float(i) / float( 8 ) * 2 * PI
-				vector start = spawn + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0>
-				circlePositions.append( TraceLine( start + < 0, 0, 32 >, start - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE ) )
-			}
-
-			//Add two ammo stacks per weapon
-			TraceResults traceAmmo1 = circlePositions.getrandom()
-			entity ammo1 = SpawnGenericLoot( ammoType, traceAmmo1.endPos, <0, RandomFloatRange( -180, 180 ), 1>, countperdrop )
+			loot = SpawnWeaponAndAmmo( itemRef, newOrigin, realm )
+			group.groundLoot.append( loot )
 			count++
-			circlePositions.fastremovebyvalue( traceAmmo1 )
-			TraceResults traceAmmo2 = circlePositions.getrandom()
-			
-			entity ammo2 = SpawnGenericLoot( ammoType, traceAmmo2.endPos, <0, RandomFloatRange( -180, 180 ), 1>, countperdrop )
-			count++
-
-			ammo1.RemoveFromAllRealms()
-			ammo1.AddToRealm( realm )
-			ammo2.RemoveFromAllRealms()
-			ammo2.AddToRealm( realm )
-
-			group.groundLoot.append( ammo1 )
-			group.groundLoot.append( ammo2 )
-
-			vector anglesA = AnglesOnSurface( traceAmmo1.surfaceNormal, AnglesToForward( ammo1.GetAngles() ) )
-			ammo1.SetAngles( anglesA )
-			anglesA = AnglesOnSurface( traceAmmo2.surfaceNormal, AnglesToForward( ammo2.GetAngles() ) )
-			ammo2.SetAngles( anglesA )
-
-			zangle = 90
+			continue
 		}
+		
+		loot = SpawnGenericLoot( itemRef, newOrigin, <-1, -1, -1>, SURVIVAL_Loot_GetLootDataByRef( itemRef ).countPerDrop )
 
-		entity loot = SpawnGenericLoot( itemRef, spawn + <0, 0, 2>, <0, RandomFloatRange( -180, 180 ), zangle>, lootData.countPerDrop )
-		vector angles = AnglesOnSurface( traceResult.surfaceNormal, AnglesToForward( loot.GetAngles() ) )
-		loot.SetAngles( < angles.x, angles.y, AnglesCompose( angles, <0,0,zangle> ).z > )
+		if ( loot == null )
+			continue
+
+		vector angles = AnglesOnSurface( GetGroundPosition( startOrigin, endOrigin ).surfaceNormal, AnglesToForward( loot.GetAngles() ) )
+		loot.SetAngles( <0,0,angles.z> )
+
+		//Check for moving geo
+		TraceResults trace = TraceLineHighDetail( loot.GetOrigin(), loot.GetOrigin() - <0, 0, 88>, loot, LOOT_TRACE, LOOT_COLLISION_GROUP )
+		if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+		{
+			loot.SetParent( trace.hitEnt, "", true, 0 )
+		}
 
 		loot.RemoveFromAllRealms()
 		loot.AddToRealm( realm )

@@ -109,6 +109,8 @@ global enum eMovementType
 	HAVEFUN_PLAYER_SETTINGS
 }
 
+global bool script_bGiveskins = false
+
 struct
 {
 	void functionref(entity player ) ObserverThreadOverrideCallback = null
@@ -532,7 +534,6 @@ void function GiveLoadoutRelatedWeapons( entity player )
 
 array<string> enabledMods = []
 bool script_bHighlight = true
-bool script_bGiveskins = false
 bool script_bRespawnInitComplete = false
 
 void function RespawnBehavior_Init()

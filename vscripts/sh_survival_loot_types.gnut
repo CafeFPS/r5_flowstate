@@ -19,7 +19,7 @@ global struct LootTypeData
 	int backpackAltAction = eLootAction.DROP
 
 	#if SERVER
-		entity functionref(string, vector) specialCaseSpawnFunction
+		entity functionref(string, vector, int) specialCaseSpawnFunction
 	#endif
 
 	LootActionStruct functionref( entity player, LootRef lootRef ) groundActionFunc

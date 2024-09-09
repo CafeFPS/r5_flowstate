@@ -31,6 +31,7 @@ global function GetFXRarityColorForTier // use this for in game loot
 global function GetFXRarityColorForUnlockable
 global function IsCustomAttachment
 global function IsCustomWeapon
+global function SURVIVAL_Loot_IsAmmoSpawningDisabled
 
 global enum eLootTier
 {
@@ -1566,5 +1567,12 @@ void function HAS_DEATHBOX_OVERRIDE_OnUserInfoUpdated( string hardware, string i
 	{
 		Signal( uiGlobal.signalDummy, "GatheredEnoughFriendInfo" ) //
 	}
+}
+#endif
+
+#if SERVER || CLIENT
+bool function SURVIVAL_Loot_IsAmmoSpawningDisabled()
+{
+return GetCurrentPlaylistVarBool( "block_ammo_spawning", false )
 }
 #endif
