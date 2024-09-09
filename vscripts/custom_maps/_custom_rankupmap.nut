@@ -3316,6 +3316,7 @@ thread function() : ( ent ) {
     {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
+          EndSignal( ent, "OnDestroy" ) //fix to entity may become invalid after the wait, causing server to crash. Cafe
           ent.SetOrigin(<-27982.58,-2967.71,-27164.63>)
           ent.SetAngles(<-88.80,0.00,-0.04>)
           ent.KnockBack(<0, 0, 0.1>, 0.1 )
@@ -3345,6 +3346,7 @@ thread function() : ( ent ) {
     {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
+          EndSignal( ent, "OnDestroy" ) //fix to entity may become invalid after the wait, causing server to crash. Cafe
           ent.SetOrigin(<-27982.58,-2967.71,-27164.63>)
           ent.SetAngles(<-88.80,0.00,-0.04>)
           ent.KnockBack(<0, 0, 0.1>, 0.1 )
@@ -3391,6 +3393,7 @@ thread function() : ( ent ) {
     {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
+          EndSignal( ent, "OnDestroy" ) //fix to entity may become invalid after the wait, causing server to crash. Cafe
           ent.SetOrigin(<-27982.58,-2967.71,-27164.63>)
           ent.SetAngles(<-88.80,0.00,-0.04>)
           ent.KnockBack(<0, 0, 0.1>, 0.1 )

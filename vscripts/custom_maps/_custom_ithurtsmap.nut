@@ -58,6 +58,7 @@ void function ItHurtsMapEntitiesDidLoad()
 }
 
 void function ithurtsmap_SpawnInfoText( entity player ) {
+	EndSignal( player, "OnDestroy" ) //fix to entity may become invalid after the wait, causing server to crash. Cafe
 	FlagWait( "EntitiesDidLoad" )
 	wait 1
 	CreatePanelText(player, "It hurts", "by: Loy", < 29890.02, -1092.1, 50179.2 >, < 0, -90, 0 >, false, 1)
