@@ -342,7 +342,7 @@ void function ServerCallback_LiveStatsUIAccuracyViaTotalShots(int pellets)
 	ChallengesClientStruct.totalShots += (1*pellets)
 	float accuracy = float(ChallengesClientStruct.ShotsHits)/float(ChallengesClientStruct.totalShots)
 	
-	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy, 1, 2)
+	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesAccuracyValue"), final.tostring())
 }
 void function ServerCallback_LiveStatsUIAccuracyViaShotsHits()
@@ -350,7 +350,7 @@ void function ServerCallback_LiveStatsUIAccuracyViaShotsHits()
 	ChallengesClientStruct.ShotsHits++
 	float accuracy = float(ChallengesClientStruct.ShotsHits)/float(ChallengesClientStruct.totalShots)
 	
-	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy, 1, 2)
+	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesAccuracyValue"), final.tostring())
 }
 
@@ -359,7 +359,7 @@ void function ServerCallback_LiveStatsUIDamageViaWeaponAttack(int damage, float 
 	ChallengesClientStruct.damagePossible += int(damagePossible)
 	float damageRatio = float(ChallengesClientStruct.damageDone)/float(ChallengesClientStruct.damagePossible)
 	
-	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio, 1, 2)
+	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesDamageValue"), final.tostring())
 }
 
@@ -368,7 +368,7 @@ void function ServerCallback_LiveStatsUIDamageViaDummieDamaged(int damage)
 	ChallengesClientStruct.damageDone += damage
 	float damageRatio = float(ChallengesClientStruct.damageDone)/float(ChallengesClientStruct.damagePossible)
 	
-	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio, 1, 2)
+	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesDamageValue"), final.tostring())
 }
 
