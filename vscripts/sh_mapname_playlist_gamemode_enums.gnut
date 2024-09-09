@@ -110,6 +110,8 @@ global enum ePlaylists
 	winterexpress, //39
 	fs_vamp_1v1, //40
 	fs_1v1_headshots_only, //41
+	fs_rankupmapmovementpractice, //42
+	fs_ithurtsmovementmappractice, //43
 	
 	_PLAYLISTS_COUNT //LAST
 }
