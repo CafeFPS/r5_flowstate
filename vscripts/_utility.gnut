@@ -43,8 +43,19 @@ global struct ShieldDamageModifier
 
 struct
 {
+	table< entity, int >           playerToStoredUltimateCharge
+	table< entity, int >           playerToStoredTacticalCharge
+	table< entity, ItemFlavor >    playerChargeValidation
+
 	bool isSkyboxView = false
 } file
+
+enum eChargeStorageType
+{
+	Ultimate = 1,
+	Tactical = 2,
+	All = 3
+}
 
 void function Utility_Init()
 {
@@ -5319,3 +5330,91 @@ void function RefreshOrdnanceSlot( entity player, string item )
 		Remote_CallFunction_NonReplay( player, "Remote_CallFunction_ByRef_internal", FindFuncID_ByRef( funcName ) )
 	}
 #endif
+
+void function StoreUltimateChargeForPlayer( entity victim, entity attacker, var attackerDamageInfo)
+{
+	StoreChargeForPlayer( victim, eChargeStorageType.Ultimate )
+}
+
+void function StoreAllChargeForPlayer( entity victim, entity attacker, var attackerDamageInfo)
+{
+	StoreChargeForPlayer( victim, eChargeStorageType.All )
+}
+
+void function StoreChargeForPlayer( entity victim, int type)
+{
+	if ( victim in file.playerChargeValidation )
+		file.playerChargeValidation[victim] = LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
+	else
+		file.playerChargeValidation[victim] <- LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
+
+	if ( type & eChargeStorageType.Ultimate )
+	{
+		entity activeWeapon = victim.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		entity ultimateWeapon = victim.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		int ultimateCharge = 0
+
+		if ( IsValid( ultimateWeapon ) )
+		{
+			ultimateCharge = ultimateWeapon.GetWeaponPrimaryClipCount()
+			int ultimateAmmoPerShot = ultimateWeapon.GetAmmoPerShot()
+
+			bool hasDropOnDeath = false // bool( GetWeaponInfoFileKeyField_GlobalInt_WithDefault( ultimateWeapon.GetWeaponClassName(), "drops_on_death", 0 ) ) //Revisit. Cafe
+
+			if( IsValid( activeWeapon ) && activeWeapon == ultimateWeapon && hasDropOnDeath )
+				ultimateCharge = ultimateCharge - ultimateAmmoPerShot
+		}
+
+		if ( victim in file.playerToStoredUltimateCharge )
+			file.playerToStoredUltimateCharge[victim] = ultimateCharge
+		else
+			file.playerToStoredUltimateCharge[victim] <- ultimateCharge
+	}
+
+	if ( type & eChargeStorageType.Tactical )
+	{
+		entity offhandTacticalWeapon = victim.GetOffhandWeapon( OFFHAND_TACTICAL )
+		int tacticalCharge = 0
+
+		if ( IsValid( offhandTacticalWeapon ) )
+		{
+			tacticalCharge = offhandTacticalWeapon.GetWeaponPrimaryClipCount()
+		}
+		if ( victim in file.playerToStoredTacticalCharge )
+			file.playerToStoredTacticalCharge[victim] = tacticalCharge
+		else
+			file.playerToStoredTacticalCharge[victim] <- tacticalCharge
+	}
+}
+
+void function RestoreChargesForPlayer( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	if ( player in file.playerChargeValidation && LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) == file.playerChargeValidation[player] )
+	{
+		if ( player in file.playerToStoredUltimateCharge )
+		{
+			entity ultWeapon = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+			if ( IsValid( ultWeapon ) )
+			{
+				ultWeapon.SetWeaponPrimaryClipCount( minint( file.playerToStoredUltimateCharge[player], ultWeapon.GetWeaponPrimaryClipCountMax() ) )
+				delete file.playerToStoredUltimateCharge[player]
+			}
+		}
+
+		if ( player in file.playerToStoredTacticalCharge )
+		{
+			entity tacWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+			if ( IsValid( tacWeapon ) )
+			{
+				tacWeapon.SetWeaponPrimaryClipCount( minint( file.playerToStoredTacticalCharge[player], tacWeapon.GetWeaponPrimaryClipCountMax() ) )
+				delete file.playerToStoredTacticalCharge[player]
+			}
+		}
+	}
+}
