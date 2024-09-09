@@ -796,7 +796,7 @@ const array<string> r5rDevs =
 [
 	"CafeFPS",
 	"DEAFPS",
-	"AyeZee",
+	"zee_x64",
 	"Makimakima",
 	"Endergreen12",
 	"Julefox",

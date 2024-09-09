@@ -147,18 +147,22 @@ void function Cl_CustomTDM_Init()
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
 	
-	//if( GetCurrentPlaylistName() == "fs_scenarios" )
-	if( Playlist() == ePlaylists.fs_scenarios )
+	switch( Playlist() )
 	{
-		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
-		FS_Scenarios_Score_System_Init()
-	}
-	
-	if( Playlist() == ePlaylists.fs_1v1 )
-	{
-		AddCallback_CharacterSelectMenu_OnCharacterLocked( Gamemode1v1_OnSelectedLegend )
-		AddCallback_OnCharacterSelectMenuClosed( Gamemode1v1_OnLegendSelector_Close )
-		//AddCallback_OnClientScriptInit( FS_Show1v1Banner )
+		case ePlaylists.fs_scenarios:
+			AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+			FS_Scenarios_Score_System_Init()
+		break 
+		
+		case ePlaylists.fs_1v1:
+			AddCallback_CharacterSelectMenu_OnCharacterLocked( Gamemode1v1_OnSelectedLegend )
+			AddCallback_OnCharacterSelectMenuClosed( Gamemode1v1_OnLegendSelector_Close )
+		break 
+		
+		case ePlaylists.fs_haloMod:
+			RegisterConCommandTriggeredCallback( "weaponSelectOrdnance", SetRecentWeapon )
+		break
+
 	}
 }
 
@@ -462,6 +466,11 @@ void function Flowstate_RoundEndTimeChanged( entity player, float old, float new
 
 	thread Flowstate_ShowRoundEndTimeUI( new )
 	
+}
+
+void function SetRecentWeapon( entity player )
+{
+	Grenade_SetLastActive( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) )
 }
 
 void function Flowstate_StartTimeChanged( entity player, float old, float new, bool actuallyChanged )

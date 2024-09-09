@@ -187,7 +187,9 @@ void function OnJumpPadPlanted( entity projectile )
 		owner.EndSignal( "OnDestroy" )
 		jumpPad.EndSignal( "OnDestroy" )
 		
-		OnThreadEnd( function() : ( jumpPad )
+		OnThreadEnd
+		( 
+			void function() : ( jumpPad )
 			{
 				if( IsValid(jumpPad) )
 				{
@@ -197,10 +199,8 @@ void function OnJumpPadPlanted( entity projectile )
 		)
 	
 		wait 15
-		if(IsValid(jumpPad))
-		{
+		if( IsValid( jumpPad ) )
 			jumpPad.Destroy()
-		}
 	}
 #endif
 

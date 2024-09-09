@@ -7,10 +7,16 @@ global function GetGrenadeThrowSound_3p
 global function GetGrenadeDeploySound_3p
 global function GetGrenadeProjectileSound
 global function Grenade_OnWeaponToss
+global function Grenade_OnWeaponReady_Halo
+
+#if CLIENT
+	global function Grenade_SetLastActive
+#endif
 
 const DEFAULT_FUSE_TIME = 2.25
 global const float DEFAULT_MAX_COOK_TIME = 99999.9 //Longer than an entire day. Really just an arbitrarily large number
 
+global function Grenade_OnWeaponTossReleaseAnimEvent_Halo
 global function Grenade_OnWeaponTossReleaseAnimEvent
 global function Grenade_OnWeaponTossCancelDrop
 global function Grenade_OnWeaponDeactivate
@@ -59,6 +65,14 @@ const SOLDIER_ARC_STUN_ANIMS = [
 		"pt_react_ARC_scream",
 		"pt_react_ARC_stumble_F",
 		"pt_react_ARC_stumble_R" ]
+		
+struct 
+{
+	#if CLIENT 
+		entity lastWeapon
+	#endif
+
+} file
 
 void function Grenade_FileInit()
 {
@@ -82,6 +96,7 @@ void function Grenade_FileInit()
 
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_thermite_grenade, Thermite_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_frag_grenade, Frag_DamagedPlayerOrNPC )
+		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_frag_grenade_halomod, Frag_DamagedPlayerOrNPC )
 
 		level._empForcedCallbacks[eDamageSourceId.mp_weapon_grenade_emp] <- true
 
@@ -106,6 +121,13 @@ void function Grenade_OnWeaponTossPrep( entity weapon, WeaponTossPrepParams prep
 		}
 	#endif
 }
+
+#if CLIENT 
+	void function Grenade_SetLastActive( entity weapon )
+	{
+		file.lastWeapon = weapon
+	}
+#endif
 
 void function Grenade_OnWeaponDeactivate( entity weapon )
 {
@@ -159,6 +181,39 @@ void function Grenade_Init( entity grenade, entity weapon )
 		grenade.s.originalOwner <- weaponOwner  // for later in damage callbacks, to skip damage vs friendlies but not for og owner or his enemies
 }
 
+void function Grenade_OnWeaponReady_Halo( entity weapon )
+{
+	entity weaponOwner = weapon.GetWeaponOwner()
+	weapon.OverrideNextAttackTime( 0.0 )
+	
+	#if CLIENT
+		thread
+		(
+			void function() : ( weaponOwner, weapon )
+			{
+				#if DEVELOPER 
+					OnThreadEnd
+					(
+						void function()
+						{
+							printw( "thread for grenade is down" )
+						}
+					)
+				#endif 
+				weapon.EndSignal( "WeaponDeactivateEvent", "OnDestroy" )
+				weaponOwner.EndSignal( "ThrowGrenade", "OnDestroy", "OnDeath" )
+				
+				wait 0.35
+				
+				printw( "firing" )
+				weaponOwner.ClientCommand( "+attack; -attack" )
+			}
+		)()
+	// #elseif SERVER 
+		// printw( "firing" )
+		// ClientCommand( weaponOwner, "+attack; -attack" )
+	#endif
+}
 
 int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
 {
@@ -192,6 +247,71 @@ int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams atta
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
+
+int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
+{
+	weapon.EmitWeaponSound_1p3p( GetGrenadeThrowSound_1p( weapon ), GetGrenadeThrowSound_3p( weapon ) )
+	bool projectilePredicted = PROJECTILE_PREDICTED
+	bool projectileLagCompensated = PROJECTILE_LAG_COMPENSATED
+#if SERVER
+	if ( weapon.IsForceReleaseFromServer() )
+	{
+		projectilePredicted = false
+		projectileLagCompensated = false
+	}
+#endif
+	entity grenade = Grenade_Launch( weapon, attackParams.pos, (attackParams.dir * directionScale), projectilePredicted, projectileLagCompensated )
+	entity weaponOwner = weapon.GetWeaponOwner()
+	weaponOwner.Signal( "ThrowGrenade" )
+
+	PlayerUsedOffhand( weaponOwner, weapon, true, grenade ) // intentionally here and in Hack_DropGrenadeOnDeath - accurate for when cooldown actually begins
+
+	if ( IsValid( grenade ) )
+		grenade.proj.savedDir = weaponOwner.GetViewForward()
+	
+#if SERVER
+	LiveAPI_GrenadeThrown( weaponOwner, weapon )
+
+	// #if BATTLECHATTER_ENABLED
+		// TryPlayWeaponBattleChatterLine( weaponOwner, weapon )
+	// #endif
+#endif
+
+#if CLIENT 
+
+	if( IsValid( file.lastWeapon ) )
+	{
+		if( weaponOwner == file.lastWeapon.GetWeaponOwner() )
+		{
+			int slot = GetSlotForWeapon( weaponOwner, file.lastWeapon )
+			
+			string cmd	
+			switch( slot )
+			{
+				case WEAPON_INVENTORY_SLOT_PRIMARY_0:
+					cmd = "weaponSelectPrimary0"
+				break
+				
+				case WEAPON_INVENTORY_SLOT_PRIMARY_1:
+					cmd = "weaponSelectPrimary1"
+				break
+				
+				case WEAPON_INVENTORY_SLOT_PRIMARY_2:
+					cmd = "weaponSelectPrimary2"
+				break
+				
+				default: 
+					cmd = "weaponSelectPrimary1"
+				break
+			}
+			
+			weaponOwner.ClientCommand( cmd )
+		}
+	}
+#endif 
+	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+}
+
 
 void function OnProjectileCollision_weapon_impulse_grenade( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
 {
@@ -297,6 +417,12 @@ void function PushPlayerApart( entity target, vector dmgOrigin, float speed )
 var function Grenade_OnWeaponTossReleaseAnimEvent( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	var result = Grenade_OnWeaponToss( weapon, attackParams, 1.0 )
+	return result
+}
+
+var function Grenade_OnWeaponTossReleaseAnimEvent_Halo( entity weapon, WeaponPrimaryAttackParams attackParams )
+{
+	var result = Grenade_OnWeaponToss_Halo( weapon, attackParams, 1.0 )
 	return result
 }
 

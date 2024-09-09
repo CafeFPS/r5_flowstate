@@ -37,6 +37,9 @@ WeaponData
 	"vortex_impact_sound_3p"						""
 	"vortex_refire_behavior"  						""
 
+	//Behavior 
+	"primary_fire_does_not_block_sprint"			"1"
+
 	// Effects	
 	"show_pre_modded_tracer"						"0"
 	"tracer_effect"   								"" 

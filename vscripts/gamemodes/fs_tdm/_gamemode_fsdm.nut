@@ -1641,11 +1641,11 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
-		array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
+		const array<string> loot = [ "mp_weapon_frag_grenade_halomod", "mp_weapon_frag_grenade_halomod", "mp_weapon_grenade_emp" ]
 			foreach(item in loot)
 				SURVIVAL_AddToPlayerInventory(player, item)
 
-		SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+		SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade_halomod" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	}
 

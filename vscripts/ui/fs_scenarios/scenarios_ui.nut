@@ -285,7 +285,7 @@ void function ServerCallback_SendScenariosStandings( int standingType, int score
 	ClientRecapStruct recap
 	
 	recap.value = value
-	recap.count = count //probably should just calculate on client
+	recap.count = count
 	
 	switch( standingType )
 	{

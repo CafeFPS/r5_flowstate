@@ -111,6 +111,7 @@ void function SetupWeapons()
 	SetupDevCommand( "Grenade: Arc Star", "give mp_weapon_grenade_emp" )
 	SetupDevCommand( "Grenade: Frag", "give mp_weapon_frag_grenade" )
 	SetupDevCommand( "Grenade: Thermite", "give mp_weapon_thermite_grenade" )
+	SetupDevCommand( "Grenade: Halo Frag", "give mp_weapon_frag_grenade_halomod" )
 
 	// Dev
 	//SetupDevCommand( "Dev: Dev Tool", "give mp_weapon_mdlspawner" )

@@ -32,7 +32,8 @@ global function PlayBattleChatterLineToPlayer
 global const DELAY_COMMENTARY = 2
 global const int COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS = eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS
 
-struct {
+struct 
+{
 	bool commentarySystemActive = true
 	entity currentKillLeader = null
 	array<int>                     disabledCommentaryEvents
@@ -42,6 +43,8 @@ struct {
 	bool survival_commentary_kill_leader_enabled
 	bool survival_commentary_champion_enabled
 	bool survival_commentary_first_blood_enabled
+	bool championWasEliminated
+	
 } file
 
 void function SurvivalCommentary_Init()
@@ -52,6 +55,9 @@ void function SurvivalCommentary_Init()
 	file.survival_commentary_kill_leader_enabled = GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true )
 	file.survival_commentary_champion_enabled = GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true )
 	file.survival_commentary_first_blood_enabled = GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true )
+	
+	if( !file.survival_commentary_champion_enabled )
+		file.championWasEliminated = true
 	
 	if ( !IsFiringRangeGameMode() )
 	{	
@@ -362,7 +368,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			}
 		}
 		
-		if ( file.survival_commentary_champion_enabled )
+		if ( !file.championWasEliminated ) //set to true if survival_commentary_champion_enabled is false.
 		{
 			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 			if( victim == champion )
@@ -372,6 +378,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 				foreach ( player in GetPlayerArray() )
 					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
 			}
+			
+			file.championWasEliminated = true
 		}
 		
 		if ( file.survival_commentary_first_blood_enabled )
@@ -682,7 +690,6 @@ bool function IsCommentaryEventEnabled( int eventType )
 
 	return true
 }
-
 
 void function SurvivalCommentary_SetEventEnabled( int eventType, bool value )
 {

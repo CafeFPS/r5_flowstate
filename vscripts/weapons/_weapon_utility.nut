@@ -4238,9 +4238,9 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 			if ( weapon != offhandWeapon )
 				continue
 
-			if ( player.IsTitan() )
-				player.p.lastTitanOffhandUseTime[ index ] = Time()
-			else
+			// if ( player.IsTitan() )
+				// player.p.lastTitanOffhandUseTime[ index ] = Time()
+			// else
 				player.p.lastPilotOffhandUseTime[ index ] = Time()
 			StoreOffhandData( player, true, [index] )
 
