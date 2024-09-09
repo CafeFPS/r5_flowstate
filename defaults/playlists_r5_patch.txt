@@ -3050,6 +3050,94 @@ playlists
 			} } }
 		}
 
+		fs_rankupmapmovementpractice
+		{
+			inherit fs_survival
+			vars
+			{
+				name                                           "Rank-up Parkour [Practice Map]"
+				visible                                        1
+
+				// Skip intros:
+				waiting_for_players_spawning_enabled           1
+				waiting_for_players_countdown_seconds          0
+				waiting_for_players_timeout_seconds            1
+				character_select_time_max                      0.0
+				character_select_time_min                      0.0
+				survival_enable_gladiator_intros               0
+				jump_from_plane_enabled                        0
+				survival_shields							                 0
+				survival_infinite_ammo						             1
+
+				// No circle:
+				sur_circle_start_paused                        1
+
+				is_practice_map								                 1
+				// Can change loadouts:
+				dev_loadout_changeable_at_any_time             1
+				sur_dev_unrestricted_character_changes         1
+
+				// Bots:
+				sur_bots_spawn_with_random_weapons             1
+				match_ending_enabled                           0
+				max_team_size								                   120
+				max_players                                    120
+				min_players                                    1
+				enable_nessies                                 0
+
+			}
+			gamemodes { survival { maps {
+				mp_rr_desertlands_64k_x_64k                    	1
+				mp_rr_desertlands_64k_x_64k_nx                 	1
+				mp_rr_desertlands_64k_x_64k_tt                 	1
+				
+			} } }
+		}
+
+		fs_ithurtsmovementmappractice
+		{
+			inherit fs_survival
+			vars
+			{
+				name                                           "It Hurts Movement Map [Practice Map]"
+				visible                                        1
+
+				// Skip intros:
+				waiting_for_players_spawning_enabled           1
+				waiting_for_players_countdown_seconds          0
+				waiting_for_players_timeout_seconds            1
+				character_select_time_max                      0.0
+				character_select_time_min                      0.0
+				survival_enable_gladiator_intros               0
+				jump_from_plane_enabled                        0
+				survival_shields								1
+				survival_infinite_ammo							1
+
+				// No circle:
+				sur_circle_start_paused                        1
+
+				is_practice_map								1
+				// Can change loadouts:
+				dev_loadout_changeable_at_any_time             1
+				sur_dev_unrestricted_character_changes         1
+
+				// Bots:
+				sur_bots_spawn_with_random_weapons             1
+				match_ending_enabled                           0
+				max_team_size									120
+				max_players                                    120
+				min_players                                    1
+				enable_nessies                                 0
+
+			}
+			gamemodes { survival { maps {
+				mp_rr_desertlands_64k_x_64k                    	1
+				mp_rr_desertlands_64k_x_64k_nx                 	1
+				mp_rr_desertlands_64k_x_64k_tt                 	1
+				
+			} } }
+		}
+
 		fs_fallingforever
 		{
 			inherit fs_survival
