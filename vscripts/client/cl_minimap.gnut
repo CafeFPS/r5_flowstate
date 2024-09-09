@@ -1456,6 +1456,10 @@ bool function MiniMapIsDisabled()
 {
 	if ( GetCurrentPlaylistVarBool( "disable_minimap", false ) )
 		return true
+		
+	if( expect int( GetServerVar( "minimapState" ) ) == eMinimapState.Hidden )
+		return true
+
 	return false
 }
 
@@ -1473,8 +1477,7 @@ void function Minimap_UpdateMinimapVisibility( entity player )
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & CE_FLAG_INTRO )
 		isVisible = false
-	                                                    
-	  	                 
+
 
 	if ( MiniMapIsDisabled() )
 		isVisible = false
@@ -1510,28 +1513,12 @@ void function Minimap_EnableDraw()
 
 void function Minimap_DisableDraw_Internal()
 {
-	//if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
-
-	if( Playlist() == ePlaylists.fs_aimtrainer )
-		return
-
 	file.minimapEnabled = false
 
 	RuiSetVisible( file.minimap_base, false )
 	RuiSetVisible( file.minimap_frame, false )
 	RuiSetVisible( file.minimap_you, false )
 
-	// foreach ( var rui in file.minimapOtherRuis )
-	// {
-		// try
-		// {
-			// RuiSetVisible( rui, false )
-		// }catch(e)
-		// {
-			// file.minimapOtherRuis.removebyvalue(rui)
-		// }
-	// }
-	
 	//R5RDEV-1
 	int maxIter = file.minimapOtherRuis.len() - 1
 	
@@ -1547,10 +1534,6 @@ void function Minimap_DisableDraw_Internal()
 
 void function Minimap_EnableDraw_Internal()
 {
-	//if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
-	
-	if( Playlist() == ePlaylists.fs_aimtrainer )
-		return
 
 	file.minimapEnabled = true
 
@@ -1635,9 +1618,6 @@ bool function Fullmap_IsVisible()
 {
 	return file.fullmapVisible
 }
-
-
-
 
 
 void function UpdateFullmapRuiTracks()

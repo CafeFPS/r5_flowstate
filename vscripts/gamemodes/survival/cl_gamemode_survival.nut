@@ -3401,6 +3401,11 @@ void function WaitingForPlayers_CreateCustomCameras()
 	player.SetMenuCameraEntityWithAudio( camera )
 	camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 
+	if( Gamemode() == eGamemodes.fs_aimtrainer )
+	{
+		DisableCustomMapAndGamemodeNameFrames()
+		return
+	}
 	FS_GamemodeHudSetup()
 }
 

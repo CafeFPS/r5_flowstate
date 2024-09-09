@@ -90,6 +90,7 @@ global function StartUpdatingArmorSwapLastTime
 
 global function SetWeaponSlot
 global function CoolCameraOnMenu
+global function ActuallyPutDefaultSettings
 string DesiredSlot = "p"
 
 struct{
@@ -187,6 +188,8 @@ void function WeaponSelectorClose()
 
 void function AimTrainer_OnEntitiesDidLoad()
 {
+	ActuallyPutDefaultSettings()
+	
 	//Disables Sun Flare
 	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
 	foreach ( fxEnt in fxEnts )
@@ -206,6 +209,7 @@ void function ServerCallback_SetDefaultMenuSettings()
 void function ActuallyPutDefaultSettings()
 {
 	entity player = GetLocalClientPlayer()
+	EndSignal( player, "OnDestroy" )
 	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
 	SetConVarInt( "hud_setting_minimapRotate", 1 )
 	SetConVarInt( "hud_setting_accessibleChat", 1 )

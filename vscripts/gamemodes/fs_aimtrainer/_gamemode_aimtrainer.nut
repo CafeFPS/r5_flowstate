@@ -183,12 +183,6 @@ void function _ChallengesByColombia_Init()
 
 void function StartFRChallenges(entity player)
 {
-	while( !IsValid( player ) )
-		WaitFrame()
-
-	//Remote_CallFunction_NonReplay(player, "ServerCallback_SetDefaultMenuSettings" )
-	Remote_CallFunction_ByRef( player, "ServerCallback_SetDefaultMenuSettings" )
-
 	Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
 	Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", 0)
 
@@ -196,6 +190,8 @@ void function StartFRChallenges(entity player)
 	player.SetAngles(AimTrainer_startAngs)
 
 	player.p.isChallengeActivated = false
+	SetServerVar( "minimapState", eMinimapState.Hidden)
+	printt( "Aimtrainer Start" )
 }
 
 void function ResetChallengeStats(entity player)
@@ -3154,7 +3150,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	string weapon = args[0]
 	
 	bool bIs1v1 = g_is1v1GameType() //idc, conditional.	
-	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) || Playlist() == ePlaylists.winterexpress && !player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
+	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) || Gamemode() == eGamemodes.WINTEREXPRESS && !player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) )
 		return true
 	
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
@@ -3563,23 +3559,22 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	if( InfiniteAmmoEnabled() )
 		SetupInfiniteAmmoForWeapon( player, weaponent )
 
-	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+	ItemFlavor ornull weaponSkinOrNull = null
+	array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+	int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+	ItemFlavor ornull weaponCharmOrNull = GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) == false ? null : GetItemFlavorByGUID( chosenCharm )
+	ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+
+	if( weaponFlavor != null )
 	{
-		ItemFlavor ornull weaponSkinOrNull = null
-		array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
-		int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
-		ItemFlavor ornull weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
-		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+		array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+		if( weaponLegendaryIndexMap.len() > 1 && GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+			weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+	}
 
-		if( weaponFlavor != null )
-		{
-			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
-			if( weaponLegendaryIndexMap.len() > 1 )
-				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
-		}
-
-		WeaponCosmetics_Apply( weaponent, weaponSkinOrNull, weaponCharmOrNull )
-	}else
+	WeaponCosmetics_Apply( weaponent, weaponSkinOrNull, weaponCharmOrNull )
+	
+	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
 	{
 		switch( weaponent.GetWeaponClassName() )
 		{
