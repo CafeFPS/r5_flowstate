@@ -239,8 +239,8 @@
         {
             ControlName				CNestedPanel
             InheritProperties       SettingsContentPanel
-            tall                    1166 [$WINDOWS]
-            tall                    1101 [$GAMECONSOLE]
+            tall                    1351 [$WINDOWS]
+            tall                    1286 [$GAMECONSOLE]
 
             tabPosition             1
 

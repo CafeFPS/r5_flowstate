@@ -1696,10 +1696,6 @@ bool function OnVortexHitBullet_BubbleShieldNPC( entity vortexSphere, var damage
 
 bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSphere, entity attacker, entity projectile, vector contactPos )
 {
-	#if DEVELOPER
-		printt( "CodeCallback_OnVortexHitBullet ", weapon, vortexSphere )
-	#endif
-
 	// code shouldn't call this on an invalid vortexsphere!
 	if ( !IsValid( vortexSphere ) )
 		return false
@@ -1710,7 +1706,7 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 	if ( vortexSphere.GetTargetName() == VORTEX_TRIGGER_AREA )
 	{
 		#if SERVER
-			Assert( vortexSphere.e.Callback_VortexTriggerProjectileHit != null, "Vortex Trigger Area has no projectile hit callback." )
+		if ( vortexSphere.e.Callback_VortexTriggerProjectileHit != null )
 			vortexSphere.e.Callback_VortexTriggerProjectileHit( weapon, vortexSphere, attacker, projectile, contactPos )
 		#endif
 		return false

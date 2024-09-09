@@ -1,0 +1,1121 @@
+// WorldDrawAsset 																		//mkos
+
+global function WorldDrawAsset_Init
+global function WorldDrawAsset_RegisterRemoteAsset
+
+#if SERVER || CLIENT 
+	global function WorldDrawAsset_GetAssetByID
+	global function WorldDrawAsset_GetAssetByRef
+	global function WorldDrawAsset_GetAssetType
+	global function WorldDrawAsset_GetAssetRefById
+#endif
+
+#if SERVER
+	global function WorldDrawAsset_CreateOnClient
+	global function WorldDrawAsset_DestroyOnClient
+	global function WorldDrawAsset_AssetRefToID
+	global function WorldDrawAsset_Modify
+	global function WorldDrawAsset_SetVisible
+	global function WorldDrawAsset_Timed	
+	global function MoveDecimal
+#endif
+
+#if CLIENT
+	global function ServerCallback_CreateChannel
+	global function ServerCallback_CreateWorldAsset
+	global function ServerCallback_DestroyWorldAsset
+	global function ServerCallback_SetWorldAssetVisibility
+	global function ServerCallback_ModifyWorldAsset
+	global function __BuildWorldAssetString
+	
+	const MAX_WORLD_TOPO = 30 //not dynamically set
+#endif
+
+global const float WORLD_DRAW_BASE_SPEED		= 0.01
+const DEBUG_WORLD_DRAW = true
+asset NULL_ASSET
+
+#if CLIENT
+
+	struct TopoData
+	{
+		var topo 
+		int id
+		vector org 
+		vector ang
+		float width 
+		float height
+		bool isValid = false
+		float alpha
+	}
+	
+#endif 
+
+//shared
+global enum eAssetType
+{
+	INVALID = -1,
+	IMAGE,
+	VIDEO
+} 
+
+struct
+{
+	#if SERVER 
+		int uniqueWorldRuiID = 100 //reserve 100 clientsided ids
+	#endif 
+	
+	#if CLIENT 
+		table< int, array< var > > worldRUI
+		table< int, array< TopoData > > worldRUITopo
+		table< int, table< int, var > > assetToRuiChannels
+		table< int, int > groupChannels //groupid->channel
+		table< int, table< asset, bool > > currentVideoAssetsByChannel = {}
+		string worldAssetRef = ""
+	#endif
+
+} file
+
+table<string,int> assetRefToIdMap 		= {}
+table<int,string> assetIdToRefMap 		= {}
+table<int,asset> assetIdToAssetMap		= {}
+table<asset,int> registeredRemoteAssets = {}
+
+//////////////
+//	SHARED	//
+//////////////
+#if SERVER || CLIENT 
+
+void function WorldDrawAsset_Init()
+{
+	#if CLIENT
+		RegisterSignal( "RemoteAssetsLoaded" )
+		RegisterSignal( "PakReadyForLoad" )
+	#endif
+	
+	#if SERVER
+		RegisterSignal( "BannersValidated" )
+		AddClientCommandCallback( "VideoFinishedPlaying", ClientCallback_VideoPlaybackFinished )
+		WorldDrawAsset_TransmitDesiredAssets()
+	#endif
+	
+	WorldDrawAsset_RegisterAllAssets()
+	
+	#if DEVELOPER && DEBUG_WORLD_DRAW
+		Warning( "DEBUG_WORLD_DRAW enabled" )
+	#endif 
+	
+	int iter = 0
+	foreach( asset varAsset, int assetType in registeredRemoteAssets )
+	{
+		assetRefToIdMap[ string( varAsset ) ] 	<- iter
+		assetIdToRefMap[ iter ]					<- string( varAsset )
+		assetIdToAssetMap[ iter ] 				<- varAsset
+
+		iter++
+	}
+}
+
+void function WorldDrawAsset_RegisterRemoteAsset( asset varAsset, int assetType )
+{
+	//if registering, these must match on server/client until remote asset streaming is done
+
+	if( varAsset in registeredRemoteAssets )
+	{
+		Warning( "Tried to register asset: " + string( varAsset ) + " but already exists in registeredRemoteAssets" )
+		return
+	}
+	
+	// #if DEVELOPER && DEBUG_WORLD_DRAW
+		// Warning( "Registering as " + string( assetType ) )
+	// #endif
+	
+	registeredRemoteAssets[ varAsset ] <- assetType
+}
+
+int function WorldDrawAsset_GetAssetType( asset varAsset, string assetRef = "" )
+{
+	asset potentialAsset
+	
+	if( !empty( assetRef ) )
+	{
+		potentialAsset = WorldDrawAsset_GetAssetByRef( assetRef )
+		
+		if( WorldDrawAsset_IsAssetValid( potentialAsset ) )
+			varAsset = potentialAsset
+	}
+	
+	if( varAsset in registeredRemoteAssets )
+		return registeredRemoteAssets[ varAsset ]
+		
+	return eAssetType.INVALID
+}
+
+bool function WorldDrawAsset_IsAssetValid( asset varAsset )
+{
+	if( !IsValid( varAsset ) )
+		return false 
+		
+	if( WorldDrawAsset_GetAssetType( varAsset ) == eAssetType.INVALID )
+		return false 
+		
+	return true
+}
+
+asset function WorldDrawAsset_GetAssetByID( int assetId )
+{
+	asset varAsset
+	
+	if( assetId in assetIdToAssetMap )
+		return assetIdToAssetMap[ assetId ]
+		
+	return varAsset
+}
+
+int function WorldDrawAsset_GetAssetTypeByID( int assetId )
+{
+	return WorldDrawAsset_GetAssetType( WorldDrawAsset_GetAssetByID( assetId ) )
+}
+
+asset function WorldDrawAsset_GetAssetByRef( string assetRef )
+{
+	asset varAsset
+	int assetId = WorldDrawAsset_AssetRefToID( assetRef )
+	
+	if ( assetId != eAssetType.INVALID )
+		varAsset = WorldDrawAsset_GetAssetByID( assetId )
+		
+	return varAsset
+}
+
+string function WorldDrawAsset_GetAssetRefById( int assetId )
+{
+	if( assetId in assetIdToRefMap )
+		return assetIdToRefMap[ assetId ]
+
+	return ""
+}
+
+int function WorldDrawAsset_AssetRefToID( string ref )
+{
+	if( ref in assetRefToIdMap )
+		return assetRefToIdMap[ ref ]
+	
+	#if DEBUG_WORLD_DRAW
+		mAssert( false, "Asset ref " + ref + " doesn't exist" )
+	#endif 
+	
+	return -1
+}
+#endif //if SERVER || CLIENT
+
+//////////////
+//	SERVER	//
+//////////////
+
+#if SERVER
+
+	int function __GenerateUniqueWorldRuiID()
+	{
+		return ++file.uniqueWorldRuiID;
+	}
+
+	int function WorldDrawAsset_CreateOnClient( entity player, string varAssetRef, vector origin, vector angles, float width, float height, int groupId, int remoteAssetRefID = -1, float alpha = -1.0, bool visible = true, float duration = -1.0 )
+	{
+		bool bHasRefID = remoteAssetRefID > -1
+		
+		if( !bHasRefID && empty( varAssetRef ) )
+			return -1
+			
+		int RUIID = __GenerateUniqueWorldRuiID()
+		
+		if( duration > -1.0 ) //timed ruis destroy and do not need a server ref.
+			RUIID = -1
+		
+		if( !bHasRefID )
+		{
+			#if DEVELOPER
+				printt( "varAssetRef:", varAssetRef )
+			#endif
+			
+			for ( int i = 0; i < varAssetRef.len(); i++ )
+			{
+				Remote_CallFunction_NonReplay( player, "__BuildWorldAssetString", varAssetRef[i] )
+			}
+		}
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_CreateWorldAsset", origin, angles, width, height, groupId, RUIID, remoteAssetRefID, alpha, visible, duration )
+		
+		return RUIID
+	}
+
+	void function WorldDrawAsset_DestroyOnClient( entity player, int RUIID )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyWorldAsset", RUIID )
+	}
+	
+	void function WorldDrawAsset_Modify( entity player, int RUIID, int groupId, vector org = ZERO_VECTOR, vector ang = ZERO_VECTOR, float width = -1.0, float height = -1.0, float alpha = -1.0, int newAssetRefID = -1 )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_ModifyWorldAsset", RUIID, groupId, org, ang, width, height, alpha, newAssetRefID )
+	}
+	
+	void function WorldDrawAsset_SetVisible( entity player, int RUIID, int groupId, bool visible, bool fade, bool direction, int bannerId = -1, int speed = 0, bool loopVideo = false )
+	{
+		if( speed < -4 || speed > 2 )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				mAssert( false, "Cannot set speed greater than 3 or less than -2" )
+			#endif 
+			
+			return
+		}
+		
+		if( RUIID < 0 )
+		{
+			mAssert( false, "RUIID cannot be invalid when requested to modify on the client. RUUID was: " + string( RUIID ) )
+			return
+		}
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldAssetVisibility", RUIID, groupId, visible, fade, direction, bannerId, speed, loopVideo )
+	}
+	
+	void function WorldDrawAsset_Timed( entity player, string varAssetRef, vector origin, vector angles, float width, float height, int groupId, int remoteAssetRefID, float alpha, float duration )
+	{
+		mAssert( duration > 0.0, "Called WorldDrawAsset_Timed() with invalid duration. Must be > 0" )
+		WorldDrawAsset_CreateOnClient( player, varAssetRef, origin, angles, width, height, groupId, remoteAssetRefID, alpha, true, duration )
+	}
+	
+	bool function ClientCallback_VideoPlaybackFinished( entity player, array<string> args )
+	{
+		// if( !CheckRate( player, true ) ) //set to true for dev testing (display alert for ratelimit)
+			// return false
+		
+		if( args.len() < 1 )
+			return false
+			
+		string cmdgroup = args[0]
+		
+		if( !IsNumeric( cmdgroup, 0, MAX_VIDEO_CHANNELS ) )
+			return false
+		
+		int group = int( cmdgroup )	
+		string signal = "VideoFinishedPlaying_" + group
+		
+		if( BannerAssets_DoesSignalExist( signal ) )
+			player.Signal( signal )
+		
+		//player.Signal( "VideoFinishedPlaying", { group = group } )
+		return true
+	}
+	
+#endif //if SERVER
+
+//////////////
+//	CLIENT	//
+//////////////
+
+#if CLIENT
+	
+	//taken from cl_utility
+	TopoData function cl_WorldDrawAsset_CreateTopo( vector org, vector ang, float width, float height, int id = -1, float alpha = -1.0 )
+	{
+		vector baseOrg = org 
+		vector baseAng = ang 
+		
+		// adjust so the RUI is drawn with the org as its center point
+		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+		org += ( AnglesToUp( ang ) * (height*0.5) )
+
+		// right and down vectors that get added to base org to create the display size
+		vector right = ( AnglesToRight( ang ) * width )
+		vector down = ( (AnglesToUp( ang )*-1) * height )
+		
+		var topo = RuiTopology_CreatePlane( org, right, down, true )
+		
+		return CreateTopoInfo( id, topo, baseOrg, baseAng, width, height, alpha )
+	}
+	
+	void function __BuildWorldImageRUI( asset varAsset, vector org, vector ang, float width, float height, int groupId, int RUIID = -1, float alpha = -1.0, bool visible = true, float ornull duration = null )
+	{
+		vector origin = org
+		vector angles = ang
+
+		origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
+		
+		TopoData topoInfo = cl_WorldDrawAsset_CreateTopo( origin, angles, width, height, RUIID, alpha )
+		
+		int assetType = WorldDrawAsset_GetAssetType( varAsset )
+		var rui 
+		
+		switch( assetType )
+		{
+			case eAssetType.IMAGE: 
+				rui = RuiCreate( $"ui/basic_image.rpak", topoInfo.topo, RUI_DRAW_WORLD, 32767 )
+				RuiSetImage( rui, "basicImage", varAsset )
+				
+				if( alpha > -1.0 )
+				{
+					RuiSetFloat( rui, "basicImageAlpha", alpha )
+					topoInfo.alpha = alpha
+				}
+				
+				RuiSetVisible( rui, visible )
+				break 
+				
+			case eAssetType.VIDEO:
+				rui = RuiCreate( $"ui/finisher_video.rpak", topoInfo.topo, RUI_DRAW_WORLD, 32767 )
+				
+				if( !IsValid( rui ) )
+					mAssert( false, "invalid rui on creation" ) //todo: properly dispose and alert server
+				
+				int assetId = WorldDrawAsset_AssetRefToID( string( varAsset ) )
+				__SetAssetToChannel( -1, assetId, rui, groupId )
+				RuiSetVisible( rui, visible )
+				break
+		}
+		
+		if( !IsValid( rui ) )
+			return
+
+		if ( RUIID != -1 )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				printw( "Creating topo for ruiid:", RUIID, "asset:", varAsset, "type:", assetType )
+			#endif
+			
+			if ( !( RUIID in file.worldRUI ) )
+				file.worldRUI[ RUIID ] <- []
+
+			file.worldRUI[ RUIID ].insert( 0, rui )
+			
+			if ( !( RUIID in file.worldRUITopo ) )
+				file.worldRUITopo[ RUIID ] <- []
+				
+			file.worldRUITopo[ RUIID ].insert( 0, topoInfo )
+		}
+		else 
+		{
+			float setduration = 5
+			
+			if( duration != null )
+				setduration = expect float( duration )
+				
+			thread __DestroyWorldRUIWithID_Timed( topoInfo.topo, rui, setduration )
+		}
+	}
+
+	void function __DestroyWorldRUIWithID( int RUIID )
+	{
+		if ( !( RUIID in file.worldRUI ) )
+			return
+
+		foreach ( rui in file.worldRUI[ RUIID ] )
+			RuiDestroyIfAlive( rui )
+
+		file.worldRUI[ RUIID ].clear()
+		
+		if( !( RUIID in file.worldRUITopo ) )
+			return
+			
+		foreach ( int index, TopoData topoInfo in file.worldRUITopo[ RUIID ] )
+		{
+			try
+			{
+				RuiTopology_Destroy( topoInfo.topo ) //required
+			}
+			catch( e )
+			{
+				#if DEVELOPER && DEBUG_WORLD_DRAW
+					Warning( "Warning: " + e )
+				#endif
+			}
+		}
+		
+		file.worldRUITopo[ RUIID ].clear()
+	}
+	
+	void function __DestroyWorldRUIWithID_Timed( var topo, var rui, float duration = 5 )
+	{
+		OnThreadEnd
+		(
+			function() : ( topo, rui )
+			{
+				RuiDestroyIfAlive( rui )
+				
+				try
+				{
+					RuiTopology_Destroy( topo ) //required
+				}
+				catch( e )
+				{
+					#if DEVELOPER && DEBUG_WORLD_DRAW
+						Warning( "Warning: " + e )
+					#endif
+				}
+			}
+		)
+		
+		wait duration
+	}
+	
+	void function __BuildWorldAssetString( ... )
+	{
+		if( vargc == 0 )
+			return
+			
+		for ( int i = 0; i < vargc; i++ )
+		{
+			file.worldAssetRef += format( "%c", vargv[i] )
+		}
+	}
+
+	void function ServerCallback_CreateWorldAsset( vector origin, vector angles, float width, float height, int groupId, int RUIID, int remoteAssetRefID, float alpha, bool visible, float duration )
+	{
+		if( file.worldRUITopo.len() >= MAX_WORLD_TOPO )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Max world topo allocation exceeded." )
+			#endif
+			
+			return
+		}
+				
+		
+		bool bHasID 		= remoteAssetRefID > -1
+		string assetRef 	= file.worldAssetRef
+		
+		if( assetRef != "" && !RuiImageExists( assetRef ) && !VideoExists( remoteAssetRefID ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Warning: Asset \"" + assetRef + "\" does not exist @ " + FUNC_NAME() + "()" )
+			#endif
+			
+			return //todo: request removal from server.
+		}
+		
+		if( !bHasID && assetRef == "" )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "No ref and custom asset specification is empty" )
+			#endif
+			
+			return
+		}
+		
+		asset ornull varAsset = null
+		float ornull setduration = null
+		
+		if ( !bHasID )
+		{
+			try
+			{
+				varAsset = CastStringToAsset( assetRef ) //NEVER FAILS?
+			}
+			catch( e )
+			{
+				#if DEVELOPER
+					printt( "Error: " + e )
+				#endif 
+				
+				return
+			}
+			
+			file.worldAssetRef = ""
+		}
+		else 
+		{
+			varAsset = __FetchWorldAssetFromRef( remoteAssetRefID )
+		}
+		
+		setduration = duration != -1.0 ? duration : null 
+			
+		if( setduration != null )
+			RUIID = -1 //duration is specified, trigger timed method
+		
+		if( varAsset != null )
+		{
+			__BuildWorldImageRUI( expect asset( varAsset ), origin, angles, width, height, groupId, RUIID, alpha, visible, setduration )
+		}
+		else 
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Asset was null" )
+			#endif
+		}
+	}
+	
+	void function ServerCallback_ModifyWorldAsset( int id, int groupId, vector org, vector ang, float width, float height, float alpha, int newAssetRefID )
+	{
+		asset ornull newAssetOrNull
+		asset newAsset
+		
+		var topo 	= GetWorldDrawTopology( id )
+		var rui 	= GetWorldDrawAssetRUI( id ) 
+		
+		if( !IsValid( topo ) )
+		{	
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Topology was invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Rui was invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		if( newAssetRefID > -1 )
+		{
+			newAssetOrNull = __FetchWorldAssetFromRef( newAssetRefID )
+		}
+
+		int assetType = WorldDrawAsset_GetAssetTypeByID( newAssetRefID )
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "newAssetRefID = " + string( newAssetRefID ) )
+		#endif 
+		
+		if( newAssetOrNull != null )
+		{	
+			newAsset = expect asset( newAssetOrNull )
+			
+			switch( assetType )
+			{
+				case eAssetType.IMAGE:
+					RuiSetImage( rui, "basicImage", newAsset )
+					break 
+				
+				case eAssetType.VIDEO:
+					
+					if( !IsValid( rui ) )
+					{
+						Warning( "oh no creating unmaintainable ruis" )
+						rui = RuiCreate( $"ui/finisher_video.rpak", topo, RUI_DRAW_WORLD, 32767 )
+						
+						if( !IsValid( rui ) )
+							mAssert( false, "invalid rui on creation" )
+						
+						int assetId = WorldDrawAsset_AssetRefToID( string( newAsset ) )
+						__SetAssetToChannel( -1, assetId, rui, groupId )	
+					}
+					else
+					{
+						RuiSetVisible( rui, false )
+						__SetAssetToChannel( cl_WorldDrawAsset_GetChannelForGroup( groupId ), newAssetRefID, rui, groupId )				
+					}
+			}
+		}
+		
+		if( assetType == eAssetType.IMAGE )
+		{
+			if( alpha > -1.0 )
+			{
+				RuiSetFloat( rui, "basicImageAlpha", alpha )
+			}
+		}
+		
+		TopoData topoInfo = GetTopoInfo( id )
+		
+		if( !IsTopoDataValid( topoInfo ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}	
+		
+		if( width == -1 )
+			width = topoInfo.width
+		
+		if( height == -1 )
+			height = topoInfo.height
+		
+		if( org == ZERO_VECTOR )
+			org = topoInfo.org
+
+		if( ang == ZERO_VECTOR )
+			ang = topoInfo.ang
+			
+		topoInfo.alpha 	= alpha
+		topoInfo.org 	= org 
+		topoInfo.ang 	= ang
+		topoInfo.width 	= width
+		topoInfo.height = height
+		SaveTopoData( topoInfo, { org = org, ang = ang, width = width, height = height, alpha = alpha } )
+				
+		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+		org += ( AnglesToUp( ang ) * (height*0.5) )
+		
+		vector right = ( AnglesToRight( ang ) * width )
+		vector down = ( (AnglesToUp( ang )*-1) * height )
+		
+		RuiTopology_UpdatePos( topo, org, right, down )
+		
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			printt
+			(
+				"\n\n ---- Updated topology/rui ---- \nID:", id, 
+				"\nRui:", string( file.worldRUI[ id ][0] ),
+				"\nOrigin:", org, 
+				"\nAngles:", ang, 
+				"\nWidth:", width, 
+				"\nHeight:", height,
+				"\nAlpha:", alpha,
+				"\nnewAssetRefID:", newAssetRefID,
+				"\nnewAsset:", newAssetOrNull != null ? string( newAssetOrNull ) : "null"
+			)
+		#endif 
+	}
+	
+	TopoData function GetTopoInfo( int RUIID )
+	{
+		TopoData nullTopo 
+		
+		if( RUIID in file.worldRUITopo )
+			return file.worldRUITopo[ RUIID ][0]
+			
+		return nullTopo
+	}
+	
+	TopoData function CreateTopoInfo( int RUIID, var topo, vector org, vector ang, float width, float height, float alpha )
+	{
+		TopoData topoInfo 
+		
+		if( IsValid( topo ) )
+		{
+			topoInfo.id 	 = RUIID
+			topoInfo.topo 	 = topo
+			topoInfo.org	 = org
+			topoInfo.ang	 = ang
+			topoInfo.width   = width
+			topoInfo.height  = height
+			topoInfo.alpha   = alpha > -1.0 ? alpha : 1.0
+			topoInfo.isValid = true
+		}
+		
+		return topoInfo
+	}
+	
+	bool function IsTopoDataValid( TopoData topoInfo )
+	{
+		return topoInfo.isValid && IsValid( topoInfo.topo )	
+	}
+	
+	void function SaveTopoData( TopoData topoInfo, table tbl = {} )
+	{
+		if( !IsTopoDataValid( topoInfo ) )
+			return 
+		
+		foreach( tblKey, value in tbl )
+		{
+			string key = expect string( tblKey )
+			
+			switch( key )
+			{
+				case "org":
+					topoInfo.org 		=	expect vector( value )
+					break				
+					
+				case "ang":	
+					topoInfo.ang		=	expect vector( value )
+					break			
+					
+				case "width":	
+					topoInfo.width 		=	expect float( value )			
+					break
+					
+				case "height":	
+					topoInfo.height		=	expect float( value )
+					break				
+					
+				case "alpha":	
+					topoInfo.alpha		=	expect float( value )
+					break
+					
+				default:
+					break
+			}
+		}
+	}
+	
+	void function ServerCallback_SetWorldAssetVisibility( int RUIID, int groupId, bool visible, bool fade, bool direction, int bannerId, int speed, bool loopVideo )
+	{
+		// #if DEVELOPER && DEBUG_WORLD_DRAW
+			// Warning( "getting asset type by bannerId = " + bannerId )
+			// foreach( int idd, asset anasset in assetIdToAssetMap )
+				// printt( "bannerId = ", idd, "asset = ", string( anasset ), "type=", WorldDrawAsset_GetAssetTypeByID( idd ) )
+		// #endif
+		
+		var rui = GetWorldDrawAssetRUI( RUIID )
+		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW //sanity check
+				printw( "Tried to set visibility on RUIID =", RUIID, "groupId =", groupId, "bannerId =", bannerId, " ; but rui instance is invalid." )
+			#endif		
+			return //todo: notify server
+		}
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			printw( "rui ID:", RUIID, "rui instance:", string( rui ), "type:", WorldDrawAsset_GetAssetTypeByID( bannerId ), "groupId:", groupId )
+		#endif
+		
+		if( WorldDrawAsset_GetAssetTypeByID( bannerId ) == eAssetType.VIDEO )
+		{
+			if( visible )
+			{
+				#if DEVELOPER && DEBUG_WORLD_DRAW
+					Warning( "Starting video on channel:" + cl_WorldDrawAsset_GetChannelForGroup( groupId ) )
+				#endif
+						
+				int channel = cl_WorldDrawAsset_GetChannelForGroup( groupId )
+				
+				SetPlaybackStateForChannel( channel, true )
+				StartVideoOnChannel( channel, WorldDrawAsset_GetAssetByID( bannerId ), loopVideo, 0.05 )
+			}
+			else 
+			{
+				RuiSetInt( rui, "channel", -1 )
+			}
+			
+			RuiSetVisible( rui, visible )
+			return //don't proceed with image logic.
+		}
+		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Rui asset was invalid in " + FUNC_NAME() + "()" )
+			#endif
+			
+			return
+		}
+			
+		if( fade )
+			thread _WorldDrawAsset_Fade( direction, RUIID, rui, speed )
+		else
+			RuiSetVisible( rui, visible )
+	}
+	
+	void function _WorldDrawAsset_Fade( bool direction, int RUIID, var rui, int speed )
+	{
+		TopoData topoInfo = GetTopoInfo( RUIID )
+		
+		if( !IsTopoDataValid( topoInfo ) )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		RuiSetVisible( rui, true )
+		
+		float alphaFade = 0	
+		float baseScale 
+		
+		if( speed == 0 )
+		{
+			baseScale = 0.01
+		}
+		else 
+		{
+			bool move
+			move = speed > 0 ? true : false
+			baseScale = MoveDecimal( WORLD_DRAW_BASE_SPEED, speed, move )
+		}
+			
+		if( direction ) //fadein
+		{
+			alphaFade = topoInfo.alpha
+			
+			while( alphaFade < 0.99 )
+			{
+				alphaFade = alphaFade + WORLD_DRAW_BASE_SPEED
+				RuiSetFloat( rui, "basicImageAlpha", alphaFade )
+				wait baseScale
+			}
+		}
+		else //fadeout
+		{
+			alphaFade = topoInfo.alpha
+			
+			if( alphaFade <= 0 )
+				alphaFade = 1
+				
+			while( alphaFade > 0 )
+			{
+				alphaFade = alphaFade - WORLD_DRAW_BASE_SPEED
+				RuiSetFloat( rui, "basicImageAlpha", alphaFade )
+				wait baseScale
+			}
+		}
+		
+		topoInfo.alpha = alphaFade
+	}
+	
+	var function GetWorldDrawAssetRUI( int RUIID )
+	{
+		var nullRui
+		
+		if( RUIID in file.worldRUI )
+			return file.worldRUI[ RUIID ][0]
+		
+		return nullRui
+	}
+	
+	var function GetWorldDrawTopology( int RUIID )
+	{
+		var nullTopo
+		
+		if( RUIID in file.worldRUITopo )
+			return file.worldRUITopo[ RUIID ][0].topo
+			
+		return nullTopo
+	}
+
+	void function ServerCallback_DestroyWorldAsset( int RUIID )
+	{
+		__DestroyWorldRUIWithID( RUIID )
+	}
+
+	asset ornull function __FetchWorldAssetFromRef( int ref )
+	{
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "Requested asset for ref id: " + ref )
+		#endif 
+		
+		if( ref in assetIdToAssetMap )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( string( assetIdToAssetMap[ ref ] ) )
+			#endif
+			
+			return assetIdToAssetMap[ ref ]
+		}
+			
+		return null
+	}
+	
+	var function cl_WorldDrawAsset_GetActiveRuiForChannel( int channel )
+	{
+		var rui 
+		var currentAsset = GetInverseStateVideoAssetForChannel( channel, false )
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			printw( "channel=", channel, "currentAsset=", string( currentAsset ), currentAsset )
+		#endif
+		
+		if( channel in file.assetToRuiChannels )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "channel " + channel + "was found in tbl" )
+			#endif
+			
+			foreach( int assetId, var assetRui in file.assetToRuiChannels[ channel ] )
+			{
+				#if DEVELOPER && DEBUG_WORLD_DRAW
+					printw( "assetId =", assetId, "assetRef=", string( WorldDrawAsset_GetAssetByID( assetId ) ), "assetRui=", string( assetRui ), assetRui )
+				#endif
+				
+				if( WorldDrawAsset_GetAssetByID( assetId ) == currentAsset )
+					return assetRui
+			}
+		}
+		
+		return rui
+	}
+	
+	asset function GetInverseStateVideoAssetForChannel( int channel, bool state )
+	{
+		asset potentialAsset
+		state = !state
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "looking for an asset on channel '" + channel + "' with state: " + string( state ) )
+		#endif
+		
+		if( channel in file.currentVideoAssetsByChannel )
+		{
+			foreach( asset varAsset, bool assetState in file.currentVideoAssetsByChannel[ channel ] )
+			{
+				if( assetState == state )
+					return varAsset
+			}
+		}
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "None found." )
+		#endif 
+		
+		return potentialAsset
+	}
+	
+	void function SetPlaybackStateForChannel( int channel, bool state )
+	{
+		__SetCurrentVideoAssetIsActiveForChannel( channel, GetInverseStateVideoAssetForChannel( channel, state ), state )
+	}
+	
+	void function __SetCurrentVideoAssetIsActiveForChannel( int channel, asset varAsset, bool isActive )
+	{
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "setting channel " + channel + " for asset " + string( varAsset ) + " to " + string( isActive ) )
+		#endif
+		
+		if( !( channel in file.currentVideoAssetsByChannel ) )
+			file.currentVideoAssetsByChannel[ channel ] <- {}
+		
+		file.currentVideoAssetsByChannel[ channel ] <- { [ varAsset ] = isActive }
+	}
+	
+	void function cl_OnVideoFinished( int channel ) 
+	{		
+		var rui = cl_WorldDrawAsset_GetActiveRuiForChannel( channel )
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			printw( "Finishing video on channel", channel, "with rui:", rui )
+		#endif
+		
+		if( IsValid( rui ) )
+		{
+			RuiSetInt( rui, "channel", -1 )
+			RuiSetVisible( rui, false )
+			StopVideoOnChannel( channel )
+			SetPlaybackStateForChannel( channel, false )
+		}
+	
+		SignalClient_VideoFinished( channel )
+	}
+	
+	void function SignalClient_VideoFinished( int channel )
+	{
+		entity player = GetLocalClientPlayer()
+		
+		if( IsValid( player ) )
+		{
+			int group = cl_WorldDrawAsset_GetGroupForChannel( channel )
+			player.ClientCommand( "VideoFinishedPlaying " + group )
+		}
+	}
+	
+	bool function IsGroupChannelSet( int groupId )
+	{
+		return ( groupId in file.groupChannels )
+	}
+	
+	void function ServerCallback_CreateChannel( int groupId )
+	{
+		cl_WorldDrawAsset_CreateChannel( groupId )
+	}
+	
+	int function cl_WorldDrawAsset_CreateChannel( int groupId )
+	{
+		if( !IsVideoChannelAvailable() )
+		{
+			#if DEVELOPER 
+				Warning( "No available video channels!" )
+			#endif 
+			
+			return -1		
+		}
+		else 
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				Warning( "Creating channel for groupId " + groupId )
+			#endif
+		}
+		
+		int channel = ReserveVideoChannel( cl_OnVideoFinished )	
+		file.assetToRuiChannels[ channel ] <- {}
+		
+		#if DEVELOPER && DEBUG_WORLD_DRAW
+			Warning( "assigning slot for groupId = " + groupId + " channel: " + channel )
+		#endif 
+		
+		file.groupChannels[ groupId ] <- channel
+		
+		return channel
+	}
+	
+	int function cl_WorldDrawAsset_GetChannelForGroup( int groupId )
+	{
+		if( groupId in file.groupChannels )
+			return file.groupChannels[ groupId ]
+			
+		return -1
+	}
+	
+	int function cl_WorldDrawAsset_GetGroupForChannel( int channel )
+	{
+		foreach( int groupId, int groupChannel in file.groupChannels )
+			if( groupChannel == channel )
+				return groupId
+				
+		return -1
+	}
+	
+	int function cl_WorldDrawAsset_ChannelCount() //notused
+	{
+		return file.assetToRuiChannels.len()
+	}
+
+	bool function __SetAssetToChannel( int channel, int assetId, var rui, int groupId )
+	{
+		mAssert( groupId != -1 )
+		
+		if( !IsGroupChannelSet( groupId ) )
+			channel = cl_WorldDrawAsset_CreateChannel( groupId ) //-1 on fail
+		else
+			channel = cl_WorldDrawAsset_GetChannelForGroup( groupId )
+			
+		if( channel == -1 )
+		{
+			#if DEVELOPER && DEBUG_WORLD_DRAW
+				mAssert( false, "channel was -1 for assetId: " + assetId + " group: " + groupId )
+			#endif
+			
+			return false
+		}
+			
+		file.assetToRuiChannels[ channel ] <- { [ assetId ] = rui } //always assign new key.
+		file.currentVideoAssetsByChannel[ channel ] <- { [ WorldDrawAsset_GetAssetByID( assetId ) ] = false }
+		RuiSetInt( rui, "channel", channel )
+		
+		return true
+	}
+	
+#endif //if CLIENT
+
+
+#if SERVER || CLIENT 
+	float function MoveDecimal( float num, int speed, bool direction = true )
+	{
+		if( num == 0 )
+			return 0.0
+			
+		if( speed == 0 )
+			return 0.0
+			
+		if( direction )
+		{
+			for( int i = 0; i < speed; i++ )
+				num = num / 10
+		}
+		else 
+		{
+			for( int i = 0; i < speed; i++ )
+				num = num * 10
+		}
+			
+		return num
+	}
+#endif

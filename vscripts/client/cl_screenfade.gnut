@@ -29,10 +29,7 @@ void function ClScreenfade_Init()
 	thread PlayerPainSoundThread()
 	thread PlayerDeathfieldSoundThread()
 
-	asset ruiAssetName = $"ui/screen_fade.rpak"
-
-	if ( IsFallLTM() )
-		ruiAssetName = $"ui/screen_fade_shadow_fall.rpak"
+	asset ruiAssetName = $"ui/screen_fade_shadow_fall.rpak" //$"ui/screen_fade.rpak"
 
 	file.screenFade = RuiCreate( ruiAssetName, clGlobal.topoFullScreen, RUI_DRAW_POSTEFFECTS, RUI_SORT_SCREENFADE )
 	RuiSetResolutionToScreenSize( file.screenFade )
@@ -49,6 +46,7 @@ void function ClScreenfade_Init()
 void function ScreenCoverTransition( float endTime )
 {
 	#if DEVELOPER
+		DumpStack()
 		printt( "Calling ScreenCoverTransition with endTime", endTime, " at time", Time() )
 	#endif
 	// can be called from server
@@ -150,7 +148,10 @@ void function RegisterDoomProtectionHintDamage( float newAmount )
 		return
 
 	g_doomProtectionHintDamage += newAmount
-	printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
+	
+	#if DEVELOPER
+		printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
+	#endif
 }
 
 

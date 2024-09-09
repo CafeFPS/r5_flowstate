@@ -929,7 +929,8 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
 		{
 			int dropAmount = 1
-			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
+			if ( !PlayerHasPassive( player, ePassives.PAS_INFINITE_HEAL ) )
+				SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
 
 			LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryUse,
 				[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  dropAmount ],
@@ -1663,10 +1664,11 @@ void function UseConsumable_Bomb( entity player, ConsumableInfo info )//, Consum
 	{
 		if(!IsValid(sPlayer)) continue
 		
-		int moneytoGive = 500
+		int moneytoGive = SCORE_BOMBPLANTED_REWARD
 		sPlayer.p.availableMoney += moneytoGive
 		Remote_CallFunction_NonReplay( sPlayer, "ServerCallback_OnMoneyAdded",moneytoGive )
-		Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog", 9, moneytoGive)
+		// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog", 9, moneytoGive)
+		AddPlayerScore( sPlayer, "FS_SND_BombPlanted", sPlayer, "", moneytoGive)
 	}
 	
 	bomb.SetOwner( player )

@@ -67,7 +67,7 @@
 	"PanelTopText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Playlists"
+		"labelText"				"#FS_PLAYLISTS"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"

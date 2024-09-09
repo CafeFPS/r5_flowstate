@@ -348,7 +348,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"NoChallengesLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"No Challenges Played"
+			"labelText"				"#FS_NO_CHALLENGES_PLAYED"
 			"xpos"					"0"
 			"ypos"					"-15"
 			"auto_wide_tocontents"	"1"
@@ -363,7 +363,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"ChallengeNameLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Challenge Name"
+			"labelText"				"#FS_CHALLENGE_NAME"
 			"xpos"					"-50"
 			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
@@ -378,7 +378,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"DummiesKilledLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Kills"
+			"labelText"				"#FS_KILLS"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -395,7 +395,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"ChallengeScoreLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Shots Hit"
+			"labelText"				"#FS_SHOTS_HIT"
 			"xpos"					"-400"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -412,7 +412,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"ChallengeWeaponLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Weapon"
+			"labelText"				"#FS_WEAPON"
 			"xpos"					"-540"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -428,7 +428,7 @@ scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
 		"ChallengeAccuracyLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Accuracy"
+			"labelText"				"#FS_ACCURACY"
 			"xpos"					"-685"
 			"ypos"					"0"
 			"zpos"					"6"

@@ -155,37 +155,22 @@ void function DEV_PrintAllChatEffects()
 	sqprint( print_effects )
 }
 
-
+//this was cool, but also redundant and can easily be avoided.
 bool function SetRelayChallenge( entity player, array<string> args )
 {
-	if ( !CheckRate( player ) )
-	{
-		if( IsValid( player ) )
-		{
-			if( player.p.bInRetry ){ return true }
-			thread( void function() : ( player, args )
-			{
-				player.p.bInRetry = true
-				EndSignal( player, "OnDestroy" )
-				wait 0.5
-				player.p.bInRetry = false
-				SetRelayChallenge( player, args )
-				return
-			}())
-		}
-		else 
-		{
-			return false
-		}
-	}
+	if( !IsValid( player ) )
+		return false
 	
-	if( args.len() < 1 ){ return true }
+	if( args.len() < 1 )
+		return true
 	
 	string challengeCode = args[0]
 	
-	if( !IsNumeric(challengeCode) ){ return true }
+	if( !IsNumeric( challengeCode, 10000000, 99999999 ) )
+		return true
 	
-	if( challengeCode.len() > 8 ){ return true }
+	if( challengeCode.len() != 8 )
+		return true
 	
 	int compCode = -1
 	
@@ -199,7 +184,7 @@ bool function SetRelayChallenge( entity player, array<string> args )
 	{
 		return true 
 	}
-	else 
+	else
 	{
 		player.p.bRelayChallengeState = true
 		player.Signal( "ChallengeReceived" )

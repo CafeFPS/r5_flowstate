@@ -71,6 +71,8 @@ global function GetCountForLootType
 global function RegisterUseFunctionForItem
 global function OnLocalPlayerPickedUpItem
 
+global function TryUpdateGroundList
+
 global enum eGroundListBehavior
 {
 	CONTENTS,
@@ -2745,7 +2747,7 @@ void function TryResetGroundList( entity player, LootData data, int lootAction )
 		GroundListResetNextFrame()
 }
 
-void function TryUpdateGroundList( entity player, LootData data, int lootAction )
+void function TryUpdateGroundList()
 {
 	if ( file.groundlistOpened )
 		file.shouldUpdateGroundItems = true

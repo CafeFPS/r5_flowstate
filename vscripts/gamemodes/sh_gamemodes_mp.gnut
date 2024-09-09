@@ -214,4 +214,36 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_GamemodeSND_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
+
+/* //removed until added fully
+	gameMode = fs_apexkart
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, Sh_FS_Carritos_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _FS_Carritos_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_FS_Carritos_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif
+*/
+	
+	gameMode = WINTEREXPRESS
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, WinterExpress_Init)
+		// GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	// GameMode_AddServerInit(gameMode, _GamemodeSND_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	// GameMode_AddClientInit(gameMode, Cl_GamemodeSND_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif
 }

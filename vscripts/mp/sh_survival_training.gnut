@@ -7,7 +7,6 @@ const asset CHARACTER_BLOODHOUND 	= $"settings/player/mp/pilot_survival_tracker.
 const asset CHARACTER_PATHFINDER 	= $"settings/player/mp/pilot_survival_grapple.rpak"
 const asset TRAINING_DUMMY_MODEL 	= $"mdl/humans/class/medium/pilot_medium_generic.rmdl"
 const asset REVIVE_CHAMBER_MODEL 	= $"mdl/Robots/mobile_hardpoint/mobile_hardpoint_static.rmdl"
-const asset RESPAWN_DROPSHIP_MODEL 	= $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 
 const string LOOT_NAME_FRAG = "mp_weapon_frag_grenade"
 const string LOOT_NAME_THERMITE = "mp_weapon_thermite_grenade"

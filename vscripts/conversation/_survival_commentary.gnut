@@ -1,4 +1,12 @@
 global function SurvivalCommentary_Init
+global function SetCommentaryEnabled
+global function IsCommentaryEventEnabled
+global function PlayCommentaryLineToAllPlayers
+global function PlayCommentaryLineToAllPlayersDelayed
+global function PlayCommentaryLineToPlayerArray
+
+global function SurvivalCommentary_SetEventEnabled
+
 global function SurvivalCommentary_GetKillLeaderEEH
 global function SurvivalCommentary_GetChampionTeam
 global function SurvivalCommentary_GetChampionEEH
@@ -11,18 +19,52 @@ global function GetKillLeader
 global function SetChampion
 global function GetChampion
 
+global function PlayBattleChatterLineToTeamButNotSpeaker
+global function PlayBattleChatterLineDelayedToPlayer
+global function TryPlayWeaponBattleChatterLine
+global function PlayBattleChatterLineDelayedToSpeakerAndTeam
+global function PlayBattleChatterLineToSpeakerAndTeam
+global function PlayBattleChatterLineToSpeakerWithDebounceTime
+global function PlayBattleChatterLineToSpeakerAndTeamWithDebounceTime
+
+global function PlayBattleChatterLineToPlayer
+
 global const DELAY_COMMENTARY = 2
+global const int COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS = eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS
 
 struct {
+	bool commentarySystemActive = true
 	entity currentKillLeader = null
+	array<int>                     disabledCommentaryEvents
+	table<entity, table<string, float> > battleChatterDebounceTimes
+	
+	int survival_commentary_kill_leader_min_kills
+	bool survival_commentary_kill_leader_enabled
+	bool survival_commentary_champion_enabled
+	bool survival_commentary_first_blood_enabled
 } file
 
 void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
-
+	
+	file.survival_commentary_kill_leader_min_kills = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	file.survival_commentary_kill_leader_enabled = GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true )
+	file.survival_commentary_champion_enabled = GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true )
+	file.survival_commentary_first_blood_enabled = GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true )
+	
 	if ( !IsFiringRangeGameMode() )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
+	{	
+		if
+		( 	
+			file.survival_commentary_kill_leader_enabled ||
+			file.survival_commentary_champion_enabled ||
+			file.survival_commentary_first_blood_enabled 
+		)
+		{
+			AddCallback_OnPlayerKilled( OnPlayerKilled )
+		}
+	}
 
 	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
 }
@@ -48,6 +90,136 @@ int function SurvivalCommentary_GetChampionTeam()
 	return GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) ).GetTeam()
 }
 
+void function PlayBattleChatterLineToSpeakerWithDebounceTime( string conversationType, entity listeningPlayer, entity speakingPlayer, float debounceMin, float debounceMax, entity addressee = null )
+{
+	if ( !ShouldPlayBattleChatter( conversationType, listeningPlayer, speakingPlayer ) )
+		return
+
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	if ( !(speakingPlayer in file.battleChatterDebounceTimes) )
+	{
+		table<string, float> debounceTimes = {}
+		file.battleChatterDebounceTimes[ speakingPlayer ] <- debounceTimes
+	}
+
+	bool shouldPlayLine = true
+
+	if ( conversationType in file.battleChatterDebounceTimes[ speakingPlayer ] && Time() < file.battleChatterDebounceTimes[ speakingPlayer ][ conversationType ] )
+	{
+		shouldPlayLine = false
+	}
+
+	if ( shouldPlayLine )
+	{
+		int dialogueFlags = 0
+		if ( IsValid( addressee ) && ShouldStompConAltForLine( conversationType, speakingPlayer, addressee ) )
+		{
+			dialogueFlags = eDialogueFlags.STOMP_CON_ALT
+		}
+
+		file.battleChatterDebounceTimes[speakingPlayer][conversationType] <- Time() + RandomFloatRange( debounceMin, debounceMax )
+		PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, dialogueFlags )
+	}
+}
+
+void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity speakingPlayer, string chatterLine, float delay )
+{
+	EndSignal( speakingPlayer, "OnDeath" )
+	EndSignal( speakingPlayer, "OnDestroy" )
+
+	wait delay
+
+	PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, chatterLine )
+}
+
+void function TryPlayWeaponBattleChatterLine( entity weaponOwner, entity weapon )
+{
+	string weaponClassName = weapon.GetWeaponClassName()
+	var battleChatterLine = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
+
+	if ( battleChatterLine == null )
+		return
+
+	PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, expect string( battleChatterLine ) )
+}
+
+void function PlayBattleChatterLineToSpeakerAndTeam( entity speakingPlayer, string chatterLine, entity addressee = null )
+{
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	foreach ( player in GetFriendlySquadArrayForPlayer( speakingPlayer ) )
+		PlayBattleChatterLineToPlayer( chatterLine, player, speakingPlayer, addressee )
+}
+
+void function PlayBattleChatterLineToSpeakerAndTeamWithDebounceTime( entity speakingPlayer, string chatterLine, float debounceMin, float debounceMax, entity addressee = null, bool isDebounceForAllTeamSpeakers = false )
+{
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	if ( !(speakingPlayer in file.battleChatterDebounceTimes) )
+	{
+		table<string, float> debounceTimes = {}
+		file.battleChatterDebounceTimes[ speakingPlayer ] <- debounceTimes
+	}
+
+	bool shouldPlayLine = true
+	// Do we block a dialogue line if any member of the squad has triggered it within the debounce time
+	if ( isDebounceForAllTeamSpeakers )
+	{
+		array< entity > teamPlayersArray = GetPlayerArrayOfTeam( speakingPlayer.GetTeam() )
+		foreach ( teamPlayer in teamPlayersArray )
+		{
+			if ( !IsValid( teamPlayer ) )
+				continue
+
+			if ( teamPlayer in file.battleChatterDebounceTimes && chatterLine in file.battleChatterDebounceTimes[ teamPlayer ] && Time() < file.battleChatterDebounceTimes[ teamPlayer ][ chatterLine ] )
+			{
+				shouldPlayLine = false
+				break
+			}
+		}
+	}
+	else if ( chatterLine in file.battleChatterDebounceTimes[ speakingPlayer ] && Time() < file.battleChatterDebounceTimes[ speakingPlayer ][ chatterLine ] ) // Otherwise only block the dialogue if the speaker has triggered it within the debounce time
+	{
+		shouldPlayLine = false
+	}
+
+	// If this line is going to be played by the player, make sure we set debounce time on it and play the line
+	if ( shouldPlayLine )
+	{
+		file.battleChatterDebounceTimes[speakingPlayer][chatterLine] <- Time() + RandomFloatRange( debounceMin, debounceMax )
+		PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, chatterLine, addressee )
+	}
+}
+
+void function PlayBattleChatterLineDelayedToPlayer( entity speakingPlayer, string chatterLine, float delay )
+{
+	EndSignal( speakingPlayer, "OnDeath" )
+	EndSignal( speakingPlayer, "OnDestroy" )
+
+	wait delay
+
+	PlayBattleChatterLineToPlayer( chatterLine, speakingPlayer, speakingPlayer )
+}
+
+void function PlayBattleChatterLineToPlayer( string conversationType, entity listeningPlayer, entity speakingPlayer, entity addressee = null )
+{
+	if ( !ShouldPlayBattleChatter( conversationType, listeningPlayer, speakingPlayer ) )
+		return
+
+	int dialogueFlags = 0
+
+	if ( IsValid( addressee ) && ShouldStompConAltForLine( conversationType, speakingPlayer, addressee ) )
+	{
+		dialogueFlags = eDialogueFlags.STOMP_CON_ALT
+	}
+
+	PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, dialogueFlags )
+}
+
 int function SurvivalCommentary_GetChampionEEH()
 {
 	return GetGlobalNetInt( "championEEH" )
@@ -61,6 +233,12 @@ void function SurvivalCommentary_ResetAllData()
 
 void function SetChampion( entity champion )
 {
+	if( !IsValid( champion ) )
+	{
+		SetGlobalNetInt( "championEEH", -1 )
+		return
+	}
+	
 	SetGlobalNetInt( "championEEH", champion.GetEncodedEHandle() )
 	array<entity> championSquadMates = GetPlayerArrayOfTeam( champion.GetTeam() )
 	championSquadMates.fastremovebyvalue( champion )
@@ -77,7 +255,7 @@ entity function GetChampion()
 
 int function GetMinKillsForKillLeader()
 {
-	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	int minKill = file.survival_commentary_kill_leader_min_kills
 	if( Gamemode() == eGamemodes.fs_dm )
 		minKill = 2
 	else if( minKill < 1 )
@@ -86,8 +264,71 @@ int function GetMinKillsForKillLeader()
 	return minKill
 }
 
+bool function ShouldStompConAltForLine( string conversationType, entity speakingPlayer, entity addressee )
+{
+	string foundConAlt = ""
+	array<string> squadVoices = [ GetPlayerVoice( speakingPlayer ) ]
+	bool duplicateLegendsOnSquad = false
+
+	foreach ( entity squadmate in GetPlayerArrayOfTeam_Alive( speakingPlayer.GetTeam() ) )
+	{
+		if ( squadmate == speakingPlayer )
+			continue
+
+		if ( squadVoices.find( GetPlayerVoice( squadmate ) ) > -1 )
+			duplicateLegendsOnSquad = true
+
+		squadVoices.append( GetPlayerVoice( squadmate ) )
+
+		string potentialConAlt = ""//GetConditionalAltDialogue( conversationType, speakingPlayer, squadmate, true )
+
+		if ( potentialConAlt != "" )
+		{
+			if ( foundConAlt != "" )
+			{
+				#if DEV
+					if ( !duplicateLegendsOnSquad )
+						Assert( false, "More then one condPlayer exists for con alt " + conversationType + " for speaker " + GetPlayerVoice( speakingPlayer ) + " , this is not currently supported." )
+				#endif
+
+				return !duplicateLegendsOnSquad // if there are dupe legends, you should not stomp the con alt. if there are not dupe legends, you should stomp the con alt
+			}
+
+			foundConAlt = potentialConAlt
+		}
+
+	}
+
+	if ( foundConAlt != "" )
+	{
+		if ( addressee.GetTeam() !=  speakingPlayer.GetTeam() )
+			return false
+
+		// if ( DoesConditionalAltRequireAddressee( foundConAlt ) )
+		// {
+			// ItemFlavor condPlayerCharacter = GetConditionalAltCondPlayerCharacterFromAlias( foundConAlt )
+			// ItemFlavor addresseeCharacter = LoadoutSlot_GetItemFlavor( addressee, Loadout_Character() )
+
+			// if ( condPlayerCharacter != addresseeCharacter )
+				// return true
+		// }
+		// else
+		// {
+			// Assert( false, "Dialogue line " + conversationType + " has a con alt " + foundConAlt + " and was passed an addressee but does not require one." )
+			return true
+		// }
+	}
+
+	return false
+}
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
+	if( DamageInfo_GetDamage( damageInfo ) == 0 )
+		return
+		
+	if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
+		return
+	
 	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )
 		return
 
@@ -98,7 +339,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( !IsValid( victim ) || !IsValid( attacker ) )
 			return
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+		if ( file.survival_commentary_kill_leader_enabled )
 		{
 			if ( victim == file.currentKillLeader && victim != GetChampion() )
 			{
@@ -121,7 +362,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			}
 		}
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
+		if ( file.survival_commentary_champion_enabled )
 		{
 			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 			if( victim == champion )
@@ -133,7 +374,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			}
 		}
 		
-		if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
+		if ( file.survival_commentary_first_blood_enabled )
 		{
 			if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
 			{
@@ -182,6 +423,17 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 void function AddSurvivalCommentaryEvent( int event, entity attacker = null, entity victim = null )
 {
+
+	// Determine if event is currently enabled
+	if ( !IsCommentaryEventEnabled( event ) )
+	{
+		#if DEVELOPER
+			printf( "Event type: " + event + " is disabled" )
+		#endif
+		
+		return
+	}
+
 	#if DEVELOPER
 	string enumString = GetEnumString( "eSurvivalEventType", event )
 	
@@ -265,6 +517,52 @@ void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay
 	}
 }
 
+void function PlayCommentaryLine_Internal( string dialogueRef, array<entity> players, string dialogueResponseRef )
+{
+	if ( !file.commentarySystemActive )
+		return
+
+	foreach ( entity player in players )
+	{
+		if ( !IsValid( player ) )
+			continue
+
+		if ( !IsBattleChatterEnabled() )
+		{
+			thread PlayDialogueForPlayer( dialogueRef, player, null, 0, COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS )
+			continue
+		}
+
+		entity responseSpeaker = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
+
+		thread PlayDialogueForPlayer( dialogueRef, player, null, 0, COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS, dialogueResponseRef, responseSpeaker )
+	}
+}
+
+
+void function PlayCommentaryLineToAllPlayers( string dialogueRef, string dialogueResponseRef = "" )
+{
+	array<entity> players = GetPlayerArray()
+
+	thread PlayCommentaryLine_Internal( dialogueRef, players, dialogueResponseRef )
+}
+
+
+void function PlayCommentaryLineToAllPlayersDelayed( string dialogueRef, float delay, string dialogueResponseRef = "" )
+{
+	if ( delay > 0 )
+		wait delay
+
+	PlayCommentaryLineToAllPlayers( dialogueRef, dialogueResponseRef )
+}
+
+
+void function PlayCommentaryLineToPlayerArray( string dialogueRef, array<entity> players, string dialogueResponseRef = "" )
+{
+	thread PlayCommentaryLine_Internal( dialogueRef, players, dialogueResponseRef )
+}
+
+
 void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 {
 	foreach( player in GetPlayerArray_Alive() )
@@ -294,8 +592,11 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 				responseName = "bc_insideNextCircle"
 		}
 
-		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
-		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
+		#if DEVELOPER 
+			printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+			printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
+		#endif 
+		
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
@@ -324,7 +625,11 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 			else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
 				responseName = "bc_circleMoving_allOutside"
 		}
-		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		
+		#if DEVELOPER 
+			printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		#endif
+		
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
@@ -364,5 +669,55 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 		}
 
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, selectedResponseName, responsePlayer )
+	}
+}
+
+bool function IsCommentaryEventEnabled( int eventType )
+{
+	foreach ( disabledEventType in file.disabledCommentaryEvents )
+	{
+		if ( disabledEventType == eventType )
+			return false
+	}
+
+	return true
+}
+
+
+void function SurvivalCommentary_SetEventEnabled( int eventType, bool value )
+{
+	if ( value == true )
+	{
+		#if DEVELOPER 
+			mAssert( !IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( true ) on a commentary event that is already enabled" )
+		#endif
+		
+		file.disabledCommentaryEvents.fastremovebyvalue( eventType )
+	}
+	else
+	{
+		#if DEVELOPER 
+			mAssert( IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( false ) on a commentary event that is already disabled" )
+		#endif
+		
+		file.disabledCommentaryEvents.append( eventType )
+	}
+}
+
+
+void function SetCommentaryEnabled( bool value )
+{
+	file.commentarySystemActive = value
+}
+
+void function PlayBattleChatterLineToTeamButNotSpeaker( entity speakingPlayer, string chatterLine )
+{
+	//printt( "PlayBattleChatterLine, speakingPlayer: " +  speakingPlayer + ", chatterLine: " + chatterLine )
+	foreach ( player in GetPlayerArrayOfTeam( speakingPlayer.GetTeam() ) )
+	{
+		if ( player == speakingPlayer )
+			continue
+
+		PlayBattleChatterLineToPlayer( chatterLine, player, speakingPlayer )
 	}
 }

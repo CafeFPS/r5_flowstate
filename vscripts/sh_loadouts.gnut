@@ -473,25 +473,7 @@ void function ShLoadouts_LevelInit_Finish()
 	//	if ( DEV_resendAllCacheData )
 	//		RunClientScript( "UIToClient_ResendAllCacheData" ) // for uiscript_reset
 	//#endif
-
-	//Flowstate custom
-	#if CLIENT
-		LoadoutEntry charC = Loadout_CharacterClass()
-		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( charC, FS_OnLocalCharacterChanged, false )
-	#endif
 }
-
-
-#if CLIENT
-void function FS_OnLocalCharacterChanged( EHI playerEHI, ItemFlavor unused )
-{
-	// printt( "FS_OnLocalCharacterChanged" )
-	if ( playerEHI != LocalClientEHI() )
-		return
-
-	thread InitSurvivalHealthBar()
-}
-#endif
 
 #if UI
 void function ShLoadouts_LevelShutdown()
@@ -1926,6 +1908,9 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 	// 1: [loadout slot entry index]
 	// 2: [slot contents index]
 
+	if ( !IsValid( player ) || !CheckRate( player ) || Gamemode() == eGamemodes.WINTEREXPRESS && !player.GetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange" ) ) 
+		return false
+
 	EHI playerEHI = ToEHI( player )
 
 	const int EXPECTED_ARG_COUNT = 3
@@ -1964,6 +1949,12 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 		// This could happen if two people try to select the same character at the same time
 		//Assert( false, "'loadouts_set' received item flavor \"" + ItemFlavor_GetRef( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
 		Warning( "'loadouts_set' received item flavor \"" + DEV_DescItemFlavor( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
+		return true
+	}
+	
+	if( ItemFlavor_GetType( itemFlavor ) == eItemType.character && Gamemode() == eGamemodes.WINTEREXPRESS && IsValid( GetPlayerWithLockedCharacter( itemFlavor, GetPlayerArrayOfTeam( player.GetTeam() ) ) ) ) //Cafe was here
+	{
+		//A player already has that character.
 		return true
 	}
 	SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )

@@ -43,6 +43,8 @@ global function Minimap_EnableDraw_Internal
 global function Minimap_DisableDraw_Internal
 global function UpdateImageAndScaleOnMinimapRUI
 
+global function Minimap_AddIconAtPosition
+
 #if DEVELOPER
 global function DumpMinimapHandles
 #endif
@@ -126,7 +128,10 @@ const int OF_NO_TEAM_COLOR = 1 << 9
 
 void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
-	if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
+	//if( GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false ) ) return
+
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	Assert( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
 
@@ -481,7 +486,7 @@ void function AddMinimapObject( entity ent )
 
 			foreach ( eHandleIter in eHandlesToRemove )
 			{
-				printt("Deleting invalid minimap handle: ", eHandleIter )
+				// printt("Deleting invalid minimap handle: ", eHandleIter )
 				delete file.minimapHandles[eHandleIter]
 			}
 		}
@@ -668,7 +673,7 @@ bool function ShouldCreateRuiForPlayer( entity ent, entity viewPlayer )
 }
 
 
-var function Minimap_CommonAdd( asset ruiAsset, int zOrder )
+var function Minimap_CommonAdd( asset ruiAsset, int zOrder, vector objPos = < 0, 0, 0 >, vector objAng = < 0, 0, 0 > )
 {
 	entity viewPlayer = GetLocalViewPlayer()
 	var rui           = CreateMinimapRui( ruiAsset, MINIMAP_Z_BASE + zOrder )
@@ -680,12 +685,11 @@ var function Minimap_CommonAdd( asset ruiAsset, int zOrder )
 	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetBool( rui, "isNorthFacing", !GetConVarBool( "hud_setting_minimapRotate" ) )
 
-	RuiSetFloat3( rui, "objectPos", <0, 0, 0> )
-	RuiSetFloat3( rui, "objectAngles", <0, 0, 0> )
-
-	//
-	RuiSetVisible( rui, file.minimapEnabled )
+	RuiSetFloat3( rui, "objectPos", objPos )
+	RuiSetFloat3( rui, "objectAngles", objAng )
+	RuiSetVisible( rui, file.minimapEnabled)
 	file.minimapOtherRuis.append( rui )
+
 	return rui
 }
 
@@ -888,10 +892,8 @@ void function UpdateImageAndScaleOnMinimapRUI(asset image, float scale)
 	try{
 		if(file.minimap_base != null)
 		{
-			RuiSetFloat3( file.minimap_base, "mapCorner", <0.0, 0.0, 0.0> )
 			RuiSetImage( file.minimap_base, "mapImage", image )
 			RuiSetFloat( file.minimap_base, "mapScale", scale )
-			RuiSetFloat( file.minimap_base, "minimapZoomScale", 0.3 )
 			
 			//RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
 			
@@ -923,8 +925,10 @@ void function UpdatePlayerRuiTracking( entity player )
 	{
 		RuiTrackFloat3( file.minimap_base, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )		
-		RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
+		
 	}
+
+	RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
 
@@ -1401,7 +1405,10 @@ void function Minimap_SetBlankBackground( bool doBlank )
 
 void function Minimap_SetSizeScale( float scale )
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+	//if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		return
 
 	file.minimapSizeScale = scale
 
@@ -1449,6 +1456,10 @@ bool function MiniMapIsDisabled()
 {
 	if ( GetCurrentPlaylistVarBool( "disable_minimap", false ) )
 		return true
+		
+	if( expect int( GetServerVar( "minimapState" ) ) == eMinimapState.Hidden )
+		return true
+
 	return false
 }
 
@@ -1466,8 +1477,7 @@ void function Minimap_UpdateMinimapVisibility( entity player )
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & CE_FLAG_INTRO )
 		isVisible = false
-	                                                    
-	  	                 
+
 
 	if ( MiniMapIsDisabled() )
 		isVisible = false
@@ -1503,30 +1513,27 @@ void function Minimap_EnableDraw()
 
 void function Minimap_DisableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
-
 	file.minimapEnabled = false
 
 	RuiSetVisible( file.minimap_base, false )
 	RuiSetVisible( file.minimap_frame, false )
 	RuiSetVisible( file.minimap_you, false )
 
-	foreach ( var rui in file.minimapOtherRuis )
+	//R5RDEV-1
+	int maxIter = file.minimapOtherRuis.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		try
-		{
-			RuiSetVisible( rui, false )
-		}catch(e420)
-		{
-			file.minimapOtherRuis.removebyvalue(rui)
-		}
+		if( file.minimapOtherRuis[ i ] == null )		
+			file.minimapOtherRuis.remove( i )
+		else
+			RuiSetVisible( file.minimapOtherRuis[ i ], false )
 	}
 }
 
 
 void function Minimap_EnableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
 
 	file.minimapEnabled = true
 
@@ -1611,9 +1618,6 @@ bool function Fullmap_IsVisible()
 {
 	return file.fullmapVisible
 }
-
-
-
 
 
 void function UpdateFullmapRuiTracks()
@@ -1864,4 +1868,23 @@ void function Minimap_UpdateNorthFacingOnSettingChange()
 {
 	if ( file.minimap_base && file.minimap_you )
 		Minimap_SetNorthFacing( !GetConVarBool( "hud_setting_minimapRotate" ) )
+}
+
+var function Minimap_AddIconAtPosition( vector position, vector angles, asset icon, float scale, vector iconColor )
+{
+	entity viewPlayer = GetLocalViewPlayer()
+	var rui = Minimap_CommonAdd( $"ui/minimap_square_object.rpak", MINIMAP_Z_BASE + 20, position, angles )
+
+	RuiTrackInt( rui, "objectFlags", viewPlayer, RUI_TRACK_MINIMAP_FLAGS )
+	RuiTrackInt( rui, "customState", viewPlayer, RUI_TRACK_MINIMAP_CUSTOM_STATE )
+	RuiSetFloat3( rui, "objectPos", position )
+	
+	RuiSetFloat3( rui, "iconColor", iconColor )
+	RuiSetFloat2( rui, "iconScale", < scale, scale, 0 > )
+	RuiSetBool( rui, "alwaysShowOnMinimap", true )
+	RuiSetBool( rui, "useTeamColor", false )
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+
+	return rui
 }

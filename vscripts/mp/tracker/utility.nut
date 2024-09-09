@@ -1,7 +1,6 @@
 global function GetAdminList																	//~mkos
 global function EnableVoice
-global function empty
-global function StringToArray
+//global function StringToArray
 global function trim
 global function Concatenate
 global function IsNumeric
@@ -13,7 +12,7 @@ global function IsValidOID
 global function Is_Bool
 global function sanitize
 global function LineBreak
-global function printarray
+global function print_string_array
 global function CheckRate
 global function ParseWeapon
 global function IsWeaponValid
@@ -33,20 +32,21 @@ global function GetDefaultIBMM
 global function SetDefaultIBMM
 global function IsTrackerAdmin
 global function PlayTime
-global function truncate
+//global function truncate
 global function DEV_PrintTrackerWeapons
-global function GetTrackerWeaponIdentifierTable
 global function ValidateIBMMWaitTime
 global function VerifyAdmin
 global function IsSafeString
+global function GetPlaylistMaps
+global function TP
+global function Tracker_DetermineNextMap
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
 #endif
 
-//const
-//global const int SQ_MAX_INT_32 = 2147483647;
-//global const int SQ_MIN_INT_32 = -2147483647;
+//Todo: Clean up/refactor
+//entire file needs audited for code refactor ~mkos
 
 //tables 
 table<string, string> player_admins
@@ -107,7 +107,8 @@ struct {
 	//client command: show
 		bool function ClientCommand_mkos_return_data(entity player, array<string> args)
 		{
-			if (!CheckRate( player )) return false
+			if ( !CheckRate( player ) ) 
+				return false
 			
 			player.p.messagetime = Time()
 			
@@ -337,8 +338,8 @@ struct {
 						try 
 						{
 							
-							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0) );
-							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0) );
+							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0.0 ) );
+							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0 ) );
 									
 							if( (inputmsg.len() + data.len()) > 599 )
 							{	
@@ -812,28 +813,38 @@ struct {
 
 							try 
 							{
-								if ( IsTrackerAdmin(param) )
+								if ( IsTrackerAdmin( param ) )
 								{		
 									Message( player, "Failed", param + " is an admin. Ban rejected.", 10 )
 									return false		
 								}
 								
-								if ( !IsNum(param) )
+								if ( !IsNum( param ) )
 								{			
 									Message( player, "Failed", param + " is not a valid oid format.", 10 )
 									return false	
 								}
 								
-								if ( param2 == "")
+								if ( param2 == "" )
 								{		
 									param2 = "0";							
+								}
+								
+								entity playerToBan = GetPlayerEntityByUID( param )
+								
+								if( IsValid( playerToBan ) )
+								{
+									BanPlayerById( param, param3 )
+									Message( player, "Success", param + " was added to the banlist and removed from the server.", 10 )
+									
+									return true
 								}
 								
 								if ( AddBanByID( param2, param ) )
 								{					
 									Message( player, "Success", param + " was added to the banlist.", 10 )
 									return true	
-								} 
+								}
 								else 
 								{	
 									Message( player, "Failed", "Failed to add player oid: " + param + " to the banlist.", 10 )
@@ -899,55 +910,6 @@ struct {
 						}
 						
 			//for testing
-			
-			case "zero":
-			#if DEVELOPER && TRACKER && HAS_TRACKER_DLL
-						
-						if ( args.len() < 1)
-						{
-							Message( player, "Failed", "Param 1 of command 'zero' requires playername string.")
-							return false;	
-						}
-			
-						try 
-						{		
-							entity z_player = GetPlayerEntityByName(args[1])
-							
-							if ( !IsValid(z_player) )
-							{
-								Message( player, "Failed", "Player: " + args[1] + " - is invalid. ")
-								return true;
-							}
-							
-							string playeroid = z_player.GetPlatformUID()
-							
-							int index = DEV_GetPlayerMetricsIndexByUID( playeroid )
-							
-							if ( index != -1 )
-							{	
-								foreach ( playerMetrics in Tracker_GetPlayerMetricsArray() ) 
-								{
-									if ( playerMetrics.playerID == args[1] ) 
-									{	
-										Tracker_GetPlayerMetricsArray().removebyvalue(playerMetrics);					
-									}
-								}
-								
-								Message( player, "Success", "Player " + args[1] + " stats were zeroed. Does not effect kill/death/damage. ")
-								return true;	
-							}
-						
-						} 
-						catch (errg) 
-						{	
-							Message( player, "Failed", "Command failed because of: \n\n " + errg )
-							return true;	
-						}
-			#endif
-			
-			Message( player, "Command only allowed in devmode with tracker" )
-					return false
-						
 			case "playerinput":
 						
 						if ( args.len() < 1)
@@ -1284,7 +1246,7 @@ struct {
 						
 						try 
 						{	
-							if( !SendServerMessage( param ))
+							if( !SendServerMessage( param ) )
 							{
 								Message( player, "Error", "Message was truncated")
 							}
@@ -1361,14 +1323,13 @@ struct {
 							Message( player, "Failed", "Command failed because of: \n\n " + errvc)
 							return true		
 						}
+						
+					break
 				
 				
 			case "startbr":
-					
-					SetConVarBool( "sv_cheats", true )
-					FlagSet("MinPlayersReached")
-					SetConVarBool( "sv_cheats", false )
-					
+			
+					FlagSet( "MinPlayersReached" )	
 					return true
 					
 			case "pos":
@@ -1449,7 +1410,8 @@ struct {
 				
 			case "nextmap":
 			
-				RotateMap()
+				string to_map = Tracker_DetermineNextMap()
+				GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 				return true
 			
 			case "fetchsetting":
@@ -1463,7 +1425,7 @@ struct {
 					return true 
 				}
 				
-				if( IsValid( p ))
+				if( IsValid( p ) )
 				{
 					Message( player, "Data for: " + param, Tracker_FetchPlayerData( p.p.UID, param2 ) )
 				}
@@ -1507,7 +1469,8 @@ struct {
 					printt("Drawing...")
 					foreach( s_player in GetPlayerArray() )
 					{
-						Remote_CallFunction_NonReplay( s_player, "Minimap_EnableDraw_Internal")
+						Remote_CallFunction_ByRef( s_player, "Minimap_EnableDraw_Internal" )
+						//Remote_CallFunction_NonReplay( s_player, "Minimap_EnableDraw_Internal")
 					}
 					
 				#endif 
@@ -1521,7 +1484,8 @@ struct {
 					printt("Drawing...")
 					foreach( s_player in GetPlayerArray() )
 					{
-						Remote_CallFunction_NonReplay( s_player, "Minimap_DisableDraw_Internal")
+						Remote_CallFunction_ByRef( s_player, "Minimap_DisableDraw_Internal" )
+						//Remote_CallFunction_NonReplay( s_player, "Minimap_DisableDraw_Internal")
 					}
 					
 				#endif 
@@ -1628,6 +1592,30 @@ struct {
 				#endif
 				break
 				
+			case "movement_recorder_playback_rate":
+			
+				if( IsNumeric( param ) )
+				{
+					MovementRecorder_SetPlaybackRate( float( param ) )
+					Message( player, "Playback rate set to: " + param )
+				}
+				else 
+				{
+					Message( player, "Invalid playback rate specified" )
+				}
+				
+				break
+				
+			case "kill_banners":
+			
+				BannerAssets_KillAllBanners()
+				break 
+				
+			case "start_banners":
+			
+				BannerAssets_Restart()
+				break
+				
 			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;
@@ -1651,7 +1639,7 @@ void function ClientCommand_ParseSay( entity player, array<string> args )
 void function Commands( entity player, array<string> args )
 {	
 	#if DEVELOPER
-		//printarray( args )
+		//print_string_array( args )
 	#endif 
 	
 	switch( args[0].tolower() )
@@ -1812,7 +1800,6 @@ void function RunUpdateMsg()
 		SendServerMessage(update_title)
 		
 		wait 3.6
-		
 	}
 }
 
@@ -1825,9 +1812,6 @@ void function update()
 
 bool function EnableVoice()
 {
-	#if DEVELOPER 
-		printt("voice enabled")
-	#endif 
 	if ( !GetConVarBool( "sv_voiceenable" ) || !GetConVarBool( "sv_alltalk" ) )
 	{
 		SetConVarBool( "sv_voiceenable", true )
@@ -1835,6 +1819,10 @@ bool function EnableVoice()
 		
 		if ( GetConVarBool( "sv_voiceenable" ) && GetConVarBool( "sv_alltalk" ) )
 		{
+			#if DEVELOPER 
+				printt("voice enabled")
+			#endif 
+			
 			return true
 		}
 	}
@@ -1856,87 +1844,26 @@ bool function EnableVoice()
 //trims leading and trialing whitespace from a string
 string function trim( string str ) 
 {
-    int start = 0;
-    int end = str.len() - 1;
-    string whitespace = " \t\n\r";
-
-    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
-	{
-        start++;
-    }
-
-    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
-	{
-        end--;
-    }
-
-    return str.slice(start, end + 1);
-}
-
-
-//////////////////////////////////////////////////
-//												//
-//				string to array			 		//
-//												//
-//	format of:									//												
-//					"string1, also string"		//
-// 												//
-//	into an array:  							//
-//					['string1','also string']	//
-//												//
-//												//
-// CALLING FUNCTION responsible for error catch //
-//////////////////////////////////////////////////
-
-array<string> function StringToArray( string str, int MAX_LENGTH = 128 ) 
-{		
-	int item_index = 0;
-	int length_check;
-	string t_str = trim( str )
+	return strip( str )
 	
-    if ( t_str == "" )
-	{
-        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
-	}
-	
-    array<string> arr = split( str, "," )
-	array<string> valid = []
-	
-	/*debug
-	foreach (index, item in arr) 
-	{
-		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
-	}
-	*/
-	
-    foreach ( item in arr ) 
-	{		
-		item_index++
-		item = trim( item )
-		length_check = item.len()
-	
-        if ( item == "" ) 
-		{   
-            sqerror( "Empty item in the list for item # " + ( item_index ) + " removed. " )			
-        } 
-		else if ( length_check >= MAX_LENGTH )
+	/*
+		int start = 0;
+		int end = str.len() - 1;
+		string whitespace = " \t\n\r";
+
+		while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
 		{
-			sqerror( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + MAX_LENGTH + " chars")	
-		} 
-		else
-		{		
-			valid.append( item )		
-		}	
-    }
-	
-	if ( valid.len() <= 0 ) 
-	{
-        throw "Array empty after conversion";
-    }
+			start++;
+		}
 
-    return valid;
+		while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+		{
+			end--;
+		}
+
+		return str.slice(start, end + 1);
+	*/
 }
-
 
 string function Concatenate( string str1, string str2 ) 
 {	
@@ -1986,13 +1913,6 @@ void function SetDefaultIBMM( entity player )
 	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
 	player.p.IBMM_grace_period = f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
 }
-
-
-bool function empty( string str )
-{
-	return str == "";
-}
-
 
 bool function IsNum( string str ) 
 {
@@ -2138,16 +2058,16 @@ string function ReturnKey( string str )
 
 string function ReturnValue( string str )
 {	
-	try {
-	
+	try 
+	{
 		array<string> split = split(str , ":")
 		
-		if(split.len() < 2)
+		if( split.len() < 2 )
 		{
 			return "";
 		}
 		
-		if (split[1] == "NA")
+		if ( split[1] == "NA" )
 		{	
 			#if DEVELOPER
 				sqprint( "Default value was returned for key: " + str )
@@ -2160,7 +2080,7 @@ string function ReturnValue( string str )
 	catch (err)
 	{
 		#if DEVELOPER 
-			sqerror( "ReturnValue() failed for key " + str )
+			sqerror( "ReturnValue() failed for key:value " + str )
 		#endif 
 		return "";
 	}		
@@ -2206,7 +2126,7 @@ void function CheckAdmin_OnConnect( entity player )
 // WARNING, use ONLY VerifyAdmin() for permissive uses, not this.
 bool function IsTrackerAdmin( string CheckPlayer )
 {
-	foreach ( Player, OID in player_admins) 
+	foreach ( Player, OID in player_admins ) 
 	{
 		if ( Player == CheckPlayer || OID == CheckPlayer) 
 		{
@@ -2234,8 +2154,7 @@ bool function IsValidOID( string str )
 		oid = player.GetPlatformUID()
 		
 		if ( oid == str )
-			return true
-	
+			return true	
 	}
 	
 	return false
@@ -2243,31 +2162,34 @@ bool function IsValidOID( string str )
 
 entity function GetPlayerEntityByUID( string str )
 {
-	entity r_player;
-	string oid;
+	entity candidate
 	
 	if ( !IsNum( str ) )
-		return r_player
-		
+		return candidate
+	
 	foreach ( player in GetPlayerArray() )
 	{
 		if ( !IsValid( player ) )
-		{
 			continue
-		}
-		
-		oid = player.GetPlatformUID()
-		
-		if ( oid == str )
-		{
-			return player;
-		}
+
+		if ( player.GetPlatformUID() == str )
+			return player	
 	}
 	
-	return r_player;
+	return candidate
 }
 
-entity function GetPlayer( string str ) 
+entity function GetPlayer( string str )
+{
+	entity candidate = GetPlayerEntityByUID( str )
+	
+	if( IsValid( candidate ) )
+		return candidate
+		
+	return GetPlayerEntityByName( str )	
+}
+
+entity function GetPlayer_Expensive( string str ) 
 {
 	entity player;
 	
@@ -2298,7 +2220,6 @@ string function GetMap( string str )
 
 string function GetMode( string str ) 
 {
-
 	foreach ( mode in list_gamemodes ) 
 	{
 		if ( mode[0] == str || mode[1] == str ) 
@@ -2337,17 +2258,7 @@ string function sanitize(string str)
 	return sanitized;	
 }
 
-string function truncate( string str, int limit ) 
-{
-    if ( str.len() > limit ) 
-	{
-        return str.slice( 0, limit )
-    }
-    
-    return str;
-}
-
-void function printarray( array<string> args )
+void function print_string_array( array<string> args )
 {
 	string test = "\n\n------ PRINT ARRAY ------\n\n"
 	
@@ -2405,8 +2316,8 @@ bool function VerifyAdmin( string PlayerName, string PlayerUID )
 {
 	if ( PlayerName in player_admins ) 
 	{
-		if ( player_admins[PlayerName] != PlayerUID ) 
-			return false		
+		if ( player_admins[ PlayerName ] != PlayerUID ) 
+			return false	
 	}
 	else 
 	{
@@ -2442,11 +2353,6 @@ int function WeaponToIdentifier( string weaponName )
 bool function IsWeaponValid( string weaponref )
 {
 	return ( weaponref in WeaponIdentifiers )
-}
-
-table<string,int> function GetTrackerWeaponIdentifierTable()
-{
-	return WeaponIdentifiers
 }
 
 void function DEV_PrintTrackerWeapons()
@@ -2553,7 +2459,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	}	
 #endif
 
-//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? .
+//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? . |
 bool function IsSafeString( string str, int strlen = -1, string pattern = "" ) 
 {
 	if( empty( str ) )
@@ -2563,7 +2469,38 @@ bool function IsSafeString( string str, int strlen = -1, string pattern = "" )
 		return false
 	
 	if( pattern == "" )
-		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.]*$"
+		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.|]*$"
 	
 	return ( RegexpFindAll( str, pattern ).len() != 0 )
+}
+
+//original by maki
+void function TP( entity player, LocPair data )
+{
+	if( !IsValid( player ) ) 
+		return
+		
+	player.SetVelocity( Vector( 0,0,0 ) )
+	player.SetAngles( data.angles )
+	player.SetOrigin( data.origin )
+}
+
+string function Tracker_DetermineNextMap()
+{
+	string to_map = GetMapName()
+	int countmaps = GetCurrentPlaylistMapsCount()
+
+	for ( int i = 0; i < countmaps; i++ )
+	{
+		string foundMap = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, i )
+		
+		if ( GetMapName() == foundMap ) 
+		{
+			int index = (i + 1) % countmaps
+			to_map = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, index )
+			break
+		}
+	}
+	
+	return to_map
 }

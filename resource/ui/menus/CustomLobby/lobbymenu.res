@@ -66,7 +66,7 @@
 			"tall"					"30"
 			"visible"				"0"
 			"fontHeight"			"30"
-			"labelText"				"Welcome back"
+			"labelText"				"#FS_WELCOME_BACK"
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"
 			"fgcolor_override"		"255 255 255 255"

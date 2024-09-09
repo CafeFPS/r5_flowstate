@@ -176,6 +176,7 @@ void function SV_CL_Init()
 	ChargePylons_Init()
 
 	ShLootDrones_Init()
+	Sh_EvacShip_Init()
 
 	//if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
 	ShLootRollers_Init()
@@ -183,11 +184,12 @@ void function SV_CL_Init()
 	//ShFlyersDeathboxes_Init()
 	//}	
 
-
+	MpWeaponGuidedMissile_Init()
 	CharacterSelectNewMenu_Init()
 
 	//ShHoverBike_Init()
 	ShHoverVehicle_Init()
+	Sh_SkydiveLaunchers_Init()
 	ShLootBin_Init()
 
 	ShFlyers_Init()
@@ -199,17 +201,25 @@ void function SV_CL_Init()
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
 	ShPassiveAdrenaline_Init()
-	Clickweapon_Init()
 	
 	//R5R Sword
 	MpWeaponTitanSword_Init()
 	MpWeaponPortalGun_Init()
-	
-	WeaponMastiff_Init()
-	WorldDrawImg_Init()
 
+	WeaponMastiff_Init()
+	WorldDrawAsset_Init()
+
+	MpWeaponFlameThrower_Init()
+	MpWeaponSentinel_Init()
+	ProtoBatteryCharger_Init()
+	// MpUltimatePhaseChamber_Init()
+	ShIncapShield_Init()
+	
+	Sh_Squads_Init()
+	
     // Zipline Utility
     #if SERVER
+		TurretPlasma_Init() //turret dev ability by cafefps
         ZiplineUtility_Init()
     #endif
 
@@ -294,6 +304,7 @@ void function Server_Init()
 #if NPC_TITAN_PILOT_PROTOTYPE
 	AiPilots_Init()
 #endif
+
 	// AiPilot_Init()
 	// AiDrone_Init()
 	// AiSpectre_Init()
@@ -340,6 +351,7 @@ void function Server_Init()
 	Score_Init()
 
 	Spawn_Init()
+	
 	DialogueChatter_Init()
 
 	TrackingVision_Init()
@@ -367,12 +379,14 @@ void function Server_Init()
 	ChatUtility_Init()
 
 	LiveAPI_Init()
+	LootHelper_Init()
 
     // ReMap Live
     if ( IsDevGamemode() )
         ReMapLive_Init()
 		
 	Flowstate_SpawnSystem_Init()
+	NotificationSystem_Init()
 
 	#if DEVELOPER
 		SmokeTest_Init()

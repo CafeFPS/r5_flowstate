@@ -1,8 +1,51 @@
-// stub script
-
 global function PassiveGasGear_Init
+
+const float PASSIVE_GAS_GEAR_DEATH_CLOUD_DURATION = 10.0
+const float PASSIVE_GAS_GEAR_DAMAGE_REDUCTION_IN_GAS = 0.50
 
 void function PassiveGasGear_Init()
 {
-
+	//AddDamageCallback( "player", PassiveGasGear_OnPlayerDamaged )
+	AddDamageCallbackSourceID( eDamageSourceId.damagedef_grenade_gas, PassiveGasGear_StopGasGrenadeDamage )
+	//AddCallback_OnPlayerKilled( PassiveGasGear_OnPlayerKilled )
+	//Bleedout_AddCallback_OnPlayerStartBleedout( PassiveGasGear_OnPlayerStartBleedout )
 }
+
+/*
+void function PassiveGasGear_OnPlayerDamaged( entity target, var damageInfo )
+{
+	if ( !target.IsPlayer() )
+		return
+
+	if ( target.IsTitan() )
+		return
+
+	if ( PlayerHasPassive( target, ePassives.PAS_GAS_GEAR ) && IsEntInGas( target ) )
+		DamageInfo_ScaleDamage( damageInfo, PASSIVE_GAS_GEAR_DAMAGE_REDUCTION_IN_GAS )
+}
+*/
+
+void function PassiveGasGear_StopGasGrenadeDamage( entity target, var damageInfo )
+{
+	if ( !target.IsPlayer() )
+		return
+
+	//If the player has gas gear passive they take no damage from gas.
+	if ( PlayerHasGasProtection( target ) )
+		DamageInfo_SetDamage( damageInfo, 0.0 )
+}
+/*
+void function PassiveGasGear_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( PlayerHasPassive( victim, ePassives.PAS_GAS_GEAR ) )
+		CreateGasCloudMediumAtOrigin( victim, victim.GetOrigin(), PASSIVE_GAS_GEAR_DEATH_CLOUD_DURATION )
+}
+*/
+
+/*
+void function PassiveGasGear_OnPlayerStartBleedout( entity player )
+{
+	if ( PlayerHasPassive( player, ePassives.PAS_GAS_GEAR ) )
+		CreateGasCloudMediumAtOrigin( player, player.GetOrigin(), PASSIVE_GAS_GEAR_DEATH_CLOUD_DURATION )
+}
+*/

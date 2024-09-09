@@ -1,96 +1,117 @@
-
 global function DamageHistoryInit
-global function StoreDamageHistoryAndUpdate
-global function WasRecentlyHitForDamage
-global function WasRecentlyHitByEntity
-global function WasRecentlyHitByEntityWithDamagetype
-global function WasRecentlyHitByDamageSourceId
-global function GetLatestAssistingPlayerInfo
-global function GetLatestAssistingPlayerFromSameTeam
-global function GetTotalDamageTakenInTime
-global function GetTotalDamageTaken
-global function GetTotalDamageTakenByPlayer
-global function GetDamageSortedByAttacker
-global function GetTitansHitMeInTime
-global function GetLastDamageTime
-global function GetDamageEventsForTime
-global function WasRecentlyHitForDamageType
-global function GetRodeoAttacksByPlayer
-global function GetLastDamageSourceStringForAttacker
-global function TotalDamageOverTime_BlendedOut
 global function ClearRecentDamageHistory
-global function AttackerDamagesSort
-global function PrintDamageEventsForTime
 
-global struct AttackerDamage
-{
-	entity attacker
-	string attackerName
-	float totalDamage
-	table<int,float> damageBySource
-}
+#if SERVER
+global function StoreDamageHistoryAndUpdate
+global function WasRecentlyHitByEntityWithDamagetype
+global function GetLastBleedoutAttackerFromDamageHistory
+global function GetLatestAssistingPlayerInfo
+global function GetLatestAssistingPlayersFromSameTeam
+global function DamageHistory_GetDamageFromEntity
+global function GetLastDamageSourceStringForAttacker
+global function GetLastDamageSourceIDForAttacker
+global function AddAssistingPlayerToVictim
+global function RemoveAssistingPlayerFromVictim
+global function ChangeAssistingPlayerCreditTimeForVictim
+global function GetTotalDamageTakenByPlayer
+#if DEVELOPER
+global function  SetFakeDamageHistory
+global function  TryFakeDamageHistory
+global function  TypeMatch
+#endif //DEVELOPER
+
+#endif //SERVER
+
+#if SERVER
+global function SendDeathRecapDataToPlayer
+#endif
+
+const DEATH_RECAP_DAMAGE_HISTORY_TIME = 30    // how many seconds back in time we'll look for damage
+const DEATH_REACP_GROUP_MAX_TIME = 1.0        // max time for a grouping of damage events
+const DEATH_REACP_GROUP_MAX_HITS = 9          // max number of hits per group
+const INVALID_EHANDLE = -1
+const DEBUG_DAMAGE_HISTORY = false
 
 global enum eDamageHistorySet
 {
-	DEFAULT,
+	DEFAULT, // health and shields
 	HEALTH,
 	SHIELD,
-	BLEEDOUT,
+	BLEEDOUT, // bleedout only
 	ALL,
 }
 
 global struct DeathRecapDamageData
 {
-	int   attackerEHandle
-	int   victimEHandle
-	int   damageSourceID
-	int   damageType
-	int   totalDamage
-	int   hitCount
-	int   headShotBits
-	float healthFrac
-	float shieldFrac
-	float blockTime
+	// transmitted from server
+	int   attackerEHandle   //	"int", -1, INT_MAX
+	int   victimEHandle     //	"int", -1, INT_MAX
+	int   damageSourceID    //	"int", -1, INT_MAX
+	int   damageType        //	"int", INT_MIN, INT_MAX
+	int   totalDamage       //	"int", 0, INT_MAX
+	int   hitCount          //	"int", 0, INT_MAX
+	int   headShotBits      //	"int", 0, INT_MAX
+	float healthFrac        //	"float", 0.0, 1.0, 32
+	float shieldFrac        //	"float", 0.0, 1.0, 32
+	float blockTime         //	"float", 0.0, 86400.0, 32
 
-	int gladCardSlotIndex
-	asset customImage
+	// client created data
+	int   gladCardSlotIndex    // in what slot in the rui is the glad card saved
+	asset customImage        // customImage to use instead of the glad card when a glad card isn't available.
+	int   index                // used to make sure qSort doesn't reorder events at the same timestamp
 }
 
 global struct DamageHistoryStruct
 {
-	string attackerName
-	string attackerPetName
 	vector origin
-	float damage
-	int damageType
-	int damageSourceId
+	float  damage
+	int    damageType
+	int    damageSourceId
 	entity attacker
-	int attackerEHandle
-	float attackerHealthPercent
-	float time
-	array<string> weaponMods
-	bool victimIsTitan
-	bool rodeoDamage
+	int    attackerEHandle
+	int    victimEHandle
+	float  time
+
+	bool wasBleedingOut
+
+	float healthFrac
+	float shieldFrac
 }
 
 global struct AssistingPlayerStruct
 {
 	entity player
-	int damageSourceId
-	float assistTime
+	int    damageSourceId
+	float  assistTime
 }
 
 void function DamageHistoryInit()
 {
+	#if SERVER
+		Bleedout_AddCallback_OnPlayerStartBleedout( DeathScreen_OnPlayerStartBleedout )
+		AddDeathCallback( "player", DeathScreen_OnPlayerDeath )
+	#endif //SERVER
 }
+
 
 void function ClearRecentDamageHistory( entity player )
 {
+	// called after respawn and after using health/shield regen packs. or reaching full health through passive regen if the player is Octane.
 	player.e.recentDamageHistory.clear()
+	#if SERVER
+		// only clear on the server since I didn't add dealt damage history to the client.
+		player.e.recentDealtDamageHistory.clear()
+
+		// piggy backing on server calls to this function because the client part of damage history isn't syncing up correctly with the server.
+		//printt( "DR: ClearRecentDamageHistory" )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_ClearDeathRecapData" )
+	#endif //SERVER
 }
 
-DamageHistoryStruct function StoreDamageHistoryAndUpdate( entity storeEnt, float maxTime, float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker = null, array<string> weaponMods = [] )
+#if SERVER
+DamageHistoryStruct function StoreDamageHistoryAndUpdate( entity storeEnt, float maxTime, float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker = null, array<string> mods = [] )
 {
+	//Warning( "Incoming damage from: " + string( attacker ) + " Damage: " + damage )
 	DamageHistoryStruct damageHistory
 
 	float time = Time()
@@ -107,106 +128,100 @@ DamageHistoryStruct function StoreDamageHistoryAndUpdate( entity storeEnt, float
 	if ( damageType & DF_VORTEX_REFIRE )
 		damageSourceId = eDamageSourceId.damagedef_unknownBugIt
 
+	int attackerEHandle = INVALID_EHANDLE
 	if ( IsValid( attacker ) )
 	{
-		#if CLIENT
-			AttackerDisplayNameStruct names = GetAttackerDisplayNamesFromClassname( attacker, true )
-			damageHistory.attackerName = names.attackerName
-			damageHistory.attackerPetName = names.attackerPetName
-			damageHistory.attackerHealthPercent = max( 0.0, float( attacker.GetHealth() ) / float( attacker.GetMaxHealth() ) * 100.0 )
-		#endif
+		attackerEHandle = attacker.GetEncodedEHandle()
 	}
 
-	damage = min( damage, storeEnt.GetHealth() )
+	// Not sure we want to zero out the damage. It would indicate you just took like 4 damage when you died, even if it was from a kraber or some such.
+	//damage = min( damage, storeEnt.GetHealth() )
+
 	damageHistory.origin = damageOrigin
 	damageHistory.damage = damage
 	damageHistory.damageType = damageType
 	damageHistory.damageSourceId = damageSourceId
 	damageHistory.attacker = attacker
 	damageHistory.time = time
-	damageHistory.weaponMods = weaponMods
+	damageHistory.attackerEHandle = attackerEHandle
+	damageHistory.victimEHandle = storeEnt.GetEncodedEHandle()
 
-	// clear the damage history
-	if ( GetHealthFrac( storeEnt ) == 1.0 )
-		maxTime = 0
+	damageHistory.healthFrac = GetHealthFrac( storeEnt )
 
-	damageHistory.victimIsTitan = false
+	// because the shield has taken damage already, while health has not, we have to add back the damage to get the frac for the shield before damage was taken.
+	if ( damageType & DF_SHIELD_DAMAGE )
+		damageHistory.shieldFrac = GetShieldHealthFracBeforeDamage( storeEnt, int( damage ) )
+	else
+		damageHistory.shieldFrac = GetShieldHealthFrac( storeEnt )
 
-	if ( maxTime >= 0 )
-		UpdateDamageHistory( storeEnt, maxTime, time )
+	if ( storeEnt.IsPlayer() )
+	{
+		bool isBleedingOut = Bleedout_IsBleedingOut( storeEnt )
+		if ( damageType & DF_KNOCKDOWN )
+			isBleedingOut = false    // this was the knowckdown event, so he started bleeding out from this damage
+		damageHistory.wasBleedingOut = isBleedingOut
+	}
+	else
+	{
+		if ( GetHealthFrac( storeEnt ) == 1.0 )
+			maxTime = 0
+	}
 
+	Assert( maxTime >= 0 )
+
+	// data need to exist incase reconnect is used, so don't purge when player is dead or bleeding out.
+	if ( IsAlive( storeEnt ) && !Bleedout_IsBleedingOut( storeEnt ) )
+		PurgeDamageHistory( storeEnt, maxTime, time )
 	storeEnt.e.recentDamageHistory.insert( 0, damageHistory )
+
+	#if SERVER
+		if ( IsValid( attacker ) && attacker.IsPlayer() )
+		{
+			// data need to exist incase reconnect is used, so don't purge when player is dead or bleeding out.
+			if ( IsAlive( attacker ) && !Bleedout_IsBleedingOut( attacker ) )
+				PurgeDealtDamageHistory( attacker, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME  ), time )
+			attacker.e.recentDealtDamageHistory.insert( 0, damageHistory )
+		}
+	#endif
 
 	return damageHistory
 }
+#endif //if server
 
-float function GetLastDamageTime( entity player )
+void function PurgeDamageHistory( entity player, float maxTime, float time )
 {
-	if ( !player.e.recentDamageHistory.len() )
-		return -1.0
-
-	return player.e.recentDamageHistory[ 0 ].time
-}
-
-array<DamageHistoryStruct> function GetDamageEventsForTime( entity player, float hitTime )
-{
-	float time = Time() - hitTime
-
-	array<DamageHistoryStruct> events
-
-	foreach ( event in player.e.recentDamageHistory )
-	{
-		if ( event.time < time )
-			return events
-
-		events.insert( 0, event )
-	}
-
-	return events
-}
-
-void function PrintDamageEventsForTime( entity player, float time = 20.0 )
-{
-	array<DamageHistoryStruct> events = GetDamageEventsForTime( player, time )
-
-	foreach ( event in events )
-	{
-		printt( "event:", event.damage, event.damageType, event.damageSourceId, event.attacker )
-	}
+	// purge taken damage histroy
+	int timedOutIndex = GetTimedOutDamageHistoryIndex( player.e.recentDamageHistory, maxTime, time )
+	if ( timedOutIndex < player.e.recentDamageHistory.len() )
+		player.e.recentDamageHistory.resize( timedOutIndex + 1 )
 }
 
 
-void function UpdateDamageHistory( entity player, float maxTime, float time )
+#if SERVER
+void function PurgeDealtDamageHistory( entity attacker, float maxTime, float time )
 {
-	// remove old damage history entries
-	int i
+	// purge dealt damage histroy
+	int timedOutIndex = GetTimedOutDamageHistoryIndex( attacker.e.recentDealtDamageHistory, maxTime, time )
+	if ( timedOutIndex < attacker.e.recentDealtDamageHistory.len() )
+		attacker.e.recentDealtDamageHistory.resize( timedOutIndex + 1 )
+}
+#endif
+
+
+int function GetTimedOutDamageHistoryIndex( array<DamageHistoryStruct> events, float maxTime, float time )
+{
 	float removeTime = time - maxTime
 
-	for ( i = player.e.recentDamageHistory.len() - 1; i >= 0; i-- )
+	for ( int index = events.len() - 1 ; index >= 0; index-- )
 	{
-		DamageHistoryStruct history = player.e.recentDamageHistory[ i ]
-
-		if ( history.time > removeTime )
-			return
-
-		player.e.recentDamageHistory.remove( i )
-	}
-}
-
-bool function WasRecentlyHitByEntity( entity player, entity ent, float hitTime )
-{
-	float time = Time() - hitTime
-	foreach ( DamageHistoryStruct history in player.e.recentDamageHistory )
-	{
-		if ( history.time < time )
-			continue
-		if ( history.attacker == ent )
-			return true
+		if ( events[index].time > removeTime )
+			return index
 	}
 
-	return false
+	return -1
 }
 
+#if SERVER
 bool function WasRecentlyHitByEntityWithDamagetype( entity player, entity ent, int damageType, float hitTime )
 {
 	float time = Time() - hitTime
@@ -214,7 +229,7 @@ bool function WasRecentlyHitByEntityWithDamagetype( entity player, entity ent, i
 	{
 		if ( history.attacker != ent )
 			continue
-		if ( !(history.damageType & damageType) )
+		if ( !(history.damageType & damageType) ) 
 			continue
 		if ( history.time < time )
 			continue
@@ -224,100 +239,42 @@ bool function WasRecentlyHitByEntityWithDamagetype( entity player, entity ent, i
 
 	return false
 }
+#endif //if SERVER
 
-bool function WasRecentlyHitForDamage( entity player, float damageAmount, float hitTime )
+
+#if SERVER
+entity function GetLastBleedoutAttackerFromDamageHistory( entity player )
 {
-	float time = Time() - hitTime
-	// remove old damage history entries
-	int i
-
-	foreach ( history in player.e.recentDamageHistory )
+	foreach ( DamageHistoryStruct history in player.e.recentDamageHistory )
 	{
-		if ( history.time < time )
-			continue
+		if ( history.damageType & DF_KNOCKDOWN )
+			return history.attacker
+		// #if DEVELOPER
+		// else 
+		// {	
+			// string info
+			
+			// Warning( "--- Damage bleedout DEBUG from history " )
+			
+			// info += "Type: " + history.damageType + "\n"
+			// info += "victimEHandle: " + history.victimEHandle + "\n"
+			// info += "was bleeding?: " + history.wasBleedingOut + "\n"
+			// info += "victimEHandle: " + history.victimEHandle + "\n"	
 
-		if ( history.damage >= damageAmount )
-			return true
+			// printt( info )
+		// }
+		// #endif
 	}
 
-	return false
+	//no history found
+	return null
 }
+#endif //if SERVER
 
-bool function WasRecentlyHitForDamageType( entity player, int damageType, float hitTime )
-{
-	float time = Time() - hitTime
-	// remove old damage history entries
-	int i
-
-	foreach ( history in player.e.recentDamageHistory )
-	{
-		if ( history.time < time )
-			continue
-		if ( history.damageType & damageType )
-			return true
-	}
-
-	return false
-}
-
-float function GetTotalDamageTaken( entity player )
-{
-	float total = 0
-	foreach ( history in player.e.recentDamageHistory )
-	{
-		total += history.damage
-	}
-
-	return total
-}
-
-float function GetTotalDamageTakenInTime( entity player, float hitTime )
-{
-	float time = Time() - hitTime
-	// remove old damage history entries
-	int i
-
-	float total = 0
-	foreach ( history in player.e.recentDamageHistory )
-	{
-		if ( history.time < time )
-			continue
-
-		total += history.damage
-	}
-
-	return total
-}
-
-array<entity> function GetTitansHitMeInTime( entity player, float hitTime )
-{
-	float time = Time() - hitTime
-	// remove old damage history entries
-	array<entity> titans
-
-	foreach ( history in player.e.recentDamageHistory )
-	{
-		if ( history.time < time )
-			continue
-
-		if ( !IsValid( history.attacker ) )
-			continue
-		if ( !history.attacker.IsTitan() )
-			continue
-		if ( titans.contains( history.attacker ) )
-			continue
-
-		titans.append( history.attacker )
-	}
-
-	return titans
-}
-
-float function GetTotalDamageTakenByPlayer( entity player, entity attacker )
+#if SERVER
+float function DamageHistory_GetDamageFromEntity( entity player, entity attacker, int damageHistorySet = eDamageHistorySet.HEALTH )
 {
 	Assert( IsValid( attacker ) )
-	// remove old damage history entries
-	int i
 
 	float total = 0
 	foreach ( history in player.e.recentDamageHistory )
@@ -325,87 +282,46 @@ float function GetTotalDamageTakenByPlayer( entity player, entity attacker )
 		if ( history.attacker != attacker )
 			continue
 
+		bool useDamage = false
+		switch ( damageHistorySet )
+		{
+			case eDamageHistorySet.DEFAULT:
+				useDamage = !history.wasBleedingOut
+				break
+
+			case eDamageHistorySet.HEALTH:
+				useDamage = (history.damageType & DF_SHIELD_DAMAGE) == 0 && !history.wasBleedingOut
+				break
+
+			case eDamageHistorySet.SHIELD:
+				useDamage = (history.damageType & DF_SHIELD_DAMAGE) != 0
+				break
+
+			case eDamageHistorySet.BLEEDOUT:
+				useDamage = history.wasBleedingOut
+				break
+
+			case eDamageHistorySet.ALL:
+			default:
+				useDamage = true
+				break
+		}
+
+		if ( !useDamage )
+			continue
+
 		total += history.damage
 	}
 
 	return total
 }
-
-array<AttackerDamage> function GetDamageSortedByAttacker( entity ent, float totalTime )
-{
-	Assert( !ent.IsTitan(), "Pass titan soul, not titan itself" )
-
-	float firstCheckTime = Time() - totalTime
-	table<entity,AttackerDamage> attackerDamagesTable
-	array<AttackerDamage> attackerDamages
-
-	foreach ( history in ent.e.recentDamageHistory )
-	{
-		if ( history.attacker == null )
-			continue
-
-		if ( history.time < firstCheckTime )
-			continue
-
-		AttackerDamage attackerDamage
-		if ( history.attacker in attackerDamagesTable )
-		{
-			attackerDamage = attackerDamagesTable[ history.attacker ]
-		}
-		else
-		{
-			attackerDamagesTable[ history.attacker ] <- attackerDamage
-
-			attackerDamage.attacker = history.attacker
-			attackerDamages.append( attackerDamage )
-		}
-
-		if ( !( history.damageSourceId in attackerDamage.damageBySource ) )
-		{
-			attackerDamage.damageBySource[ history.damageSourceId ] <- 0
-		}
-
-		attackerDamage.damageBySource[ history.damageSourceId ] += history.damage
-		attackerDamage.totalDamage += history.damage
-	}
-
-	attackerDamages.sort( AttackerDamagesSort )
-
-	return attackerDamages
-}
-
-int function AttackerDamagesSort( AttackerDamage a, AttackerDamage b )
-{
-	if ( a.totalDamage > b.totalDamage )
-		return -1
-	if ( b.totalDamage > a.totalDamage )
-		return 1
-	return 0
-}
-
-bool function WasRecentlyHitByDamageSourceId( entity player, int damageSourceId, float hitTime )
-{
-	float time = Time() - hitTime
-
-	// remove old damage history entries
-	foreach ( DamageHistoryStruct history in player.e.recentDamageHistory )
-	{
-		if ( history.time < time )
-			continue
-
-		if ( history.damageSourceId == damageSourceId )
-			return true
-	}
-
-	return false
-}
-
+#endif //if SERVER
 
 // Used to get the player that did the last damage in cases where an NPC, not associated with a player, gives the killing blow.
 // at this point not every entity uses e.recentDamageHistory so some entities won't give assist points when they die ( soldiers, turrets etc. )
 AssistingPlayerStruct function GetLatestAssistingPlayerInfo( entity ent )
 {
-	float lastTime = 0.0
+	float lastTime    = 0.0
 	float currentTime = Time()
 	AssistingPlayerStruct assistingPlayerInfo
 
@@ -429,78 +345,81 @@ AssistingPlayerStruct function GetLatestAssistingPlayerInfo( entity ent )
 	return assistingPlayerInfo
 }
 
-array<entity> function GetLatestAssistingPlayerFromSameTeam( entity victim, entity attacker )
+#if SERVER
+bool function Assist_IsFriendlyTeamCheck( int teamA, int teamB )
 {
-	float lastTime = 0.0
+	if ( GetCurrentPlaylistVarBool( "use_alliance_check_for_assist", true ) )
+		return IsFriendlyTeam( teamA, teamB )
+
+	return teamA == teamB
+}
+
+table<entity, float> function GetLatestAssistingPlayersFromSameTeam( entity victim, entity attacker )
+{
+	float lastTime    = 0.0
 	float currentTime = Time()
-	array<entity> assistingPlayerArray
+	table<entity, float>  assistingPlayers = clone victim.p.playerToTimeThatAssistCreditLastsTable
+
+	foreach( entity assistingPlayer, float assistTime in victim.p.playerToTimeThatAssistCreditLastsTable )
+	{
+		if ( !IsValid( assistingPlayer )  ) //Do a series of elseifs because we don't want to try and delete assistingPlayers[ assistingPlayer ] more than once.
+			delete assistingPlayers[ assistingPlayer ]
+		else if ( !Assist_IsFriendlyTeamCheck( assistingPlayer.GetTeam(), attacker.GetTeam() ) )
+			delete assistingPlayers[ assistingPlayer ]
+		else if( assistTime < currentTime )
+			delete assistingPlayers[ assistingPlayer ]
+		else if ( assistingPlayer == attacker )
+			delete assistingPlayers[ assistingPlayer ]
+	}
+
+	float assistTimeGap =  GetCurrentPlaylistVarFloat( "max_assist_time_gap", MAX_ASSIST_TIME_GAP )
 
 	foreach ( history in victim.e.recentDamageHistory )
 	{
-		if ( !IsValid( history.attacker ) || !history.attacker.IsPlayer() )
+		entity historyAttacker = history.attacker
+		if ( !IsValid( historyAttacker) || !historyAttacker.IsPlayer() )
 			continue
 
-		if ( history.attacker == attacker )
+		if ( historyAttacker == attacker )
 			continue
 
-		if ( history.attacker.GetTeam() != attacker.GetTeam() )
+		if ( !Assist_IsFriendlyTeamCheck( historyAttacker.GetTeam(), attacker.GetTeam() ) )
 			continue
 
-		if ( currentTime - history.time >= MAX_ASSIST_TIME_GAP )
+		if ( currentTime - history.time >= assistTimeGap )
 			continue
 
-		if ( assistingPlayerArray.contains( history.attacker ) )
-			continue
-
-		assistingPlayerArray.append( history.attacker )
+		if ( historyAttacker in assistingPlayers )
+		{
+			if( assistingPlayers[historyAttacker] < history.time + assistTimeGap  )
+				assistingPlayers[historyAttacker] = history.time + assistTimeGap
+		}
+		else
+		{
+			assistingPlayers[ historyAttacker ] <- history.time + assistTimeGap
+		}
 	}
 
-	return assistingPlayerArray
+	return assistingPlayers
 }
+#endif //if SERVER
 
-
-array<DamageHistoryStruct> function GetRodeoAttacksByPlayer( entity player, entity attacker, float time )
-{
-	float validTime = Time() - time
-	array<DamageHistoryStruct> events
-
-	if ( !IsValid( player ) )
-		return events
-
-	if ( !player.IsTitan() )
-		return events
-
-	if ( !IsValid( attacker ) )
-		return events
-
-	entity soul = player.GetTitanSoul()
-	if ( !IsValid( soul ) )
-		return events
-
-	foreach ( history in soul.e.recentDamageHistory )
-	{
-		if ( history.time < validTime )
-			continue
-
-		if ( history.attacker != attacker )
-			continue
-
-		// if ( !(history.damageType & DF_RODEO) )
-		// 	continue
-
-		events.append( history )
-	}
-
-	return events
-}
-
+#if SERVER
 string function GetLastDamageSourceStringForAttacker( entity victim, entity attacker )
 {
-	if ( victim.IsTitan() )
-		victim = victim.GetTitanSoul()
-
-	if ( !IsValid( victim ) )
+	int damageSourceID = GetLastDamageSourceIDForAttacker( victim, attacker  )
+	if ( damageSourceID == eDamageSourceId.invalid  )
 		return ""
+
+	return DamageSourceIDToString( damageSourceID )
+}
+#endif
+
+#if SERVER
+int function GetLastDamageSourceIDForAttacker( entity victim, entity attacker  )
+{
+	if ( !IsValid( victim ) )
+		return eDamageSourceId.invalid
 
 	array<DamageHistoryStruct> recentDamageHistory = victim.e.recentDamageHistory
 	foreach ( damageHistory in recentDamageHistory )
@@ -509,38 +428,796 @@ string function GetLastDamageSourceStringForAttacker( entity victim, entity atta
 			continue
 
 		if ( damageHistory.attacker == attacker )
-			return DamageSourceIDToString( damageHistory.damageSourceId )
+			return damageHistory.damageSourceId
 	}
 
-	return ""
+	return eDamageSourceId.invalid
+}
+#endif //if SERVER
+
+#if SERVER
+void function AddAssistingPlayerToVictim( entity assistingPlayer, entity victim, float assistTimeBonus = 0  )
+{
+	Assert( IsEnemyTeam( assistingPlayer.GetTeam(), victim.GetTeam() ) )
+
+	if ( Bleedout_IsBleedingOut( victim ) ) //Don't give assist credit for players that are already downed.
+		return
+
+	float assistTimeGap        = GetCurrentPlaylistVarFloat( "max_assist_time_gap", MAX_ASSIST_TIME_GAP )
+	float timeTillAssistIsGood = Time() + assistTimeGap + assistTimeBonus
+	if ( assistingPlayer in victim.p.playerToTimeThatAssistCreditLastsTable )
+	{
+		if ( victim.p.playerToTimeThatAssistCreditLastsTable[ assistingPlayer ] <  timeTillAssistIsGood ) //Don't replace current assistTimestampe if it's further in the future than what's currently there. Mainly comes into place with status effect type stuff.
+			victim.p.playerToTimeThatAssistCreditLastsTable[ assistingPlayer ] = timeTillAssistIsGood
+	}
+	else
+	{
+		victim.p.playerToTimeThatAssistCreditLastsTable[ assistingPlayer ] <- timeTillAssistIsGood
+	}
+
+
+}
+#endif //if SERVER
+
+#if SERVER
+void function RemoveAssistingPlayerFromVictim( entity assistingPlayer, entity victim )
+{
+	Assert( IsEnemyTeam( assistingPlayer.GetTeam(), victim.GetTeam() ) )
+	if ( assistingPlayer in victim.p.playerToTimeThatAssistCreditLastsTable )
+		delete victim.p.playerToTimeThatAssistCreditLastsTable[ assistingPlayer ]
+
+}
+#endif //if SERVER
+
+#if SERVER
+void function ChangeAssistingPlayerCreditTimeForVictim( entity assistingPlayer, entity victim, float assistTimeBonus = 0 )
+{
+	Assert( IsEnemyTeam( assistingPlayer.GetTeam(), victim.GetTeam() ) )
+	if ( assistingPlayer in victim.p.playerToTimeThatAssistCreditLastsTable )
+	{
+		float assistTimeGap        = GetCurrentPlaylistVarFloat( "max_assist_time_gap", MAX_ASSIST_TIME_GAP )
+		float timeTillAssistIsGood = Time() + assistTimeGap + assistTimeBonus
+		victim.p.playerToTimeThatAssistCreditLastsTable[ assistingPlayer ] = timeTillAssistIsGood
+	}
+
+}
+#endif //if SERVER
+
+#if SERVER
+array<DamageHistoryStruct> function GetDamageEventsFromAttacker( entity player, entity attacker, float hitTime )
+{
+	array<DamageHistoryStruct> damageEventArray
+
+	float startTime = Time() - hitTime
+
+	foreach( event in player.e.recentDamageHistory )
+	{
+		if ( event.time < startTime )
+			continue
+		if ( event.attacker != attacker )
+			continue
+
+		damageEventArray.append( event )
+	}
+
+	return damageEventArray
 }
 
-float function TotalDamageOverTime_BlendedOut( entity soul, float start, float end )
-{
-	// rev 3 with damage history
-	float totalAcquiredDamage = 0
-	float time = Time()
-	float ignoreTime = time - end
-	float blendOutStarts = time - start
 
-	foreach ( history in soul.e.recentDamageHistory )
+//  ########  ########    ###    ######## ##     ##       ########  ########  ######     ###    ########
+//  ##     ## ##         ## ##      ##    ##     ##       ##     ## ##       ##    ##   ## ##   ##     ##
+//  ##     ## ##        ##   ##     ##    ##     ##       ##     ## ##       ##        ##   ##  ##     ##
+//  ##     ## ######   ##     ##    ##    #########       ########  ######   ##       ##     ## ########
+//  ##     ## ##       #########    ##    ##     ##       ##   ##   ##       ##       ######### ##
+//  ##     ## ##       ##     ##    ##    ##     ##       ##    ##  ##       ##    ## ##     ## ##
+//  ########  ######## ##     ##    ##    ##     ##       ##     ## ########  ######  ##     ## ##
+
+
+void function DeathScreen_OnPlayerStartBleedout( entity player, entity attacker, var damageInfo )
+{
+	//printt( "DR: DeathScreen_OnPlayerStartBleedout", player )
+	thread SendDeathRecapDataToPlayer( player )
+}
+
+
+void function DeathScreen_OnPlayerDeath( entity player, var damageInfo )
+{
+	// don't send dead hud damage data when the player dies while downed. Data has already been sent.
+	if ( Bleedout_IsBleedingOut( player ) )
+		return
+
+	// These damage sources seem to not deal damage. Maybe there is a better way to know if damage history was recorded or not.
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	float damage       = DamageInfo_GetDamage( damageInfo )
+
+	// sometimes damage is 0 even though we got killed by it. Crush does this.
+	if ( damage == 0 )
+		damage = 1000
+
+	int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+	entity attacker      = DamageInfo_GetAttacker( damageInfo )
+	vector damageOrigin  = DamageInfo_GetDamagePosition( damageInfo )
+
+	bool sameDamageEvent = false
+
+	if ( player.e.recentDamageHistory.len() > 0 )
 	{
-		// dont care about the history past this point
-		if ( history.time < ignoreTime )
+		// check to see if we just recorded this damage event. Some deaths doesn't trigger the damage callback
+		DamageHistoryStruct damageHistory = player.e.recentDamageHistory[0]
+		sameDamageEvent = true
+
+		if ( damage != damageHistory.damage )
+			sameDamageEvent = false
+		if ( Time() != damageHistory.time )
+			sameDamageEvent = false
+		if ( damageSourceId != damageHistory.damageSourceId )
+			sameDamageEvent = false
+		if ( scriptDamageType != damageHistory.damageType )
+		{
+			if ( !( scriptDamageType & DF_SHIELD_BREAK ) )
+			{
+				sameDamageEvent = false
+			}
+			else
+			{
+				// strip out shield damage flag and test again.
+				// if you die from a shot that also breaks your shield the histroy has two entries while the damageInfo has it as one event.
+				scriptDamageType = scriptDamageType & ~DF_SHIELD_DAMAGE
+				if ( scriptDamageType != damageHistory.damageType )
+					sameDamageEvent = false
+			}
+		}
+		if ( attacker != damageHistory.attacker )
+			sameDamageEvent = false
+	}
+
+	if ( !sameDamageEvent )
+		StoreDamageHistoryAndUpdate( player, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME ), damage, damageOrigin, scriptDamageType, damageSourceId, attacker )
+
+	//printt( "DR: DeathScreen_OnPlayerDeath", player, sameDamageEvent )
+	//thread SendDeathRecapDataToPlayer( player ) 	//don't send this here, it is managed via 
+													//Bleedout_AddCallback_OnPlayerStartBleedout ~mkos
+}
+
+
+void function SendDeathRecapDataToPlayer( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+
+	//printt( "DR: SendDeathRecapDataToPlayer", player )
+
+	WaitEndFrame() // have to wait for all damage histroy events to be registered
+
+	if ( player.e.recentDamageHistory.len() == 0 )
+		return	// player most likely respawned the same frame as he died. R5DEV-111976
+
+	float deathTime = GetDeathTimeFromDamageHistroy( player )
+
+	array<DeathRecapDamageData> damageBlocks      = GatherDealtDamageEvents( player.e.recentDamageHistory, null, deathTime )
+	array<DeathRecapDamageData> dealtDamageBlocks = GatherDealtDamageEvents( player.e.recentDealtDamageHistory, player, deathTime, true )
+	damageBlocks.extend( dealtDamageBlocks )
+	damageBlocks.sort( SortByBlockTime )
+
+	#if DEVELOPER
+		float gatheredTimeFrame = -1
+		if ( damageBlocks.len() > 0 )
+			gatheredTimeFrame = damageBlocks[0].blockTime - damageBlocks[ minint( 9, damageBlocks.len() - 1 ) ].blockTime
+		printf( "DR:\t Gathered Damage Blocks: Entries %d, Time Frame %.2f", damageBlocks.len(), gatheredTimeFrame )
+		printt( "DR:\t\tTime\tID\t\tType\tHits\tShield\tHealth\tDamage\tAttacker/Victim" )
+	#endif
+
+	int numSentBlock = damageBlocks.len()
+	// we can only handle 10 damage blocks
+	if( numSentBlock > 10 )
+		numSentBlock = 10
+
+	// sending the most recent damage first. Once we hit 10 or the end of the array, we stop.
+	foreach( index, block in damageBlocks )
+	{
+		if ( index >= numSentBlock )
+			break
+		
+		//Cafe was here
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SendDeathRecapData", block.attackerEHandle, block.victimEHandle, block.damageSourceID, block.damageType, block.totalDamage, block.hitCount, block.headShotBits, block.healthFrac, block.shieldFrac, block.blockTime, index, numSentBlock )
+
+		// stack a block to the client
+		// player.PushDeathRecapBlock(
+			// block.attackerEHandle,
+			// block.victimEHandle,
+			// block.damageSourceID,
+			// block.damageType,
+			// block.totalDamage,
+			// block.hitCount,
+			// block.headShotBits,
+			// block.healthFrac,
+			// block.shieldFrac,
+			// block.blockTime,
+			// index,
+			// numSentBlock)
+
+		#if DEVELOPER
+			string v = string( GetEntityFromEncodedEHandle( block.victimEHandle ) )
+			string a = string( GetEntityFromEncodedEHandle( block.attackerEHandle ) )
+			printf( "DR:\t\t%.2f\t%d\t%8d\t%d\t\t%.2f\t%.2f\t%d\t\t%s\t%s", block.blockTime, block.damageSourceID, block.damageType, block.hitCount, block.shieldFrac, block.healthFrac, block.totalDamage, a, v )
+		#endif
+	}
+
+	Assert( damageBlocks.len() > 0 )
+
+	int killerEHandle
+	// DEFENSIVE R5DEV-118937 - I believe this will be fixed with my change related to R5DEV-142046.
+	if ( damageBlocks.len() == 0 )
+		killerEHandle = player.GetEncodedEHandle()
+	else
+		killerEHandle = damageBlocks[0].attackerEHandle
+
+	// player.FlushDeathRecapBlocks( killerEHandle )
+	
+	//Cafe was here
+	Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, killerEHandle)
+
+	// TEMP DUMP OF DAMAGE HISTORY (TAKEN AND DEALT)
+	#if DEVELOPER
+		printt( "DR:\t\t------- Taken Damage -------" )
+		DumpDamageHistory( player.e.recentDamageHistory )
+		printt( "DR:\t\t------- Dealt Damage -------" )
+		DumpDamageHistory( player.e.recentDealtDamageHistory )
+	#endif
+}
+
+#if DEVELOPER
+void function DumpDamageHistory( array<DamageHistoryStruct> damageHistory )
+{
+	float timeFrame = -1
+	if ( damageHistory.len() > 0 )
+		timeFrame = damageHistory[ 0 ].time - damageHistory[ damageHistory.len() - 1 ].time
+	printf( "DR:\t Damage History. Entries %d, Time Frame %.2f", damageHistory.len(), timeFrame )
+	printt( "DR:\t\tTime\tID\t\tType\tShield\tHealth\tDamage\tAttacker/Victim" )
+	foreach( event in damageHistory )
+	{
+		string vic = string( GetEntityFromEncodedEHandle( event.victimEHandle ) )
+		string att = string( GetEntityFromEncodedEHandle( event.attackerEHandle ) )
+
+		printf( "DR:\t\t%.2f\t%d\t%8d\t%.2f\t%.2f\t%d\t\t%s\t%s", event.time, event.damageSourceId, event.damageType, event.shieldFrac, event.healthFrac, event.damage, att, vic )
+	}
+}
+#endif
+
+float function GetDeathTimeFromDamageHistroy( entity player )
+{
+	Assert( player.e.recentDamageHistory.len() > 0 )
+
+	// find the last damage event before the player was downed.
+	for( int i = 0; i < player.e.recentDamageHistory.len(); i++ )
+	{
+		if ( player.e.recentDamageHistory[ i ].wasBleedingOut )
+			continue
+			
+		return player.e.recentDamageHistory[ i ].time
+	}
+
+	Assert( false, "Couldn't find a death time from damage history" )
+	return 0.0
+}
+
+
+// used when sorting damageBlock
+int function SortByBlockTime( DeathRecapDamageData a, DeathRecapDamageData b )
+{
+	// where does b go relative to a, 1 means before, -1 means after and 0 means it doesn't matter
+
+	if ( a.blockTime < b.blockTime )
+		return 1    // b goes before a
+
+	if ( a.blockTime > b.blockTime )
+		return -1    // b goes after a
+
+	if ( a.index > b.index )
+		return 1    // b goes before a
+
+	if ( a.index < b.index )
+		return -1    // b goes after a
+
+	return 0        // b and a are the same, but this will never hit because index will always differ.
+}
+
+
+array<DeathRecapDamageData> function GatherDealtDamageEvents( array<DamageHistoryStruct> damageHistory, entity damageDealer = null, float deathTime = -1, bool dealt = false )
+{
+	//printt( "DR: GatherDealtDamageEvents" )
+
+	// PerfStart( PerfIndexServer.DR_GatherData )
+
+	table<int, bool> uniqueAttackers
+
+	float startTime         = deathTime - DEATH_RECAP_DAMAGE_HISTORY_TIME
+	int prevAttackerEHandle = INVALID_EHANDLE
+	int prevVictimEHandle   = INVALID_EHANDLE
+	int prevDamageSourceId  = eDamageSourceId.invalid
+	float prevEventTime     = 0
+	float blockEntryTime    = Time() + 9999 // make sure the blockEntryTime is initiated as later then the latest historyEvent.
+
+	array<DeathRecapDamageData> damageBlockArray
+	int damageBlockIndex = -1
+	int headShotBitIndex = 0
+
+	for ( int i = 0; i < damageHistory.len(); i++ )
+	{
+		DamageHistoryStruct event = damageHistory[ i ]
+
+		int attackerEHandle = event.attackerEHandle
+		int victimEhandle   = event.victimEHandle
+
+		float damageTime = event.time
+		if ( damageTime < startTime )
+			break // we've hit our time limit
+
+		if ( IsValid( damageDealer ) && damageDealer.GetEncodedEHandle() == victimEhandle )
+			continue    // don't add damage dealt blocks dealt to your self. They will show up as damage take blocks.
+
+		if ( event.wasBleedingOut )
+			continue
+
+		if ( event.damage <= 0 )
+			continue
+
+		// Don't gather data where the victim wasn't a player. Might happen with NPCs? so if that is a thing in the future I'll have to revisit this.
+		if ( !EEHHasValidScriptStruct( victimEhandle ) )
+			continue
+
+		float eventGap = blockEntryTime - damageTime
+
+		bool sameBlock = true
+		{
+			if ( attackerEHandle != prevAttackerEHandle && EEHHasValidScriptStruct( attackerEHandle ) )
+				sameBlock = false
+
+			if ( victimEhandle != prevVictimEHandle )
+				sameBlock = false
+
+			if ( event.damageSourceId != prevDamageSourceId )
+				sameBlock = false
+
+			if ( damageBlockIndex < 0 || damageBlockArray[ damageBlockIndex ].hitCount >= DEATH_REACP_GROUP_MAX_HITS )
+				sameBlock = false
+
+			if ( eventGap > DEATH_REACP_GROUP_MAX_TIME )
+			{
+				// only care about eventGap if the hit is from a bullet or if the damage is above 40
+				if ( event.damageType & DF_BULLET )
+					sameBlock = false
+				if ( event.damage > 40 )
+					sameBlock = false
+			}
+		}
+
+		if ( damageTime >= deathTime )
+		{
+			// push damage time back to before the death time if it's timestamp is the same or after the death time
+			// always do this for dealt damage
+			// for taken damage only do it if it's not the same block and not the first entry
+			if ( dealt || (!sameBlock && i != 0) )
+				damageTime = deathTime - 0.01
+		}
+
+		if ( !sameBlock )
+		{
+			DeathRecapDamageData damageBlock
+			damageBlockArray.append( damageBlock )
+			damageBlockIndex = damageBlockArray.len() - 1
+
+			// initiate a new damage block
+			damageBlockArray[ damageBlockIndex ].attackerEHandle = attackerEHandle
+			damageBlockArray[ damageBlockIndex ].victimEHandle = victimEhandle
+			damageBlockArray[ damageBlockIndex ].damageSourceID = event.damageSourceId
+			damageBlockArray[ damageBlockIndex ].damageType = event.damageType
+			damageBlockArray[ damageBlockIndex ].totalDamage = 0
+			damageBlockArray[ damageBlockIndex ].hitCount = 0
+			damageBlockArray[ damageBlockIndex ].headShotBits = 0
+			damageBlockArray[ damageBlockIndex ].healthFrac = 0
+			damageBlockArray[ damageBlockIndex ].shieldFrac = 0
+			damageBlockArray[ damageBlockIndex ].blockTime = damageTime    // time of latest entry in the block
+			damageBlockArray[ damageBlockIndex ].index = damageBlockIndex + (dealt ? 10 : 0)    // make dealt damage happens before taken damage if on the same timestamp
+
+			blockEntryTime = damageTime
+			headShotBitIndex = 0
+		}
+
+		Assert( damageBlockIndex >= 0, "never added a damageBlock to the damageBlockArray" )
+
+		damageBlockArray[ damageBlockIndex ].totalDamage += int( event.damage )
+		damageBlockArray[ damageBlockIndex ].healthFrac = event.healthFrac    // health at start of block lets us figure out if the victim got downed or killed etc from the block.
+		damageBlockArray[ damageBlockIndex ].shieldFrac = event.shieldFrac
+
+		// when shields break we get two events so only up the hit count when that isn't the case.
+		bool isSameAttack = (attackerEHandle == prevAttackerEHandle &&
+						victimEhandle == prevVictimEHandle &&
+						damageTime == prevEventTime &&
+						event.damageSourceId == prevDamageSourceId)
+
+		if ( !isSameAttack )
+		{
+			damageBlockArray[ damageBlockIndex ].hitCount++
+
+			if ( event.damageType & DF_SHIELD_BREAK )
+				damageBlockArray[ damageBlockIndex ].damageType = damageBlockArray[ damageBlockIndex ].damageType | DF_SHIELD_BREAK    // store that a shield broke in this block
+			// store the bits that correspond to headshots
+			if ( event.damageType & DF_HEADSHOT )
+				damageBlockArray[ damageBlockIndex ].headShotBits = damageBlockArray[ damageBlockIndex ].headShotBits + (1 << headShotBitIndex)
+			headShotBitIndex++
+		}
+
+		prevAttackerEHandle = attackerEHandle
+		prevVictimEHandle = victimEhandle
+		prevDamageSourceId = event.damageSourceId
+		prevEventTime = damageTime
+	}
+
+	// PerfEnd( PerfIndexServer.DR_GatherData )
+
+	return damageBlockArray
+}
+
+
+#if DEVELOPER
+
+array<DamageHistoryStruct> taken_D
+array<DamageHistoryStruct> dealt_D
+
+void function SetFakeDamageHistory( entity player, entity attacker1, entity attacker2 )
+{
+	taken_D.clear()
+	dealt_D.clear()
+
+	//											time		ID		Type		Shield	Health	Damage	victim		attacker
+	// Damage time had a timestamp after the fist entrty
+	//taken_D.append( MakeDamageHistoryStruct( 3182.55,	52,	18940928,	0.00,	0.14,	17,		attacker1,	player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3182.60,	-1,	       0,	0.00,	0.39,	25,		player,		player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3182.50,	52,	 2163712,	0.00,	0.56,	17,		attacker1,	player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3182.40,	52,	   66560,	0.00,	0.67,	11,		attacker1,	player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3182.35,	52,	   66560,	0.00,	0.78,	11,		attacker1,	player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3182.00,	52,	   66560,	0.00,	0.89,	11,		attacker1,	player ) )
+	//taken_D.append( MakeDamageHistoryStruct( 3181.75,	52,	   66560,	0.00,	1.00,	11,		attacker1,	player ) )
+	//
+	//dealt_D.append( MakeDamageHistoryStruct( 3182.60, -1, 0, 0.00, 0.39, 25, player, player ) )
+
+	//
+	// Two enemies did damage on the same frame
+	taken_D.append( MakeDamageHistoryStruct( 1403.15, 43, 16860160, 0.00, 1.00, 19, attacker2, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1403.15, 46, 66560, 0.00, 0.16, 12, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1403.10, 46, 66560, 0.00, 0.26, 10, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1403.05, 46, 66560, 0.00, 0.36, 10, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1402.95, 43, 2180096, 0.00, 0.65, 29, attacker2, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1402.75, 43, 83072, 0.00, 0.82, 17, attacker2, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1402.75, 43, 345216, 0.02, 0.82, 2, attacker2, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1402.60, 46, 328704, 0.12, 0.82, 10, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1400.45, 151, 268435488, 0.12, 0.90, 10, attacker2, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1379.65, 46, 2425856, 0.26, 1.00, 14, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1379.60, 46, 328704, 0.38, 1.00, 12, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1379.50, 46, 328704, 0.50, 1.00, 12, attacker1, player ) )
+	taken_D.append( MakeDamageHistoryStruct( 1360.15, 91, 262144, 1.00, 1.00, 50, attacker1, player ) )
+
+	dealt_D.append( MakeDamageHistoryStruct( 1386.30, 75, 328705, 1.00, 1.00, 14, player, attacker1 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 1378.30, 75, 2425857, 0.68, 1.00, 27, player, attacker1 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 1378.20, 75, 328705, 0.86, 1.00, 18, player, attacker1 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 1378.15, 75, 328705, 1.00, 1.00, 14, player, attacker1 ) )
+
+/*
+	//
+	// Dealt damage happened after the killing blow. Travel time related maybe.
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	67191936,	0.00,	0.09,	5,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	86066176,	0.00,	0.04,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	67454080,	0.07,	0.09,	5,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	69551104,	0.25,	0.09,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	69551104,	0.44,	0.09,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	69551104,	0.63,	0.09,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	69551104,	0.81,	0.09,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	554.55,		150,	69551104,	1.00,	0.09,	14,		attacker1,	player		 ) )
+	taken_D.append( MakeDamageHistoryStruct(	540.15,		43,		82944,		0.00,	0.18,	14,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	539.25,		43,		82944,		0.00,	0.36,	19,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	539.15,		43,		82944,		0.00,	0.55,	19,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	539.05,		43,		82944,		0.00,	0.74,	19,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	533.10,		43,		82944,		0.00,	0.93,	19,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	533.00,		43,		83072,		0.00,	1.00,	7,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	533.00,		43,		345216,		0.24,	1.00,	12,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	532.90,		43,		345088,		0.62,	1.00,	19,		attacker2,	player,	true ) )
+	taken_D.append( MakeDamageHistoryStruct(	532.80,		43,		345088,		1.00,	1.00,	19,		attacker2,	player,	true ) )
+
+	dealt_D.append( MakeDamageHistoryStruct( 	554.80,		69,		2425856,	1.00,	1.00,	19,		player,		attacker1	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	540.25,		69,		66560,		0.00,	0.02,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	540.05,		69,		66560,		0.00,	0.17,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	539.95,		69,		2163712,	0.00,	0.40,	23,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	539.75,		69,		66560,		0.00,	0.55,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	539.60,		69,		66560,		0.00,	0.70,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	539.55,		69,		66560,		0.00,	0.85,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	539.45,		69,		66560,		0.00,	1.00,	15,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct( 	535.85,		57,		265152,		0.87,	1.00,	65,		player,		attacker2	 ) )
+	dealt_D.append( MakeDamageHistoryStruct(	512.55,		43,		345088,		1.00,	1.00,	19,		player,		attacker2	 ) )
+*/
+
+	player.e.recentDamageHistory = taken_D
+	player.e.recentDealtDamageHistory = dealt_D
+}
+
+void function TryFakeDamageHistory( entity player )
+{
+	float deathTime = GetDeathTimeFromDamageHistroy( player )
+
+	array<DeathRecapDamageData> damageBlocks      = GatherDealtDamageEvents( player.e.recentDamageHistory, null, deathTime )
+	array<DeathRecapDamageData> dealtDamageBlocks = GatherDealtDamageEvents( player.e.recentDealtDamageHistory, player, deathTime, true )
+	damageBlocks.extend( dealtDamageBlocks )
+	damageBlocks.sort( SortByBlockTime )
+
+	float gatheredTimeFrame = -1
+	if ( damageBlocks.len() > 0 )
+		gatheredTimeFrame = damageBlocks[0].blockTime - damageBlocks[ minint( 9, damageBlocks.len() - 1 ) ].blockTime
+	printf( "DR:\t Gathered Damage Blocks: Entries %d, Time Frame %.2f", damageBlocks.len(), gatheredTimeFrame )
+	printt( "DR:\t\tTime\tID\t\tType\tHits\tShield\tHealth\tDamage\tAttacker/Victim" )
+
+	foreach( index, block in damageBlocks )
+	{
+		if ( index >= 10 )
+			break // we can only handle 10 damage blocks
+
+		string v = string( GetEntityFromEncodedEHandle( block.victimEHandle ) )
+		string a = string( GetEntityFromEncodedEHandle( block.attackerEHandle ) )
+
+		printf( "DR:\t\t%.2f\t%d\t%8d\t%d\t\t%.2f\t%.2f\t%d\t\t%s\t%s", block.blockTime, block.damageSourceID, block.damageType, block.hitCount, block.shieldFrac, block.healthFrac, block.totalDamage, a, v )
+	}
+
+	printt( "DR:\t\t------- Taken Damage -------" )
+	DumpDamageHistory( taken_D )
+	printt( "DR:\t\t------- Dealt Damage -------" )
+	DumpDamageHistory( dealt_D )
+}
+
+
+DamageHistoryStruct function MakeDamageHistoryStruct( float time, int id, int type, float shield, float health, int damage, entity attacker, entity victim, bool nullAttacker = false )
+{
+	DamageHistoryStruct damageStruct
+
+	damageStruct.time = time
+	damageStruct.damageSourceId = id
+	damageStruct.damageType = type
+	damageStruct.shieldFrac = shield
+	damageStruct.healthFrac = health
+	damageStruct.damage = float( damage )
+	damageStruct.victimEHandle = victim.GetEncodedEHandle()
+	damageStruct.attacker = nullAttacker ? null : attacker
+	damageStruct.attackerEHandle = attacker.GetEncodedEHandle()
+
+	// no data for these. Shouldn't matter
+	damageStruct.origin = <0, 0, 0>
+	damageStruct.wasBleedingOut = false
+
+	return damageStruct
+}
+
+array<string> function TypeMatch( int type )
+{
+	array<string> stringArray
+
+	table<string, int> df = {}
+	df[ "DF_BULLET" ] <- 1024
+	df[ "DF_BYPASS_SHIELD" ] <- 32
+	df[ "DF_CRITICAL" ] <- 524288
+	df[ "DF_OVERFLOW" ] <- 65536
+	df[ "DF_DISSOLVE" ] <- 2
+	df[ "DF_DOOMED_HEALTH_LOSS" ] <- 268435456
+	//df[ "DF_DOOM_FATALITY" ] <- 1073741824
+	df[ "DF_SHADOW_DAMAGE" ] <- 536870912
+	df[ "DF_ELECTRICAL" ] <- 512
+	df[ "DF_EXPLOSION" ] <- 2048
+	df[ "DF_GIB" ] <- 1
+	df[ "DF_HEADSHOT" ] <- 2097152
+	//df[ "DF_IMPACT" ] <- 16
+	df[ "DF_INSTANT" ] <- 4
+	df[ "DF_KILLSHOT" ] <- 33554432
+	df[ "DF_KNOCKDOWN" ] <- 16777216
+	df[ "DF_KNOCK_BACK" ] <- 16384
+	df[ "DF_MAX_RANGE" ] <- 131072
+	df[ "DF_MELEE" ] <- 4096
+	//df[ "DF_NO_INDICATOR" ] <- 8192
+	df[ "DF_NO_SELF_DAMAGE" ] <- 8
+	df[ "DF_OVERSHIELD" ] <- 8388608
+	df[ "DF_RADIUS_DAMAGE" ] <- 256
+	df[ "DF_RAGDOLL" ] <- 64
+	df[ "DF_SHIELD_BREAK" ] <- 128
+	df[ "DF_SHIELD_DAMAGE" ] <- 262144
+	df[ "DF_SHOTGUN" ] <- 67108864
+	df[ "DF_SKIPS_DOOMED_STATE" ] <- 134217728
+	df[ "DF_SNIPER" ] <- 1048576
+	df[ "DF_STOPS_TITAN_REGEN" ] <- 32768
+	df[ "DF_VORTEX_REFIRE" ] <- 4194304
+
+	int combined
+	foreach( string key, int value in df )
+	{
+		if ( type & value )
+		{
+			combined = combined | value
+			printt( key )
+			stringArray.append( key )
+		}
+	}
+
+	if ( combined == type )
+		printt( "matched" )
+	else
+		printt( "missing", type ^ combined )
+
+	return stringArray
+}
+
+#endif //#if DEVELOPER
+
+
+void function SendDeadHudDamageDataToClient( entity player, float hitTime )
+{
+	if ( !GetCurrentPlaylistVarBool( "show_death_recap", false ) )
+		return
+
+	float startTime = Time() - hitTime
+
+	entity prevAttacker
+	int prevDamageSourceId
+	float prevEntryTime
+
+	entity lastEnemy                                    // the player that last did damage and probably downed you.
+	int lastDamageSourceId = eDamageSourceId.invalid    // the damage source id of the attack that downed or killed you
+	int damageTaken                                        // total damage over hitTime seconds
+	int hitsTaken                                        // hits taken over hitTime seconds
+	int enemyCount                                        // enemies that damaged you over hitTime seconds
+	int damageDealt                                        // damage dealt to the player that downed you
+	int hitsDealt                                        //
+
+	table<entity, bool> uniqueAttackers
+
+	// gather all the damage the player has taken in the last X seconds
+	// most reacent damage first
+	for ( int i = 0; i < player.e.recentDamageHistory.len(); i++ )
+	{
+		DamageHistoryStruct event = player.e.recentDamageHistory[ i ]
+
+		if ( event.time < startTime )
+			break // we've hit out time limit
+
+		if ( event.wasBleedingOut )
+			continue
+
+		entity attacker            = event.attacker
+		bool attackerIsValidPlayer = IsValid( attacker ) && attacker.IsPlayer()
+
+		if ( lastEnemy == null && attackerIsValidPlayer )
+			lastEnemy = attacker
+		if ( lastDamageSourceId == eDamageSourceId.invalid )
+			lastDamageSourceId = event.damageSourceId
+
+		bool isSameAttack = attacker == prevAttacker && event.time == prevEntryTime && event.damageSourceId == prevDamageSourceId
+		if ( !isSameAttack )
+		{
+			if ( event.damage > 0 && attackerIsValidPlayer )
+			{
+				hitsTaken++
+				prevEntryTime = event.time
+			}
+		}
+
+		if ( attackerIsValidPlayer )
+			damageTaken += int( event.damage )
+
+		prevAttacker = attacker
+		prevDamageSourceId = event.damageSourceId
+
+		if ( !(attacker in uniqueAttackers) )
+		{
+			// count invalid entites as enemies because it's probably a disconnected player
+			if ( !IsValid( attacker ) || attackerIsValidPlayer )
+				enemyCount++
+
+			uniqueAttackers[attacker] <- true
+		}
+	}
+
+	prevEntryTime = 0
+	prevDamageSourceId = eDamageSourceId.invalid
+
+	// gather all the damage the player has dealt in the last X seconds
+	if ( IsValid( lastEnemy ) )
+	{
+		array<DamageHistoryStruct> damageEventArray = GetDamageEventsFromAttacker( lastEnemy, player, hitTime )
+
+		foreach( event in damageEventArray )
+		{
+			damageDealt += int( event.damage )
+
+			bool isSameAttack = event.time == prevEntryTime && event.damageSourceId == prevDamageSourceId
+			if ( isSameAttack )
+				continue
+
+			hitsDealt++
+			prevEntryTime = event.time
+			prevDamageSourceId = event.damageSourceId
+		}
+	}
+
+	#if DEVELOPER
+		printt( "\n\n\n************ DEATH RECAP DAMAGE DATA **************" )
+		printt( "player", player )
+		printt( "lastAttacker, lastDamageSourceId, damageTaken, hitsTaken, enemyCount, damageDealt, hitsDealt" )
+		printt( lastEnemy, prevDamageSourceId, damageTaken, hitsTaken, enemyCount, damageDealt, hitsDealt )
+	#endif //DEVELOPER
+
+	// tell the client
+	Remote_CallFunction_NonReplay( player, "ServerCallback_DeadHudSetDamageHistory", lastEnemy, lastDamageSourceId, damageTaken, hitsTaken, enemyCount, damageDealt, hitsDealt )
+}
+
+
+void function DeadHud_OnPlayerStartBleedout( entity player, entity attacker, var damageInfo )
+{
+	SendDeadHudDamageDataToClient( player, DEATH_RECAP_DAMAGE_HISTORY_TIME )
+}
+
+
+void function DeadHud_OnPlayerDeath( entity player, var damageInfo )
+{
+	if ( !GetCurrentPlaylistVarBool( "show_death_recap", false ) )
+		return
+
+	// don't send dead hud damage data when the player dies while downed. Data has already been sent.
+	if ( Bleedout_IsBleedingOut( player ) )
+		return
+
+	// These damage sources seem to not deal damage. Maybe there is a better way to know if damage history was recorded or not.
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	switch( damageSourceId )
+	{
+		case eDamageSourceId.droppod_impact:
+		case eDamageSourceId.damagedef_crush:
+		case eDamageSourceId.outOfBounds:
+		case eDamageSourceId.deathField:
+		case eDamageSourceId.fall:
+		case eDamageSourceId.splat:
+		case eDamageSourceId.indoor_inferno:
+		case eDamageSourceId.stuck:
+		case eDamageSourceId.damagedef_crush:
+		case eDamageSourceId.damagedef_unknown:
+			float damage = DamageInfo_GetDamage( damageInfo )
+			vector damageOrigin = DamageInfo_GetDamagePosition( damageInfo )
+			int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+			int damageType = DamageInfo_GetDamageType( damageInfo )
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+			StoreDamageHistoryAndUpdate( player, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME  ), damage, damageOrigin, scriptDamageType, damageSourceId, attacker )
+
 			break
 
-		float newDamage
-		if ( history.damage < 0 )
-		{
-			newDamage = history.damage
-		}
-		else
-		{
-			newDamage = GraphCapped( history.time, blendOutStarts, ignoreTime, history.damage, 0 )
-		}
-
-		totalAcquiredDamage += newDamage
+		default:
+			break
 	}
 
-	return totalAcquiredDamage
+	SendDeadHudDamageDataToClient( player, DEATH_RECAP_DAMAGE_HISTORY_TIME )
 }
+
+float function GetTotalDamageTakenByPlayer( entity player, entity attacker ) // leaving this as it's used in addplayerscore for now, needs to be removed Cafe
+{
+	Assert( IsValid( attacker ) )
+	// remove old damage history entries
+	int i
+	
+	float total = 0
+	foreach ( history in player.e.recentDamageHistory )
+	{
+		#if DEVELOPER && DEBUG_DAMAGE_HISTORY
+			printt( "history.damage =", history.damage, "history.attacker=", string( history.attacker ) )
+		#endif
+		
+		if ( history.attacker != attacker )
+			continue
+
+		total += history.damage
+	}
+
+	return total
+}
+#endif //SERVER

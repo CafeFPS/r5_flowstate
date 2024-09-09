@@ -3277,6 +3277,9 @@ void function ClientCommand_PingNewLoot( entity player, array<string> args )
 		return
 	}
 
+	if( !CanPlayerPingDebounce( player, ePingType.LOOT ) ) //Cafe was here
+		return
+
 	#if DEVELOPER
 		printt( format( "PingLoot: player '%s' - pinging loot item: '%s'", player.GetPlayerName(), string( item ) ) )
 	#endif

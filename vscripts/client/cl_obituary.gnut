@@ -356,7 +356,10 @@ void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIco
 
 void function UpdateObituaryQueue()
 {
-	const int EXTRA_OFFSET = 0
+	int EXTRA_OFFSET = 0
+
+	if( Gamemode() == eGamemodes.WINTEREXPRESS )
+		EXTRA_OFFSET = 4
 
 	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
 	{

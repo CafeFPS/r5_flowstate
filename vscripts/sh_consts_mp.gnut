@@ -57,7 +57,6 @@ global ShGlobalsMP shGlobalMP
 
 global const bool THIRD_PERSON_KILL_REPLAY_ALWAYS = false
 global const bool THIRD_PERSON_KILL_REPLAY_PROJECTILES = true
-global const float THIRD_PERSON_KILL_REPLAY_PROJECTILES_MINTIME = 0.3
 
 //------------------------------------------------------
 // CTF

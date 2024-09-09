@@ -18,6 +18,7 @@ const string HIT_14 = "UI_Survival_Intro_PreLegendSelect_Countdown"
 const string HIT_15 = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P"
 const string HIT_16 = "jackhammer_pickup"
 
+const float VAMP_STEAL_AMOUNT = 3.0
 
 void function Flowstate_LgDuels1v1_Init()
 {
@@ -27,9 +28,16 @@ void function Flowstate_LgDuels1v1_Init()
 		SetCallback_FlowstateSpawnsOffset( LGDuels_Spawns_Offset ) //used to move all spawns by an offset
 		AddCallback_FlowstateSpawnsPostInit( Init_LGDuels_Spawns )
 	}
-	else 
+	else
 	{
-		SpawnSystem_SetCustomPlaylist( AllPlaylistsArray()[ ePlaylists.fs_1v1 ] ) 
+		AddCallback_FlowstateSpawnsSettings
+		(
+			void function()
+			{
+				SpawnSystem_SetCustomPlaylist( AllPlaylistsArray()[ ePlaylists.fs_1v1 ] ) //override hack
+			}
+		)
+		
 	}
 
 	#if TRACKER && HAS_TRACKER_DLL
@@ -42,6 +50,11 @@ void function Flowstate_LgDuels1v1_Init()
 	AddCallback_OnClientConnected( INIT_LGDuels_Player )
 }
 
+void function ZeroDamage( entity player, var damageInfo )
+{
+	DamageInfo_SetDamage( damageInfo, 0 )
+}
+
 void function InitPreSpawnSystemSettings()
 {
 	SpawnSystem_SetCustomPak( "datatable/fs_spawns_lgduels.rpak" )
@@ -50,33 +63,95 @@ void function InitPreSpawnSystemSettings()
 void function INIT_LGDuels_Player( entity player )
 {
 	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
+	
+	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+		AddEntityCalllback_OnPlayerGamestateChange_1v1( player, Player1v1Gamestate )
+	
+	if( !EntityCallback_Exists( player, ZeroDamage ) )
+		AddEntityCallback_OnDamaged( player, ZeroDamage )
+	
 	AddClientCommandCallback( "hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback( "handicap", ClientCommand_mkos_LGDuel_p_damage )
 	
 	#if TRACKER && HAS_TRACKER_DLL
-		AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
+		AddClientCommandCallback( "SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
 	#endif
 	
 	player.p.hitsound = HIT_0
-	CreatePanelText(player, "", "LG Duels by @CafeFPS and..", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
-	CreatePanelText(player, "mkos ", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+	
+	CreatePanelText( player, "", "LG Duels by @CafeFPS and..", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
+	CreatePanelText( player, "mkos ", "", < 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+}
+
+void function Player1v1Gamestate( entity player, int state )
+{
+	#if DEVELOPER
+		Warning( "state called for: " + string( player ) + " state = " + DEV_GetGamestateRef( state ) )
+	#endif
+	
+	switch( state )
+	{
+		case e1v1State.INVALID:
+		case e1v1State.MATCH_START:
+		case e1v1State.WAITING:
+		
+			if( !EntityCallback_Exists( player, ZeroDamage ) )
+				AddEntityCallback_OnDamaged( player, ZeroDamage )
+			break 
+		
+		case e1v1State.RESTING:
+		case e1v1State.RECAP:
+
+			if( !EntityCallback_Exists( player, ZeroDamage ) )
+				AddEntityCallback_OnDamaged( player, ZeroDamage )
+			
+			//player.SetTakeDamageType( DAMAGE_NO )
+			AddEntityCallback_OnPlayerRespawned_FireOnce
+			(
+				player,
+				
+				void function( entity player )
+				{
+					//DeployAndEnableWeapons( player )
+					TakeAllWeapons( player )
+					
+					Gamemode1v1_GiveWeapon( player, "mp_weapon_lightninggun", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					Gamemode1v1_GiveWeapon( player, "mp_weapon_lightninggun", WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					Survival_SetInventoryEnabled( player, true )
+					SetPlayerInventory( player, [] )
+			
+					EnableOffhandWeapons( player )
+					DeployAndEnableWeapons( player )
+				}
+			)
+			break
+		
+		case e1v1State.MATCHING:
+			if( EntityCallback_Exists( player, ZeroDamage ) )
+				RemoveEntityCallback_OnDamaged( player, ZeroDamage )	
+				
+			break
+	}	
 }
 
 void function LgDuelLoadSettings( entity player, string data )
 {
-	if( data == "NA" || data == "" ){ return }
+	if( data == "NA" || data == "" )
+		return
 	
 	array<string> values = split( data, "|" )
 	
-	if( values.len() < 8 ){ return }
+	if( values.len() < 8 )
+		return
 	
 	foreach( str in values )
 	{
 		if( !IsNumeric( str ) )
 		{
 			#if DEVELOPER
-				sqerror("Data for lgduel setting not numeric: " + str + ";Data:" + data )
+				sqerror( "Data for lgduel setting not numeric: " + str + ";Data:" + data )
 			#endif 
+			
 			return
 		}
 	}
@@ -106,13 +181,13 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
 	//int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
-	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) )
+	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive( attacker ) )
 	{
 		float atthealth = float( attacker.GetHealth() )
 		
 		if ( atthealth < attacker.GetMaxHealth() )
 		{
-			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
+			attacker.SetHealth( min( atthealth + VAMP_STEAL_AMOUNT, float( attacker.GetMaxHealth() ) ) )
 		}
 		
 		attacker.p.totalLGHits++
@@ -127,11 +202,10 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> args )
 {
 	if( args.len() == 0 )
-		return true
+		return false
 	
-	#if DEVELOPER 
-		sqprint( "saving:" + args[0])
-	#endif
+	if( !IsSafeString( args[0], 50 ) )
+		return false
 	
 	SavePlayerData( player, "LgDuelsSetting", args[0] )
 	
@@ -147,7 +221,7 @@ LocPairData function Init_LGDuels_Spawns()
 	
 	Gamemode1v1_SetWaitingRoomRadius( 2400 )
 	
-	return CreateLocPairObject( [], false, null, panels )
+	return SpawnSystem_CreateLocPairObject( [], false, null, panels )
 }
 
 LocPair function LGDuels_Spawns_Offset()
@@ -228,7 +302,8 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 //purpose of this client command: allow lg duelers to enable a handicap ( idk quake gods wanted it )
 bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
 {
-	if ( !CheckRate( player ) ) return false
+	if ( !CheckRate( player ) ) 
+		return false
 	
 	string param = ""
 	
@@ -280,6 +355,5 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 			
 	}
 		
-	return false
-					
+	return false					
 }

@@ -864,17 +864,17 @@ void function RecordDamageToNPCTitanSoul( entity soul, var damageInfo )
 
 void function AutoTitan_TryMultipleTitanCallout( entity titan, var damageInfo )
 {
-	array<entity> titans = GetTitansHitMeInTime( titan.GetTitanSoul(), 5 )
-	entity enemy = titan.GetEnemy()
-	if ( IsAlive( enemy )  && enemy.IsTitan() && !titans.contains( enemy ) )
-		titans.append( enemy )
+	// array<entity> titans = GetTitansHitMeInTime( titan.GetTitanSoul(), 5 )
+	// entity enemy = titan.GetEnemy()
+	// if ( IsAlive( enemy )  && enemy.IsTitan() && !titans.contains( enemy ) )
+		// titans.append( enemy )
 
-	int totalEngagedTitans = titans.len()
+	// int totalEngagedTitans = titans.len()
 
-	if ( totalEngagedTitans == 1 )
-		PlayAutoTitanConversation( titan, "autoEngageTitan" )
-	else if ( totalEngagedTitans > 1 )
-		PlayAutoTitanConversation( titan, "autoEngageTitans" )
+	// if ( totalEngagedTitans == 1 )
+		// PlayAutoTitanConversation( titan, "autoEngageTitan" )
+	// else if ( totalEngagedTitans > 1 )
+		// PlayAutoTitanConversation( titan, "autoEngageTitans" )
 }
 
 float function CalculateNextRegenTime( float damage, int damageType, bool critHit, float oldNextRegenTime, float maxRegenDelay )

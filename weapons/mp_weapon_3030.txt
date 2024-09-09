@@ -322,6 +322,9 @@
 	"sway_rotate_attach" ""
 	Mods
 	{
+		gold
+		{
+		}
 
 		hopup_headshot_dmg
 	    {

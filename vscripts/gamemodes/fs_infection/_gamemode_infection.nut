@@ -115,7 +115,8 @@ void function _OnPlayerConnectedInfection(entity player)
 		
 			if(!IsValid(player)) return
 			
-			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 			player.FreezeControlsOnServer()
 
 			Survival_SetInventoryEnabled( player, false )
@@ -191,7 +192,9 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 						}
 					SetTeam(victim, TEAM_MILITIA)
 					_HandleRespawn(victim)					
-					Remote_CallFunction_NonReplay(victim, "Minimap_EnableDraw_Internal")
+					
+					Remote_CallFunction_ByRef( victim, "Minimap_EnableDraw_Internal" )
+					//Remote_CallFunction_NonReplay(victim, "Minimap_EnableDraw_Internal")
 
 					victim.SetVelocity(Vector(0,0,0))
 
@@ -255,8 +258,10 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 						//victim.SetOrigin(FS_INFECTION.selectedLocation.spawns[0].origin)
 						
 						ClearInvincible(victim)
-						_HandleRespawn(victim)					
-						Remote_CallFunction_NonReplay(victim, "Minimap_EnableDraw_Internal")
+						_HandleRespawn(victim)	
+						
+						Remote_CallFunction_ByRef( victim, "Minimap_EnableDraw_Internal" )
+						//Remote_CallFunction_NonReplay(victim, "Minimap_EnableDraw_Internal")
 							
 						TakeLoadoutRelatedWeapons(victim)
 						
@@ -312,7 +317,8 @@ void function _HandleRespawn(entity player)
 			player.SetSpecReplayDelay( 0 )
 			player.SetObserverTarget( null )
 			player.StopObserverMode()
-			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
 		}
 	}catch(e420){}
 
@@ -329,7 +335,8 @@ void function _HandleRespawn(entity player)
 	player.SetMoveSpeedScale(1)
 	TakeAllWeapons(player)
 	
-	Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	
 	player.MovementEnable()
@@ -410,7 +417,9 @@ void function Infection_Lobby()
 		
 		player.FreezeControlsOnServer()
 		
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		
 		Remote_CallFunction_NonReplay(player, "Infection_DestroyEvacCountdown")
 		
 		SetTeam(player, TEAM_IMC)
@@ -465,7 +474,8 @@ void function Infection_Lobby()
 				continue
 			
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateMapVotesClient", FS_INFECTION.mapVotes[0], FS_INFECTION.mapVotes[1], FS_INFECTION.mapVotes[2], FS_INFECTION.mapVotes[3])
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_INFECTION.mapIds[0], FS_INFECTION.mapIds[1], FS_INFECTION.mapIds[2], FS_INFECTION.mapIds[3])
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, endtimeVotingTime, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
@@ -910,11 +920,13 @@ void function Infection_GameLoop()
 	{
 		if(!IsValid(player)) continue
 		
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 		MakeInvincible( player )
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 		
 		if( FS_INFECTION.winnerTeam == TEAM_MILITIA && !FS_INFECTION.wonByAllLegendsKilled && !FS_INFECTION.forceLegendsWin ) //failed to evac
 		{
@@ -964,7 +976,8 @@ void function Infection_GameLoop()
 	{
 		if(!IsValid(player)) continue
 		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+		Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 		Remote_CallFunction_Replay(player, "SignalToDestroyDropshipCamera")		
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
@@ -1031,7 +1044,8 @@ void function SpawnAsSurvivor(entity player)
 {
 	_HandleRespawn(player)
 	
-	Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+	//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+	Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 	
 	StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), player.GetOrigin(), Vector(0,0,0) )
 	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
@@ -1253,7 +1267,8 @@ void function StartSpectatingInfection( entity player, entity attacker )
 		player.SetSpecReplayDelay( 1 )
 		player.StartObserverMode( OBS_MODE_IN_EYE )
 		player.SetObserverTarget( specTarget )
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Activate" )
 		player.p.isSpectating = true
 	}
 }
@@ -1899,7 +1914,8 @@ void function FlowstateInfection_HandleEvac( entity evac, entity fx, vector orig
 		
 		foreach(player in GetPlayerArrayOfTeam_Alive(TEAM_IMC))
 		{
-			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", true, TEAM_IMC )
 		}
 	}()

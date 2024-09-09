@@ -35,7 +35,7 @@
 	TopMessage
 	{
 		ControlName				Label
-		labelText				"Connecting..."
+		labelText				"#FS_CONNECTING"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

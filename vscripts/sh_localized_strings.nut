@@ -1,4 +1,4 @@
-// Localized strings table //mkos
+// Localized strings table 																	//mkos
 
 global function INIT_Flowstate_Localization_Strings
 global function Flowstate_FetchToken
@@ -14,6 +14,7 @@ global function StringReplaceLimited
 	global function LocalEventMsg //wrapper for LocalMsg ui type 1
 	global function IBMM_Notify
 	global function LocalizedTokenExists
+	global function CreatePanelText_Localized
 #endif
 
 #if CLIENT 	
@@ -21,17 +22,19 @@ global function StringReplaceLimited
 	global function FS_BuildLocalizedTokenWithVariableString
 	global function FS_DisplayLocalizedToken
 	global function FS_BuildLocalizedMultiVarString
+	global function FS_CreateTextInfoPanelWithID_Localized
+	global function FS_BuildLocalizedVariable_InfoPanel
+	global function FS_LocalizationConsistencyCheck
 #endif
 
 #if DEVELOPER 
 	global function DEV_GenerateTable
-	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
 	global function DEV_Print_eMsgUI
 	#if CLIENT || SERVER
-		global function DEV_printLocalizationTable
+		global function DEV_PrintLocalizationTable
 	#endif
 	#if CLIENT 
-		global function DEV_printLocalizedTokenByID
+		global function DEV_PrintLocalizedTokenByID
 	#endif 
 #endif
 
@@ -54,12 +57,13 @@ global enum eMsgUI
 	VAR_SUBTEXT_SLOT, 	//11
 	VAR_EVENT, 			//12
 	VAR_MOTD, 			//13
-	IBMM, 				//14
+	IBMM 				//14
 }
 
 struct 
 {
 	table<int, string> FS_LocalizedStrings = {}
+	int iConsistencyCheck = -1
 	
 #if SERVER
 	table<string, int> FS_LocalizedStringMap = {}
@@ -68,7 +72,14 @@ struct
 #if CLIENT
 	string fs_variableString = ""
 	string fs_variableSubString = ""
+	string fs_variableString_InfoPanel = ""
+	string fs_variableSubString_InfoPanel = ""
+	
+	string motd_text = ""
+	string motd_text2 = ""
+	
 	table<int, string> variableVars = {}
+	bool bConsistencyCheckComplete = false
 #endif
 
 	//these must match the same order on client.
@@ -253,7 +264,16 @@ struct
 		"#SCORE_EVENT_FS_Scenarios_PenaltyDeath",
 		"#SCORE_EVENT_FS_Scenarios_PenaltyRing",
 		"#SCORE_EVENT_FS_Scenarios_BecomesSoloPlayer",
-		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer"
+		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer",
+		"#SCORE_EVENT_FS_SND_BombPlanted",
+		"#SCORE_EVENT_FS_SND_Player_Killed",
+		"#FS_MATCHING_FOR",
+		"#FS_CHALLENGE_STARTED",
+		"#FS_JOIN_QUEUE",
+		"#FS_CHALLENGE_WAITING_FOR",
+		"#FS_WAITING_PANEL",
+		"#FS_STATS_SHIPPED",
+		"#FS_STATS_SHIPPED_MSG"
 	]
 	
 } file
@@ -272,29 +292,32 @@ const array<int> longUiTypes =
 
 
 void function INIT_Flowstate_Localization_Strings()
-{
+{	
 	#if DEVELOPER
-		printt("Initializing all localization tokens")
+		printt( "Initializing all localization tokens" )
 	#endif
 	
 	int iTokensCount = file.allTokens.len()
+	file.iConsistencyCheck = iTokensCount
+	
+	Localization_ConsistencyCheck()
 	
 	if( iTokensCount <= 0 )
 		return
 	
 	for ( int i = 0; i <= iTokensCount - 1; i++ )
 	{
-		file.FS_LocalizedStrings[i] <- file.allTokens[i]
+		file.FS_LocalizedStrings[ i ] <- file.allTokens[ i ]
 		
 		#if SERVER
-			file.FS_LocalizedStringMap[file.allTokens[i]] <- i
+			file.FS_LocalizedStringMap[ file.allTokens[ i ] ] <- i
 		#endif
 	}
 	
 	file.allTokens.clear()
 	
 	#if DEVELOPER && ASSERT_LOCALIZATION
-		Warning("ASSERTS ENABLED for script: " + FILE_NAME() )
+		Warning( "ASSERTS ENABLED for script: " + FILE_NAME() )
 	#endif
 }
 
@@ -351,7 +374,32 @@ bool function ClientLocalizedTokenExists( int tokenRef )
 {
 	return ( tokenRef in file.FS_LocalizedStrings )
 }
-// /SHARED
+
+void function Localization_ConsistencyCheck()
+{
+	#if SERVER
+		AddClientCommandCallback( "localizationIntegrityCheck", ClientCommand_CheckLocalizationConsistency )
+		AddCallback_OnClientConnected
+		( 
+			void function( entity player )
+			{
+				if( IsValid( player ) )
+					Remote_CallFunction_NonReplay( player, "FS_LocalizationConsistencyCheck" )
+			}
+		)
+	#endif
+	
+	#if CLIENT
+		AddCallback_OnPlayerDisconnected
+		(
+			void function( entity player )
+			{
+				file.bConsistencyCheckComplete = false
+			}
+		)
+	#endif
+}
+// end SHARED
 
 #if SERVER
 
@@ -375,21 +423,24 @@ bool function ClientLocalizedTokenExists( int tokenRef )
 #if CLIENT
 string function trim( string str ) 
 {
-    int start = 0;
-    int end = str.len() - 1;
-    string whitespace = " \t\n\r";
+	return strip( str )
+/*
+	int start = 0;
+	int end = str.len() - 1;
+	string whitespace = " \t\n\r";
 
-    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
 	{
-        start++;
-    }
+		start++;
+	}
 
-    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
 	{
-        end--;
-    }
+		end--;
+	}
 
-    return str.slice(start, end + 1);
+	return str.slice(start, end + 1);
+*/
 }
 #endif
 
@@ -398,6 +449,28 @@ string function trim( string str )
 //########################################################
 
 #if SERVER
+
+bool function ClientCommand_CheckLocalizationConsistency( entity player, array<string> args )
+{
+	if( args.len() < 1 )
+		return true
+		
+	string param = args[ 0 ]
+	
+	if( !IsNumeric( param ) )
+		return true
+		
+	int clientCount = int( param )
+	
+	if ( clientCount != file.iConsistencyCheck )
+	{
+		string info = format( "Your Flowstate localization files do not match the server localization registry. Please update your scripts. Server count: %d, Local count: %d", file.iConsistencyCheck, clientCount )
+		KickPlayerById( player.GetPlatformUID(), info )
+	}
+	
+	return true
+}
+
 void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = false )
 {
 	#if DEVELOPER && ASSERT_LOCALIZATION
@@ -421,6 +494,10 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	string appendString;
 	bool uiTypeValidLong;
 	string sendMessage;
+	bool isMotd
+	
+	if( uiType == eMsgUI.VAR_MOTD )
+		isMotd = true
 	
 	if ( ( datalen ) >= 599 )
 	{
@@ -433,7 +510,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		if( varStringLen + varSubstring.len() > 1199 )
 		{
 			#if DEVELOPER
-				sqerror("Variable strings were too long.")
+				sqerror( "Variable strings were too long." )
 			#endif
 			return 	
 		}
@@ -441,7 +518,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		if( varStringLen > 599 && !uiTypeValidLong )
 		{
 			#if DEVELOPER
-				sqerror("Title for LocalMsg variable string was too long for uiType.")
+				sqerror( "Title for LocalMsg variable string was too long for uiType." )
 			#endif
 			return 			
 		}
@@ -476,7 +553,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 
 			for ( int i = 0; i < sendMessage.len(); i++ )
 			{
-				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedTokenWithVariableString", textType, sendMessage[i] )
+				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedTokenWithVariableString", textType, isMotd, sendMessage[i] )
 			}
 		}
 	}
@@ -513,11 +590,14 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 
 void function MessageLong( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = true )
 {
-	thread( void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
-	{
-		wait 0.5 //HACKFIX: avoid code rock
-		LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
-	})()
+	thread
+	(
+		void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+		{
+			wait 0.5 //HACKFIX: avoid code rock			
+			LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+		}
+	)()
 }
 
 void function LocalVarMsg( entity player, string ref, int uiType = 2, float duration = 5, ... )
@@ -528,7 +608,7 @@ void function LocalVarMsg( entity player, string ref, int uiType = 2, float dura
 	
 	int tokenID = Flowstate_FetchTokenID( ref )
 	
-	int vargCount = expect int( vargc );
+	int vargCount = expect int( vargc )
 	
 	for ( int i = 0; i <= vargCount - 1; i++ )
 	{
@@ -552,8 +632,7 @@ void function LocalVarMsg( entity player, string ref, int uiType = 2, float dura
 		}
 	}
 	
-	Remote_CallFunction_NonReplay( player, "FS_ShowLocalizedMultiVarMessage", tokenID, uiType, duration )
-	
+	Remote_CallFunction_NonReplay( player, "FS_ShowLocalizedMultiVarMessage", tokenID, uiType, duration )	
 }
 
 bool function ValidateType( ... )
@@ -604,6 +683,72 @@ void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPla
 	
 	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", "", "", false )
 }
+
+void function CreatePanelText_Localized( entity player, string ref, string subRef, string varString, string varSubstring, vector origin, vector angles, float textScale, int panelID = 0 )
+{
+	#if DEVELOPER && ASSERT_LOCALIZATION
+		if( !empty( ref ) )
+		{
+			mAssert( ref.find( "#" ) != -1, "Reference missing # symbol  ref: [ " + ref + " ] in calling func: " + FUNC_NAME( 3 ) + "()" )
+			mAssert( LocalizedTokenExists( ref ), "Localized Token Reference does not exist for [ " + ref + " ] \n in calling func: " + FUNC_NAME( 3 ) + "()" )
+		}
+		
+		if( !empty( subRef ) )
+		{
+			mAssert( subRef.find( "#" ) != -1, "Reference missing # symbol  ref: [ " + subRef + " ] in calling func: " + FUNC_NAME( 3 ) + "()" )
+			mAssert( LocalizedTokenExists( subRef ), "Localized Token Reference does not exist for [ " + subRef + " ] \n in calling func: " + FUNC_NAME( 3 ) + "()" )
+		}
+	#endif
+	
+	if ( !IsValid( player ) ) 
+		return
+		
+	if ( !player.IsPlayer() ) 
+		return
+		
+	if ( !player.p.isConnected ) 
+		return
+	
+	int datalen = varString.len() + varSubstring.len()
+	
+	string appendSubstring;
+	string appendString;
+	bool uiTypeValidLong;
+	string sendMessage;
+	
+	if ( ( datalen ) >= 599 )
+	{
+		#if DEVELOPER //implement limits?
+			Warning( "long text" )
+		#endif 
+	}
+	
+	if ( datalen > 0 )
+	{
+		for ( int textType = 0 ; textType < 2 ; textType++ )
+		{
+			sendMessage = textType == 0 ? varString : varSubstring
+
+			for ( int i = 0; i < sendMessage.len(); i++ )
+			{
+				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedVariable_InfoPanel", textType, sendMessage[i] )
+			}
+		}
+	}
+	
+	int tokenID = 0
+	int subTokenID = 0
+	
+	if( ref != "" )
+		tokenID = Flowstate_FetchTokenID( ref )
+	
+	if( subRef != "" )
+		subTokenID = Flowstate_FetchTokenID( subRef )
+	
+	Remote_CallFunction_NonReplay( player, "FS_CreateTextInfoPanelWithID_Localized", tokenID, subTokenID, origin, angles, textScale, panelID )
+}
+
+
 #endif //SERVER
 
 //########################################################
@@ -611,21 +756,59 @@ void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPla
 //########################################################
 
 #if CLIENT
+void function FS_LocalizationConsistencyCheck()
+{
+	if( !file.bConsistencyCheckComplete )
+	{
+		entity player = GetLocalClientPlayer()
+		
+		if( IsValid( player ) )
+		{
+			player.ClientCommand( "localizationIntegrityCheck " + string( file.iConsistencyCheck ) )
+			file.bConsistencyCheckComplete = true
+		}
+	}
+}
 
-void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
+void function FS_BuildLocalizedTokenWithVariableString( int Type, bool isMotd, ... )
 {
 	if ( Type == 0 )
 	{
 		for ( int i = 0; i < vargc; i++ )
 		{
-			file.fs_variableString += format( "%c", vargv[i] )
+			if( isMotd )
+				file.motd_text += format( "%c", vargv[i] )
+			else
+				file.fs_variableString += format( "%c", vargv[i] )
+		}
+	}
+	else
+	{
+		for ( int i = 0; i < vargc; i++ )
+		{
+			if( isMotd )
+				file.motd_text2 += format( "%c", vargv[i] )
+			else
+				file.fs_variableSubString += format( "%c", vargv[i] )
+		}
+	}
+}
+
+
+void function FS_BuildLocalizedVariable_InfoPanel( int Type, ... )
+{
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+		{
+			file.fs_variableString_InfoPanel += format( "%c", vargv[i] )
 		}
 	}
 	else 
 	{
 		for ( int i = 0; i < vargc; i++ )
 		{
-			file.fs_variableSubString += format( "%c", vargv[i] )
+			file.fs_variableSubString_InfoPanel += format( "%c", vargv[i] )
 		}
 	}
 }
@@ -643,8 +826,36 @@ int function countStringArgs( string str )
 
 void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, float duration )
 {
-	string S = file.fs_variableString
-	string SubS = file.fs_variableSubString
+	string S 
+	string SubS 
+	
+	if( uiType != eMsgUI.VAR_MOTD )
+	{
+		S = file.fs_variableString
+		SubS = file.fs_variableSubString
+		
+		if( S.len() > 2 )
+		{
+			string checkForToken = S.slice( 0, 2 ) //don't search the entire string for #
+			
+			if( checkForToken.find( "#" ) != -1 )
+				S = Localize( S )
+		}
+		
+		if( SubS.len() > 2 )
+		{
+			string checkForToken2 = SubS.slice( 0, 2 )
+			
+			if( checkForToken2.find( "#" ) != -1 )
+				SubS = Localize( SubS )
+		}
+	}
+	else 
+	{	//I really hate this.
+		S = file.motd_text
+		SubS = file.motd_text2 
+	}
+	
 	string localToken = Flowstate_FetchToken( token )
 	string localSubToken = Flowstate_FetchToken( subtoken )
 
@@ -703,6 +914,8 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 
 void function DisplayMessage( string str1, string str2, float duration, int uiType = 0 )
 {
+	//printt( str1, str2 )
+	
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )
 	Announcement_SetSubText( announcement, str2 )
@@ -803,6 +1016,83 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 	}
 	
 	AnnouncementFromClass( player, announcement )
+}
+
+void function FS_CreateTextInfoPanelWithID_Localized( int token, int subToken, vector origin, vector angles, float textScale, int panelID )
+{
+	string Msg = "";
+	string SubMsg = "";
+	
+	if( token != 0 )
+	{
+		string S = file.fs_variableString_InfoPanel
+		string localToken = Flowstate_FetchToken( token )
+		string add_placeholder_to_msg = countStringArgs( Localize( localToken ) ) == 0 ? "%s " : "";
+		
+		#if DEVELOPER && DEBUG_VARMSG
+			printt( "S: [", S + "]", "msg placeholder:[", add_placeholder_to_msg + "]" )
+		#endif 
+		
+		try 
+		{
+			Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ), S )
+		}
+		catch(e)
+		{
+			printt("Error ", e ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", token )
+			Msg = Localize( trim( localToken ) ) + " " + S
+			
+			#if DEVELOPER && DEBUG_VARMSG 
+				printt("New msg:", Msg )
+			#endif
+		}
+	}
+	
+	if( subToken != 0 )
+	{
+		string SubS = file.fs_variableSubString_InfoPanel
+		string localSubToken = Flowstate_FetchToken( subToken )
+		string add_placeholder_to_submsg = countStringArgs( Localize( localSubToken ) ) == 0 ? "%s " : "";
+		
+		#if DEVELOPER && DEBUG_VARMSG
+			printt( "SubS: [", SubS + "]", "; submsg placeholder:[", add_placeholder_to_submsg + "]" )
+		#endif
+	
+		try
+		{
+			SubMsg = format( ( Localize( localSubToken ) + add_placeholder_to_submsg ), SubS )
+		}
+		catch(e2)
+		{
+			printt("Error ", e2 ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", subToken )
+		
+			#if DEVELOPER && DEBUG_VARMSG 
+				printt("New msg:", SubMsg )
+			#endif
+		}
+	}
+	
+	#if DEVELOPER && DEBUG_VARMSG
+		printt("msg: ", StringReplaceLimited( Msg, "\n", "\\n", 999 ), " ;SubMsg: ", StringReplaceLimited( SubMsg, "\n", "\\n", 999 ) )
+	#endif
+		
+	CreateTextPanel_Localized
+	( 
+		origin.x,
+		origin.y,
+		origin.z,
+		angles.x,
+		angles.y,
+		angles.z,
+		false,
+		textScale, 
+		panelID, 
+		Msg,
+		SubMsg
+	)
+	
+	file.fs_variableString_InfoPanel = ""
+	file.fs_variableSubString_InfoPanel = ""
 }
 
 void function FS_BuildLocalizedMultiVarString( int varNum, ... )
@@ -953,21 +1243,8 @@ void function ParseFSTokens( string path )
 */
 }
 
-int function DEV_getTokenIdFromRef( string ref ) //deprecated
-{
-	foreach ( key, value in file.FS_LocalizedStrings )
-	{
-		if ( ref == value )
-		{
-			return key
-		}
-	}
-	
-	return -1
-}
-
 #if CLIENT || SERVER
-void function DEV_printLocalizationTable()
+void function DEV_PrintLocalizationTable()
 {
 	
 	#if CLIENT 
@@ -981,7 +1258,7 @@ void function DEV_printLocalizationTable()
 			string vFormat = StringReplaceLimited( Localize(value), "\n", "\\n", 100 )
 			string kFormat = StringReplaceLimited( value, "#", "", 1 )
 			int kOffset = 30 - kFormat.len()
-			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n";				
+			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n"				
 		#endif //CLIENT
 			
 		#if SERVER 
@@ -998,7 +1275,7 @@ void function DEV_printLocalizationTable()
 #endif //CLIENT || SERVER
 
 	#if CLIENT 
-		void function DEV_printLocalizedTokenByID( int id )
+		void function DEV_PrintLocalizedTokenByID( int id )
 		{
 			printt( Localize( Flowstate_FetchToken( id ) ) )
 		}

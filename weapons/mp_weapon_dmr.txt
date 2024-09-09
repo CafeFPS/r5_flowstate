@@ -56,7 +56,7 @@
 	"damage_rodeo"                             "400"
 
                      
-	"damage_headshot_scale"			           "2.15"
+	"damage_headshot_scale"			           "2.25"
       
 
 	"damage_leg_scale"                         "0.8"

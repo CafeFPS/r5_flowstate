@@ -32,17 +32,17 @@
 	"weapon_type_flags"							"WPT_PRIMARY"
 
 	// Script - Callbacks
-	//"OnWeaponActivate"                       "OnWeaponActivate_weapon_sentinel"
-	//"OnWeaponDeactivate"                     "OnWeaponDeactivate_weapon_sentinel"
+	"OnWeaponActivate"                       "OnWeaponActivate_weapon_sentinel"
+	"OnWeaponDeactivate"                     "OnWeaponDeactivate_weapon_sentinel"
 	"OnWeaponPrimaryAttack"                    "OnWeaponPrimaryAttack_weapon_sentinel"
 	"OnClientAnimEvent"						   "OnClientAnimEvent_weapon_basic_bolt"
-	//"OnWeaponCustomActivityStart"            "OnWeaponCustomActivityStart_weapon_sentinel"
-	//"OnWeaponCustomActivityEnd"              "OnWeaponCustomActivityEnd_weapon_sentinel"
-	//"OnWeaponStartZoomIn"                    "OnWeaponCustomActivityStart_weapon_sentinel"
-	//"OnWeaponStartZoomOut"                   "OnWeaponStartZoomOut_weapon_sentinel"
+	"OnWeaponCustomActivityStart"            "OnWeaponCustomActivityStart_weapon_sentinel"
+	"OnWeaponCustomActivityEnd"              "OnWeaponCustomActivityEnd_weapon_sentinel"
+	"OnWeaponStartZoomIn"                    "OnWeaponStartZoomIn_weapon_sentinel"
+	"OnWeaponStartZoomOut"                   "OnWeaponStartZoomOut_weapon_sentinel"
 
     // Energize mechanics
-    "energized_duration"                       "90.0"
+    "energized_duration"                       "120.0"
     "energized_time_consumed_per_shot"         "15.0"
     "energize_activity_time"                   "5.0"        //this doesn't scale the animation! This is used for UI, make sure it is in parity with the animation timing
 	"entity_color_from_charge"				   "1"
@@ -69,12 +69,12 @@
 
 	// Damage
 	//
-	"damage_near_value"                        "65"
-	"damage_far_value"                         "65"
-	"damage_very_far_value"                    "65"
-	"damage_near_value_titanarmor"             "65"
-	"damage_far_value_titanarmor"              "65"
-	"damage_very_far_value_titanarmor"         "65"
+	"damage_near_value"                        "70"    //"65"
+	"damage_far_value"                         "70"    //"65"
+	"damage_very_far_value"                    "70"    //"65"
+	"damage_near_value_titanarmor"             "70"    //"65"
+	"damage_far_value_titanarmor"              "70"    //"65"
+	"damage_very_far_value_titanarmor"         "70"    //"65"
 
     // Projectile
     "projectile_launch_speed"                  "31000"
@@ -292,14 +292,19 @@
 
 		energized
 		{
-            //"damage_near_value"                        "100"
-            //"damage_far_value"                         "100"
-            //"damage_very_far_value"                    "100"
-            //"damage_near_value_titanarmor"             "100"
-            //"damage_far_value_titanarmor"              "100"
-            //"damage_very_far_value_titanarmor"         "100"
+            "damage_near_value"                        "88"
+            "damage_far_value"                         "88"
+            "damage_very_far_value"                    "88"
+            "damage_near_value_titanarmor"             "88"
+            "damage_far_value_titanarmor"              "88"
+            "damage_very_far_value_titanarmor"         "88"
 
-            "damage_shield_scale"                       "2.3"
+			"bolt_hitsize"								"0.33"
+		    "bolt_hitsize_grow1_size"				    "0.66"
+		    "bolt_hitsize_grow2_size"				    "1.5"
+		    "bolt_hitsize_growfinal_size"			    "2.25"
+
+            //"damage_shield_scale"                       "2.3"
 
             // FX - Impacts
             "impact_effect_table"                      "doubletake_bullet"
@@ -323,21 +328,21 @@
 
 
             // Sounds - Charged
-            //"charge_sound_1p"								"weapon_sentinel_fire_alt_1p"
-			//"charge_sound_3p"								"weapon_sentinel_fire_alt_3p"
-			//"charge_sound_stop_when_full"					"1"
-			//"charge_sound_seek_to_charge_fraction"		"1"
-			//"charge_drain_sound_1p"						"Weapon_ChargeRifle_WindDown_1P"
-			//"charge_drain_sound_3p"						"Weapon_ChargeRifle_WindDown_3P"
-			//"charge_drain_sound_stop_when_empty"			"1"
-			//"charge_drain_sound_seek_to_charge_fraction"	"1"
+            // "charge_sound_1p"								"weapon_sentinel_fire_alt_1p"
+			// "charge_sound_3p"								"weapon_sentinel_fire_alt_3p"
+			// "charge_sound_stop_when_full"					"1"
+			// "charge_sound_seek_to_charge_fraction"		"1"
+			// "charge_drain_sound_1p"						"Weapon_ChargeRifle_WindDown_1P"
+			// "charge_drain_sound_3p"						"Weapon_ChargeRifle_WindDown_3P"
+			// "charge_drain_sound_stop_when_empty"			"1"
+			// "charge_drain_sound_seek_to_charge_fraction"	"1"
 
             // Rumble
-            //"charge_rumble_min"								"10"
-			//"charge_rumble_max"								"30"
+            "charge_rumble_min"								"10"
+			"charge_rumble_max"								"30"
 
             // Behavior Modifier
-            //"mod_activity_modifier"						"energized"
+            "mod_activity_modifier"						"energized"
 		}
 
         "optic_sniper"

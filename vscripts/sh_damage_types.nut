@@ -9,7 +9,9 @@ global function PIN_GetDamageCause
 global function DamageSourceIDToStringTable
 global function RegisterCustomWeaponDamageDef
 
-global function DEV_PrintRegisteredWeapons
+#if DEVELOPER
+	global function DEV_PrintDamageSourceIDs
+#endif
 
 struct
 {
@@ -62,6 +64,7 @@ global enum eDamageSourceId
 	damagedef_tank_bombardment_detcord_explosion
 	damagedef_defensive_bombardment
 	damagedef_loot_drone_explosion
+	//// end of must match order ////
 
 	//Custom
 	damagedef_DocDrone
@@ -109,20 +112,20 @@ global enum eDamageSourceId
 	mp_weapon_nemesis
 	mp_weapon_softball
 	mp_weapon_warmachine
-	//mp_weapon_wingman_n
+	mp_weapon_wingman_n
 	mp_weapon_wingmanelite
 	mp_weapon_arc_blast
 	mp_weapon_nuke_satchel
 	mp_weapon_satchel
 	mp_extreme_environment
 	mp_weapon_wrecking_ball
-	//mp_weapon_epg
+	mp_weapon_epg
 	//mp_weapon_smr
 	//mp_weapon_rocket_launcher
 	mp_weapon_grenade_electric_smoke
 	mp_weapon_grenade_gravity
 	//mp_weapon_rspn101_og
-	//sp_weapon_arc_tool
+	sp_weapon_arc_tool
 	//
 	melee_pilot_emptyhanded
 	melee_pilot_arena
@@ -173,7 +176,7 @@ global enum eDamageSourceId
 	mp_turretweapon_blaster
 	mp_turretweapon_plasma
 	mp_turretweapon_sentry
-	//mp_weapon_mobile_hmg
+	mp_weapon_mobile_hmg
 	mp_weapon_smart_pistol
 
 	//Character Abilities
@@ -312,6 +315,7 @@ global enum eDamageSourceId
 	mp_weapon_plasma_grenade_halomod
 	mp_weapon_oddball_primary
 	melee_oddball
+	mp_weapon_bubble_bunker_master_chief
 	
 	mp_weapon_flagpole_primary
 	melee_flagpole
@@ -322,9 +326,9 @@ global enum eDamageSourceId
 	mp_weapon_titan_sword_slam
 	melee_titan_sword
 	
-	mp_ability_heal //added for stats (triggers ondamaged callback ?)
-	mp_ability_holopilot //triggers ondamaged..?
-	mp_weapon_grenade_gas //triggers ondamaged
+	mp_ability_heal
+	mp_ability_holopilot
+	mp_weapon_grenade_gas
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -400,7 +404,7 @@ global enum eModSourceId
 //Attachments intentionally left off. This prevents them from displaying in kill cards.
 // modNameStrings should be defined when the mods are created, not in a separate table -Mackey
 global const modNameStrings = {
-	[ eDamageSourceId.damagedef_DocDrone ] 					= "DRONE",
+	[ eDamageSourceId.damagedef_DocDrone ] 					= "DRONE", /* ....? */
 	[ eModSourceId.accelerator ]						= "#MOD_ACCELERATOR_NAME",
 	[ eModSourceId.afterburners ]						= "#MOD_AFTERBURNERS_NAME",
 	[ eModSourceId.arc_triple_threat ] 					= "#MOD_ARC_TRIPLE_THREAT_NAME",
@@ -474,8 +478,8 @@ void function DamageTypes_Init()
 		file.damageSourceIDToString[ number ] <- name
 		
 		#if SERVER 
-			GetTrackerWeaponIdentifierTable()[name] <- number
-		#endif 
+			TrackerWepTable()[ name ] <- number
+		#endif
 	}
 
 	PrecacheWeapon( $"mp_weapon_rspn101" ) // used by npc_soldier ><
@@ -649,15 +653,15 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_bolo_sword_primary ] 			= "Bolo Sword Melee",
 		[ eDamageSourceId.melee_boxing_ring ] 						= "Boxing Hands",
 		[ eDamageSourceId.mp_weapon_melee_boxing_ring ] 			= "Boxing Hands",
-		//[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
-		//[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
+		[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
+		[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
 		[ eDamageSourceId.mp_weapon_throwingknife ] 				= "Throwing Knife",
-		//[ eDamageSourceId.mp_weapon_satchel ] 	 				= "Satchel",
-		//[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
+		[ eDamageSourceId.mp_weapon_satchel ] 	 				= "Satchel",
+		[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
 		[ eDamageSourceId.mp_weapon_sentinel ] 						= "Sentinel",
-		//[ eDamageSourceId.mp_weapon_mobile_hmg ] 					= "Sheila",
+		[ eDamageSourceId.mp_weapon_mobile_hmg ] 					= "Sheila",
 		[ eDamageSourceId.mp_weapon_softball ] 						= "Softball",
-		//[ eDamageSourceId.mp_weapon_epg ] 						= "EPG",
+		[ eDamageSourceId.mp_weapon_epg ] 						= "EPG",
 		//[ eDamageSourceId.mp_weapon_smr ] 						= "Sidewinder SMR",
 		//[ eDamageSourceId.mp_weapon_rocket_launcher ] 			= "Softball",
 		[ eDamageSourceId.mp_weapon_car ] 							= "Car SMG",
@@ -673,8 +677,8 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_oddball ] 	 						= "Ball",
 		[ eDamageSourceId.mp_weapon_flagpole_primary ] 	 			= "Ball",
 		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball", 
-		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
-		//[ eDamageSourceId.sp_weapon_arc_tool] 	 				= "Arc Tool"
+		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101",
+		[ eDamageSourceId.sp_weapon_arc_tool] 	 				= "Arc Tool",
 		[ eDamageSourceId.mp_weapon_titan_sword ] 	 				= "Sword", 
 		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 			= "Sword",
 		[ eDamageSourceId.melee_titan_sword ] 	 					= "Sword",
@@ -786,14 +790,16 @@ string function PIN_GetDamageCause( var damageInfo )
 	return ""
 }
 
-void function DEV_PrintRegisteredWeapons()
-{
-	string data = "\n\n ------ REGISTERED WEAPON TABLE ------";
-	
-	foreach( int idx, ref in file.damageSourceIDToString )
+#if DEVELOPER
+	void function DEV_PrintDamageSourceIDs()
 	{
-		data += format( "[%d] = \"%s\", \n", idx, ref )
+		string data = "\n\n ------ DAMAGE SOURCE IDS ------ \n\n";
+		
+		foreach( int idx, ref in file.damageSourceIDToString )
+		{
+			data += format( "[%d] = \"%s\", \n", idx, ref )
+		}
+		
+		printt( data )
 	}
-	
-	printt( data )
-}
+#endif

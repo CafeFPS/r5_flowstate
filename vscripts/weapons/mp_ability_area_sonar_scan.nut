@@ -1,17 +1,13 @@
-// Updated by @CafeFPS
-
 global function MpAbilityAreaSonarScan_Init
 
 global function OnWeaponActivate_ability_area_sonar_scan
 global function OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan
 
-#if CLIENT
-global function ServerCallback_SonarAreaScanTarget
-#endif //CLIENT
-
 #if SERVER
-global function GetAreaSonarScanDuration
-global function IsHostileSonarTarget
+global function AreaSonarScan_OnSonarTriggerEnterForHostileEnts
+global function AreaSonarScan_OnSonarTriggerEnter
+global function AreaSonarScan_OnSonarTriggerLeave
+global function AreaSonarScan_PropScriptUpdate
 #endif
 
 const asset FLASHEFFECT    = $"P_sonar_bloodhound"
@@ -23,11 +19,10 @@ const int AREA_SCAN_SKIN_INDEX = 9
 
 const float AREA_SONAR_SCAN_RADIUS = 3000.0
 const float AREA_SONAR_SCAN_HUD_FEEDBACK_DURATION = 3.0
-const float AREA_SONAR_SCAN_DURATION = 3.0
-
 global const float AREA_SONAR_SCAN_HIGHLIGHT_DURATION = 1.5
-
 const float AREA_SONAR_SCAN_CONE_FOV = 125.0
+
+const bool AREA_SONAR_PERF_TESTING = false
 
 struct
 {
@@ -39,9 +34,13 @@ struct
 	float areaSonarScanFOV
 
 
-	#if SERVER
+#if SERVER
+	table< entity , int > areaScanIndex
+	table<entity, table< int, array<entity> > >  areaScanTargets
+
+
 	table< entity, entity > eyesEffectHandles
-	#endif
+#endif
 } file
 
 void function MpAbilityAreaSonarScan_Init()
@@ -50,10 +49,10 @@ void function MpAbilityAreaSonarScan_Init()
 	PrecacheParticleSystem( EYEEFFECT )
 	PrecacheParticleSystem( FX_SONAR_TARGET )
 
-	file.areaSonarScanDuration = GetCurrentPlaylistVarFloat( "bloodhound_scan_duration_override", AREA_SONAR_SCAN_DURATION )
+	file.areaSonarScanDuration = GetCurrentPlaylistVarFloat( "bloodhound_scan_duration", 3.0 )
 	file.areaSonarScanRadius = GetCurrentPlaylistVarFloat( "area_sonar_scan_radius_override", AREA_SONAR_SCAN_RADIUS )
 	file.areaSonarScanRadiusSqr = file.areaSonarScanRadius * file.areaSonarScanRadius
-	file.areaSonarScanFOV = GetCurrentPlaylistVarFloat( "bloodhound_scan_cone_fov_override", AREA_SONAR_SCAN_CONE_FOV )
+	file.areaSonarScanFOV = GetCurrentPlaylistVarFloat( "bloodhound_scan_cone_fov", AREA_SONAR_SCAN_CONE_FOV )
 
 	#if CLIENT
 		PrecacheParticleSystem( AREA_SCAN_ACTIVATION_SCREEN_FX )
@@ -79,8 +78,12 @@ var function OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan( entity weap
 
 	#if SERVER
 		//StatusEffect_AddTimed( weaponOwner, eStatusEffect.threat_vision, 1.0, 1.0, 1.0 )
-		thread AreaSonarScan_SonarThink( weaponOwner )
-		thread PlayBattleChatterLineDelayedToSpeakerAndTeam( weaponOwner, "bc_tactical", 0.4 )
+		vector scanOrigin = weaponOwner.GetAttachmentOrigin( weaponOwner.LookupAttachment( "HEADSHOT" ) )
+		thread AreaSonarScan_SonarThink( weaponOwner, scanOrigin,weaponOwner.GetViewForward(), AreaSonarScan_GetScanRadius() )
+		var battleChatterLine = GetWeaponInfoFileKeyField_Global( weapon.GetWeaponClassName(), "battle_chatter_event" )
+
+		if ( battleChatterLine != null )
+			thread PlayBattleChatterLineDelayedToSpeakerAndTeam( weaponOwner, expect string( battleChatterLine ), 0.4 )
 	#endif //SERVER
 
 	#if CLIENT
@@ -93,12 +96,35 @@ var function OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan( entity weap
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
 }
 
+
+
 float function AreaSonarScan_GetConeFOV()
 {
 	return file.areaSonarScanFOV
 }
 
 #if SERVER
+float function GetScanHighlightDuration( entity player )
+{
+	float dur = AREA_SONAR_SCAN_HIGHLIGHT_DURATION
+
+	return dur
+}
+
+float function AreaSonarScan_GetDuration( )
+{
+	return file.areaSonarScanDuration
+}
+
+float function AreaSonarScan_GetScanRadius( )
+{
+	return file.areaSonarScanRadius
+}
+float function AreaSonarScan_GetScanRadiusSqr( )
+{
+	return file.areaSonarScanRadiusSqr
+}
+
 void function AreaSonarScan_PlayActivateSound( entity owner )
 {
 	Assert( IsValid( owner ) )
@@ -108,62 +134,166 @@ void function AreaSonarScan_PlayActivateSound( entity owner )
 	EmitSoundOnEntityOnlyToPlayer( owner, owner, "SonarScan_Activate_1p" )
 }
 
-void function AreaSonarScan_SonarThink( entity owner )
+void function AreaSonarScan_SonarThink( entity owner, vector scanOrigin, vector scanDirection, float scanRadius )
 {
 	owner.EndSignal( "OnDeath" )
 	owner.EndSignal( "OnDestroy" )
 
-	StatusEffect_AddTimed( owner, eStatusEffect.device_detected, 0.01, file.areaSonarScanDuration, 0.0 )
-	StatusEffect_AddTimed( owner, eStatusEffect.sonar_pulse_visuals, 1, file.areaSonarScanDuration, 0.0 )
+	StatusEffect_AddTimed( owner, eStatusEffect.device_detected, 0.01, AreaSonarScan_GetDuration( ), 0.0 )
+	StatusEffect_AddTimed( owner, eStatusEffect.sonar_pulse_visuals, 1, AreaSonarScan_GetDuration( ), 0.0 )
 
-	int attachmentID = owner.LookupAttachment( "HEADSHOT" )
+// #if SERVER
+	// if ( owner.IsPlayer() )
+		// owner.Anim_PlayAttackGesture()
+// #endif
 
-	int team = owner.GetTeam()
-	vector pulseOrigin = owner.GetAttachmentOrigin( attachmentID )
+	int team           = owner.GetTeam()
+	vector pulseOrigin = scanOrigin
 	array<entity> ents = []
 
-	entity trigger = CreateTriggerRadiusMultiple( pulseOrigin, file.areaSonarScanRadius, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
-	trigger.e.sonarConeDirection 	= owner.GetViewForward()
-	trigger.e.sonarConeFOV 			= file.areaSonarScanFOV
-	trigger.e.sonarConeDetections	= 0
-	SetTeam( trigger, team )
-	trigger.SetOwner( owner )
-	trigger.RemoveFromAllRealms()
-	trigger.AddToOtherEntitysRealms( owner )
+	pulseOrigin = ClampToWorldspace( pulseOrigin )
 
-	//Create a trigger cylinder that only detects collision with prop scripts that have been registered using AddSonarDetectionForPropScript.
-	array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts()
-	if ( sonarRegisteredPropScripts.len() )
+	bool USE_FASTER_SCAN_LOGIC = GetCurrentPlaylistVarBool( "area_sonar_scan_faster_scan_logic", true )
+	owner.e.sonarConeDirection 	= scanDirection
+	owner.e.sonarConeFOV 			= AreaSonarScan_GetConeFOV()
+	owner.e.sonarConeDetections	= 0
+
+	entity trigger
+	int thisAreaScanIndex = -1
+	if ( USE_FASTER_SCAN_LOGIC )
 	{
-		thread AreaSonarScan_PropScriptUpdate( owner )
+		if ( !(owner in file.areaScanTargets) )
+			file.areaScanIndex[owner] <- 0
+		else
+			file.areaScanIndex[owner]++
+
+		if ( !(owner in file.areaScanTargets) )
+		{
+			table< int, array<entity> > areaScanTargetTable
+			file.areaScanTargets[owner] <- areaScanTargetTable
+		}
+
+		if ( file.areaScanTargets[owner].len() == 0 )
+		{
+			file.areaScanIndex[owner] = 0
+		}
+
+		thisAreaScanIndex = file.areaScanIndex[owner]
+
+
+		file.areaScanTargets[owner][thisAreaScanIndex] <- []
+
+		array<entity> enemyPlayers = GetPlayerArrayOfEnemies( team )
+		foreach ( enemy in enemyPlayers )
+		{
+			AreaSonarScan_CheckandScanValidTarget( owner, enemy )
+		}
+
+		array<entity> npcArray = GetNPCArray()
+		foreach ( npc in npcArray )
+		{
+			AreaSonarScan_CheckandScanValidTarget( owner, npc )
+		}
 	}
 
-	//IncrementSonarPerTeam( team )
+	else
+	{
+		trigger = CreateTriggerRadiusMultiple_Deprecated( pulseOrigin, scanRadius, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
+		SetTeam( trigger, team )
+		trigger.SetOwner( owner )
+		trigger.RemoveFromAllRealms()
+		trigger.AddToOtherEntitysRealms( owner )
+		trigger.e.sonarConeDirection 	= scanDirection
+		trigger.e.sonarConeFOV 			= AreaSonarScan_GetConeFOV()
+		trigger.e.sonarConeDetections	= 0
 
+
+		if ( HasForceUseCodeTriggers() )
+			AddCallback_ScriptTriggerEnter_Deprecated( trigger, AreaSonarScan_OnSonarTriggerEnterForHostileEnts )
+		else
+			AddCallback_ScriptTriggerEnter_Deprecated( trigger, AreaSonarScan_OnSonarTriggerEnter )
+
+		AddCallback_ScriptTriggerLeave_Deprecated( trigger, AreaSonarScan_OnSonarTriggerLeave )
+
+		ScriptTriggerSetEnabled_Deprecated( trigger, true )
+	}
+
+	if ( USE_FASTER_SCAN_LOGIC )
+	{
+		array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts( scanOrigin, scanRadius )
+		if ( sonarRegisteredPropScripts.len() > 0 )
+		{
+			foreach ( prop in sonarRegisteredPropScripts )
+			{
+				entity actualSonarPropScript = GetSonarRegisteredPropScriptFromProxy( prop )
+				if ( IsValid( actualSonarPropScript ) )
+					prop = actualSonarPropScript
+
+				AreaSonarScan_CheckandScanValidTarget( owner, prop )
+			}
+		}
+	}
+	else
+	{
+		//Create a trigger cylinder that only detects collision with prop scripts that have been registered using AddSonarDetectionForPropScript.
+		array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts( scanOrigin, scanRadius )
+		if ( sonarRegisteredPropScripts.len() > 0 )
+		{
+			thread AreaSonarScan_PropScriptUpdate( owner )
+			//		printt( "sonar scan enter props: " + ent )
+		}
+	}
+
+	//printt( "AreaSonarScan Start, thisScanIndex: " + thisAreaScanIndex )
+	//foreach( k, ownerTable in file.areaScanTargets[owner])
+	//{
+	//	foreach( target in ownerTable )
+	//	{
+	//		printt( "AreaSonar Scan index: " + k + " target: " +target )
+	//	}
+	//}
+
+	PassByReferenceBool hasRemovedHighlight
+	hasRemovedHighlight.value = false
 	OnThreadEnd(
-		function() : ( owner, trigger, team )
+		function() : ( owner, trigger, team, thisAreaScanIndex, hasRemovedHighlight)
 		{
 			if ( IsValid ( owner ) )
 			{
-				if ( trigger.e.sonarConeDetections > 0 )
+				if ( owner.e.sonarConeDetections > 0 )
 				{
 					// play the target acquisition end sound here
 					 EmitSoundOnEntityOnlyToPlayer( owner, owner, "SonarScan_AcquiredOut_1p" )
 				}
+			}
+			if ( owner in file.areaScanTargets )
+			{
+				//printt( "AreaSonarScan End, thisScanIndex: " + thisAreaScanIndex )
+				//foreach( k, ownerTable in file.areaScanTargets[owner])
+				//{
+				//	foreach( target in ownerTable )
+				//	{
+				//		printt( "AreaSonar Scan index: " + k + " target: " +target )
+				//	}
+				//}
 
-				int deviceCount = 2 + trigger.e.sonarConeDetections //Two device means no devices for our purposes.
-				float cappedCount = min ( deviceCount, 12 )
-				float convertedCount = cappedCount * 0.01
-				StatusEffect_AddTimed( owner, eStatusEffect.device_detected, convertedCount, AREA_SONAR_SCAN_HUD_FEEDBACK_DURATION, 0.0 )
+				foreach( target in file.areaScanTargets[owner][thisAreaScanIndex] )
+				{
+					SonarEnd( target, team, owner, !hasRemovedHighlight.value )
+
+					//printt( "Sonar End: " + target )
+					//DebugDrawText( target.GetOrigin(), "sonar count: " + target.e.inSonarTriggerCount, false, AreaSonarScan_GetDuration() )
+				}
+				delete file.areaScanTargets[owner][thisAreaScanIndex]
 			}
 
-			//DecrementSonarPerTeam( team )
-			trigger.Destroy()
+			if ( IsValid ( trigger ) )
+				trigger.Destroy()
+
 		}
 	)
 
-	AddCallback_ScriptTriggerEnter( trigger, AreaSonarScan_OnSonarTriggerEnter )
-	ScriptTriggerSetEnabled( trigger, true )
+
 
 	AreaSonarScan_PlayActivateSound( owner )
 
@@ -172,7 +302,7 @@ void function AreaSonarScan_SonarThink( entity owner )
 
 	int pulseAttachmentID = owner.LookupAttachment( "HEADSHOT" )
 	array<entity> players = GetPlayerArray()
-	AreaSonarScan_BroadcastPulseConeEffectToPlayers( pulseOrigin, trigger.e.sonarConeDirection, trigger.e.sonarConeFOV, players, team, owner )
+	AreaSonarScan_BroadcastPulseConeEffectToPlayers( pulseOrigin, scanRadius, scanDirection, AreaSonarScan_GetConeFOV(), players, team, owner )
 
 	if ( !(owner in file.eyesEffectHandles) )
 		file.eyesEffectHandles[owner] <- null
@@ -182,9 +312,29 @@ void function AreaSonarScan_SonarThink( entity owner )
 
 	file.eyesEffectHandles[owner].SetOwner( owner )
 	file.eyesEffectHandles[owner].kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // not owner only
+	thread DestroyAfterDelay( file.eyesEffectHandles[owner], 10.0 )
 
-	WaitFrame()
-//	wait file.areaSonarScanDuration
+	int deviceCount = 2 + owner.e.sonarConeDetections //Two device means no devices for our purposes.
+
+	float cappedCount = min ( deviceCount, 13 ) // this gives us a max of 11 that is displayed as 10+ hostiles detected
+	float convertedCount = cappedCount * 0.01
+	StatusEffect_AddTimed( owner, eStatusEffect.device_detected, convertedCount, AREA_SONAR_SCAN_HUD_FEEDBACK_DURATION, 0.0 )
+
+	float areaScanDuration = AreaSonarScan_GetDuration( )
+	float highlightScanDuration = GetScanHighlightDuration( owner )
+
+	wait highlightScanDuration
+
+	foreach( target in file.areaScanTargets[owner][thisAreaScanIndex] )
+	{
+		SonarEnd_EndHighlight( target, team, owner )
+	}
+	hasRemovedHighlight.value = true
+
+	if( areaScanDuration > highlightScanDuration )
+	{
+		wait areaScanDuration - highlightScanDuration
+	}
 }
 
 void function AreaSonarScan_PropScriptUpdate( entity owner )
@@ -196,11 +346,12 @@ void function AreaSonarScan_PropScriptUpdate( entity owner )
 	int team = owner.GetTeam()
 	int attachmentID = owner.LookupAttachment( "CHESTFOCUS" )
 	vector pulseOrigin = owner.GetAttachmentOrigin( attachmentID )
+	float scanRadius = AreaSonarScan_GetScanRadius()
 
-	array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts()
-	entity triggerPropScript = CreateTriggerRadiusMultiple( pulseOrigin, file.areaSonarScanRadius, sonarRegisteredPropScripts, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
+	array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts( pulseOrigin, scanRadius )
+	entity triggerPropScript = CreateTriggerRadiusMultiple_Deprecated( pulseOrigin, scanRadius, sonarRegisteredPropScripts, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT ) //TODO: Rewrite this so we don't need to pass in an ent array and a filter function AreaSonarScan_OnSonarTriggerEnter
 	triggerPropScript.e.sonarConeDirection 	= owner.GetViewForward()
-	triggerPropScript.e.sonarConeFOV 		= file.areaSonarScanFOV
+	triggerPropScript.e.sonarConeFOV 		= AreaSonarScan_GetConeFOV()
 	SetTeam( triggerPropScript, team )
 	triggerPropScript.SetOwner( owner )
 	triggerPropScript.RemoveFromAllRealms()
@@ -216,20 +367,99 @@ void function AreaSonarScan_PropScriptUpdate( entity owner )
 		}
 	)
 
-	AddCallback_ScriptTriggerEnter( triggerPropScript, AreaSonarScan_OnSonarTriggerEnter )
-	ScriptTriggerSetEnabled( triggerPropScript, true )
+	if ( HasForceUseCodeTriggers() )
+		AddCallback_ScriptTriggerEnter_Deprecated( triggerPropScript, AreaSonarScan_OnSonarTriggerEnterForPropScript  )
+	else
+		AddCallback_ScriptTriggerEnter_Deprecated( triggerPropScript, AreaSonarScan_OnSonarTriggerEnter )
 
-	wait file.areaSonarScanDuration
+	AddCallback_ScriptTriggerLeave_Deprecated( triggerPropScript, AreaSonarScan_OnSonarTriggerLeave )
+
+	ScriptTriggerSetEnabled_Deprecated( triggerPropScript, true )
+
+	wait AreaSonarScan_GetDuration( )
 }
 
-void function AreaSonarScan_BroadcastPulseConeEffectToPlayers( vector pulseConeOrigin, vector pulseConeDir, float pulseConeFOV, array<entity> players, int team, entity owner )
+void function AreaSonarScan_BroadcastPulseConeEffectToPlayers( vector pulseConeOrigin, float pulseConeRange, vector pulseConeDir, float pulseConeFOV, array<entity> players, int team, entity owner )
 {
 	foreach ( player in players )
 	{
 		bool showTrail = ( owner == player )
 		if ( owner.DoesShareRealms( player ) )
-			Remote_CallFunction_Replay( player, "ServerCallback_SonarPulseConeFromPosition", pulseConeOrigin, file.areaSonarScanRadius, pulseConeDir, pulseConeFOV, team, 3.0, true, showTrail )
+			Remote_CallFunction_Replay( player, "ServerCallback_SonarPulseConeFromPosition", pulseConeOrigin, pulseConeRange, pulseConeDir, pulseConeFOV, team, 3.0, true, showTrail )
 	}
+}
+
+void function AreaSonarScan_OnSonarTriggerEnterForHostileEnts( entity trigger, entity ent ) //Filter function to only call AreaSonarScan_OnSonarTriggerEnter for players, NPCs or player Decoys, since that was the behavior under the old script_triggers
+{
+	if ( IsHostileSonarTarget( trigger.GetOwner(), ent ) )
+		AreaSonarScan_OnSonarTriggerEnter( trigger, ent  )
+}
+
+void function AreaSonarScan_OnSonarTriggerEnterForPropScript( entity trigger, entity ent ) //Filter function to only call AreaSonarScan_OnSonarTriggerEnter for prop_scripts, since this was registered as the enter callback for a trigger meant for prop_scripts
+{
+	array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts( trigger.GetOrigin(), AreaSonarScan_GetScanRadius() )
+	if ( sonarRegisteredPropScripts.len() == 0 )
+		return
+
+	if ( !sonarRegisteredPropScripts.contains( ent ) )
+		return
+
+	entity actualSonarPropScript = GetSonarRegisteredPropScriptFromProxy( ent  )
+	if( IsValid( actualSonarPropScript ) )
+		ent = actualSonarPropScript
+
+	AreaSonarScan_OnSonarTriggerEnter( trigger, ent  )
+}
+
+void function AreaSonarScan_CheckandScanValidTarget( entity owner, entity ent )
+{
+	if ( !IsEnemyTeam( owner.GetTeam(), ent.GetTeam() ) )
+		return
+
+	if ( !ent.DoesShareRealms( owner ) )
+		return
+
+	if ( !IsAlive( ent )  )
+		return
+
+	//Only ping players that are within our sonar cone.
+	vector posToTarget = Normalize( ent.GetCenter() - owner.GetOrigin() )
+	float dot = DotProduct( posToTarget, Normalize( owner.e.sonarConeDirection) )
+	if ( dot <= 0.0 )
+		return
+	float angle = DotToAngle( dot )
+
+
+	//If entity is not in sonar cone don't add it as a target. fudge angle when target is very close
+	float distSqr = Distance2DSqr( ent.GetCenter(), owner.GetOrigin() )
+	float maxDistSqr = AreaSonarScan_GetScanRadiusSqr()
+	if ( distSqr > maxDistSqr )
+		return
+
+	float matchAngle = GraphCapped( distSqr, 32*32, 128*128, owner.e.sonarConeFOV, owner.e.sonarConeFOV / 2 )
+	if ( angle > matchAngle )
+		return
+
+	if ( owner.e.sonarConeDetections == 0 )
+	{
+		// play targer acquisition "start" sound here
+		EmitSoundOnEntityOnlyToPlayer( owner, owner, "SonarScan_AcquireTarget_1p" )
+	}
+
+	if ( IsHostileSonarTarget( owner, ent ) && ent.GetTeam() != TEAM_TICK ) //Hardcoded check, we don't want ticks to show up as hostile but we do want them to be highlighted
+		owner.e.sonarConeDetections++
+
+	//ent.e.sonarTriggers.append( trigger )
+	//printt( "sonar scan enter filtered: " + ent )
+	SonarStart( ent, ent.GetOrigin(), owner.GetTeam(), owner )
+
+	StatsHook_AreaSonarScan_EnemyDetected( owner, ent )
+
+	file.areaScanTargets[owner][file.areaScanIndex[owner]].push( ent )
+
+	//printt( "Sonar Start: " + ent )
+	//DebugDrawSphere( ent.GetOrigin(), 30, COLOR_YELLOW,false, AreaSonarScan_GetDuration() )
+	//DebugDrawText( ent.GetOrigin(), "sonar count: " + ent.e.inSonarTriggerCount, false, AreaSonarScan_GetDuration() )
 }
 
 void function AreaSonarScan_OnSonarTriggerEnter( entity trigger, entity ent )
@@ -261,82 +491,67 @@ void function AreaSonarScan_OnSonarTriggerEnter( entity trigger, entity ent )
 		EmitSoundOnEntityOnlyToPlayer( owner, owner, "SonarScan_AcquireTarget_1p" )
 	}
 
-	if ( IsHostileSonarTarget( owner, ent ) )
+	if ( IsHostileSonarTarget( owner, ent ) && ent.GetTeam() != TEAM_TICK ) //Hardcoded check, we don't want ticks to show up as hostile but we do want them to be highlighted
 		trigger.e.sonarConeDetections++
 
 	ent.e.sonarTriggers.append( trigger )
-	
-	//Start sonar for owner team
-	thread Flowstate_HighlightPlayerTimed( ent, trigger )
-	
-	// remote call the sonar target if it's a player
-	if ( ent.IsPlayer() )
-		Remote_CallFunction_Replay( ent, "ServerCallback_SonarAreaScanTarget", ent, owner )
+
+	SonarStart( ent, ent.GetOrigin(), trigger.GetTeam(), owner )
 
 	StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
 }
 
-void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger )
+void function AreaSonarScan_OnSonarTriggerLeave( entity trigger, entity ent )
 {
-	EndSignal( revealedEnt, "OnDeath" )
-	EndSignal( revealedEnt, "OnDestroy" )
-	
-	entity owner = trigger.GetOwner()
-	int team = owner.GetTeam()
-	
-	IncrementSonarPerTeam( team )
-	SonarStart( revealedEnt, revealedEnt.GetOrigin(), team, owner )
-	
-	#if DEVELOPER
-		printt("target revealed by area sonar scan " + revealedEnt )
-	#endif
-	
-	OnThreadEnd(
-		function() : ( revealedEnt, team, trigger )
-		{
-			if ( !IsValid( revealedEnt ) )
-				return
-			
-			#if DEVELOPER
-				printt("sonar highlight removed" )
-			#endif
-	
-			if( revealedEnt.e.sonarTriggers.contains(trigger) )
-				revealedEnt.e.sonarTriggers.fastremovebyvalue( trigger )
-			
-			SonarEnd( revealedEnt, team )
-			DecrementSonarPerTeam( team )
-		}
-	)
+	int triggerTeam = trigger.GetTeam()
+	if ( !IsEnemyTeam( triggerTeam, ent.GetTeam() ) )
+		return
 
-	wait AREA_SONAR_SCAN_HIGHLIGHT_DURATION
+	if ( ent.e.sonarTriggers.contains( trigger ) )
+	{
+		SonarEnd( ent, triggerTeam, trigger.GetOwner() )
+		ent.e.sonarTriggers.fastremovebyvalue( trigger )
+	}
 }
-
 
 bool function IsHostileSonarTarget( entity owner, entity ent )
 {
-	if ( !ent.IsPlayer() && !ent.IsNPC() )
+	int entTeam = ent.GetTeam()
+	if ( !IsEnemyTeam( owner.GetTeam(), entTeam ) )
 		return false
 
-	if ( ent.GetTeam() == 100 )
+	if ( owner == ent )
+		return false
+
+	if ( !IsAlive( ent )  )
+		return false
+
+	if ( !( ent instanceof CBaseAnimating ) ) //This is needed because when we create the clientside prop dynamic clone for sonar it won't work unless it is also CBaseAnimating. The specific case for this is Bangalore's smoke which creates a trace_volume, which return true for IsAlive() thus bypassing the previous check.
+		return false
+
+	string propString = "prop_"
+	string ornull className = ent.GetNetworkedClassName()
+	if ( className != null )
+	{
+		expect string( className )
+		if ( className.slice( 0, propString.len() ) == propString )
+			return false
+	}
+
+	if ( !ent.IsPlayer() && !ent.IsNPC() && !ent.IsPlayerDecoy() && ( IsValid( ent.GetBossPlayer() ) || ( IsValid( ent.GetOwner() ) && ent.GetOwner().IsPlayer() ) ) ) //Covers the case for fake AI like Flyers, but excludes stuff like caustic barrels
+		return false
+
+	if ( ent.IsNPC() && ent.GetAIClassName() == "marvin" )
+		return false
+
+	if ( ent.IsProjectile() )
 		return false
 
 	return true
 }
-
-float function GetAreaSonarScanDuration()
-{
-	return file.areaSonarScanDuration
-}
 #endif
 
 #if CLIENT
-void function ServerCallback_SonarAreaScanTarget( entity sonarTarget, entity owner )
-{
-	if ( sonarTarget == GetLocalViewPlayer() )
-		thread CreateViemodelSonarFlash( sonarTarget )
-}
-
 void function CreateViemodelSonarFlash( entity ent )
 {
 	EndSignal( ent, "OnDestroy" )
@@ -383,35 +598,6 @@ void function CreateViemodelSonarFlash( entity ent )
 
 	if ( IsValid( predictedFirstPersonProxy ) )
 		SonarViewModelClearHighlight( predictedFirstPersonProxy )
-}
-
-void function CreateSonarCloneForEnt( entity sonarTarget, entity owner )
-{
-	entity entClone = CreateClientSidePropDynamicClone( sonarTarget, sonarTarget.GetModelName() )
-	if ( !IsValid( entClone ) ) //JFS - Could further investigate why this particular function can return null. Code comment was referring to TF1 stuff.
-		return
-
-	EndSignal( entClone, "OnDestroy" )
-	SonarPlayerCloneHighlight( entClone )
-
-	int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
-	int fxHandle = -1
-
-	if ( owner == GetLocalViewPlayer() )
-	{
-		fxHandle = StartParticleEffectOnEntity( entClone, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, entClone.LookupAttachment( "CHESTFOCUS" ) )
-	}
-
-	OnThreadEnd(
-		function() : ( fxHandle )
-		{
-			if ( EffectDoesExist( fxHandle ) )
-				EffectStop( fxHandle, true, true )
-		}
-	)
-
-	wait file.areaSonarScanDuration
-	entClone.Destroy()
 }
 
 void function AreaSonarScan_StartScreenEffect( entity player, int statusEffect, bool actuallyChanged )
@@ -464,3 +650,4 @@ void function ColorCorrection_LerpWeight( int colorCorrection, float startWeight
 }
 
 #endif //CLIENT
+

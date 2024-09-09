@@ -34,8 +34,8 @@ WeaponData
 	"stat_rof"										"19"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/softball_at/v_softball_at.rmdl"
-	"playermodel" 									"mdl/weapons/softball_at/w_softball_at.rmdl"
+	"viewmodel"   									"mdl/weapons/w1128/ptpov_w1128.rmdl"
+	"playermodel" 									"mdl/weapons/w1128/w_w1128.rmdl"
 	"projectilemodel" 								"mdl/weapons/bullets/mgl_grenade.rmdl"
 	"holster_type"									"rifle"
 

@@ -17,6 +17,8 @@ global function SURVIVAL_RunArenaDeathField
 global function SURVIVAL_GetCirclesCompleted
 global function SURVIVAL_GetDeathFieldData
 global function SURVIVAL_GetDeathFieldStages
+global function SURVIVAL_GetCalculatedMapCenter
+global function SURVIVAL_GetCalculatedMapRadiusBig
 global function SURVIVAL_Server_GetNextDeathFieldEndRadius
 global function SURVIVAL_AddCallback_OnDeathFieldStartShrink
 global function SURVIVAL_AddCallback_OnDeathFieldStopShrink
@@ -29,6 +31,7 @@ global function SetSurveyBaconMinimapVisibility
 global function Pathfinder_SurveySuccess
 global function OnPanelUse_SurveyBeacon
 global function OnPanelUseFinished_SurveyBeacon
+global function DeathField_GetStartCircleCenter
 #endif
 
 #if CLIENT
@@ -118,6 +121,10 @@ struct
 		table<vector, float>                         overrideCircleEndPos
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStartShrink
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStopShrink
+		bool verifyCircleCenter		
+		vector calculatedMapCenter
+		float calculatedMapRadiusBig
+		float calculatedMapRadiusSmall
 	#endif
 
 	DeathFieldData             deathFieldData
@@ -152,6 +159,7 @@ void function Sh_ArenaDeathField_Init()
 	RegisterSignal( "GenerateDeathFieldData" )
 	RegisterSignal( "DeathField_ShrinkNow" )
 
+	FlagInit( "UsePreciseFinalCircleOverride" )
 	FlagInit( "DeathCircleActive", false )
 	FlagInit( "AllowDeathFieldUpdate", true )
 	FlagInit( "DeathFieldPaused", GetCurrentPlaylistVarBool( "sur_circle_start_paused", false ) )
@@ -186,7 +194,7 @@ DeathFieldStageData function GetDeathFieldStage( int index )
     if(file.deathFieldStages.len() == 0)
         InitDeathFieldDataAndStageData()
         
-    if(file.deathFieldStages.len() > index)
+    if( file.deathFieldStages.len() > index && index > -1 )
         return file.deathFieldStages[ index ]
 
     #if DEVELOPER
@@ -569,7 +577,8 @@ void function SURVIVAL_RunArenaDeathField()
 
 		foreach ( player in GetPlayerArray_Alive() )
 		{
-			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceCircleClosing" )
+			Remote_CallFunction_ByRef( player, "ServerCallback_AnnounceCircleClosing" )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceCircleClosing" )
 		}
 
 		wait MARGIN_WAIT_TIME
@@ -799,7 +808,8 @@ void function DEV_ForceDeathFieldPosition( vector endPos )
 	waitthread GenerateDeathFieldData( endPos, 5.0 )
 }
 
-void function DEV_SimulateFinalLocations( int tries = 2000, float drawTime = 100.0 )
+
+void function DEV_SimulateFinalLocations( int tries = 2000, float drawTime = 600.0, bool generateCircles = true, float waitTime = 0.0, float circleDrawTime = 1.0, bool showCirclePull = false, bool showLastCircle = false )
 {
 	for ( int i = 0; i < tries; i++ )
 	{
@@ -836,11 +846,15 @@ void function DEV_ResetSurveyZones()
 #endif //DEV
 
 
-void function SURVIVAL_AddOverrideCircleLocation( vector origin, float radius )
+void function SURVIVAL_AddOverrideCircleLocation( vector origin, float radius, bool forcePreciseLocation = false )
 {
-	#if DEVELOPER
-		file.overrideCircleEndPos[ origin ] <- radius
-	#endif
+	if ( forcePreciseLocation )
+	{
+		FlagInit( "UsePreciseFinalCircleOverride", true )
+		FlagSet( "UsePreciseFinalCircleOverride" )
+	}
+
+	file.overrideCircleEndPos[ origin ] <- radius
 }
 
 void function SURVIVAL_AddOverrideCircleLocation_Nitro( vector origin, float radius )
@@ -851,10 +865,37 @@ void function SURVIVAL_AddOverrideCircleLocation_Nitro( vector origin, float rad
 
 void function DeathFieldCreatePositions()
 {
+	CalculateMapCenter()
 	vector finalLocation = GetFinalDeathFieldLocation()
 	thread GenerateDeathFieldData( finalLocation )
 
 	HeatMapStat( null, "Sur_CircleEndPoint", < finalLocation.x, finalLocation.y, 0 > )
+}
+
+void function CalculateMapCenter()
+{
+	array<entity> allLootBins = GetAllLootBins()
+	float max_X, max_Y, min_X, min_Y
+	foreach ( entity bin in allLootBins )
+	{
+		vector origin = bin.GetOrigin()
+		if ( origin.x < min_X )
+			min_X = origin.x
+		else if ( origin.x > max_X )
+			max_X = origin.x
+
+		if ( origin.y < min_Y )
+			min_Y = origin.y
+		else if ( origin.y > max_Y )
+			max_Y = origin.y
+	}
+
+	file.calculatedMapCenter = < (max_X + min_X) * 0.5, (max_Y + min_Y) * 0.5, 0 >
+
+	float width          		= (max_X - min_X) * 0.5
+	float height         		= (max_Y - min_Y) * 0.5
+	file.calculatedMapRadiusBig = sqrt( (width * width) + (height * height) )
+	file.calculatedMapRadiusSmall  	= width > height ? width : height
 }
 
 vector function FS_ClampToWorldSpace( vector origin )
@@ -874,6 +915,7 @@ vector function GetFinalDeathFieldLocation()
 
 	vector endPoint
 	bool foundSpot = false
+	float finalRadius = max( file.deathFieldStages[ file.deathFieldStages.len() - 1 ].endRadius, 0 )
 
 	if ( file.overrideCircleEndPos.len() > 0 )
 	{
@@ -887,20 +929,19 @@ vector function GetFinalDeathFieldLocation()
 			if ( i == randomIndex )
 			{
 				baseOrigin = origin
-				//DebugDrawCircle( origin, <0,0,0>, radius, 255, 255, 0, true, 30.0 )
-				//DebugDrawCircle( <0,0,0>, <0,0,0>, REALBIG_CIRCLE_END_RADIUS, 255, 0, 255, true, 30.0 )
+
 				int timesToTry = 20
 				for ( int k = 0 ; k < timesToTry ; k++ )
 				{
-					endPoint = GetRandomCenter( origin, 0, radius )
-					if ( Distance2D( endPoint, <0, 0, 0> ) <= REALBIG_CIRCLE_END_RADIUS )
+					if ( radius <= 0 )
+						endPoint = origin
+					else
+						endPoint = GetRandomCenter( origin, 0, radius )
+					if ( Distance2D( endPoint, <0, 0, 0> ) <= REALBIG_CIRCLE_END_RADIUS || Flag( "Deathfield_ForceOverridePos" ) )
 					{
-						#if DEVELOPER
-							printt( "Override END POS: " + endPoint )
-						#endif 
-						
+						printt( "Override END POS: " + endPoint )
 						foundSpot = true
-						//DebugDrawSphere( endPoint, 48.0, 255, 255, 0, true, 30.0 )
+						//DebugDrawSphere( endPoint, 48.0, COLOR_YELLOW, true, 30.0 )
 						break
 					}
 				}
@@ -926,109 +967,279 @@ vector function GetFinalDeathFieldLocation()
 		}
 	}
 
+	if ( GetHaveStartCircle() )
+	{
+		// if we have a start circle is the final point inside it
+		if ( foundSpot && !( Distance2D( endPoint, DeathField_GetStartCircleCenter() ) <= SURVIVAL_Deathfield_GetStartRadius() - finalRadius ) )
+		{
+			foundSpot = false
+		}
+
+		if ( !foundSpot )
+		{
+			float maxDeviation = SURVIVAL_Deathfield_GetStartRadius() - finalRadius
+			endPoint = GetRandomCenterDistributed( DeathField_GetStartCircleCenter(), 0, maxDeviation )
+			foundSpot = true
+		}
+	}
+
 	if ( !foundSpot )
 	{
-		// doing a coinflip here so 50% of the games are true random (probably bell curve) and 50% of the games are edge games
 
-		float minDeviation = 1000
+		if ( GetCurrentPlaylistVarBool( "survival_deathfield_final_pos_use_distributed_center", true ) )
+		{
+			float maxDeviation = file.calculatedMapRadiusBig
 
-        array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
-        array<entity> invalidEndZones
-        
-        foreach( lzEnt in lzEnts )
-        {
-            if( GetEditorClass( lzEnt ) != "info_survival_invalid_end_zone" )
-                continue
-            
-            invalidEndZones.push(lzEnt)
+			if ( maxDeviation == 0.0 )		// Avoid a divide-by-zero issue where endpoint becomes NaN
+			{
+				endPoint = <0, 0, 0>
+			}
+			else
+			{
+				float minDeviation = 0.0
+
+				endPoint = GetRandomCenterDistributed( file.calculatedMapCenter, minDeviation, maxDeviation )
+			}
+
 		}
-		bool coinFlip = CoinFlip()
-        while(true)
-        {
-            if ( coinFlip ) 
-                endPoint = GetRandomCenter( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS * 0.9)
-            else
-                endPoint = GetRandomCenterBiasedToEdge( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS * 0.9 )
-            
-            if(invalidEndZones.len() == 0)
-                break
-			
-			endPoint = FS_ClampToWorldSpace( endPoint )
+		else
+		{
+			float minDeviation = 1000
+			float maxDeviation = REALBIG_CIRCLE_END_RADIUS
 
-            TraceResults trace = TraceHull( <endPoint.x, endPoint.y, 10000>, <endPoint.x, endPoint.y, -512>, <-80,-80,0>, <80,80,256>, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
-            if ( trace.fraction == 1 )
-                continue
-
-            if(IsPointOutOfBounds(endPoint))
-                continue
-            
-            foreach( invalidZone in invalidEndZones )
-            {
-                if((Distance2D(endPoint, invalidZone.GetOrigin()) < float(invalidZone.kv.script_radius)))
-                    continue
-            }
-
-            endPoint = trace.endPos
-			break
-        }
-			
+			// doing a coinflip here so 50% of the games are true random (probably bell curve) and 50% of the games are edge games
+			if ( RandomFloat( 1.0 ) < 0.6 )
+				endPoint = GetRandomCenter( <0, 0, 0>, minDeviation, maxDeviation )
+			else
+				endPoint = GetRandomCenterBiasedToEdge( <0, 0, 0>, minDeviation, maxDeviation )
+		}
 	}
 
-    array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
-        
-    foreach( lzEnt in lzEnts )
-    {
-        if( GetEditorClass( lzEnt ) != "info_survival_invalid_end_zone" )
-            continue
-           
-        lzEnt.Destroy() // save edicts
+	vector finalLocation
+	if ( Flag( "UsePreciseFinalCircleOverride" ) )
+	{
+		finalLocation = < endPoint.x, endPoint.y, 0>
 	}
-	// endPoint = Vector( 0,0,0)
-	//printt( "final location before navmesh" + endPoint )
-	vector finalLocation  = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
-	//DebugDrawLine( <endPoint.x, endPoint.y, 0>, <lootLocation.x, lootLocation.y, 0>, 0,255,0, true, 100.0 )
-	finalLocation = GetClosestEndZonePoint( finalLocation ).origin
-	//printt( "final location after navmesh" + finalLocation )
-    //TODO: Needs more testing
-	//DebugDrawLine( <lootLocation.x, lootLocation.y, 0>, <finalLocation.x, finalLocation.y, 0>, 0,0,255, true, 100.0 )
+	else
+	{
+		bool foundFinalLocation = false
+
+		if ( !foundFinalLocation && GetCurrentPlaylistVarBool( "survival_deathfield_finalpos_use_all_loot", true ) )
+		{
+			vector lootLocation
+
+			if ( GetCurrentPlaylistVarBool( "survival_deathfield_finalpos_snap_to_loot", true ) )
+			{
+				lootLocation = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
+			}
+			else
+			{
+				lootLocation = endPoint
+			}
+
+			if ( file.overrideCircleEndPos.len() <= 0 && GetCurrentPlaylistVarBool( "survival_deathfield_finalpos_filter_edges", true ) )
+			{
+				float maxDistToLoot = GetCurrentPlaylistVarFloat( "deathfield_finalpos_maxlootdist", 3000.0 )
+				float maxDistToLootSQ = maxDistToLoot * maxDistToLoot
+				float maxDistToLootTight = GetCurrentPlaylistVarFloat( "deathfield_finalpos_maxlootdist_tight", 1000.0 )
+				float maxDistToLootTightSQ = maxDistToLootTight * maxDistToLootTight
+				const bool  DEBUG_DRAW_ENDPOINT_RANGE_TEST = false
+
+				int numIterations
+				int maxIterations = 20
+				int iterationsToMinPickRadius = maxint( GetCurrentPlaylistVarInt( "deathfield_attempts_until_min_pick_radius", 8 ), 1 )
+				float smallRadiusSQ = file.calculatedMapRadiusSmall * file.calculatedMapRadiusSmall
+				while ( true )
+				{
+					lootLocation = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
+					float locToNearestLootSQ = Distance2DSqr( endPoint, lootLocation )
+					float maxDistThresholdSQ = VerifyCircleCenter( endPoint, false ) ? maxDistToLootSQ : maxDistToLootTightSQ
+
+					if ( (locToNearestLootSQ > maxDistThresholdSQ) )
+					{
+						numIterations++
+
+						if ( numIterations >= maxIterations )
+						{
+							if ( DEBUG_DRAW_ENDPOINT_RANGE_TEST )
+								DebugDrawLine( lootLocation, endPoint, COLOR_MAGENTA, true, 30.0 )
+
+							break
+						}
+						else
+						{
+							if ( DEBUG_DRAW_ENDPOINT_RANGE_TEST )
+								DebugDrawLine( lootLocation, endPoint, COLOR_RED, true, 30.0 )
+
+							float radiusScalar = 1.0 - 0.4 * (( numIterations > iterationsToMinPickRadius ? iterationsToMinPickRadius : numIterations) / iterationsToMinPickRadius )
+							endPoint = GetRandomCenterDistributed( DeathField_GetStartCircleCenter(), 0.0, SURVIVAL_Deathfield_GetStartRadius() * radiusScalar )
+
+							continue
+						}
+					}
+					else
+					{
+						if ( DEBUG_DRAW_ENDPOINT_RANGE_TEST )
+							DebugDrawLine( lootLocation, endPoint, COLOR_BLUE, true, 30.0 )
+
+						break
+					}
+				}
+			}
+
+			//if ( file.debug_DisplayUnprocessedEndPoints )
+				//file.debug_UnprocessedEndPoints.append( endPoint )
+
+			int MAX_TIMES     = 20
+			int times         = 0
+			float startOffset = RandomFloat( 360.0 )
+
+			float testOffset = RandomFloatRange( 500.0, 2000.0 )
+			float angleDiff  = 360.0 / MAX_TIMES
+
+			vector airdropLoc = GetClosestEndZonePoint( lootLocation ).origin
+			if ( GetCurrentPlaylistVarBool( "survival_deathfield_finalpos_use_closest_airdrop", false ) )
+			{
+				if ( SURVIVAL_IsValidCircleLocation( airdropLoc ) )
+				{
+					foundFinalLocation = true
+					finalLocation = airdropLoc
+				}
+			}
+
+			while ( !foundFinalLocation && times < MAX_TIMES )
+			{
+				float angle   = ((angleDiff * float(times)) + startOffset) % 360.0
+				vector fwd    = AnglesToForward( <0, angle, 0> )
+				vector newOrg = lootLocation + (fwd * testOffset)
+
+				airdropLoc = GetClosestEndZonePoint( newOrg ).origin
+
+				if ( SURVIVAL_IsValidCircleLocation( airdropLoc ) )
+				{
+					foundFinalLocation = true
+					finalLocation = airdropLoc
+					break
+				}
+
+				times++
+			}
+		}
+
+		if ( !foundFinalLocation )
+		{
+
+			vector lootLocation = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
+			finalLocation = GetClosestEndZonePoint( lootLocation ).origin
+		}
+	}
+
 	return finalLocation
 }
 
 void function GenerateDeathFieldData( vector endPos, float drawTime = 0.0 )
 {
 	svGlobal.levelEnt.Signal( "GenerateDeathFieldData" )
-	svGlobal.levelEnt.EndSignal( "GenerateDeathFieldData" )
 
 	vector endPoint = < endPos.x, endPos.y, 0 >
-
 	vector currentPoint = endPoint
+
+	float controlRadiusInner = GetCurrentPlaylistVarFloat( "deathfield_control_radius_inner", REALBIG_CIRCLE_END_RADIUS_SMALL_INNER )
+	float controlRadiusOuter = GetCurrentPlaylistVarFloat( "deathfield_control_radius_outer", REALBIG_CIRCLE_END_RADIUS_SMALL_OUTER )
+
+	if ( GetHaveStartCircle() )
+	{
+		controlRadiusOuter = SURVIVAL_Deathfield_GetStartRadius()
+		controlRadiusInner = controlRadiusOuter * 0.75  // matches REALBIG radi ratio
+	}
 
 	float prevRadius = 0
 	for ( int i = file.deathFieldStages.len() - 1; i >= 0; i-- )
 	{
 		DeathFieldStageData data = file.deathFieldStages[i]
-		float bounds             = REALBIG_CIRCLE_END_RADIUS
 
-		vector direction       = GetPreviousCircleDirection( currentPoint, data.endRadius )
-		float distanceToBounds = GetDistanceToBounds( currentPoint, direction, bounds )
-		float radiusToUse      = min( distanceToBounds, data.endRadius )
-		float minDeviation     = 0.0
-		float maxDeviation     = radiusToUse - prevRadius
-		float deviation        = 0.0
-		if ( minDeviation < maxDeviation )
+		// Look at where the far edge of the circle would be at currentPoint, relative to the inner and outer control radii
+		// The farther we are from the center, the more we want to "push" this circle towards the center of the map
+		// This should give us more playable space, and make the ending zone harder to figure out based on the first couple of zones
+		int MAX_TRIES_PER_CYCLE = 36
+		int MAX_CYCLES = 3
+		int tries = 0
+		int cycles = 0
+		int rotateDir = CoinFlip() ? -1 : 1
+		bool noValidCenterInFirstCycle = false
+
+		while ( true )
 		{
-			deviation = sqrt( RandomFloatRange( 0.0, 1.0 ) )
-			deviation = minDeviation + (maxDeviation - minDeviation) * deviation
+			float distToCenter = Distance2D( currentPoint, DeathField_GetStartCircleCenter() )
+			float edgeFrac     = (distToCenter + data.endRadius - controlRadiusInner) / (controlRadiusOuter - controlRadiusInner)
+			edgeFrac = clamp( edgeFrac, 0.0, 1.0 )
+
+			vector direction       = GetPreviousCircleDirection( currentPoint, edgeFrac )
+
+			float minDeviation     = 0.0
+			float maxDeviation     = (data.endRadius - prevRadius) * data.circleDeviation
+			float deviation        = 0.0
+			if ( minDeviation < maxDeviation )
+			{
+				float randomDeviationMin = cycles == 0 ? edgeFrac : 0.0
+				float randomDeviationMax = cycles < 2 ? 1.0 : 0.2
+				deviation = sqrt( RandomFloatRange( randomDeviationMin, randomDeviationMax ) )
+				deviation = minDeviation + (maxDeviation - minDeviation) * deviation
+			}
+
+			vector newOrigin
+			newOrigin = currentPoint + (direction * deviation)
+
+			bool circleCenterUsable = (file.verifyCircleCenter && data.endRadius <= 10000) ? VerifyCircleCenter( newOrigin ) : true
+			if ( circleCenterUsable && GetHaveStartCircle() )
+			{
+				float edgeDist = Distance2D( newOrigin, DeathField_GetStartCircleCenter() ) + data.endRadius
+				circleCenterUsable = edgeDist < SURVIVAL_Deathfield_GetStartRadius()
+			}
+
+			tries += 1
+
+			if ( !circleCenterUsable )
+			{
+				if ( tries < MAX_TRIES_PER_CYCLE )
+				{
+					continue
+				}
+				else
+				{
+					cycles += 1
+					if ( cycles < MAX_CYCLES )
+					{
+						tries = 0
+						continue
+					}
+					else
+					{
+						newOrigin = currentPoint
+
+						// if failed then drive toward start circle
+						if ( GetHaveStartCircle() )
+						{
+							vector toCenter = DeathField_GetStartCircleCenter() - currentPoint
+							vector dir = Normalize( toCenter )
+							float toCenterDist = Length2D( toCenter )
+							float dist = min( data.endRadius - prevRadius, toCenterDist )
+
+							newOrigin = dir * dist + currentPoint
+						}
+					}
+				}
+			}
+
+			if ( drawTime > 0 )
+				DebugDrawCircle( newOrigin, <0, 0, 1>, data.endRadius > 1.0 ? data.endRadius : 200.0, 255, 0, 255, true, drawTime )
+
+			data.endPos = newOrigin
+			currentPoint = newOrigin
+
+			break
 		}
 
-		vector newOrigin = currentPoint + (direction * deviation)
-
-		if ( drawTime > 0 )
-			DebugDrawCircle( newOrigin, <0, 0, 1>, data.endRadius, 255, 0, 0, true, drawTime )
-
-		data.endPos = newOrigin
-
-		currentPoint = newOrigin
 		prevRadius = data.endRadius
 	}
 
@@ -1036,6 +1247,51 @@ void function GenerateDeathFieldData( vector endPos, float drawTime = 0.0 )
 	thread SURVIVAL_CalculateAirdropPositions()
 }
 
+bool function SURVIVAL_CheckPosCloseToNavmesh( vector position )
+{
+	vector newOrigin = <position.x, position.y, SURVIVAL_GetPlaneHeight() >
+	TraceResults results = TraceLine( newOrigin, newOrigin - <0,0,30000>, null, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+	vector ornull endPos = NavMesh_ClampPointForHullWithExtents( results.endPos, HULL_HUMAN, <80, 80, 36> )
+
+	if ( endPos == null )
+		return false
+
+	expect vector( endPos )
+
+	//DebugDrawLine( endPos, results.endPos, COLOR_GREEN, true, 10.0 )
+
+	if ( Distance( endPos, results.endPos ) > 500.0 )
+		return false
+
+	return true
+}
+
+bool function VerifyCircleCenter( vector position, bool checkNavMesh = true, float navMeshMaxDistance = 500.0 )
+{
+	vector newOrigin = <position.x, position.y, SURVIVAL_GetPlaneHeight() >
+	TraceResults results = TraceLine( newOrigin, newOrigin - <0,0,30000>, null, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_NONE )
+
+	if ( results.fraction >= 1.0 || IsPointOutOfBounds( results.endPos ) )
+		return false
+
+	if ( checkNavMesh )
+	{
+		vector ornull endPos = NavMesh_ClampPointForHullWithExtents( results.endPos, HULL_HUMAN, <80, 80, 36> )
+
+		if ( endPos == null )
+			return false
+
+		expect vector( endPos )
+
+		//DebugDrawLine( endPos, results.endPos, COLOR_GREEN, true, 10.0 )
+
+		if ( Distance( endPos, results.endPos ) > navMeshMaxDistance )
+			return false
+	}
+
+	return true
+}
 float function GetDistanceToBounds( vector origin, vector direction, float radius )
 {
 	vector o1 = origin
@@ -2016,6 +2272,28 @@ bool function HasActiveSurveyZone( entity player )
 vector function SURVIVAL_GetSafeZoneCenter()
 {
 	return file.deathFieldData.nextCenter
+}
+
+vector function DeathField_GetStartCircleCenter()
+{
+	vector startPos = SURVIVAL_GetCalculatedMapCenter()
+
+	return startPos
+}
+
+vector function SURVIVAL_GetCalculatedMapCenter()
+{
+	return file.calculatedMapCenter
+}
+
+float function SURVIVAL_GetCalculatedMapRadiusBig()
+{
+	return file.calculatedMapRadiusBig
+}
+
+bool function GetHaveStartCircle()
+{
+	return false //file.overrideStartPos.len() > 0
 }
 
 float function SURVIVAL_GetSafeZoneRadius()

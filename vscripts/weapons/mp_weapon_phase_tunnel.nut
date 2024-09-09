@@ -9,19 +9,26 @@ global function OnWeaponChargeEnd_weapon_phase_tunnel
 global function OnWeaponPrimaryAttack_ability_phase_tunnel
 #if SERVER
 global function OnWeaponNPCPrimaryAttack_ability_phase_tunnel
+global function PhaseTunnel_PrepareToMoveEntAlongTunnel
+global function PhaseTunnel_RevertEntStateAfterMovingAlongTunnel
+global function PhaseTunnel_ShouldPhaseEnt
 global function PhaseTunnel_CancelPlacement
 #endif
 
 const float CROUCH_HEIGHT = 48
 
-const string SOUND_ACTIVATE_1P         = "Wraith_PhaseGate_FirstGate_DeviceActivate_1p" // Play (to 1p only) as soon as the "arm raise" animation for placing the first gate starts (basically as soon as the ability key is pressed and the ability successfully starts).
-const string SOUND_ACTIVATE_3P         = "Wraith_PhaseGate_FirstGate_DeviceActivate_3p" // Play (to everyone except 1p) as soon as the 3p Wraith begins activating the ability to place the first gate.
-const string SOUND_SUCCESS_1P          = "Wraith_PhaseGate_FirstGate_Place_1p" // Play (to 1p only) when the first gate (the "pre-portal" thing) gets placed.  Can be played on the gate or the player.
-const string SOUND_SUCCESS_3P          = "Wraith_PhaseGate_FirstGate_Place_3p" // Play (to everyone except 1p) when the first gate (the "pre-portal" thing) gets placed.  Should play on the gate.
-const string SOUND_PREPORTAL_LOOP      = "Wraith_PhaseGate_PrePortal_Loop" // Play (to everyone) when first gate is created.  Should play on the gate (pre-portal thing).  Should be stopped when the second gate is placed and the gates connect.
-const string SOUND_PORTAL_OPEN         = "Wraith_PhaseGate_Portal_Open" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  (Stop Wraith_PhaseGate_PrePortal_Loop when this plays.)
-const string SOUND_PORTAL_LOOP         = "Wraith_PhaseGate_Portal_Loop" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  Stop when gates expire.
-const string SOUND_PORTAL_CLOSE        = "Wraith_PhaseGate_Portal_Expire" // Play (to everyone) when gates expire.  Should play on each gate.
+const string SOUND_ACTIVATE_1P = "Wraith_PhaseGate_FirstGate_DeviceActivate_1p" // Play (to 1p only) as soon as the "arm raise" animation for placing the first gate starts (basically as soon as the ability key is pressed and the ability successfully starts).
+const string SOUND_ACTIVATE_3P = "Wraith_PhaseGate_FirstGate_DeviceActivate_3p" // Play (to everyone except 1p) as soon as the 3p Wraith begins activating the ability to place the first gate.
+const string SOUND_SUCCESS_1P = "Wraith_PhaseGate_FirstGate_Place_1p" // Play (to 1p only) when the first gate (the "pre-portal" thing) gets placed.  Can be played on the gate or the player.
+const string SOUND_SUCCESS_3P = "Wraith_PhaseGate_FirstGate_Place_3p" // Play (to everyone except 1p) when the first gate (the "pre-portal" thing) gets placed.  Should play on the gate.
+const string SOUND_PREPORTAL_LOOP = "Wraith_PhaseGate_PrePortal_Loop" // Play (to everyone) when first gate is created.  Should play on the gate (pre-portal thing).  Should be stopped when the second gate is placed and the gates connect.
+const string SOUND_PORTAL_OPEN = "Wraith_PhaseGate_Portal_Open" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  (Stop Wraith_PhaseGate_PrePortal_Loop when this plays.)
+const string SOUND_PORTAL_LOOP = "Wraith_PhaseGate_Portal_Loop" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  Stop when gates expire.
+const string SOUND_PORTAL_CLOSE = "Wraith_PhaseGate_Portal_Expire" // Play (to everyone) when gates expire.  Should play on each gate.
+const string SOUND_PORTAL_TRAVEL_1P = "Wraith_phasegate_Travel_1p"
+const string SOUND_PORTAL_TRAVEL_3P = "Wraith_phasegate_Travel_3p"
+const string SOUND_PORTAL_TRAVEL_1P_BREACH = "Ash_PhaseBreach_Travel_1p"
+const string SOUND_PORTAL_TRAVEL_3P_BREACH = "Ash_PhaseBreach_Travel_3p"
 
 global const string PHASETUNNEL_BLOCKER_SCRIPTNAME      = "phase_tunnel_blocker"
 global const string PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME  = "pre_phase_tunnel_blocker"
@@ -64,54 +71,102 @@ const float PHASE_TUNNEL_MIN_GEO_REVERSE_DIST              = 48.0
 const bool	PHASE_TUNNEL_DEBUG_DRAW_PROJECTILE_TELEPORT  = false
 const bool 	PHASE_TUNNEL_DEBUG_DRAW_PLAYER_TELEPORT      = false
 
-struct PhaseTunnelPathNodeData
+global struct PhaseTunnelPathNodeData
 {
 	vector origin
 	vector angles
 	vector velocity
-	bool wasInContextAction
-	bool wasCrouched
-	bool validExit
-	float time
+	bool   wasInContextAction
+	bool   wasCrouched
+	bool   validExit
+	float  time
+}
+global struct PhaseTunnelPathEndData
+{
+	PhaseTunnelPathNodeData nodeData
+	vector safeRelativeOrigin
 }
 
-struct PhaseTunnelPathData
+global struct PhaseTunnelTravelState
 {
-	float                            pathDistance 	= 0
-	float                            pathTime		= 0
+	bool                                                      completed
+	bool                                                      thirdPersonShoulderModeWasOn
+	bool                                                      holsterWeapons = true
+	float                                                     holsterRemoveDelay
+	float                                                     controlRestoreDelay
+	int                                                       shiftStyle
+	bool                                                      doEndSeekCheck = true
+	int functionref( entity, array<PhaseTunnelPathNodeData>, int, int ) endSeekCheckOverrideFunc
+	bool							  ignoreStuckCrouchCheck = false
+}
+
+global struct PhaseTunnelPathData
+{
+	float                            pathDistance = 0
+	float                            pathTime = 0
 	array< PhaseTunnelPathNodeData > pathNodes
+
+	array< int >					 frameSteps
+	float							 phaseTime
 }
 
-struct PhaseTunnelPortalData
+global struct PhaseTunnelPortalData
 {
-	vector                           startOrigin
-	vector                           startAngles
-	entity                           portalFX
-	vector                           endOrigin
-	vector                           endAngles
-	bool							 crouchPortal
-	PhaseTunnelPathData&			pathData
+	vector               startOrigin
+	vector               startAngles
+	entity               portalFX
+	vector               endOrigin
+	vector               endAngles
+	bool                 crouchPortal
+	PhaseTunnelPathData& pathData
 }
 
-struct PhaseTunnelData
+#if SERVER
+enum eTunnelExpirationType
 {
-	entity                 tunnelEnt
-	int                    activeUsers = 0
-	table< entity, float > entPhaseTime
-	PhaseTunnelPortalData& startPortal
-	PhaseTunnelPortalData& endPortal
-	bool                   expired
+	LIFE_TIME_END = 0,
+	INVALID_START_POS,
+	INVALID_END_POS,
+	INVALID_TUNNEL
+}
+#endif
+global struct PhaseTunnelData
+{
+	int 					   shiftStyle
+	entity                     tunnelEnt
+	int                        activeUsers = 0
+	array< entity >            entUsers
+	table< entity, float >     entPhaseTime
+	PhaseTunnelPortalData&     startPortal
+	PhaseTunnelPortalData&     endPortal
+	bool                       expired
+
+	#if SERVER
+		int expirationType
+
+		                    
+			array<entity> shieldedPlayers
+        
+	#endif
 }
 
 struct
 {
+	float maxPlacementDist
+	float travelTimeMin
+	float travelTimeMax
+	float travelSpeed
+
 	#if SERVER
-		table < entity, PhaseTunnelData > tunnelData
+		table < entity, PhaseTunnelData >       tunnelData
 		table< entity, float > phaseTime
-		table< entity, PhaseTunnelPortalData > triggerStartpoint
-		table< entity, PhaseTunnelPortalData > triggerEndpoint
-		table< entity, PhaseTunnelPortalData > vortexStartpoint
-		table< entity, PhaseTunnelPortalData > vortexEndpoint
+		table< entity, PhaseTunnelPortalData >  triggerStartpoint
+		table< entity, PhaseTunnelPortalData >  triggerEndpoint
+		table< entity, PhaseTunnelPortalData >  vortexStartpoint
+		table< entity, PhaseTunnelPortalData >  vortexEndpoint
+		array<entity>                           allTunnelEnts
+		table<entity, bool>                     playerToHolsterState
+		table< entity, bool > 					hasLockedWeaponsAndMelee
 	#endif //SERVER
 } file
 
@@ -127,6 +182,7 @@ void function MpWeaponPhaseTunnel_Init()
 	AddCallback_PlayerCanUseZipline( PhaseTunnel_CanUseZipline )
 
 	#if SERVER
+		RegisterSignal( "PhaseTunnel_ReturnWeaponsToPlayerAfterDelay" )
 		RegisterSignal( "PhaseTunnel_CancelPlacement" )
 		RegisterSignal( "PhaseTunnel_EndPlacement" )
 		RegisterSignal( "PhaseTunnel_PathFollowCrouchPlayer" )
@@ -1215,6 +1271,142 @@ void function PhaseTunnel_MoveEntAlongPath( entity player, PhaseTunnelPathData p
 
 }
 
+
+void function PhaseTunnel_PrepareToMoveEntAlongTunnel( entity player, PhaseTunnelTravelState travelState )
+{
+	EndSignal( player, "OnDeath" )
+	player.Zipline_Stop()
+	player.ClearTraverse()
+	player.SetPredictionEnabled( false )
+	player.FreezeControlsOnServer()
+	//EndPlayerSkyDive( player )
+
+	//disable ping
+	player.SetPlayerNetBool( "pingEnabled", false )
+
+	if ( player.IsPhaseShifted() )
+	{
+		CancelPhaseShift( player )
+	}
+
+	//PlayerMelee_ClearPlayerAsLungeTarget( player, true )
+	//player.Server_InvalidateMeleeLungeLagCompensationRecords() // EXTREMELY DANGEROUS - Talk to Code before using!!!
+
+	//if ( player.ContextAction_IsEmoting() )
+		//Emote_StopEmoteNow( player )
+
+	travelState.thirdPersonShoulderModeWasOn = player.IsThirdPersonShoulderModeOn()
+	if ( travelState.thirdPersonShoulderModeWasOn )
+		player.SetThirdPersonShoulderModeOff()
+
+	player.Signal( "PhaseTunnel_ReturnWeaponsToPlayerAfterDelay" )
+
+	//todo-iholstead: remove me once R5DEV-578675 is closed
+	printf("PhaseTunnel_PrepareToMoveEntAlongTunnel called on "+ player )
+
+	Assert( !(player in file.playerToHolsterState), "Error! Preparing ent to move through phase tunnel when it hasn't left another!" )
+	file.playerToHolsterState[ player ] <- false
+
+	//Don't re-enable weapons if player is carrying loot.
+	if ( !SURVIVAL_IsPlayerCarryingLoot( player ) && !Bleedout_IsBleedingOut( player ) && travelState.holsterWeapons )
+	{
+		file.playerToHolsterState[ player ] <- true
+		HolsterAndDisableWeapons( player )
+	}
+
+
+	player.e.isInPhaseTunnel = true
+
+	WaitEndFrame() // wait for the last save
+
+	if ( travelState.shiftStyle == eShiftStyle.Tunnel )
+	{
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( SOUND_PORTAL_TRAVEL_1P, SOUND_PORTAL_TRAVEL_3P, player, player )
+	}
+	//else if ( travelState.shiftStyle == PHASETYPE_BREACH )
+	//{
+	//	EmitDifferentSoundsOnEntityForPlayerAndWorld( SOUND_PORTAL_TRAVEL_1P_BREACH, SOUND_PORTAL_TRAVEL_3P_BREACH, player, player )
+	//}
+	             
+	//else if ( travelState.shiftStyle == PHASETYPE_TRANSPORT )
+	//{
+	//	EmitDifferentSoundsOnEntityForPlayerAndWorld( SOUND_PORTAL_TRAVEL_1P_TRANSPORT, SOUND_PORTAL_TRAVEL_3P_TRANSPORT, player, player )
+	//}
+       
+
+	ViewConeZeroInstant( player )
+}
+
+void function PhaseTunnel_RevertEntStateAfterMovingAlongTunnel( entity player, PhaseTunnelTravelState travelState )
+{
+	if ( IsValid( player ) && !IsDisconnected( player ) )
+	{
+		Assert( player in file.playerToHolsterState )
+
+		player.SetPredictionEnabled( true )
+		player.e.isInPhaseTunnel = false
+		player.e.phaseTunnelExitTime = Time()
+
+		//enable ping
+		player.SetPlayerNetBool( "pingEnabled", true )
+
+		thread PhaseTunnel_ReturnWeaponsToPlayerAfterDelay( player, travelState.holsterRemoveDelay )
+
+		//player.ClearParent()
+		if ( travelState.controlRestoreDelay == 0.0 )
+			player.UnfreezeControlsOnServer()
+		else
+			thread PhaseTunnel_ReturnControlToPlayerAfterDelay( player, travelState.controlRestoreDelay )
+
+		if ( travelState.thirdPersonShoulderModeWasOn && IsAlive( player ) )
+			player.SetThirdPersonShoulderModeOn()
+
+		if ( travelState.shiftStyle == eShiftStyle.Tunnel )
+		{
+			StopSoundOnEntity( player, SOUND_PORTAL_TRAVEL_1P )
+			StopSoundOnEntity( player, SOUND_PORTAL_TRAVEL_3P )
+		}
+        
+	}
+}
+
+void function PhaseTunnel_ReturnWeaponsToPlayerAfterDelay( entity player, float delay )
+{
+	player.EndSignal( "PhaseTunnel_ReturnWeaponsToPlayerAfterDelay" )
+	player.EndSignal( "OnDeath" )
+
+	bool shouldDeployAndEnable
+	if ( player in file.playerToHolsterState )
+	{
+		if ( file.playerToHolsterState[ player ] )
+			shouldDeployAndEnable = true
+
+		delete file.playerToHolsterState[ player ]
+	}
+
+	if ( !shouldDeployAndEnable )
+		return
+
+
+	OnThreadEnd( function() : ( player ) {
+		if ( IsValid( player ) )
+			DeployAndEnableWeapons( player )
+	} )
+
+	wait delay
+}
+
+void function PhaseTunnel_ReturnControlToPlayerAfterDelay( entity player, float delay )
+{
+	EndSignal( player, "OnDeath" )
+
+	OnThreadEnd( function() : ( player ) {
+		if ( IsValid( player ) )
+			player.UnfreezeControlsOnServer()
+	} )
+
+	wait delay
+}
 vector function GetNextAngleToLookAt( int currentIndex, int step, array< PhaseTunnelPathNodeData > pathNodeDataArray )
 {
 	int lookAhead = 5

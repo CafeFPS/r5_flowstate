@@ -59,6 +59,7 @@ global function FS_Scenarios_AddAllyHandle
 global function FS_Scenarios_AddEnemyHandle
 global function FS_Scenarios_AddEnemyHandle2
 
+global function FS_Scenarios_InitPlayersCards
 global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
 global function FS_CreateTeleportFirstPersonEffectOnPlayer
@@ -67,6 +68,9 @@ global function FS_Show1v1Banner
 global function FS_SetHideEndTimeUI
 
 global function Gamemode1v1_ForceLegendSelector_Deprecated
+global function Tracker_ShowChampion
+
+global function Flowstate_ShowRespawnTimeUI
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -201,7 +205,11 @@ bool function isMuted()
 void function FS_Scenarios_OnClientScriptInit( entity player ) 
 {
 	FS_Scenarios_InitPlayersCards()
-
+	
+	#if DEVELOPER && MKOS
+		return //mkos: I need my debugs lol -.-
+	#endif
+	
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
@@ -248,7 +256,7 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		Flowstate_ForceRemoveAllObituaries()
 		FS_SetHideEndTimeUI( true )
-		Obituary_Print_Localized( "Made by CafeFPS with the help from mkos, Darth Elmo and Balvarine.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		OpenCharacterSelectNewMenu()
 	}
 	else
@@ -427,9 +435,9 @@ void function Cl_OnResolutionChanged()
 	if( GetCurrentPlaylistName() == "fs_scenarios" )
 	{
 		if( !file.buildingTeam )
-			FS_Scenarios_TogglePlayersCardsVisibility( true )
+			FS_Scenarios_TogglePlayersCardsVisibility( true, false )
 		else
-			FS_Scenarios_TogglePlayersCardsVisibility( false )
+			FS_Scenarios_TogglePlayersCardsVisibility( false, true )
 	}
 	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
 	{
@@ -463,10 +471,16 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
+
+	if( Playlist() == ePlaylists.fs_scenarios )
+		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "ZONE WARS BY FLOWSTATE" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+
 	#if DEVELOPER
 		printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
@@ -482,8 +496,6 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame" ) ), "basicImage", $"rui/flowstate_custom/dm_countdown" )
 	
 	thread Flowstate_DMTimer_Thread( new )
-
-	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
 }
 	
 void function Flowstate_DMTimer_Thread( float endtime )
@@ -503,14 +515,30 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
 	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
 
-	float startTime = GetGlobalNetTime( "flowstate_DMStartTime" )
+	float startTime = Gamemode() == eGamemodes.WINTEREXPRESS ? Time() : GetGlobalNetTime( "flowstate_DMStartTime" )
 	
+	string main = "Time Remaining: "
+	
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_scenarios:
+		main = "Scenario End: "
+		break
+	}
+
+	switch( Gamemode() )
+	{
+		case eGamemodes.WINTEREXPRESS:
+		main = "Round Ending In: "
+		break
+	}
+
 	while ( startTime <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
-			
+		
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
-		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
+		Hud_SetText( HudElement( "FS_DMCountDown_Text"), main + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
 
 		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !file.hideendtimeui )
@@ -534,8 +562,6 @@ void function Flowstate_ShowStartTimeUI( float new )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
 	
 	thread Flowstate_StartTime_Thread( new )
-
-	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
 }
 	
 void function Flowstate_StartTime_Thread( float endtime )
@@ -557,11 +583,11 @@ void function Flowstate_StartTime_Thread( float endtime )
 	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
 	else if( Playlist() == ePlaylists.fs_scenarios )
-		msg = "Zone Wars Starting in "
+		msg = "Zone War Starting in "
 
 	while ( Time() <= endtime )
 	{
-        int elapsedtime = int(endtime) - Time().tointeger()
+        int elapsedtime = int( endtime ) - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
 		
@@ -570,6 +596,52 @@ void function Flowstate_StartTime_Thread( float endtime )
 
 		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), msg + dt.seconds )
 		
+		wait 1
+	}
+}
+
+void function Flowstate_ShowRespawnTimeUI( int timeUntilRespawn )
+{
+	if( timeUntilRespawn == -1 )
+	{
+		Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), false )
+		Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+		return
+	}
+
+	Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), true )
+	Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), true )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Respawn_Countdown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
+	
+	thread Flowstate_RespawnTimer_Thread( timeUntilRespawn )
+}
+	
+void function Flowstate_RespawnTimer_Thread( int timeUntilRespawn )
+{
+	clGlobal.levelEnt.EndSignal( "LocalClientPlayerRespawned" )
+	entity player = GetLocalClientPlayer()
+	
+	if( !IsValid( player ) )
+		return
+		
+	player.EndSignal( "OnDestroy" )
+
+	OnThreadEnd
+	(
+		void function() : ()
+		{
+			Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), false )
+			Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+		}
+	)
+	
+	string msg = "Respawning in "
+
+	while ( timeUntilRespawn > 0 )
+	{
+		Hud_SetText( HudElement( "FS_Respawn_Countdown_Center"), msg + string( timeUntilRespawn ) )
+		
+		timeUntilRespawn--
 		wait 1
 	}
 }
@@ -625,7 +697,8 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 
 void function ClientReportChat(var button)
 {
-	if( CHAT_TEXT == "" || file.muted ){return}
+	if( CHAT_TEXT == "" || file.muted )
+		return
 	
 	string text = "say " + CHAT_TEXT
 	GetLocalClientPlayer().ClientCommand(text)
@@ -992,7 +1065,7 @@ void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 		RunUIScript( "Open_FSDM_VotingPhase" )
 	}
 	else
-		thread FSDM_CloseVotingPhase()
+		FSDM_CloseVotingPhase()
 	
 }
 
@@ -1584,23 +1657,19 @@ void function DM_HintCatalog(int index, int eHandle)
 		switch( Playlist() )
 		{
 			case ePlaylists.fs_movementrecorder:
-			Obituary_Print_Localized( "mkos - fixes for multiplayer, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Movement Recorder v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Movement Recorder - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 
 			case ePlaylists.fs_lgduels_1v1:
-			Obituary_Print_Localized( "mkos - settings persistance, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS LG Duels - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_scenarios:
-			Obituary_Print_Localized( "with the help from mkos, Darth Elmo and Balvarine. <3", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Scenarios v0.9 Beta - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_1v1:
-			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS and mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS 1V1 - Made by __makimakima__ - Maintained by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 		}
 		break
@@ -1939,10 +2008,11 @@ void function FS_Scenarios_InitPlayersCards()
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
 
-	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 )
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 || Gamemode() == eGamemodes.WINTEREXPRESS )
 	{
-		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
-		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 115, wepSelectorBasePos.y + 2 )
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )	
+		UISize screenSize = GetScreenSize()
+		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 165 * screenSize.width / 1920.0, wepSelectorBasePos.y + 2 * screenSize.height / 1080.0 )
 	}
 
 	for(int i = 0; i<3; i++ )
@@ -2029,9 +2099,10 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 	file.allyTeamHandles.append( handle )
 }
 
-void function FS_Scenarios_SetupPlayersCards()
+void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 {
-	file.buildingTeam = false
+	if( Playlist() != ePlaylists.winterexpress )
+		file.buildingTeam = false
 
 	foreach( int i, int handle in file.enemyTeamHandles2 )
 	{
@@ -2055,7 +2126,7 @@ void function FS_Scenarios_SetupPlayersCards()
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"" )
 
-			Hud_SetVisible( file.enemyTeamCards2[i], true )
+			// Hud_SetVisible( file.enemyTeamCards2[i], true )
 		}()
 	}
 
@@ -2081,7 +2152,7 @@ void function FS_Scenarios_SetupPlayersCards()
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
 
-			Hud_SetVisible( file.enemyTeamCards[i], true )
+			// Hud_SetVisible( file.enemyTeamCards[i], true )
 		}()
 	}
 
@@ -2107,45 +2178,50 @@ void function FS_Scenarios_SetupPlayersCards()
 			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
 
-			Hud_SetVisible( file.allyTeamCards[i], true )
+			// Hud_SetVisible( file.allyTeamCards[i], true )
 		}()
 	}
 
-	if( file.enemyTeamHandles.len() > 0 && file.allyTeamHandles.len() > 0 )
-		FS_Scenarios_TogglePlayersCardsVisibility( true )
+	if( file.enemyTeamHandles.len() > 0 && file.allyTeamHandles.len() > 0 && !onlyUpdate )
+		FS_Scenarios_TogglePlayersCardsVisibility( true, false )
 }
 
-void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
+void function FS_Scenarios_TogglePlayersCardsVisibility( bool show, bool reset )
 {
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 
 	if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() > 0 && show )
 		Hud_SetVisible( file.vsBasicImage2, true )
-	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 || file.vsBasicImage2 != null && !show)
+	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 || file.vsBasicImage2 != null && !show )
 		Hud_SetVisible( file.vsBasicImage2, false )
 
-	if( !show )
+	foreach( button in file.allyTeamCards )
 	{
-		foreach( button in file.allyTeamCards )
-		{
-			Hud_SetVisible( button, show )
-		}
+		Hud_SetVisible( button, show )
+	}
 
-		foreach( button in file.enemyTeamCards )
-		{
-			Hud_SetVisible( button, show )
-		}
+	foreach( button in file.enemyTeamCards )
+	{
+		Hud_SetVisible( button, show )
+	}
 
-		foreach( button in file.enemyTeamCards2 )
-		{
-			Hud_SetVisible( button, show )
-		}
+	foreach( button in file.enemyTeamCards2 )
+	{
+		Hud_SetVisible( button, show )
+	}
 
+	if( !show && reset )
+	{
 		file.allyTeamHandles.clear()
 		file.enemyTeamHandles.clear()
 		file.enemyTeamHandles2.clear()
 		FS_Scenarios_InitPlayersCards()
+	}
+	
+	if( !show && Playlist() == ePlaylists.fs_scenarios )
+	{
+		SetNextCircleDisplayCustomClear()
 	}
 }
 
@@ -2156,7 +2232,7 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		if( handle == eHandle )
 		{
 			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", alive )
-			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", alive ? $"" : $"rui/rui_screens/skull" )
 			return
 		}
 	}
@@ -2166,7 +2242,7 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		if( handle == eHandle )
 		{
 			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
-			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", alive ? $"" : $"rui/rui_screens/skull" )
 			return
 		}
 	}
@@ -2176,7 +2252,7 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		if( handle == eHandle )
 		{
 			RuiSetBool( Hud_GetRui( file.enemyTeamCards2[i] ), "isPurchasable", alive )
-			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"rui/rui_screens/skull" )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", alive ? $"" : $"rui/rui_screens/skull" )
 			return
 		}
 	}
@@ -2190,5 +2266,13 @@ void function FS_CreateTeleportFirstPersonEffectOnPlayer()
 	{
 		int fxHandle = StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_training_teleport_FP" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 		EffectSetIsWithCockpit( fxHandle, true )
+	}
+}
+
+void function Tracker_ShowChampion()
+{
+	if ( GetCurrentPlaylistVarBool( "show_short_champion_screen", true ) )
+	{
+		thread DoChampionSquadCardsPresentation()
 	}
 }

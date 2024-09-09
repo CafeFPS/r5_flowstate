@@ -3,7 +3,7 @@
 
 // Aeon#0236 - Playtests and ideas
 // AyeZee#6969 - Some of the economy system logic from his arenas mode draft - stamina
-// @DEAFPS - Shoothouse, de_cache and NCanals maps
+// @dea_bb - Shoothouse, de_cache and NCanals maps
 // @CafeFPS and Darkes#8647 - de_dust2 map model port and fake collision
 // VishnuRajan in https://sketchfab.com/3d-models/time-bomb-efb2e079c31349c1b2bd072f00d8fe79 - Bomb model and textures
 
@@ -344,7 +344,11 @@ void function ServerCallback_FlowstateSND_CustomBuyMenu_UpdateValues(int availab
 	file.weapon2lvl = weapon2lvl
 	
 	SetTierForSlotFromWeaponIDAndLVL(file.weapon1ID, file.weapon1lvl)
+		
 	SetTierForSlotFromWeaponIDAndLVL(file.weapon2ID, file.weapon2lvl)
+
+	Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
+	Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
 	
 	FillWeaponBoxTest(0)
 	FillWeaponBoxTest(1)
@@ -390,6 +394,9 @@ void function FlowstateSND_CustomBuyMenu_Start(int currentRound, int availableMo
 	file.currentRound = currentRound
 		
 	entity player = GetLocalClientPlayer()
+
+	Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
+	Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
 
 	if(!showSavedWeapons)
 	{
@@ -702,7 +709,21 @@ bool function BuyMenuCleanup_HandleViewInput( float x, float y )
 
 bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial menu, heavily modified. Colombia
 {
-	if(Hud_GetRui( HudElement( "WheelTest" ) ) == null) return false
+	if(Hud_GetRui( HudElement( "WheelTest" ) ) == null) 
+		return false
+	
+	if ( IsControllerModeActive() ) //I'm insane. Cafe
+	{
+		if( fabs( x ) > 0.25 )
+			x = signum( x ) + x * 3
+		else
+			x = 0
+
+		if( fabs( y ) > 0.25 )
+			y = signum( y ) + y * 3
+		else
+			y = 0
+	}
 	
 	UISize screenSize = GetScreenSize()
 	float resMultX = screenSize.width / 1920.0
@@ -736,14 +757,7 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 
 		file.lastFocusTime = Time()
 	}
-	else if ( IsControllerModeActive() )
-	{
-		if ( Time() > file.lastFocusTime + 1.5 )
-		{
-			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedSlot", int(file.focusedSlot) )
-		}
-	}
-	
+
 	if( file.currentx > 30*resMultY ) // añadir un valor negativo por si el jugador tiene una pantalla muy grande, actualmente detecta el input del mouse de la mitad de la pantalla hacia la izquierda
 	{
 		file.focusedSlot = -1 //disables choice if mouse is outside of wheel location (solo a la derecha)
@@ -756,8 +770,23 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 	{
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedText", GetPriceForCurrentSlotAndMenu() + "\n\n" + GetWeaponNameForCurrentSlotAndMenu() )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "labelText", MainMenu_Names[file.activeMenu] )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%use% RETURN" )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", "%attack% BUY/UPGRADE\n%zoom% SELL/DOWNGRADE" )
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%[B_BUTTON|E]% RETURN" )
+		
+		bool weaponIsOwned = file.weapon1ID == GetWeaponElementsForActiveMenu()[int(file.focusedSlot)].weaponID || file.weapon2ID == GetWeaponElementsForActiveMenu()[int(file.focusedSlot)].weaponID
+	
+		string builtStringForThisRef = "%[A_BUTTON|MOUSE1]% "
+		string builtStringForThisRef2 = ""
+
+		if( weaponIsOwned ) 
+		{
+			builtStringForThisRef += "UPGRADE"
+			builtStringForThisRef2 = "\n%[X_BUTTON|MOUSE2]% SELL"
+		} else
+		{
+			builtStringForThisRef += "BUY"
+		}
+
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", builtStringForThisRef + builtStringForThisRef2 )
 	}
 	
 	if( GetWeaponPriceFromSlot( int(file.focusedSlot) ) <= file.availableMoney )
@@ -769,7 +798,7 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "selectedSlot", -1 )
 		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedSlot", int(file.focusedSlot) )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedText", GetPriceForCurrentSlotAndMenu() + "\n\n CAN'T BUY" )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%use% RETURN" )
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText",  "%[B_BUTTON|E]% RETURN" )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", " " )
 	}
 	
@@ -935,10 +964,18 @@ bool function BuyMenu_HandleKeyInput( int key ) //todo cleanup
 			ReturnToMainMenuOrSellWeaponByFocusedSlot()
 			
 			break
-			
-		case BUTTON_B:
-		//case KEY_ESCAPE:
+
+		case BUTTON_SHOULDER_LEFT: //thx Ida. Cafe
 		case KEY_F:
+			FlowstateSND_RequestSellFromRef( 0 )
+			break
+		
+		case BUTTON_SHOULDER_RIGHT:
+		case KEY_G:
+			FlowstateSND_RequestSellFromRef( 1 )
+			break
+
+		case BUTTON_B:		
 		case KEY_E:
 		
 			if(file.activeMenu != BuyMenuMenus.MAIN)
@@ -1058,6 +1095,16 @@ void function FlowstateSND_RequestSellFocusedWeapon()
     player.ClientCommand("SellSNDWeapon " + GetWeaponRefFromSlot( int(file.focusedSlot) ))
 }
 
+void function FlowstateSND_RequestSellFromRef( int slot = -1 )
+{
+	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
+		return
+	entity player = GetLocalClientPlayer()
+
+	string cc = slot == 0 ? GetWeaponRefFromID( file.weapon1ID ) : GetWeaponRefFromID( file.weapon2ID )
+    player.ClientCommand("SellSNDWeapon " + cc )
+}
+
 void function ServerCallback_BuySuccessful(int weaponID, int weaponSlot, int upgradeLevel, int priceToDiscount)
 {
 	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
@@ -1078,7 +1125,7 @@ void function ServerCallback_BuySuccessful(int weaponID, int weaponSlot, int upg
 		GetLocalClientPlayer().ClientCommand( "Sur_SwapToNextOrdnance" )
 }
 
-void function ServerCallback_BuyRejected()
+void function ServerCallback_BuyRejected() //this can be performed by the server without remote func
 {
 	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
 		return
@@ -1092,7 +1139,7 @@ void function ServerCallback_SellSuccessful(int weaponID, int weaponSlot, int up
 		return
 	
 	#if DEVELOPER
-		printt("vendiendo vendiendo")
+		printt("vendiendo vendiendo", weaponID, weaponSlot, upgradeLevel, priceToCashback )
 	#endif
 	
 	EmitSoundOnEntity(GetLocalClientPlayer(), "UI_Menu_Purchase_Coins" )
@@ -1304,7 +1351,7 @@ void function CreateBuyMenuRUI( )
 	
     string labelText        = "BUY MENU"
     string backText         = "SELECT A CATEGORY"
-    string promptText       = "%attack% ENTER MENU"
+    string promptText       = "%[A_BUTTON|MOUSE1]% ENTER MENU"
     string nextPageText = ""
     bool showNextPageText = true
     bool shouldShowLine     = false
@@ -1457,6 +1504,11 @@ void function FillWeaponBoxTest(int slot)
 		}
 		
 		Hud_SetText( HudElement( "MainWeapon" + slot + "_Name" ), wData.pickupString )
+		
+		if( slot == 1 )
+			Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), true )
+		else if( slot == 0 )
+			Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), true )
 	}
 
 	array<string> mods
@@ -1614,12 +1666,15 @@ void function FillRuiElementsWithDatatableData(int chosenMenu)
 	
 	file.slotCount = float(count)
     RuiSetInt( rui, "optionCount", count )
-	RuiSetString( rui, "backText", "%use% RETURN" )
-	RuiSetString( rui, "promptText", "%attack% BUY WEAPON" )
+	RuiSetString( rui, "backText", "%[B_BUTTON|E]% RETURN")
+	RuiSetString( rui, "promptText", "%[A_BUTTON|MOUSE1]% BUY WEAPON" )
 }
 
 void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool wasAbsoluteSell = false)
 {
+	if( weaponID == -1 && weaponlvl == -1 )
+		wasAbsoluteSell = true
+	
 	int i
 	int count
 	
@@ -1633,14 +1688,18 @@ void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool
 		
 		count++
 	}
+
+	printt( "SetTierForSlotFromWeaponIDAndLVL", weaponID, weaponlvl, wasAbsoluteSell, count, file.activeMenu, GetMenuForWeaponID( weaponID ) )
 	
 	if(GetAllBuyMenuElements()[i].weaponID == weaponID)
 	{	
-		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, weaponlvl + 3 )
+		if( file.activeMenu == GetMenuForWeaponID( weaponID ) && !wasAbsoluteSell )
+			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, weaponlvl + 3 )
 		
 		if(wasAbsoluteSell)
 		{
-			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, 1 )
+			if( weaponID != -1 )
+				RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "optionTier" + count, 1 )
 			
 			if(weaponID == file.weapon1ID)
 			{
@@ -1686,6 +1745,17 @@ string function GetWeaponRefFromSlot(int slot)
 	return ""
 }
 
+string function GetWeaponRefFromID(int id)
+{
+	for(int i = 0; i < GetAllBuyMenuElements().len(); i++)
+	{
+		if( GetAllBuyMenuElements()[i].weaponID == id )
+			return GetAllBuyMenuElements()[i].weaponref
+	}
+	
+	return ""
+}
+
 int function GetWeaponIDFromSlot(int slot)
 {
 	int count
@@ -1716,6 +1786,16 @@ array<weaponMenuElement> function GetWeaponElementsForActiveMenu()
 	}
 	
 	return result
+}
+
+int function GetMenuForWeaponID(int id)
+{
+	for(int i = 0; i < GetAllBuyMenuElements().len(); i++)
+	{
+		if( GetAllBuyMenuElements()[i].weaponID == id )
+			return GetAllBuyMenuElements()[i].menuID
+	}
+	return -1
 }
 
 string function GetWeaponNameForCurrentSlotAndMenu()

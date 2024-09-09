@@ -24,8 +24,6 @@ global function RecreateLeviathanDeathTriggers
 #endif // DEVELOPER
 #endif // SERVER
 
-//global const asset MU1_LEVIATHAN_MODEL = $"mdl/Creatures/leviathan/leviathan_kingscanyon_animated.rmdl"
-
 #if SERVER
 const asset FX_LEVIATHAN_CLOUD = $"P_cloud_leviathan_01"
 const LEVIATHAN_MAX_HEALTH = 1000 //Could be any positive number really, we never set health to 0, and we don't decrement it based on what hit the leviathan
@@ -100,7 +98,7 @@ struct LeviathanDataStruct
 	LeviathanDamageInfo footDamageInfo
 	array< LeviathanDamageInfo > damageInfos
 
-	//float lookPitchLerpOffset
+	float lookPitchLerpOffset
 
 	int state
 	int roarSide
@@ -148,11 +146,19 @@ void function Canyonlands_MU1_CommonMapInit()
 	Survival_SetCallback_Leviathan_ConsiderLookAtEnt( Leviathan_ConsiderLookAtEnt_Callback )
 
 	InitOctaneTownTakeover()
+
+	// if ( RelayRockFixEnabled() )
+		// RegisterGeoFixAsset( RELAY_ROCK_FIX_MODEL )
 }
 
 void function MU1_EntitiesDidLoad()
 {
-	LeviathansInit()
+	//Hack to prevent crash when leviathans don't exist (for MU1_NIGHT)
+	array<entity> leviathan1 = GetEntArrayByScriptName("leviathan_zone_6")
+	array<entity> leviathan2 = GetEntArrayByScriptName("leviathan_zone_9")
+
+	if( leviathan1.len() > 0 && leviathan2.len() > 0 )
+		LeviathansInit()
 
 	if ( RelayRockFixEnabled() )
 		SpawnRelayRockFix()
@@ -186,7 +192,7 @@ void function InitWraithAudioLog()
 
 void function WraithTTAudioLog_OnUse( entity log, entity player, int useInputFlags )
 {
-	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+	if ( !(useInputFlags & USE_INPUT_DEFAULT ) )
 		return
 
 	log.UnsetUsable()
@@ -197,10 +203,10 @@ void function WraithTTAudioLog_OnUse( entity log, entity player, int useInputFla
 
 void function WraithTTAudioLog_PlayLog( entity log )
 {
-	EmitSoundAtPosition( TEAM_UNASSIGNED, log.GetCenter(), "Laptop_Log_Activate" )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, log.GetCenter(), "Laptop_Log_Activate", log)
 	wait 0.5
 
-	EmitSoundAtPosition( TEAM_UNASSIGNED, log.GetCenter(), "diag_mp_wraith_tt_01_3p" )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, log.GetCenter(), "diag_mp_wraith_tt_01_3p", log )
 }
 
 void function WraithTTAudioLog_SetUsableAfterDelay( entity log, float delay )
@@ -218,16 +224,20 @@ void function PlaceOctaneTownTakeoverLoot()
 	entity target  = itemSpawn[ 0 ]
 	string itemRef = SURVIVAL_GetWeightedItemFromGroup( "POI_OctaneTT" )
 
-	entity spawnedItem = SpawnGenericLoot( itemRef, target.GetOrigin(), < -1, 90, -1 >, 1 )
+	entity spawnedItem = SpawnGenericLoot( itemRef, target.GetOrigin(), < -1, -1, -1 > )
 	spawnedItem.RemoveUsableValue( USABLE_USE_VERTICAL_LINE )
 	spawnedItem.RemoveUsableValue( USABLE_HORIZONTAL_FOV )
 	spawnedItem.AddUsableValue( USABLE_USE_DISTANCE_OVERRIDE )
 	spawnedItem.SetUsableDistanceOverride( 300.0 )
 
+	//FACING DIRECTION
+	spawnedItem.SetAngles( < 0, 90, 0 > )
+
 	vector boundingSize = spawnedItem.GetBoundingMaxs() - spawnedItem.GetBoundingMins()
 	float originOffset  = boundingSize.z * 0.8
 	if ( boundingSize.x > boundingSize.z )
 	{
+		//FLAT VS STANDING DIRECTION
 		vector angles = spawnedItem.GetAngles()
 		spawnedItem.SetAngles( < angles.x + 90, angles.y, angles.z > )
 		originOffset = boundingSize.x * 0.5
@@ -243,6 +253,7 @@ void function PlaceOctaneTownTakeoverLoot()
 
 void function CreateOctaneTTRingOfFireStatsTrigger()
 {
+#if false
 	array<entity> itemSpawn = GetEntArrayByScriptName( "octane_tt_hanging_item_spawn" )
 	if ( itemSpawn.len() != 1 )
 		return
@@ -250,7 +261,7 @@ void function CreateOctaneTTRingOfFireStatsTrigger()
 	vector ringOfFirePos = target.GetOrigin() // (dw): Using this to locate where the ring of fire is
 
 	entity trigger = CreateEntity( "trigger_cylinder" )
-	//trigger.SetCylinderRadius( 100.0 )
+	trigger.SetRadius( 100.0 )
 	trigger.SetAboveHeight( 85.0 )
 	trigger.SetBelowHeight( 85.0 )
 	trigger.SetOrigin( ringOfFirePos )
@@ -268,11 +279,11 @@ void function CreateOctaneTTRingOfFireStatsTrigger()
 
 		StatsHook_PlayerUsedMapFeature( ent, "octanett_ringoffire" )
 	} )
+#endif // #if false
 }
 
 void function LeviathansInit()
 {
-
 	file.leviathan_zone_6 = GetEntByScriptName( "leviathan_zone_6" )
 	file.leviathan_zone_9 = GetEntByScriptName( "leviathan_zone_9" )
 
@@ -378,7 +389,7 @@ void function LeviathansInit()
 
 		LeviathanDataStruct data
 		data.stateAnims[LeviathanState.IDLE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_munching_idle.rseq"
-		data.stateAnims[LeviathanState.LOOK] = data.stateAnims[LeviathanState.IDLE] // $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_head_neutral.rseq"
+		data.stateAnims[LeviathanState.LOOK] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_look_up.rseq"
 		data.stateAnims[LeviathanState.SHAKE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_shake.rseq"
 		data.stateAnims[LeviathanState.ROAR] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_roar.rseq"
 
@@ -452,7 +463,7 @@ void function LeviathansInit()
 
 		LeviathanDataStruct data
 		data.stateAnims[LeviathanState.IDLE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_munching_idle.rseq"
-		data.stateAnims[LeviathanState.LOOK] = data.stateAnims[LeviathanState.IDLE] // TODO $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_head_neutral.rseq"
+		data.stateAnims[LeviathanState.LOOK] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_look_up.rseq"
 		data.stateAnims[LeviathanState.SHAKE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_shake.rseq"
 		data.stateAnims[LeviathanState.ROAR] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_roar.rseq"
 		if ( GetCurrentPlaylistVarBool( "evil_leviathans", false ) )
@@ -517,12 +528,12 @@ void function LeviathansInit()
 			thread Leviathan_RandomRoarThread()
 	}
 
-	//create NoSpawnArea around feet now that they are initialized
+	// create NoSpawnArea around feet now that they are initialized
 	foreach( trig in file.leviathansDeathTriggers )
 	{
-		//float radius = trig.GetCylinderRadius()
-		//vector origin = trig.GetOrigin()
-		//CreateNoSpawnArea( TEAM_ANY, TEAM_ANY, origin, -1.0 )
+		float radius = trig.GetRadius()
+		vector origin = trig.GetOrigin()
+		CreateNoSpawnArea( TEAM_ANY, TEAM_ANY, origin, -1.0, radius )
 	}
 }
 
@@ -531,7 +542,7 @@ void function InitIndividualLeviathan( entity leviathan )
 {
 	leviathan.SetMaxHealth( LEVIATHAN_MAX_HEALTH )
 	leviathan.SetHealth( LEVIATHAN_MAX_HEALTH )
-	SetLeviathanMover( leviathan, true )
+	SetLeviathanMover( leviathan, true ) //DisableSkydiveEndOnEntity( leviathan, true )
 
 	Assert( leviathan in file.leviathanToDataStructTable )
 	LeviathanDataStruct leviathanData = file.leviathanToDataStructTable[ leviathan ]
@@ -580,9 +591,9 @@ void function InitIndividualLeviathan( entity leviathan )
 
 	int radiusForUltAdjustment = GetCurrentPlaylistVarInt( "leviathan_ult_adjustment_radius",  LEVIATHAN_ULT_ADJUSTMENT_RADIUS  )
 	entity trig = CreateEntity( "trigger_cylinder" ) //To make Bangalore/Gibraltar's ult around the leviathans be created at a heigher height.
-	//trig.SetCylinderRadius( radiusForUltAdjustment  )
-	//trig.SetAboveHeight( DEFAULT_BOMBARDMENT_HEIGHT )
-	//trig.SetBelowHeight( DEFAULT_BOMBARDMENT_HEIGHT )
+	trig.SetRadius( radiusForUltAdjustment  )
+	trig.SetAboveHeight( 10000.0 )
+	trig.SetBelowHeight( 10000.0 )
 	trig.SetOrigin(  leviathan.GetOrigin() )
 
 	trig.SetOwner( leviathan  )
@@ -596,7 +607,7 @@ entity function CreateDeathTriggersInsideLeviathanFeet( entity leviathan, string
 {
 	vector origin = leviathan.GetAttachmentOrigin( leviathan.LookupAttachment ( attachment ) )
 	entity trig = CreateEntity( "trigger_cylinder" )
-	//trig.SetCylinderRadius( dataStruct.radius  - dataStruct.staticTriggerRadiusReduction )
+	trig.SetRadius( dataStruct.radius  - dataStruct.staticTriggerRadiusReduction )
 	trig.SetAboveHeight( dataStruct.cylinderAboveHeight )
 	trig.SetBelowHeight( 0 )
 	trig.SetOrigin(  origin + dataStruct.offset + <0, 0, 50 > )
@@ -819,8 +830,6 @@ void function LeviathanDamageReaction( entity leviathan, LeviathanDataStruct lev
 		}
 
 		leviathanData.roarSide = 0
-        if(state == LeviathanState.ROAR)
-            thread Leviathan_PlayRoar(leviathan, 5)
 		Leviathan_PlayStateAnimAndWait( leviathan, leviathanData, state )
 
 		if ( ShouldIncreaseRoarFrequency() )
@@ -962,6 +971,8 @@ void function Leviathan_StompThread( entity leviathan )
 	LeviathanDataStruct leviathanData = file.leviathanToDataStructTable[ leviathan ]
 
 	FlagWait( "GamePlaying" )
+	
+	printt( "Started Leviathan Stomp Thread" )
 	wait RandomFloatRange( 30, 60 )
 	for ( ;; )
 	{
@@ -976,6 +987,7 @@ void function Leviathan_StompThread( entity leviathan )
 		else
 			state = LeviathanState.STOMP
 
+		printt( "Leviathan Stomp NOW" )
 		Leviathan_PlayStateAnimAndWait( leviathan, leviathanData, state )
 	}
 }
@@ -984,6 +996,7 @@ void function Leviathan_RandomRoarThread()
 {
 	FlagWait( "GamePlaying" )
 
+	printt( "Started Leviathan Roar Thread" )
 	float waitTime
 	if ( ShouldIncreaseRoarFrequency() )
 		waitTime = RandomFloatRange( 60, 60 * 3 )
@@ -1023,7 +1036,6 @@ void function Leviathan_RandomRoar( entity leviathan )
 			break
 
 		leviathanData.roarSide = 0
-        thread Leviathan_PlayRoar(leviathan, 5)
 		Leviathan_PlayStateAnimAndWait( leviathan, leviathanData, LeviathanState.ROAR )
 
 		// only rarely have both leviathans roar
@@ -1035,19 +1047,6 @@ void function Leviathan_RandomRoar( entity leviathan )
 	}
 }
 
-void function Leviathan_PlayRoar(entity leviathan, float waitTime)
-{
-    //This is hacky and there's probably a better way to do this, but it will work for now.
-    wait waitTime
-    
-    int leviathanMouthAttachmentIndex = file.leviathan_zone_6.LookupAttachment( "FX_MOUTH" )
-    vector org = leviathan.GetAttachmentOrigin( leviathanMouthAttachmentIndex )
-    if(GetCurrentPlaylistVarBool( "evil_leviathans", false ) )
-        EmitSoundAtPosition( TEAM_UNASSIGNED, org, "Leviathan_AngryRoar")
-    else
-        EmitSoundAtPosition( TEAM_UNASSIGNED, org, "Leviathan_LongRoar")
-}
-
 const float LOOK_PITCH_DIFF = 25
 
 void function Leviathan_StartLooking( entity leviathan, LeviathanDataStruct leviathanData )
@@ -1055,11 +1054,12 @@ void function Leviathan_StartLooking( entity leviathan, LeviathanDataStruct levi
 	if ( leviathanData.state == LeviathanState.IDLE )
 	{
 		leviathanData.state = LeviathanState.LOOK
-		//leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
+		leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
+		printt( "Leviathan tried to play look anim" )
 
 		// non-look animations have the head pitched down, but the look animation doesn't.
 		// we need to lerp the pitch pose parameter by the inverse of that over the same length of time that the animation lerps.
-		//leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF
+		leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF 
 	}
 }
 
@@ -1070,9 +1070,9 @@ void function Leviathan_StopLooking( entity leviathan, LeviathanDataStruct levia
 	if ( leviathanData.state == LeviathanState.LOOK )
 	{
 		leviathanData.state = LeviathanState.IDLE
-		//leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.IDLE] )
+		leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.IDLE] )
 
-		//leviathanData.lookPitchLerpOffset -= LOOK_PITCH_DIFF
+		leviathanData.lookPitchLerpOffset -= LOOK_PITCH_DIFF
 	}
 }
 
@@ -1272,7 +1272,7 @@ void function Leviathan_LookThread( entity leviathan )
 		if ( debug )
 			printt( " cycle " + leviathan.GetCycle() + " ang " + leviathanData.lookang + " angdiff " + angdiff + " desiredvel " + desiredangvel + " vel " + leviathanData.lookvel )
 
-		/*if ( leviathanData.lookPitchLerpOffset )
+		if ( leviathanData.lookPitchLerpOffset )
 		{
 			float maxPitchChange = dt * LOOK_PITCH_DIFF // LOOK_PITCH_DIFF degrees per second because the anim lerp time is 1 second and the angle difference between look and idle is LOOK_PITCH_DIFF
 			float pitchChange
@@ -1288,7 +1288,7 @@ void function Leviathan_LookThread( entity leviathan )
 			lookang.x -= pitchChange
 			lookang.y -= pitchChange // * 0.5
 			leviathanData.lookang = lookang
-		}*/
+		}
 
 		leviathan.SetPoseParameterOverTime( pitchPoseParamIndex, leviathanData.lookang.x, dt * 1.05 )
 		leviathan.SetPoseParameterOverTime( yawPoseParamIndex, leviathanData.lookang.y, dt * 1.05 )
@@ -1309,8 +1309,8 @@ bool function Leviathan_CanLookAtEnt( entity leviathan, vector pos, float careCh
 	float chance = RandomFloat( 1 )
 	if ( chance > careChance )
 	{
-		if ( DEBUG )
-			DebugDrawLine( center, pos, 255,255,0, true, 5 )
+		// if ( DEBUG )
+			// DebugDrawLine( center, pos, COLOR_YELLOW, true, 5 )
 		return false
 	}
 
@@ -1318,16 +1318,16 @@ bool function Leviathan_CanLookAtEnt( entity leviathan, vector pos, float careCh
 	float distSqr = DistanceSqr( pos, center )
 	if ( distSqr < MinLookAtDist * MinLookAtDist )
 	{
-		if ( DEBUG )
-			DebugDrawLine( center, pos, 255,0,0, true, 5 )
+		// if ( DEBUG )
+			// DebugDrawLine( center, pos, COLOR_RED, true, 5 )
 		return false
 	}
 
 	// Care about things based on how far away they are
 	if ( distSqr >= MaxCareDist * MaxCareDist )
 	{
-		if ( DEBUG )
-			DebugDrawLine( center, pos, 255,0,0, true, 5 )
+		// if ( DEBUG )
+			// DebugDrawLine( center, pos, COLOR_RED, true, 5 )
 		return false
 	}
 
@@ -1336,8 +1336,8 @@ bool function Leviathan_CanLookAtEnt( entity leviathan, vector pos, float careCh
 		float distCareChance = GraphCapped( sqrt( distSqr ), MinCareDist, MaxCareDist, careChance, maxDistCareChance )
 		if ( chance > distCareChance )
 		{
-			if ( DEBUG )
-				DebugDrawLine( center, pos, 255,255,0, true, 5 )
+			// if ( DEBUG )
+				// DebugDrawLine( center, pos, COLOR_YELLOW, true, 5 )
 			return false
 		}
 	}
@@ -1352,14 +1352,14 @@ bool function Leviathan_CanLookAtEnt( entity leviathan, vector pos, float careCh
 	{
 		if ( dot * dot > cos70 * cos70 * diff.LengthSqr() )
 		{
-			if ( DEBUG )
-				DebugDrawLine( center, pos, 255,128,0, true, 5 )
+			// if ( DEBUG )
+				// DebugDrawLine( center, pos, <255,128,0>, true, 5 )
 			return false
 		}
 	}
 
-	if ( DEBUG )
-		DebugDrawLine( center, pos, 0,255,0, true, 5 )
+	// if ( DEBUG )
+		// DebugDrawLine( center, pos, COLOR_GREEN, true, 5 )
 
 	return true
 }
@@ -1443,7 +1443,7 @@ void function OnLeviathanFootStomp( entity leviathan, string attachment )
 		dataStruct = file.zone9Leviathan_AttachmentToStompDataStructTable[ attachment  ]
 
 	entity trig = CreateEntity( "trigger_cylinder" )
-	//trig.SetCylinderRadius( dataStruct.radius )
+	trig.SetRadius( dataStruct.radius )
 	trig.SetAboveHeight( dataStruct.cylinderAboveHeight )
 	trig.SetBelowHeight( dataStruct.cylinderBelowHeight )
 	trig.SetOrigin(  footOrigin + dataStruct.offset )
@@ -1478,9 +1478,9 @@ void function Leviathan_Stomp_TriggerDamage( entity trigger, entity ent )
 			ent.PhaseShiftCancel()
 
 
-		//Point safeSpotForDeathBox = FindBestSafeSpotForDeathBox( ent )
+		Point safeSpotForDeathBox = FindBestSafeSpotForDeathBox( ent )
 
-		//ent.p.safeSpotForDeathBox = safeSpotForDeathBox
+		ent.p.safeSpotForDeathBox = safeSpotForDeathBox
 	}
 
 	string entScriptName = ent.GetScriptName()
@@ -1571,7 +1571,6 @@ void function Leviathan_Ult_Adjustment_Leave( entity trigger, entity ent )
 
 void function Leviathan_OptimizeUpperBoneFollowersWhenAllPlayersHaveLanded()
 {
-
 	if ( IsFallLTM() ) //don't optimize since we will constantly be skydiving back in
 		return
 
@@ -1588,11 +1587,11 @@ void function Leviathan_OptimizeUpperBoneFollowersWhenAllPlayersHaveLanded_Threa
 		for ( int i = players.len() - 1; i >= 0; i-- )
 		{
 			entity player = players[i]
-			//if ( !IsAlive( player ) || (player.p.survivalLandedOnGround && player.GetOrigin().z < MAX_LANDING_Z) )
-			//{
-			//	players.fastremove( i )
-			//	continue
-			//}
+			if ( !IsAlive( player ) ) //|| (player.p.survivalLandedOnGround && player.GetOrigin().z < MAX_LANDING_Z) )
+			{
+				players.fastremove( i )
+				continue
+			}
 			break
 		}
 
@@ -1718,7 +1717,8 @@ void function TestZone6LeviathanFootStomp()
 	player.EndSignal( "OnDeath"  )
 
 	OnThreadEnd(
-		function() : ( player ){
+		function() : ( player )
+		{
 			printt( "Player 0 origin : " +  player.GetOrigin() + ", angles: " + player.GetAngles() )
 		}
 	)
@@ -1744,7 +1744,8 @@ void function TestZone9LeviathanFootStomp()
 	player.EndSignal( "OnDeath"  )
 
 	OnThreadEnd(
-		function() : ( player  ){
+		function() : ( player  )
+		{
 			printt( "Player 0 origin : " +  player.GetOrigin() + ", angles: " + player.GetAngles()  )
 		}
 	)
@@ -1900,5 +1901,5 @@ void function RecreateLeviathanDeathTriggers()
 
 
 }
-#endif // DEVELOPER
+#endif // if DEVELOPER
 #endif // SERVER

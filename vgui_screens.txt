@@ -194,6 +194,14 @@ VGUI_Screens
 		resfile			"scripts/screens/vgui_flowstate_health_bar.res"
 	}
 
+	flowstate_inworld_test
+	{
+		type			vgui_screen_panel
+		pixelswide		500
+		pixelshigh		500
+		resfile			"scripts/screens/vgui_flowstate_inworld_test.res"
+	}
+
 	vgui_callsign_menu
 	{
 		type			vgui_screen_panel

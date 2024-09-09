@@ -523,6 +523,7 @@ function PlayWarpFxOnPlayers( guys )
 		if ( !IsAlive( guy ) )
 			continue
 
-		Remote_CallFunction_Replay( guy, "ServerCallback_PlayScreenFXWarpJump" )
+		//Remote_CallFunction_Replay( guy, "ServerCallback_PlayScreenFXWarpJump" )
+		Remote_CallFunction_ByRef( guy, "ServerCallback_PlayScreenFXWarpJump" )
 	}
 }

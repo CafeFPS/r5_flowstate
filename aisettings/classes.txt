@@ -37,4 +37,6 @@ classes
 	import npc_dummie_bloodhound.txt
 	import npc_dummie_pathfinder.txt
 	import npc_dummie_octane.txt
+	
+	import npc_supressorturret.txt
 }

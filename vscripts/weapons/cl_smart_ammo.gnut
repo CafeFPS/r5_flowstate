@@ -148,6 +148,16 @@ void function SmartAmmo_LockedOntoWarningHUD_Update()
 			RuiSetBool( file.lockon_hud, "westLock", false )
 			RuiSetBool( file.lockon_hud, "eastLock", false )
 			RuiSetFloat3( file.lockon_hud, "borderColor", borderColor )
+		}else if ( StatusEffect_GetSeverity( player, eStatusEffect.turretlockon_detected) )
+		{
+			RuiSetString( file.lockon_hud, "lockMessage", "TURRET LOCKED ON" )
+			RuiSetGameTime( file.lockon_hud, "lockEndTime", RUI_BADGAMETIME )
+			RuiSetBool( file.lockon_hud, "isVisible", true )
+			RuiSetBool( file.lockon_hud, "northLock", false )
+			RuiSetBool( file.lockon_hud, "southLock", false )
+			RuiSetBool( file.lockon_hud, "westLock", false )
+			RuiSetBool( file.lockon_hud, "eastLock", false )
+			RuiSetFloat3( file.lockon_hud, "borderColor", <151, 57, 189>/100 )
 		}
 		//else if ( StatusEffect_GetSeverity( player, eStatusEffect.lockon_detected_titan) || (soul != null && StatusEffect_GetSeverity( soul, eStatusEffect.lockon_detected_titan) && player.IsTitan() ))
 		//{

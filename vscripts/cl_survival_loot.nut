@@ -27,6 +27,7 @@ global function DeathBoxGetExtendedUseSettings
 global function CreateDeathBoxRui
 
 global function GetHighlightFillAlphaForLoot
+global function HideLootPrompts
 
 global const string PING_SOUND_DEFAULT = "ui_mapping_item_1p"
 const float LOOT_PING_DISTANCE = 500.0
@@ -1626,8 +1627,8 @@ void function SetupSurvivalLoot( var categories )
 		catTypes.append( SURVIVAL_Loot_GetLootTypeFromString( cat ) )
 
 	// // HACK
-	// if ( catTypes.contains( eLootType.ATTACHMENT ) )
-		// RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
+	if ( catTypes.contains( eLootType.ATTACHMENT ) )
+		RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
 
 	// flip thru all the loot and find the ones that match the cats we want to display
 	foreach ( ref, data in SURVIVAL_Loot_GetLootDataTable() )

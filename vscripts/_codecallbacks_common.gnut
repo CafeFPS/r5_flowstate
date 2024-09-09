@@ -56,12 +56,18 @@ global function AddCallback_GameStatePostEnter
 global function AddCallback_OnThreatEventActivation
 global function AddCallback_OnThreatEventStateChange
 
+global function AddEntityCallback_OnPlayerRespawned
+global function RemoveEntityCallback_OnPlayerRespawned
+global function AddEntityCallback_OnPlayerRespawned_FireOnce
+global function RemoveEntityCallback_OnPlayerRespawned_FireOnce
+
 // Register functions are called when an entity spawns.
 global function RegisterForDamageDeathCallbacks
 global function CodeCallback_OnInventoryChanged
 global function CodeCallback_OnEntityChangedTeam
 
 global function AddEntityCallback_OnDamaged
+global function EntityCallback_Exists
 global function RemoveEntityCallback_OnDamaged
 global function AddEntityCallback_OnPostDamaged
 global function RemoveEntityCallback_OnPostDamaged
@@ -95,11 +101,19 @@ global function CodeCallback_OnWeaponAttack
 global function CodeCallback_OnNavMeshHotSwapBegin
 global function CodeCallback_OnNavMeshHotSwapEnd
 
+global function SetDefaultObserverBehavior
+global function CodeCallback_OnPlayerRespawned
+
 const bool PRINT_MOVEMENT = false
 
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
+	#if TRACKER && HAS_TRACKER_DLL //TODO(dw): server messages
+		if( IsBotEnt( player ) )
+			return
+	#endif
+		
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
 	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
 
@@ -115,7 +129,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	player.hasConnected = true
 
-	foreach ( cb in svGlobal.onClientConnectedCallbacks )
+	foreach ( cb in svGlobal.onClientConnectedCallbacks )	
 		cb( player )
 
 	NotifyClientsOfConnection( player, 1 )
@@ -128,16 +142,184 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	
 	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
+	else if( Gamemode() == eGamemodes.SURVIVAL && (Playlist() != ePlaylists.survival_dev && Playlist() != ePlaylists.dev_default && !GetCurrentPlaylistVarBool( "is_practice_map", false ) && Playlist() != ePlaylists.fs_movementrecorder) )
+	{
+		DecideRespawnPlayer_Retail( player )
+	}
+}
+
+void function AddEntityCallback_OnPlayerRespawned( entity player, void functionref( entity ) callbackFunc )
+{
+	mAssert( !player.p.playerSpawnedCallbacks.contains( callbackFunc ) )
+	player.p.playerSpawnedCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPlayerRespawned( entity player, void functionref( entity ) callbackFunc )
+{
+	mAssert( player.p.playerSpawnedCallbacks.contains( callbackFunc ) )
+	player.p.playerSpawnedCallbacks.removebyvalue( callbackFunc )
+}
+
+void function AddEntityCallback_OnPlayerRespawned_FireOnce( entity player, void functionref( entity ) callbackFunc )
+{
+	if( player.p.playerSpawnedCallbacks_FireOnce.contains( callbackFunc ) )
+		return
+		
+	player.p.playerSpawnedCallbacks_FireOnce.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPlayerRespawned_FireOnce( entity player, void functionref( entity ) callbackFunc )
+{
+	if( !player.p.playerSpawnedCallbacks_FireOnce.contains( callbackFunc ) )
+		return 
+		
+	player.p.playerSpawnedCallbacks_FireOnce.removebyvalue( callbackFunc )
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
-		printt( "CodeCallback_OnPlayerRespawned", player )
+		Warning( "CodeCallback_OnPlayerRespawned: " + string( player ) )
 	#endif
+
+	Assert( !IsPlayerEliminated( player ), "An eliminated player respawned." )
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+
+	SetHumanRagdollImpactTable( player )
+
+	player.p.respawnCount++
+	// player.s.respawnTime = Time()
+	ClearRecentDamageHistory( player )
+	// ClearRespawnAvailable( player )
+
+	player.p.killerToSpectate = null
+	player.p.playerToTimeThatAssistCreditLastsTable.clear()
 	
-	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
-		cb( player )
+	player.kv.renderColor = "255 255 255 255"
+	player.kv.renderAmt = 255
+	player.Show()
+
+	player.Signal( "OnRespawned" )
+
+	// Added via AddCallback_OnPlayerRespawned
+	foreach ( callbackFunc in svGlobal.onPlayerRespawnedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	// // Added via AddCallback_OnPlayerPostRespawned
+	// foreach ( callbackFunc in svGlobal.onPlayerPostRespawnedCallbacks )
+	// {
+		// callbackFunc( player )
+	// }
+
+	// Added via AddEntityCallback_OnPlayerRespawned
+	foreach ( func in player.p.playerSpawnedCallbacks )
+		func( player )
+		
+	// Added via AddEntityCallback_OnPlayerRespawned_FireOnce
+	foreach ( func in player.p.playerSpawnedCallbacks_FireOnce )
+	{
+		func( player )
+		RemoveEntityCallback_OnPlayerRespawned_FireOnce( player, func )
+	}
+
+	player.e.lastAttacker = null
+	player.e.canBurn = true
+	player.e.canBeDamagedFromGas = true
+
+	thread PlayerLifeThread( player )
+}
+
+void function PlayerLifeThread( entity player )
+{
+	//don't register signals in repeat game logic ~mkos
+	//RegisterSignal( "OnPostDeathLogicEnd" )
+	
+	// this thread will run for the span of the player's life plus a little bit extra
+	// (the extra is the time after they die before they're moved to spectator)
+
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnRespawned" )
+	EndSignal( player, "OnPostDeathLogicEnd" )
+	EndSignal( player, "StopPostDeathLogic" )
+
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
+
+	OnThreadEnd( void function() : ( player, characterSlot ) {
+		if ( IsValid( player ) )
+		{
+			RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, characterSlot, BeginPlayerCharacterThread )
+			Signal( player, "HaltPlayerCharacterThread" )
+		}
+	} )
+
+	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, characterSlot, BeginPlayerCharacterThread )
+
+	Assert( LoadoutSlot_IsReady( player, characterSlot ), "Tried to spawn a player but their character selection was somehow empty." )
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( player, characterSlot )
+	BeginPlayerCharacterThread( player, character )
+
+	WaitForever()
+}
+
+
+void function BeginPlayerCharacterThread( entity player, ItemFlavor character )
+{
+	thread PlayerCharacterThread( player, character )
+}
+
+
+void function PlayerCharacterThread( entity player, ItemFlavor character )
+{
+	// this thread will run for the span of the player being a specific character
+	// if the character is null, it means they currently don't have a character
+	Signal( player, "HaltPlayerCharacterThread" )
+	EndSignal( player, "HaltPlayerCharacterThread" )
+
+	LoadoutEntry skinSlot = Loadout_CharacterSkin( character )
+
+	OnThreadEnd( void function() : ( player, character, skinSlot ) {
+		if ( IsValid( player ) )
+		{
+			RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, skinSlot, ApplyPlayerCharacterSkin )
+		}
+
+		//foreach( void functionref( entity, ItemFlavor ) cb in file.onPlayerCharacterShutdownCallbacks )
+		//	cb( player, character )
+	} )
+
+	// apply chosen skin
+	ItemFlavor skin = LoadoutSlot_GetItemFlavor( player, skinSlot )
+	ApplyPlayerCharacterSkin( player, skin )
+	// and keep it up to date
+	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, skinSlot, ApplyPlayerCharacterSkin )
+
+	// if we have a character, apply settings
+	// todo(dw): make this get done here
+	//asset setFile = CharacterClass_GetSetFile( character )
+	//array<string> existingMods = player.GetPlayerSettingsMods()
+	//player.SetPlayerSettingsWithMods( setFile, existingMods )
+
+	//foreach( void functionref( entity, ItemFlavor ) cb in file.onPlayerCharacterSetupCallbacks )
+	//	cb( player, character )
+
+	WaitForever()
+}
+
+void function ApplyPlayerCharacterSkin( entity player, ItemFlavor skin )
+{
+	//see Declan as to why this needed to change from CharacterSkin_Apply()
+	// ApplyAppropriateCharacterSkin( player )
+	
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	if ( !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkin( character ) ) )
+		return
+		
+	CharacterSkin_Apply( player, skin )
 }
 
 /*{
@@ -177,6 +359,7 @@ struct
 	table<string, array< void functionref( entity, var ) > > classDamageFinalCallbacks
 	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
+	entity functionref( entity observer, bool reverse )        defaultObserverBehavior
 } file
 
 struct 
@@ -187,88 +370,47 @@ struct
 
 void function CodeCallbacksCommon_Init()
 {
+	RegisterSignal( "OnPostDeathLogicEnd" )
 	settings.flowstate_spectator_team_only = GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false )
 }
 
-entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
+entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse )
 {
-	if( !IsValid( observer ) )
-		return null
-	
-	if ( IsValid( observer.p.respawnPod ) )
+	foreach ( func in svGlobal.onGetBestObserverTargetCallbacks )
 	{
-		if ( observer.GetObserverMode() != OBS_MODE_CHASE )
-			observer.StartObserverMode( OBS_MODE_CHASE )
-		return observer.p.respawnPod
-	}
-
-	#if DEVELOPER
-		printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
-	#endif
-		
-	//Force teammate observer target when spec_next and spec_prev are used
-	if( settings.flowstate_spectator_team_only || Gamemode() == eGamemodes.SURVIVAL )
-	{
-		int team = observer.GetTeam()
-		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
-		entity potentialTarget 
-		entity currentTargetEnt = observer.GetObserverTarget()
-				
-		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
-			players.removebyvalue( observer )
-			
-		#if TRACKER
-			if( players.contains( eMessageBot() ) )
-				players.fastremovebyvalue( eMessageBot() ) 
-		#endif 
-
-		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
+		entity ent = func( observer, reverse )
+		if ( ent != null )
 		{
-			team = currentTargetEnt.GetTeam()
-			players = GetPlayerArrayOfTeam_Alive( team )
-		}
-		
-		observer.SetPlayerNetInt( "spectatorTargetCount", players.len() )
-		
-		if( players.len() == 0 ) 
-			return null
-		
-		int currentTarget = 0
-		
-		if( IsValid( currentTargetEnt ) )
-		{
-			for( int i = 0; i < players.len(); i++ )
+			if ( IsPrivateMatch() && observer.GetTeam() == TEAM_SPECTATOR )
 			{
-				if( players[i] == currentTargetEnt )
-					currentTarget = i
+				if ( ent.IsPlayer() )
+					printf( "Observer: User %s switched to spectating %s", observer.GetPINNucleusPid(), ent.GetPINNucleusPid() )
 			}
+
+			return ent
 		}
-		
-		if( reverse )
-		{
-			int nextIndex
-			if( currentTarget - 1 < 0 )
-				potentialTarget = players[ players.len() - 1 ]
-			else
-				potentialTarget = players[ currentTarget - 1 ]
-		}
-		else
-		{
-			int nextIndex
-			if( currentTarget + 1 > players.len() - 1 )
-				potentialTarget = players[ 0 ]
-			else
-				potentialTarget = players[ currentTarget + 1 ]
-		}
-		
-		if( IsValid(potentialTarget) && potentialTarget != currentTargetEnt )
-			return potentialTarget
 	}
-	
-	foreach( cb in svGlobal.onGetBestObserverTargetCallbacks )
-		cb( observer, reverse )
-	
+
+	if ( file.defaultObserverBehavior != null )
+	{
+		entity defaultEnt = file.defaultObserverBehavior( observer, reverse )
+
+		if ( IsPrivateMatch() && defaultEnt != null && observer.GetTeam() == TEAM_SPECTATOR )
+		{
+			if ( defaultEnt.IsPlayer() )
+				printf( "Observer: User %s switched to spectating %s", observer.GetPINNucleusPid(), defaultEnt.GetPINNucleusPid() )
+		}
+
+		return defaultEnt
+	}
+
 	return null
+}
+
+
+void function SetDefaultObserverBehavior( entity functionref( entity, bool ) func )
+{
+	file.defaultObserverBehavior = func
 }
 
 void function CodeCallback_DamageEntity( entity ent, var damageInfo )
@@ -303,6 +445,7 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 	// Added via AddEntityCallback_OnDamaged
 	foreach ( callbackFunc in ent.e.entDamageCallbacks )
 		callbackFunc( ent, damageInfo )
+		
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after AddEntityCallback_OnDamaged() callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
@@ -349,6 +492,7 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 
 	UpdateLastDamageTime( ent )
 
+	//this is not viewpunch
 	AddFlinch( ent, damageInfo )
 
 	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
@@ -865,10 +1009,20 @@ void function RemoveTitanCallback_OnHealthSegmentLost( entity ent, void function
 
 void function AddEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
 {
-	Assert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+	#if DEVELOPER
+		mAssert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+	#endif
 
 	ent.SetDamageNotifications( true )
 	ent.e.entDamageCallbacks.append( callbackFunc )
+}
+
+bool function EntityCallback_Exists( entity ent, void functionref( entity, var ) callbackFunc )
+{
+	if ( ent.e.entDamageCallbacks.contains( callbackFunc ) )
+		return true
+		
+	return false
 }
 
 void function RemoveEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
@@ -1006,6 +1160,11 @@ void function CodeCallback_OnInventoryChanged( entity player )
 
 void function CodeCallback_OnEntityChangedTeam( entity ent )
 {
+	if( ent.GetClassName() == "crossbow_bolt" )
+	{
+		RunSpawnCallbacks( ent )
+	}
+
 	string className = ent.GetClassName()
 	if ( !( className in svGlobal.onEntityChangedTeamCallbacks ) )
 		return

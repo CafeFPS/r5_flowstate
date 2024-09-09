@@ -281,6 +281,8 @@ void function OnPlayerRespawned(entity player)
 	}
 
 	player.SetShieldHealth( player.GetShieldHealthMax() )
+	
+	player.UnfreezeControlsOnServer()
 }
 
 void function OnTeammateLoadoutSelectionChanged( EHI playerEHI, ItemFlavor unused )

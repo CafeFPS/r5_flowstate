@@ -155,6 +155,7 @@ void function Cl_CustomCTF_Init()
 	RegisterSignal( "StartNewWinnerScreen" )
 	RegisterSignal( "ChangeCameraToSelectedLocation" )
 	RegisterSignal( "VoteTeam_EndModelFocus" )
+	RegisterSignal( "FSIntro_CardName" )
 	
 	if( Flowstate_IsHaloMode() )
 		SetCommsDialogueEnabled( false )
@@ -1521,13 +1522,13 @@ void function FSIntro_StartIntroScreen()
 		thread FSIntro_StartPlayerDataSmallUI( model, i > divide ? 0 : 1 )
 
 		//Move camera to end pos
-		cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
-		cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
+		cameraMover.NonPhysicsMoveTo( camera_end_pos, 0.5, 0.25, 0.25 )
+		cameraMover.NonPhysicsRotateTo( camera_end_angles, 0.5, 0.25, 0.25 )
 		
 		#if DEVELOPER
 			printt( "Moving camera" )
 		#endif
-		wait 1
+		wait 0.5
 
 		if( i == charactersModels.len() )
 		{
@@ -1553,11 +1554,11 @@ void function FSIntro_StartIntroScreen()
 		}()
 	}
 
-	cameraMover.NonPhysicsMoveTo( OffsetPointRelativeToVector( file.victorySequencePosition, <0, 325, 70>, AnglesToForward( file.victorySequenceAngles ) ), 3, 0, 3 )
-	cameraMover.NonPhysicsRotateTo( VectorToAngles( (file.victorySequencePosition + AnglesToUp( file.victorySequenceAngles ) * 35) - OffsetPointRelativeToVector( file.victorySequencePosition, <0, 350, 88>, AnglesToForward( file.victorySequenceAngles ) ) ), 2, 1, 1 )	
+	cameraMover.NonPhysicsMoveTo( OffsetPointRelativeToVector( file.victorySequencePosition, <0, 325, 70>, AnglesToForward( file.victorySequenceAngles ) ), 1.5, 0, 1.5 )
+	cameraMover.NonPhysicsRotateTo( VectorToAngles( (file.victorySequencePosition + AnglesToUp( file.victorySequenceAngles ) * 35) - OffsetPointRelativeToVector( file.victorySequencePosition, <0, 350, 88>, AnglesToForward( file.victorySequenceAngles ) ) ), 1.5, 0, 1.5 )	
 	DoF_LerpFarDepth( 700, 10000, 0.5 )
 
-	wait 2.9
+	wait 1.5
 
 	#if DEVELOPER
 		printt(  "intro lasted: ", ( Time() - stime ).tostring() )
@@ -1586,7 +1587,7 @@ void function FSIntro_ForceEnd()
 		//did this finish for all players before destroying from server? set this as finished from client
 		wait 0.75
 		FSIntro_Destroy()	
-		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.5, 0, FFADE_IN | FFADE_PURGE )
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.75, 0, FFADE_IN | FFADE_PURGE )
 		#if DEVELOPER
 			printt(  "intro end lasted: ", ( Time() - stime ).tostring() )
 		#endif
@@ -1637,10 +1638,27 @@ void function FSIntro_Destroy()
 	DoF_SetFarDepthToDefault()
 }
 
-void function FSIntro_StartPlayerDataSmallUI( entity player, int side, float duration = 3 )
+void function FSIntro_StartPlayerDataSmallUI( entity player, int side, float duration = FSINTRO_TIMEPERPLAYER )
 {
 	if( !IsValid( player ) )
 		return
+
+	GetLocalClientPlayer().Signal( "FSIntro_CardName" )
+	GetLocalClientPlayer().EndSignal( "FSIntro_CardName" )
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			Hud_SetVisible( HudElement( "FSIntro_NameBackground_Left" ), false )
+			Hud_SetVisible( HudElement( "FSIntro_NameText_Left" ), false )
+			Hud_SetVisible( HudElement( "FSIntro_NameBackground_Right" ), false )
+			Hud_SetVisible( HudElement( "FSIntro_NameText_Right" ), false )
+
+			Hud_SetText( HudElement( "FSIntro_NameText_Left" ), "" )
+			Hud_SetText( HudElement( "FSIntro_NameText_Right" ), "" )
+			Hud_SetAlpha( HudElement( "FSIntro_NameText_Left" ), 255 )
+			Hud_SetAlpha( HudElement( "FSIntro_NameText_Right" ), 255 )
+		})
 
 	if( side == 0 )
 	{
@@ -1705,16 +1723,6 @@ void function FSIntro_StartPlayerDataSmallUI( entity player, int side, float dur
 	}
 
 	wait 0.24
-
-	Hud_SetVisible( HudElement( "FSIntro_NameBackground_Left" ), false )
-	Hud_SetVisible( HudElement( "FSIntro_NameText_Left" ), false )
-	Hud_SetVisible( HudElement( "FSIntro_NameBackground_Right" ), false )
-	Hud_SetVisible( HudElement( "FSIntro_NameText_Right" ), false )
-
-	Hud_SetText( HudElement( "FSIntro_NameText_Left" ), "" )
-	Hud_SetText( HudElement( "FSIntro_NameText_Right" ), "" )
-	Hud_SetAlpha( HudElement( "FSIntro_NameText_Left" ), 255 )
-	Hud_SetAlpha( HudElement( "FSIntro_NameText_Right" ), 255 )
 }
 
 

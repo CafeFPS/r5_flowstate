@@ -63,26 +63,6 @@ global struct PlayerInputAxisEventCallbackStruct
 	float lastTriggeredTime  = 0.0
 }
 
-global struct HoverTank
-{
-	bool playerRiding
-	vector hoverTankOrigin
-	entity interiorModel
-	entity flightMover
-	entity turret
-	entity turretBarrelClip
-	entity triggerVolume
-	array<entity> linkedEnts
-}
-
-global struct SupplyShip
-{
-	entity mover
-	bool frontDoorOpened
-	bool backDoorOpened
-	array<entity> ziplineNodes
-}
-
 global struct PingTableStruct // TODO: fix shared waypoints script, look at BurnDamageStack for reference
 {
 	array<entity> locations
@@ -157,15 +137,17 @@ global struct StoredWeapon
 
 global struct ScriptTriggerData
 {
-	bool enabled
-	float radius
-	table<entity> entities
+	bool                                    enabled
+	float                                   radius
+	table<entity>                           entities
 	array<void functionref(entity, entity)> enterCallbacks
 	array<void functionref(entity, entity)> leaveCallbacks
-	float top
-	float bottom
-	int flags
-	int managedEntArrayHandle
+	float                                   topDelta
+	float                                   bottomDelta
+	bool                                    infiniteTop
+	bool                                    infiniteBottom
+	int                                     flags
+	int                                     managedEntArrayHandle
 }
 
 global struct BurnCardPhaseRewindStruct
@@ -177,6 +159,9 @@ global struct BurnCardPhaseRewindStruct
 // This struct is hooked up to entity.e in code
 global struct ServerEntityStruct
 {
+	array<void functionref( entity ent )>                                                                                  onPhysicsDisabledCallbacks
+	array<void functionref( entity, entity, entity, int )>                                                                 onPingedCallbacks
+
 	entity repairSoul // repair drones
 	array<void functionref( entity, var )> entKilledCallbacks
 	array<entity> fxArray
@@ -198,12 +183,15 @@ global struct ServerEntityStruct
 
 	// sticky props
 	float spawnTime = 0.0
+	string spawnSourceOwnerId
+	string spawnSourceIdType
 	bool isStickyCrit = false
 	int stickyRoundsArrayId = -1 //script managed ent array index
 
 	table<string,AnimEventData> animEventDataForEntity
 
 	array<DamageHistoryStruct> recentDamageHistory
+	array<DamageHistoryStruct> recentDealtDamageHistory
 
 	float lastTakeDamageTime_thermite // meteor thermite does an extra burst of damage on first contact
 	float lastTakeDamageTime_laser_cannon
@@ -217,6 +205,7 @@ global struct ServerEntityStruct
 	// entities
 	float nextAllowStickyExplodeTime = 0.0
 	float stickyClearTime = 0.0
+	bool  canBeDamagedFromGas = false
 
 	entity shieldWallFX
 	entity cpoint
@@ -327,7 +316,11 @@ global struct ServerEntityStruct
 	string enemyHighlight = ""
 	string burnReward = ""
 	int fd_roundDeployed = -1
+	bool   recreateLootOnPickup = false
+	entity firstOwner // used for survival weapons, to store who originally owned this weapon/CPropSurvival
+	entity lastOwner // currently used for Newcastle KD shield, to store who last owned the shield - allows us to reset KD shield properties for Newcastles
 
+	entity pet
 	// r5 stuff
 	EHIScriptStruct ehiss
 	bool isBusy = false
@@ -355,6 +348,12 @@ global struct ServerEntityStruct
 	bool isDoorBlocker
 	void functionref( entity, entity, var ) Callback_VortexTriggerBulletHit
 	void functionref( entity, entity, entity, entity, vector ) Callback_VortexTriggerProjectileHit
+
+
+	bool   isInWarpTrigger
+	float  phaseTunnelExitTime
+	int skinItemFlavorGUID  = -1
+	int charmItemFlavorGUID = -1
 	vector lastBouncePosition
 	bool inGracePeriod
 	array<void functionref( entity, entity, vector, vector )> onGrappledCallbacks
@@ -380,9 +379,13 @@ global struct ServerEntityStruct
 
 	bool shouldSpawnLoot = true
 	float lastGrappleTime
+	//Burn/thermite effects
+	bool                   canBurn = false
+	bool                   isBurning = false
 	array<BurnDamageStack> burnDamageStacks
-	bool isBurning
-	
+	vector originalLocalAngles
+	bool   scanSoundPlaying
+
 	//Flowstate
 
 	//Trophy Structs
@@ -467,6 +470,25 @@ global struct ServerEntityStruct
 	vector FallDamageJumpOrg
 	float currentDiveGoalAngle
 	entity botFakeModel
+
+	bool islockedent
+	bool stopTurretWeapon
+	array<entity> turretparts
+	entity turretowner
+	entity turrettrigger
+	bool stoppls
+	entity turretlockedent
+	entity turretweapon
+	bool onlyonetime
+
+	array<entity>                          friendlyFxArray
+	array<entity>                          enemyFxArray
+	int lockOnCount
+	int inSonarTriggerCount
+	
+	array<void functionref( entity player, int state )> onPlayerGamestateChangedCallbacks
+	int gamemode1v1State = -1
+	array<entity> myWaypoints
 }
 
 global struct MeritData
@@ -480,6 +502,17 @@ global struct MeritData
 	int titanMerits
 
 	int happyHourMeritState
+}
+
+global struct DropWeaponData
+{
+	string        name
+	array<string> mods
+	int           stockpile
+	int           ammo
+	entity        originalOwner
+	int           charmItemFlavorGUID = -1
+	int 		  skinItemFlavorGUID  = -1
 }
 
 // This struct is hooked up to entity.p in code
@@ -603,6 +636,7 @@ global struct ServerPlayerStruct
 	int numberOfDeaths = 0
 	int numberOfDeathsSinceLastKill = 0
 
+	table<entity, float> playerToTimeThatAssistCreditLastsTable
 	float lastGrappledTime
 
 	bool isReviving = false
@@ -727,8 +761,10 @@ global struct ServerPlayerStruct
 	int zoneNoTouchStack
 	int currentZoneId
 	entity DEV_lastDroppedSurvivalWeaponProp
+	bool hasStagingAreaDamageProtection = false
 
 	int squadRank
+	bool 		  hasDropSettings = false
 
 	float respawnChanceExpiryTime
 
@@ -742,6 +778,7 @@ global struct ServerPlayerStruct
 	float lastDownedEnemyTime
 	int downedEnemy
 
+	
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	float last3dashtime = 0
@@ -764,7 +801,7 @@ global struct ServerPlayerStruct
 	bool challengenotify 		= false //need to make a notify system
 	entity entLastChallenger
 	float last_input_time
-	float IBMM_grace_period 	= -1 // <=0  is disabled
+	float IBMM_grace_period 	= -1 // <= 0 is disabled
 	float messagetime			= 0
 	int movevalue 				= 0
 	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name
@@ -782,8 +819,16 @@ global struct ServerPlayerStruct
 	float ratelimit 			= 0.2
 	bool rest_request 			= false
 	bool waitingFor1v1			= false
-	bool bIsChatbot 			= false
 	bool ClientCommandsEnabled 	= true
+	array<int> invalidAssets	= []
+	bool bannersValidated		= false
+	table< table<int, int> > groupTypeToRuiID = {}
+	
+	//for adding specific spawn behavior on a player basis.
+	array<void functionref(entity)> playerSpawnedCallbacks
+	
+	//For adding specific spawn behavior that fires once.
+	array<void functionref(entity)> playerSpawnedCallbacks_FireOnce
 	
 	//framework for confirm ( this is bad and experimental )
 	bool bInRetry 				= false
@@ -1016,6 +1061,17 @@ global struct ServerPlayerStruct
 	bool IsBot = false
 
 	int movementRecorderCharacter = 0
+
+	// NOT IMPLEMENTED!!!!!!!!!!!
+	
+	// array< var > recordingAnims
+	// array< LocPair > recordingAnimsCoordinates
+	//v2. Café
+	
+	/* table< int, array< var > > recordingAnims
+	table< int, array< LocPair > > recordingAnimsCoordinates
+	array< int > recordingAnimsChosenCharacters */
+	
 	array< var > recordingAnims
 	array< LocPair > recordingAnimsCoordinates
 	array< int > recordingAnimsChosenCharacters
@@ -1029,6 +1085,35 @@ global struct ServerPlayerStruct
 	bool InDeathRecap
 	float lastRingDamagedTime
 	int lastAmmoPoolCount
+	entity lastDroppedLootEnt
+	entity myLastDeathbox
+	Point ornull safeSpotForDeathBox = null
+
+	float lastTimeHovercraftSpeedSentToClient
+	int   jumpMasterOrder = 3
+
+	entity        cryptoActiveCamera
+	bool          completedEMP
+
+	float  survivalMatchStartTime
+	float  survivalAliveStartTime
+	float  survivalAliveEndTime
+	float  survivalLandedStartTime
+	bool   survivalLandedOnGround
+	entity killerToSpectate
+	bool   hasSpectatedKillerOnce
+
+	// Player was jumpmaster at any point in the current game.
+	bool wasJumpmaster = false
+	// Player was jumpmaster during the team's last drop. In 3 strikes, the last jumpmaster also leads the team's next
+	// jumps for subsequent respawns.
+	bool wasLastJumpmaster = false
+
+	int    respawnCount = 0
+	int  holsterAndDisableWeaponCount
+	int assignedMasterChief = -1
+	array<string> weaponsToDropRefs
+	array<DropWeaponData> weaponsToDropData
 }
 
 global struct ChallengeScore
@@ -1043,7 +1128,9 @@ global struct ChallengeScore
 
 global struct ServerPlayerWaypoint
 {
-	float waypointCreatedTime
+	float  waypointCreatedTime
+	entity oldOwner
+	bool   highlightWaypoint
 }
 
 global struct TitanSettings
@@ -1256,11 +1343,22 @@ global struct ServerProjectileStruct
 	float savedShotTime
 	string ownerStringDebug
 	vector ownerLocationDebug
-	vector savedSurfaceNormal
+
+	vector                  savedVel
+	// vector                  savedRelativeDelta
+	// entity                  savedMovingGeo
+	// float                   savedShotTime
+	vector                  savedSurfaceNormal
+	void functionref( entity, DeployableCollisionParams ) bounceFunc
+	void functionref( entity, DeployableCollisionParams ) deployFunc
+	// void functionref( entity, ProximityExplodeParams ) explodeFunc
+
 	float lastTeleportTime
 	bool dontbouncethistime = false
 	entity weapon
 	array<entity> healWeaponEffects
+	
+	float lastVortexBounceTime = 0.0
 }
 
 // hooked up to entity.soul in code

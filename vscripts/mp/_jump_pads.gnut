@@ -13,8 +13,8 @@ const float JUMP_PAD_PUSH_PROJECTILE_RADIUS = 32.0//98.0
 const float JUMP_PAD_VIEW_PUNCH_SOFT_TITAN = 120.0
 const float JUMP_PAD_VIEW_PUNCH_HARD_TITAN = 20.0
 const float JUMP_PAD_VIEW_PUNCH_RAND_TITAN = 20.0
-const TEAM_JUMPJET_DBL = $"P_team_jump_jet_ON_trails"
-const ENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_ON_trails"
+global const TEAM_JUMPJET_DBL = $"P_team_jump_jet_ON_trails"
+global const ENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_ON_trails"
 const asset JUMP_PAD_MODEL = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl"
 const int JUMP_PAD_HEALTH = 200
 
@@ -412,7 +412,7 @@ bool function JumpPad_ShouldPushPlayerOrNPC( entity target )
 
 //Cannon
 
-entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
+entity function FSCannon_Create( vector origin, float pushRadius, vector dir, int push = 745 )
 {
 	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
 	trigger.SetRadius( pushRadius )
@@ -421,7 +421,7 @@ entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 	trigger.SetOrigin( origin )
 	trigger.SetAngles( <0,0,0> )
 	trigger.SetTriggerType( TT_JUMP_PAD )
-	trigger.SetLaunchScaleValues( 870, 1.7 )
+	trigger.SetLaunchScaleValues( push, 1.7 )
 	trigger.SetLaunchDir( dir )
 	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"

@@ -89,7 +89,7 @@ Scripts:
 	sh_survival_equipment_slot.gnut
     sh_survival_loot_distribution.gnut
 	
-	sh_draw_img.gnut
+	sh_world_draw.gnut
 	sh_draw_register_assets.gnut
 ]
 
@@ -113,9 +113,15 @@ Scripts:
 	mp/sh_music.gnut
 	mp/sh_skydive_trails.gnut
 	sh_weapons.gnut
-  sh_dev_weapons.nut
+	sh_dev_weapons.nut
 	sh_dev_menu.nut
 	sh_weapon_cosmetics.nut
+]
+
+When: "SERVER"
+Scripts:
+[
+	mp/banner/_banner_asset.nut
 ]
 
 When: "CLIENT"
@@ -265,11 +271,16 @@ Scripts:
 	weapons/mp_ability_cloak.nut
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
+
+	weapons/mp_weapon_flamethrower.nut
+	weapons/sp_weapon_arc_tool.nut
+	weapons/mp_titanweapon_flightcore_rockets.nut
 	weapons/mp_weapon_smart_pistol.nut
 	weapons/mp_weapon_softball.nut
 	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
 	weapons/mp_weapon_satchel.nut
+	weapons/mp_weapon_turret.nut
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
@@ -556,6 +567,7 @@ Scripts:
 	
 	mp/sh_desertlands_train.nut
 	sh_scoreboard.gnut
+	_squads_utility.gnut
 ]
 
 When: "SERVER || UI"
@@ -778,6 +790,7 @@ Scripts:
 	ui/menu_controls_advanced_look.nut
 	ui/menu_controls_ads_pc.nut
 	ui/menu_controls_ads_console.nut
+	ui/menu_controls_ads_advanced_console.nut
 	ui/panel_controls_pc.nut
 	ui/panel_controls_gamepad.nut
 	ui/panel_video.nut
@@ -944,12 +957,16 @@ Scripts:
 	weapons/mp_weapon_titan_sword_slam.nut
 	weapons/mp_weapon_titan_sword_launcher.nut
 	weapons/mp_weapon_titan_sword_super.nut
+	
+	//weapons/mp_weapon_grenade_cryonade.nut
+	//weapons/mp_ability_phase_chamber.nut
 ]
 
 When: "SERVER || CLIENT"
 Scripts:
 [
 	sh_map_zones.nut
+	weapons/sh_incap_shield.nut
 ]
 
 When: "SERVER"
@@ -983,7 +1000,13 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	gamemodes/global/_gamemode_spawn_settings.nut
+	gamemodes/global/_gamemode_spawn_system.nut
+]
+
+When: "UI"
+Scripts:
+[
+	ui/fs_scenarios/scenarios_ui.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -1004,6 +1027,8 @@ Scripts:
 	mp/sh_movement_recorder.nut
 	sh_hover_vehicle.gnut
 	gamemodes/fs_scenarios/sh_gamemode_scenarios.nut
+	//gamemodes/fs_carritos/sh_gamemode_carritos.nut
+	mp/sh_skydive_launchers.gnut
 ]
 
 When: "SERVER"
@@ -1022,6 +1047,7 @@ Scripts:
 	gamemodes/fs_snd/_gamemode_snd.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
+	//gamemodes/fs_carritos/_gamemode_carritos.nut
 	
 	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut
@@ -1051,13 +1077,16 @@ Scripts:
 	custom_maps/_custom_firstmap.nut
 	custom_maps/_custom_gymmovementmap.nut
 	custom_maps/_custom_ithurtsmap.nut
-	
+	custom_maps/_custom_rankupmap.nut
+
 	//map editor props
 	_place_map_editor_props_here.nut
 	_mapeditor.gnut
 
     // ReMap Live
     mp/levels/mp_rr_remap.nut
+	
+   // mp/_movement_recorder_deprecated.nut
 ]
 
 When: "CLIENT"
@@ -1075,6 +1104,7 @@ Scripts:
 	gamemodes/fs_snd/cl_gamemode_snd.nut
 	lobby/lobbyvm/cl_lobbyvm.nut
 	custom_maps/cl_custom_falling_forever.nut
+	//gamemodes/fs_carritos/cl_gamemode_carritos.nut
 ]
 
 
@@ -1083,6 +1113,7 @@ When: "SERVER"
 Scripts:
 [
 	freelance/_freelance.gnut
+	_loot_helper.gnut
 ]
 
 
@@ -1101,4 +1132,10 @@ Scripts:
 	sh_localized_strings.nut
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
+]
+
+When: "SERVER || CLIENT || UI"
+Scripts:
+[
+	gamemodes/sh_gamemode_winterexpress.nut
 ]

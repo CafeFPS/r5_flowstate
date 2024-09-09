@@ -12,37 +12,42 @@ global function OnWeaponDeactivate_Clickweapon
 global function Clickweapon_Init
 
 #if CLIENT
-//for settings ui
-global function LGDuels_SetR
-global function LGDuels_SetG
-global function LGDuels_SetB
-global function LGDuels_SetPositionOffset
-global function LGDuels_SetSettingsMenuOpen
-global function LGDuels_SetModifyingLocalBeam
-global function LGDuels_SetPresetRed
-global function LGDuels_SetPresetGreen
-global function LGDuels_SetPresetYellow
-global function LGDuels_SetPresetBlue
-global function LGDuels_SetPresetPurple
-global function LGDuels_SetFromPersistence
-global function DEV_PrintBeams
-global function LGDuels_UpdateSettings
-global function LGDuels_SaveToServerPersistence
+	//for settings ui
+	global function LGDuels_SetR
+	global function LGDuels_SetG
+	global function LGDuels_SetB
+	global function LGDuels_SetPositionOffset
+	global function LGDuels_SetSettingsMenuOpen
+	global function LGDuels_SetModifyingLocalBeam
+	global function LGDuels_SetPresetRed
+	global function LGDuels_SetPresetGreen
+	global function LGDuels_SetPresetYellow
+	global function LGDuels_SetPresetBlue
+	global function LGDuels_SetPresetPurple
+	global function LGDuels_SetFromPersistence
+	global function LGDuels_UpdateSettings
+	global function LGDuels_SaveToServerPersistence
 
-int DesiredR = 89
-int DesiredG = 232
-int DesiredB = 37
-int DesiredEnemyR = 252
-int DesiredEnemyG = 3
-int DesiredEnemyB = 227
-vector chosenColor
-vector chosenEnemyColor
-float positionOffset = -30
-bool isSettingsMenuOpen = false
-bool modifyingLocalBeam = true
-#endif
+	#if DEVELOPER 
+		global function DEV_PrintBeams
+	#endif 
 
-const asset TheBestAssetInTheGame = $"P_tesla_trap_link_CP"
+	int DesiredR = 89
+	int DesiredG = 232
+	int DesiredB = 37
+	int DesiredEnemyR = 252
+	int DesiredEnemyG = 3
+	int DesiredEnemyB = 227
+	vector chosenColor
+	vector chosenEnemyColor
+	float positionOffset = -30
+	bool isSettingsMenuOpen = false
+	bool modifyingLocalBeam = true
+#endif //CLIENT
+
+const asset TheBestAssetInTheGame 	= $"P_tesla_trap_link_CP"
+const float LG_SINGLE_FIRE_DEBOUNCE = 1.5
+const float LG_DRAG_TIME			= 0.02
 
 struct BeamSettings 
 {
@@ -56,17 +61,51 @@ struct BeamSettings
 	#endif 
 }
 
-struct{
+struct
+{
 	#if CLIENT
 		table<entity, int> beamsFxs = {}
 		table<entity, entity> handmover
 		table<entity, entity> beammover
-		table<entity, entity> healthBars
 		table<string, BeamSettings > allBeamSettings = {} // string: local/enemy
 	#endif
-}file
+	
+	bool isInstaGib
+	
+	#if SERVER || CLIENT
+		bool isAimTrainer
+	#endif // SERVER || CLIENT
+} file
 
-#if CLIENT
+void function Clickweapon_Init()
+{
+	RegisterSignal( "EndLaser" )
+	RegisterSignal( "EndNoAutoThread" )
+	RegisterSignal( "PlayerStartShotingLightningGun" )
+
+	#if CLIENT
+		AddCreateCallback( "player", FS_LG_OnPlayerCreated )
+		AddDestroyCallback( "player", FS_LG_OnPlayerDestroyed )
+		
+		chosenColor = < DesiredR, DesiredG, DesiredB >
+		SetConVarFloat( "hud_setting_showLevelUp", positionOffset )
+		SetConVarInt( "noise_filter_scale", DesiredR )
+		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
+		SetConVarInt( "net_wifi", DesiredB )
+		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
+	#endif
+	
+	#if SERVER
+		AddCallback_OnWeaponAttack( FS_LG_PlayerStartShooting )
+	#endif
+	
+	#if SERVER || CLIENT 
+		file.isInstaGib 	= 	Playlist() == ePlaylists.fs_dm_fast_instagib
+		file.isAimTrainer 	= 	Gamemode() == eGamemodes.fs_aimtrainer
+	#endif
+}
+
+#if DEVELOPER && CLIENT
 void function DEV_PrintBeams()
 {
 	foreach ( ent, i in file.beamsFxs )
@@ -74,7 +113,9 @@ void function DEV_PrintBeams()
 		printt( ent + " --- " + i )
 	}
 }
+#endif //DEVELOPER && CLIENT
 
+#if CLIENT
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 {
 	CheckBeamSettingsExist() //maybe only init in playercreated
@@ -87,11 +128,11 @@ void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 	{
 		string typ = typeof( vargv[i] )
 		
-		switch(typ)
+		switch( typ )
 		{
 			case "float":
 			
-				switch(isLocal)
+				switch( isLocal )
 				{
 					case true: 
 						file.allBeamSettings["local"].offset = expect float( vargv[i] )
@@ -105,11 +146,11 @@ void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 				
 			case "int":
 				
-				switch(i)
+				switch( i )
 				{
 					case 0:	
 					
-						switch(isLocal)
+						switch( isLocal )
 						{
 							case true: file.allBeamSettings["local"].R = expect int( vargv[i] ); break
 							case false: file.allBeamSettings["enemy"].R = expect int( vargv[i] ); break
@@ -119,7 +160,7 @@ void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 						
 					case 1:
 					
-						switch(isLocal)
+						switch( isLocal )
 						{
 							case true: file.allBeamSettings["local"].G = expect int( vargv[i] ); break
 							case false: file.allBeamSettings["enemy"].G = expect int( vargv[i] ); break
@@ -129,7 +170,7 @@ void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 						
 					case 2:
 					
-						switch(isLocal)
+						switch( isLocal )
 						{
 							case true: file.allBeamSettings["local"].B = expect int( vargv[i] ); break
 							case false: file.allBeamSettings["enemy"].B = expect int( vargv[i] ); break
@@ -173,131 +214,165 @@ void function CheckBeamSettingsExist()
 }
 #endif
 
-void function Clickweapon_Init()
-{
-	RegisterSignal( "EndLaser" )
-	RegisterSignal( "EndNoAutoThread" )
-	RegisterSignal( "PlayerStartShotingLightningGun" )
 
-	#if CLIENT
-	AddCreateCallback( "player", FS_LG_OnPlayerCreated )
-	AddDestroyCallback( "player", FS_LG_OnPlayerDestroyed )
-	
-	chosenColor = < DesiredR, DesiredG, DesiredB >
-	SetConVarFloat( "hud_setting_showLevelUp", positionOffset )
-	SetConVarInt( "noise_filter_scale", DesiredR )
-	SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-	SetConVarInt( "net_wifi", DesiredB )
-	chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
-	#endif
-	
-	#if SERVER
-	AddCallback_OnWeaponAttack( FS_LG_PlayerStartShooting )
-	#endif
-}
+// #if CLIENT 
+	// void function DEV_DebuggerThread( entity player, entity weapon )
+	// {
+		// EndSignal( player, "EndLaser" )
+		
+		// OnThreadEnd
+		// (
+			// void function()
+			// {
+				// Warning( "-- CHECKER IS DOWN -----------------------" )
+			// }
+		// )
+		
+		// float oldTime = weapon.GetNextAttackAllowedTime()
+		
+		// for( ; ; )
+		// {
+			// WaitFrame()
+			
+			// float newTime = weapon.GetNextAttackAllowedTime()
+			
+			// if( oldTime != newTime )
+			// {
+				// printw( "Time was changed! old=", oldTime, "new =", newTime )
+				// oldTime = newTime
+			// }
+		// }
+	// }
+// #endif 
 
 void function OnWeaponActivate_Clickweapon( entity weapon ) 
 {
 	#if CLIENT
-	if ( InPrediction() && !IsFirstTimePredicted() )
-		return
+		if ( InPrediction() && !IsFirstTimePredicted() )
+			return
 
-	entity sPlayer = weapon.GetWeaponOwner()
+		entity sPlayer = weapon.GetWeaponOwner()
 
-	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
-		return
-	
-	bool isAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
+		if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+			return
+		
+		bool isAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
 
-	thread function () : ( weapon, sPlayer, isAuto ) 
-	{
-		Signal( sPlayer, "EndLaser" )
-		EndSignal( sPlayer, "EndLaser" )
-
-		while( IsValid( sPlayer ) && IsValid( sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) == weapon )
+		thread function () : ( weapon, sPlayer, isAuto ) 
 		{
-			if( sPlayer.IsInputCommandHeld( IN_ATTACK ) && isAuto || isSettingsMenuOpen && modifyingLocalBeam || !isAuto && sPlayer.IsInputCommandPressed( IN_ATTACK ) )
+			Signal( sPlayer, "EndLaser" )
+			EndSignal( sPlayer, "EndLaser" )
+			
+			if( sPlayer.p.lightningGunReady == false ) //to sync effect from weapon swap.
 			{
-				entity player = GetLocalViewPlayer()
-
-				vector origin = player.GetCrosshairTraceEndPos()
-				
-				entity moverForLaserEnt 
-				
-				if( !(player in file.beammover) || player in file.beammover && !IsValid( file.beammover[player] ) )
-					file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-				
-				moverForLaserEnt = file.beammover[ player ]
-				moverForLaserEnt.SetOrigin( origin )
-
-				int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
-
-				if( !EffectDoesExist( file.beamsFxs[ player ] ) )
-				{
-					file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( player, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, AnglesToRight( player.GetViewVector() ) * positionOffset + <0,0,40>, <0, 0, 0> )
-					EffectSetDontKillForReplay( file.beamsFxs[ player ] )
-					EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
-					EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
-				} else
-				{
-					EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
-				}
-				
-				if( !isAuto )
-				{
-					float endtime = Time() + 0.1
-					
-					while( Time() <= endtime )
-						WaitFrame()
-					
-					continue
-				}
-			} else
-			{
-				if( sPlayer in file.beamsFxs && EffectDoesExist( file.beamsFxs[ sPlayer ] ) && sPlayer == GetLocalViewPlayer() )
-				{
-					EffectStop( file.beamsFxs[ sPlayer ], false, true )
-				}
+				while( !weapon.IsReadyToFire() )
+					WaitFrame()
 			}
 
-			WaitFrame()
-		}
-	}()
+			while( IsValid( sPlayer ) && IsValid( sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) == weapon )
+			{
+				if( weapon.IsReadyToFire() || sPlayer.p.lightningGunReady )
+				{
+					// Warning( "CHECK FOR ATTACK , allowed= " + currentAttackTime + " ,weaponnext= " + weapon.GetNextAttackAllowedTime() + " ,Time= " + Time() )
+					// DEV_SetBreakPoint()
+					
+					if( sPlayer.IsInputCommandHeld( IN_ATTACK ) && isAuto || isSettingsMenuOpen && modifyingLocalBeam || !isAuto && sPlayer.IsInputCommandPressed( IN_ATTACK ) )
+					{	
+						entity player = GetLocalViewPlayer()
+
+						vector origin = player.GetCrosshairTraceEndPos()
+						
+						entity moverForLaserEnt 
+						
+						if( !(player in file.beammover) || player in file.beammover && !IsValid( file.beammover[player] ) )
+							file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+						
+						moverForLaserEnt = file.beammover[ player ]
+						moverForLaserEnt.SetOrigin( origin )
+
+						int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
+
+						if( !EffectDoesExist( file.beamsFxs[ player ] ) )
+						{
+							file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( player, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, AnglesToRight( player.GetViewVector() ) * positionOffset + <0,0,40>, <0, 0, 0> )
+							EffectSetDontKillForReplay( file.beamsFxs[ player ] )
+							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
+							EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
+						} 
+						else
+						{
+							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
+						}
+						
+						if( !isAuto ) //maintains visual for single activate.
+						{
+							sPlayer.p.lightningGunReady = false //for effect sync
+							
+							float endtime = Time() + LG_DRAG_TIME
+							
+							while( Time() < endtime )
+								WaitFrame()
+							
+							continue //skips the end loop waitframe
+						}
+					} 
+					else
+					{
+						StopEffectForPlayer( sPlayer )
+					}
+				}
+				else 
+				{
+					StopEffectForPlayer( sPlayer )
+				}
+
+				WaitFrame()
+			}
+		}()
 	#endif
 }
 
+#if CLIENT 
+
+	void function StopEffectForPlayer( entity sPlayer )
+	{
+		if( sPlayer in file.beamsFxs && EffectDoesExist( file.beamsFxs[ sPlayer ] ) && sPlayer == GetLocalViewPlayer() )
+		{
+			EffectStop( file.beamsFxs[ sPlayer ], false, true )
+		}
+	}
+#endif //CLIENT
+
 var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
+	/////////////////////////////////////////////////////////////////////
 	#if CLIENT
-	if ( InPrediction() && !IsFirstTimePredicted() )
-		return
+		if ( InPrediction() && !IsFirstTimePredicted() )
+			return
 	#endif
 
-	if( !IsValid( weapon ) )
-		return
-
-	weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, weapon.GetWeaponDamageFlags() )
-
+	// if( !IsValid( weapon ) )
+		// return
+	
+	bool bAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
+	
+	if( file.isInstaGib || !bAuto )
+	{
+		weapon.OverrideNextAttackTime( Time() + LG_SINGLE_FIRE_DEBOUNCE )
+	
+		#if CLIENT 
+			weapon.GetWeaponOwner().p.lightningGunReady = true //for effect sync
+		#endif
+	}
+	
+	return weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, weapon.GetWeaponDamageFlags() )
+	
+	/////////////////////////////////////////////////////////////////////
 	
 	#if SERVER
 	
-	//this is handled with lgmode ondamaged callback.
-	
-	// if( Flowstate_IsLGDuels() )
-	// {
-		// if( player.p.totalLGShots > 0 )
-		// {
-			// int acurracy = int( ( float( player.p.totalLGHits ) / float( player.p.totalLGShots ) )*100 )
-			// player.SetPlayerNetInt( "accuracy", acurracy )
-		// }
-		
-		// player.p.totalLGShots++
-	// }
-	
-	//The following code is only for the aim trainer stats 
-	
 	//This should be moved to aimtrainer ondamaged callback
-	if( Gamemode() != eGamemodes.fs_aimtrainer ) 
+	if( !file.isAimTrainer ) //Gamemode() != eGamemodes.fs_aimtrainer ) 
 		return
 
 	entity player = weapon.GetWeaponOwner()
@@ -397,18 +472,9 @@ void function FS_LG_OnPlayerCreated( entity player )
 		file.beamsFxs[player] <- -1
 	}
 
-	if( !( player in file.healthBars ) )
-	{
-		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
-	}
-
+	player.p.lightningGunReady = true //for effect sync
 	thread FS_LG_HandleLaserForPlayer( player )
-	
-	if( Playlist() != ePlaylists.fs_lgduels_1v1 )
-		return
 
-	Flowstate_CreateCustomHealthBarForPlayer( player )
-	
 	CheckBeamSettingsExist()
 }
 
@@ -447,80 +513,18 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 			continue
 		}
 
-		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) )
+		if( EffectDoesExist( file.beamsFxs[ player ] ) )
 		{
-			EffectStop( file.beamsFxs[ player ], false, false )
+			if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || 
+			!player.DoesShareRealms( GetLocalViewPlayer() ) || 
+			!IsAlive( player ) || 
+			GetGameState() != eGameState.Playing )
+				EffectStop( file.beamsFxs[ player ], false, false )
 		}
 		
 		wasPlayerShooting = player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" )
-		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.0001, 0, 0 )
-		
+		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.01, 0, 0 ) //min wait value is 0.01 so it does not affect other movers? Cafe	
 		WaitFrame()
-	}
-}
-
-// cool health bars, im insane
-void function Flowstate_CreateCustomHealthBarForPlayer( entity player ) 
-{
-	entity vgui
-	
-	if( player in file.healthBars )
-	{
-		vgui = file.healthBars[player]
-	} else
-	{
-		vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-		file.healthBars[player] <- vgui
-	}
-	
-	if( !IsValid( vgui ) )
-		return
-
-	vgui.SetParent( player )
-	thread Flowstate_CustomHealthBar_FaceVguiToPlayer( player, vgui )
-}
-
-void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity vgui )
-{
-	//todo desharcodear 80, quizá tomar el headfocus
-	local foreground = HudElement( "HealthBar_Foreground", vgui.GetPanel() )
-	local background = HudElement( "HealthBar_Background", vgui.GetPanel() )
-	int baseHeight = 280
-	
-	while( true )
-	{
-		WaitFrame() //possibly revisit poll time ? ~mkos
-		//wait 0.005
-
-		if( !IsValid( player ) )
-			break
-		
-		if( !IsValid( vgui ) )
-		{
-			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-			vgui.SetParent( player )
-			file.healthBars[player] = vgui
-		}
-
-		if( !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) || !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
-		{
-			foreground.Hide()
-			background.Hide()
-			continue
-		}
-
-		foreground.Show()
-		background.Show()
-
-		int health = player.GetHealth()
-		float Width = float( health * baseHeight ) / player.GetMaxHealth()
-		foreground.SetHeight( Width )
-
-		//make it face view player
-		vector closestPoint = GetClosestPointOnLine( GetLocalViewPlayer().CameraPosition(), GetLocalViewPlayer().CameraPosition() + (AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 100.0), vgui.GetOrigin() )		
-		vector angles = VectorToAngles( vgui.GetOrigin() - closestPoint )
-		vgui.SetAngles( Vector( -90, angles.y, 0 ) )
-		vgui.SetOrigin( player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20 )
 	}
 }
 
@@ -528,13 +532,6 @@ void function FS_LG_OnPlayerDestroyed( entity player )
 {
 	if ( !IsValid( player ) )
 		return
-
-	if( player in file.healthBars )
-	{
-		if( IsValid( file.healthBars[player] ) )
-			file.healthBars[ player ].Destroy()
-		delete file.healthBars[player]
-	}
 
 	if( player in file.beammover )
 	{
@@ -557,7 +554,6 @@ void function FS_LG_OnPlayerDestroyed( entity player )
 		delete file.beamsFxs[player]
 	}
 }
-
 //Settings
 void function LGDuels_SetPresetRed( bool isLocalChosen )
 {

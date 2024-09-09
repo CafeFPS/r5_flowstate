@@ -12,6 +12,7 @@ void function ClientCodeCallback_MapInit()
 {
 	MinimapLabelsCloudcity()
 	PathTT_Init()
+	Olympus_MapInit_Common()
 }
 
 void function MinimapLabelsCloudcity()

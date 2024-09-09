@@ -15,6 +15,8 @@ global function OnMobileRespawnChamberSpawned
 
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
+global function RespawnUserTeam
+global function DeathBoxOnUse
 #endif
 
 
@@ -50,7 +52,7 @@ global const float MOBILE_RESPAWN_BEACON_RESPAWN_TIME         = 7.0
 global const string RESPAWN_BEACON_SUCCESS_SOUND       = "Survival_RespawnChamber_Activate"
 global const string RESPAWN_BEACON_LOOP_SOUND          = "Survival_RespawnBeacon_Linking_loop"
 
-const asset RESPAWN_DROPSHIP_MODEL                     = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
+global const asset RESPAWN_DROPSHIP_MODEL                     = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 
 global const asset RESPAWN_BEACON_EMITTER_FX           = $"P_chamber_proj_holo"
 global const asset RESPAWN_BEACON_BEAM_FX              = $"P_chamber_beam"
@@ -1007,7 +1009,7 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) rename?
 {
 	box.EndSignal( "OnDestroy" )
-	// dna.EndSignal( "OnDestroy" )
+	dna.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( box, dna )
@@ -1018,30 +1020,6 @@ void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) 
 				{
 					SetTeam( box, TEAM_UNASSIGNED )
 					UpdateDeathBoxHighlight( box )
-
-					if ( box.GetLinkEntArray().len() == 0 )
-						box.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
-					
-					thread function () : (box)
-					{
-						wait 1
-						
-						if( !IsValid( box ) )
-							return
-					
-						entity boxPhysics = box.GetParent()
-					
-						if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
-						{
-							box.ClearParent()
-							boxPhysics.Destroy()
-						}
-						
-						wait 2.0
-						
-						if ( IsValid( box ) )
-							box.Destroy()
-					}()
 				}
 			}
 		}
@@ -1073,7 +1051,10 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 
 		owner.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
 		owner.SetPlayerNetTime( "respawnStatusEndTime", 0 )
-		Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
+		
+		//Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
+		Remote_CallFunction_ByRef( playerUser, "ServerCallback_RespawnDNAHint" )
+		
 		SetTeam( box, TEAM_UNASSIGNED )
 
 		PingNearestRespawnBeacon( owner, playerUser.GetOrigin() )
@@ -1114,6 +1095,7 @@ void function PingNearestRespawnBeacon( entity player, vector origin )
 void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int pos, vector teleportOrigin )
 {
 	ship.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
 
 	dropshipAnimData animData = file.dropshipAnimDataList[ pos ]
 
@@ -1131,7 +1113,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	jumpAnimSequence.attachment = animData.attachment
 	jumpAnimSequence.hideProxy = animData.hideProxy
 
-	// player.Signal( "StopPostDeathLogic" )
+	player.Signal( "StopPostDeathLogic" )
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF

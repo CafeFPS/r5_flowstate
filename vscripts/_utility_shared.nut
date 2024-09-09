@@ -493,13 +493,13 @@ table function StringToColors( string colorString, string delimiter = " " )
 	return Table
 }
 
-function ColorStringToArray( string colorString )
+array<int> function ColorStringToArray( string colorString )
 {
 	array<string> tokens = split( colorString, " " )
 
 	Assert( tokens.len() >= 3 && tokens.len() <= 4 )
 
-	array colorArray
+	array<int> colorArray
 	foreach ( token in tokens )
 		colorArray.append( int( token ) )
 
@@ -739,19 +739,37 @@ void function Dump( package, int depth = 0 )
 	}
 }
 
-bool function UseShortNPCTitles()
+array<int> function GetAllValidPlayerTeams()
 {
-	return GetCurrentPlaylistVarInt( "npc_short_titles", 0 ) ? true : false
+	array<int> teams
+	foreach ( player in GetPlayerArray() )
+	{
+		int t = player.GetTeam()
+		if ( !teams.contains( t ) )
+		{
+			teams.append( t )
+		}
+	}
+	return teams
 }
 
-//string function GetShortNPCTitle( int team )
-//{
-//	return GetTeamName( team )
-//}
-
-bool function IsIMCOrMilitiaTeam( int team )
+array<int> function GetAllValidConnectedPlayerTeams()
 {
-	return team == TEAM_MILITIA || team == TEAM_IMC
+	array<int> teams
+	foreach ( player in GetPlayerArray() )
+	{
+	#if SERVER
+		if ( IsDisconnected( player ) )
+			continue
+	#endif
+
+		int t = player.GetTeam()
+		if ( !teams.contains( t ) )
+		{
+			teams.append( t )
+		}
+	}
+	return teams
 }
 
 int function GetOtherTeam( int team )
@@ -759,14 +777,42 @@ int function GetOtherTeam( int team )
 	if ( team == TEAM_SPECTATOR )
 		return TEAM_UNASSIGNED
 
-	if ( team == TEAM_IMC )
-		return TEAM_MILITIA
+	array<int> teams = GetAllValidPlayerTeams()
+	foreach ( t in teams )
+	{
+		if ( t != team )
+			return t
+	}
 
-	if ( team == TEAM_MILITIA )
-		return TEAM_IMC
+	Warning( "Used GetOtherTeam() with less than 2 teams" )
+	return TEAM_UNASSIGNED
+}
 
-	Assert( false, "Trying to GetOtherTeam() for team: " + team + " that is neither Militia nor IMC" )
-	unreachable
+
+bool function ArePlayersAllies( entity playerA, entity playerB )
+{
+	if ( playerA.GetTeam() == playerB.GetTeam() )
+		return true
+
+	return false
+}
+
+array<entity> function GetArrayOfPossibleAlliesForPlayer( entity player, bool includeAlliance = true )
+{
+	array<entity> allyArray = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	allyArray.removebyvalue( player )
+
+	return allyArray
+}
+
+bool function UseShortNPCTitles()
+{
+	return GetCurrentPlaylistVarInt( "npc_short_titles", 0 ) ? true : false
+}
+
+bool function IsIMCOrMilitiaTeam( int team )
+{
+	return team == TEAM_MILITIA || team == TEAM_IMC
 }
 
 table<int, int> function GetPlayerTeamCountTable()
@@ -1117,7 +1163,7 @@ vector function GetSinglePointOnBezier( array<vector> points, float t )
 	unreachable
 }
 
-array< vector > function GetBezierOfPath( array< vector > path, int numSegments )
+array< vector > function GetBezierOfPath( array< vector > path, int numSegments, float debugTime = 0.0 )
 {
 	Assert( path.len() >= 3 )
 	int numNodesInPath = path.len()
@@ -1125,28 +1171,43 @@ array< vector > function GetBezierOfPath( array< vector > path, int numSegments 
 	array< vector > nodeTangents
 	array< vector > bezierPath
 
-	nodeTangents.append( GetBezierNodeTangent( path[ 1 ], path[ 0 ], path[ 2 ] ) )
 	for ( ; idx_cur < numNodesInPath - 1; idx_cur++ )
 	{
 		int idx_next   = (idx_cur + 1) % numNodesInPath
 		int idx_next_2 = (idx_cur + 2) % numNodesInPath
 
-		//
-		if ( idx_next < (numNodesInPath - 1) )//
+		// Up until second to last, get tangent of next node
+		if ( idx_next < (numNodesInPath - 1) )
 		{
 			nodeTangents.append( GetBezierNodeTangent( path[ idx_next ], path[ idx_cur ], path[ idx_next_2 ] ) )
+
+			// Generate the first tangent using information from the second tangent. First tangent "points" at the second tangent for a smooth start.
+			if ( idx_cur == 0 )
+			{
+				// The position, nodeTangents is a relative offset
+				vector firstTangent = path[ idx_next ] + nodeTangents[ 0 ]
+				// Tangent is from the point above to first path position
+				firstTangent = path[ idx_cur ] - firstTangent
+				nodeTangents.insert( 0, firstTangent )
+			}
 		}
+		// Generate the last tangent like generating the first. It "points" at the second to last tangent for a smooth end.
 		else
 		{
-			nodeTangents.append( nodeTangents.top() )
+			// The position, nodeTangents is a relative offset
+			vector lastTangent = path[ idx_cur ] - nodeTangents[ idx_cur ]
+			// Tangent is from last path position to the point above
+			lastTangent = lastTangent - path[ idx_next ]
+			nodeTangents.append( lastTangent )
 		}
 
-		array< vector > bezierPoints = GetAllPointsOnBezier( [ path[ idx_cur ], path[ idx_cur ] - nodeTangents[ idx_cur ], path[ idx_next ] + nodeTangents[ idx_next ], path[ idx_next ] ], numSegments )
-		//
-		vector endPoint              = bezierPoints.pop()
+		array< vector > bezierPoints = GetAllPointsOnBezier( [ path[ idx_cur ], path[ idx_cur ] - nodeTangents[ idx_cur ], path[ idx_next ] + nodeTangents[ idx_next ], path[ idx_next ] ], numSegments, debugTime )
+
+		// This set of points includes the start and end point. Remove the end point, so that when it's all stitched together there are no duplicates.
+		vector endPoint = bezierPoints.pop()
 		bezierPath.extend( bezierPoints )
 
-		//
+		// If it's the end of the path, leave on the end node.
 		if ( idx_cur >= (numNodesInPath - 2) )
 			bezierPath.append( endPoint )
 	}
@@ -3652,12 +3713,14 @@ void function SetTeam( entity ent, int team )
 				foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
 				{
 					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
+						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 				}
 				foreach ( player in GetPlayerArrayOfTeam( team ) )
 				{
 					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
+						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 				}
 			}
 		}
@@ -4176,6 +4239,24 @@ vector function FlattenVector( vector vec )
 	return <vec.x, vec.y, 0>
 }
 
+float function Round( float num, float decimalPoints )
+{
+	float retVal = num
+	if ( decimalPoints >= 0 )
+	{
+		float factor = pow(10, decimalPoints)
+		retVal *= factor
+		retVal = floor( retVal + 0.5 )
+		retVal /= factor
+
+	}
+	return retVal
+}
+
+vector function FlattenVec( vector vec )
+{
+	return <vec.x, vec.y, 0>
+}
 vector function FlattenAngles( vector angles )
 {
 	return <0, angles.y, 0>
@@ -4421,7 +4502,7 @@ void function PrintFirstPersonSequenceStruct( FirstPersonSequenceStruct fpsStruc
 	printt( "gravity: " + fpsStruct.gravity )
 }
 
-void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "" )
+void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "", string signal4 = "" )
 {
 	//Assert( IsValid( ent ) )
 	if( !IsValid( ent ) )
@@ -4434,11 +4515,14 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 
 	if ( signal3 != "" )
 		ent.EndSignal( signal3 )
+		
+	if ( signal4 != "" )
+		ent.EndSignal( signal4 )
 
 	wait( timeout )
 	
 	#if DEVELOPER
-		Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, func: %s", signal1, signal2, signal3, FUNC_NAME( 3 ) ) )
+		//Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, %s, func: %s", signal1, signal2, signal3, signal4, FUNC_NAME( 3 ) ) )
 	#endif 
 }
 
@@ -5084,38 +5168,34 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 
 	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
 		return false
-	
-	string refAttachPointOg = GetAttachPointForAttachmentOnWeapon( weaponName, attachment )
-	
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg != "sight" )
+
+	// If attachment is not valid for GetAttachmentData, most likely malicious crafted c2s, skip and return false, we can't attach.
+	if ( !IsValidAttachment( attachment ) )
 		return false
-	
-	AttachmentData aData = GetAttachmentData( attachment )
-	array<string> splitRef = split(weaponName, "_")
-	
-	if( splitRef[splitRef.len() - 1] == "gold" )
-		splitRef.fastremovebyvalue(splitRef[splitRef.len() - 1])
-	
-	string weaponNameBase
-	
-	for( int i = 0; i < splitRef.len(); i++ )
+
+	bool isValidMode = true
+
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && isValidMode )
 	{
-		if( i != 0 )
-			weaponNameBase += "_"+splitRef[i]
-		else
-			weaponNameBase += splitRef[i]
+		if ( SURVIVAL_IsAttachmentPointLocked( weaponName, GetAttachPointForAttachmentOnWeapon( weaponName, attachment ) ) )
+			return false
+
+		weaponName = GetBaseWeaponRef( weaponName )
 	}
 
-	// printt("debug final str " + weaponNameBase )
-	
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg == "sight" && aData.compatibleWeapons.contains( weaponNameBase ) )
-		return true
-	
-	// this is now pre-computed when building AttachmentData
-	//if ( !AttachmentPointSupported( aData.attachPoint, weaponName ) )
-	//	return false
+	AttachmentData aData = GetAttachmentData( attachment )
 
-	return ( aData.compatibleWeapons.contains(weaponName ) )
+	return (aData.compatibleWeapons.contains( weaponName ))
+}
+
+string function GetBaseWeaponRef( string weaponRef )
+{
+	if ( SURVIVAL_Loot_IsRefValid( weaponRef ) )
+	{
+		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+		return weaponData.baseWeapon != "" ? weaponData.baseWeapon : weaponRef //small safety check, but baseWeapon is typically not blank
+	}
+	return weaponRef
 }
 
 bool function AttachmentPointSupported( string attachmentPoint, string weaponName )
@@ -5430,11 +5510,11 @@ entity function GetJumpmasterForTeam( int team )
 	return jumpMaster
 }
 
-int function GetNumPlayersJumpingWithSquad( int team )
+int function GetNumPlayersJumpingWithSquad( int team, bool mustBeAlive = true  )
 {
-	int count = 0
-	array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
-	foreach( entity player in teammates )
+	int count               = 0
+	array<entity> teammates = mustBeAlive ? GetPlayerArrayOfTeam_Alive( team ) : GetPlayerArrayOfTeam( team )
+	foreach ( entity player in teammates )
 	{
 		if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 			continue
@@ -5775,11 +5855,52 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 		#endif
 		
 		if ( vargc <= 0 )
-		return
+			return
 
 		local msg = vargv[0]
+		
 		for ( int i = 1; i < vargc; i++ )
 			msg = (msg + " " + vargv[i])
-			CenterPrintAll( msg )	
-	}	
+			
+		CenterPrintAll( msg )
+	}
 #endif
+
+vector function GetSmoothedPoint( vector v0, vector v1, vector v2, vector v3, float mu, float tension, float bias = 0.0 ) // TODO:JL seems like this should be globalized
+{
+	float x = HermiteInterpolate( v0.x, v1.x, v2.x, v3.x, mu, tension, bias )
+	float y = HermiteInterpolate( v0.y, v1.y, v2.y, v3.y, mu, tension, bias )
+	float z = HermiteInterpolate( v0.z, v1.z, v2.z, v3.z, mu, tension, bias )
+	return <x,y,z>
+}
+
+
+float function HermiteInterpolate( float y0, float y1, float y2, float y3, float mu, float tension, float bias ) // TODO:JL seems silly that this should be globalized
+{
+	//Tension: 1 is high, 0 normal, -1 is low
+	//Bias: 0 is even, positive is towards first segment, negative towards the other
+
+	Assert( mu >= 0.0 && mu <= 1.0 )
+
+	float m0
+	float m1
+	float mu2
+	float mu3
+	float a0
+	float a1
+	float a2
+	float a3
+
+	mu2 = mu * mu
+	mu3 = mu2 * mu
+	m0  = (y1-y0)*(1+bias)*(1-tension)/2.0
+	m0 += (y2-y1)*(1-bias)*(1-tension)/2.0
+	m1  = (y2-y1)*(1+bias)*(1-tension)/2.0
+	m1 += (y3-y2)*(1-bias)*(1-tension)/2.0
+	a0 =  2.0*mu3 - 3.0*mu2 + 1.0
+	a1 =    mu3 - 2.0*mu2 + mu
+	a2 =    mu3 -   mu2
+	a3 = -2.0*mu3 + 3.0*mu2
+
+	return(a0*y1+a1*m0+a2*m1+a3*y2)
+}

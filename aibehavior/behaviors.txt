@@ -12,3 +12,4 @@ behavior_stalker
 behavior_stalker_crawling
 behavior_spectre
 behavior_pilot_elite
+behavior_turret_sentry

@@ -143,26 +143,35 @@ void function Hud_SetModeEmblem()
 
 void function SetCommonScoreRUIVars( var rui )
 {	
-	if ( Gamemode() != eGamemodes.SURVIVAL )
+	if ( Gamemode() != eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_survival_solos )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
 		
 		int pl = Playlist()
-		
+
+		if( Flowstate_IsHaloMode() )
+			RuiSetString( rui, "gameModeString", "HALO DM" )
+			
 		switch( pl )
 		{
+			case ePlaylists.winterexpress:
+			RuiSetString( rui, "gameModeString", "WINTER EXPRESS" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
+			break
+
 			case ePlaylists.fs_1v1:
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
 			break
 
 			case ePlaylists.fs_lgduels_1v1:
 			RuiSetString( rui, "gameModeString", "FS LGDUELS" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
 			break
 			
 			case ePlaylists.fs_scenarios:
@@ -170,8 +179,8 @@ void function SetCommonScoreRUIVars( var rui )
 				RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
 			else
 				RuiSetString( rui, "gameModeString", "FS FAST BR(FIXME)" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
 			break
 			
 			case ePlaylists.fs_movementgym:
@@ -183,11 +192,19 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 			
 			case ePlaylists.fs_survival_solos:
-			RuiSetString( rui, "gameModeString", "APEX SOLO" )
+			RuiSetString( rui, "gameModeString", "APEX SOLOS" )
 			break
 
+			case ePlaylists.fs_haloMod_ctf:	
+			RuiSetString( rui, "gameModeString", "HALO CTF" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+			break
+			
 			case ePlaylists.fs_haloMod_oddball:	
-			RuiSetString( rui, "gameModeString", "ODDBALL" )
+			RuiSetString( rui, "gameModeString", "HALO ODDBALL" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
@@ -238,14 +255,11 @@ void function SetCommonScoreRUIVars( var rui )
 			case ePlaylists.custom_ctf:
 			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
 			RuiSetVisible(rui, true)
 			break
 		}
-		
-		if( Flowstate_IsHaloMode() )
-			RuiSetString( rui, "gameModeString", "HALO DM" )
 	}
 	else
 	{
@@ -265,6 +279,14 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetInt( rui, "livingPlayerCountMin", 10 )
 		RuiSetString( rui, "squadsRemainingTextSingular", "#SURVIVAL_SQUADS_REMAIN" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "#SURVIVAL_SQUADS_REMAIN" )
+		
+		if( Playlist() == ePlaylists.fs_survival )
+		{
+			RuiSetString( rui, "gameModeString", "APEX" )
+		} else if( Playlist() == ePlaylists.fs_survival_duos )
+		{
+			RuiSetString( rui, "gameModeString", "APEX DUOS" )
+		}
 	}
 }
 
@@ -278,7 +300,12 @@ void function UpdateCommonScoreRuiTracking( var rui, entity player )
 {
 	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
 	RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-	RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
+
+	if( Playlist() != ePlaylists.fs_scenarios && Gamemode() != eGamemodes.WINTEREXPRESS )
+		RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "damage" ) )
+	// else
+		// RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
+	
 
 	RuiTrackBool( rui, "hasDeathFieldImmunity", player, RUI_TRACK_SCRIPT_NETWORK_VAR_BOOL, GetNetworkedVariableIndex( "hasDeathFieldImmunity" ) )
 

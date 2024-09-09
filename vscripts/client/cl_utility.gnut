@@ -47,6 +47,117 @@ struct
 	
 } file
 
+//this probably already exists.. ~mkos
+const table<string,int> keyNameToKeyCodeMap = 
+{
+	["0"] = KEY_0,
+	["1"] = KEY_1,
+	["2"] = KEY_2,
+	["3"] = KEY_3,
+	["4"] = KEY_4,
+	["5"] = KEY_5,
+	["6"] = KEY_6,
+	["7"] = KEY_7,
+	["8"] = KEY_8,
+	["9"] = KEY_9,
+	["A"] = KEY_A,
+	["B"] = KEY_B,
+	["C"] = KEY_C,
+	["D"] = KEY_D,
+	["E"] = KEY_E,
+	["F"] = KEY_F,
+	["G"] = KEY_G,
+	["H"] = KEY_H,
+	["I"] = KEY_I,
+	["J"] = KEY_J,
+	["K"] = KEY_K,
+	["L"] = KEY_L,
+	["M"] = KEY_M,
+	["N"] = KEY_N,
+	["O"] = KEY_O,
+	["P"] = KEY_P,
+	["Q"] = KEY_Q,
+	["R"] = KEY_R,
+	["S"] = KEY_S,
+	["T"] = KEY_T,
+	["U"] = KEY_U,
+	["V"] = KEY_V,
+	["W"] = KEY_W,
+	["X"] = KEY_X,
+	["Y"] = KEY_Y,
+	["Z"] = KEY_Z,
+	["NUMPAD0"] = KEY_PAD_0,
+	["NUMPAD1"] = KEY_PAD_1,
+	["NUMPAD2"] = KEY_PAD_2,
+	["NUMPAD3"] = KEY_PAD_3,
+	["NUMPAD4"] = KEY_PAD_4,
+	["NUMPAD5"] = KEY_PAD_5,
+	["NUMPAD6"] = KEY_PAD_6,
+	["NUMPAD7"] = KEY_PAD_7,
+	["NUMPAD8"] = KEY_PAD_8,
+	["NUMPAD9"] = KEY_PAD_9,
+	["NUMPAD/"] = KEY_PAD_DIVIDE,
+	["NUMPAD*"] = KEY_PAD_MULTIPLY,
+	["NUMPAD-"] = KEY_PAD_MINUS,
+	["NUMPAD+"] = KEY_PAD_PLUS,
+	["NUMPADENTER"] = KEY_PAD_ENTER,
+	["NUMPAD."] = KEY_PAD_DECIMAL,
+	["["] = KEY_LBRACKET,
+	["]"] = KEY_RBRACKET,
+	[";"] = KEY_SEMICOLON,
+	["'"] = KEY_APOSTROPHE,
+	["~"] = KEY_BACKQUOTE,
+	[","] = KEY_COMMA,
+	["."] = KEY_PERIOD,
+	["/"] = KEY_SLASH,
+	["\\"] = KEY_BACKSLASH,
+	["-"] = KEY_MINUS,
+	["="] = KEY_EQUAL,
+	["ENTER"] = KEY_ENTER,
+	["SPACE"] = KEY_SPACE,
+	["BKSPACE"] = KEY_BACKSPACE,
+	["TAB"] = KEY_TAB,
+	["CAPS"] = KEY_CAPSLOCK,
+	["NUMLOCK"] = KEY_NUMLOCK,
+	["ESC"] = KEY_ESCAPE,
+	["SCROLL"] = KEY_SCROLLLOCK,
+	["INS"] = KEY_INSERT,
+	["DEL"] = KEY_DELETE,
+	["HOME"] = KEY_HOME,
+	["END"] = KEY_END,
+	["PGUP"] = KEY_PAGEUP,
+	["PGDN"] = KEY_PAGEDOWN,
+	["BREAK"] = KEY_BREAK,
+	["LSHIFT"] = KEY_LSHIFT,
+	["RSHIFT"] = KEY_RSHIFT,
+	["LALT"] = KEY_LALT,
+	["RALT"] = KEY_RALT,
+	["LCTRL"] = KEY_LCONTROL,
+	["RCTRL"] = KEY_RCONTROL,
+	["LWIN"] = KEY_LWIN,
+	["RWIN"] = KEY_RWIN,
+	["APP"] = KEY_APP,
+	["UP"] = KEY_UP,
+	["LEFT"] = KEY_LEFT,
+	["DOWN"] = KEY_DOWN,
+	["RIGHT"] = KEY_RIGHT,
+	["F1"] = KEY_F1,
+	["F2"] = KEY_F2,
+	["F3"] = KEY_F3,
+	["F4"] = KEY_F4,
+	["F5"] = KEY_F5,
+	["F6"] = KEY_F6,
+	["F7"] = KEY_F7,
+	["F8"] = KEY_F8,
+	["F9"] = KEY_F9,
+	["F10"] = KEY_F10,
+	["F11"] = KEY_F11,
+	["F12"] = KEY_F12,
+	["CAPS"] = KEY_CAPSLOCKTOGGLE,
+	["NUMLOCK"] = KEY_NUMLOCKTOGGLE,
+	["SCROLL"] = KEY_SCROLLLOCKTOGGLE
+}
+
 /***************************************************
 Code constants already registered for script
 
@@ -761,11 +872,11 @@ float function GetNextRespawnTime( entity player )
 }
 
 #if DEVELOPER
-void function TwoPinTest()
-{
-	entity player = gp()[0]
-	var rui = RuiCreate( $"ui/twopin_test.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-}
+	void function TwoPinTest()
+	{
+		entity player = gp()[0]
+		var rui = RuiCreate( $"ui/twopin_test.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	}
 #endif
 
 AttackerDisplayNameStruct function GetAttackerDisplayNamesFromClassname( entity ent, bool isAttacker = false )
@@ -960,8 +1071,9 @@ var function CreateRUITopology_Worldspace( vector org, vector ang, float width, 
 	//DebugDrawAngles( org, ang, 10000 )
 	//DebugDrawAngles( org + right, ang, 10000 )
 	//DebugDrawAngles( org + down, ang, 10000 )
-
+	
 	var topo = RuiTopology_CreatePlane( org, right, down, true )
+
 	return topo
 }
 
@@ -999,6 +1111,12 @@ void function Dev_BuildTextInfoPanel( Type, ... )
 	}
 }
 
+
+void function CreateTextPanel_Localized( float orgX, float orgY, float orgZ, float angX, float angY, float angZ, bool showPin, float textScale, int panelID, string titleText = "", string text = "" )
+{
+	__Dev_CreateTextInfoPanel( orgX, orgY, orgZ, angX, angY, angZ, showPin, textScale, panelID, titleText, text )
+}
+
 void function Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, float angX, float angY, float angZ, bool showPin, float textScale )
 {
 	__Dev_CreateTextInfoPanel( orgX, orgY, orgZ, angX, angY, angZ, showPin, textScale )
@@ -1031,7 +1149,7 @@ void function Dev_DestroyTextInfoPanelWithID( int panelID )
 	file.textPanels[ panelID ].clear()
 }
 
-void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, float angX, float angY, float angZ, bool showPin, float textScale, int panelID = -1 )
+void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, float angX, float angY, float angZ, bool showPin, float textScale, int panelID = -1, string titleText = "", string text = "" )
 {
 	//float maxVisibleDistSq = 1300 * 1300
 	vector origin = <orgX,orgY,orgZ>
@@ -1046,9 +1164,18 @@ void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, flo
 	origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center for these infopanels
 	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
 
+	bool useLocalized = false 
+	
+	if( titleText != "" || text != "" )
+		useLocalized = true
+		
+	
+	string titleTextString = useLocalized ? titleText : dev_infoPanelTitleString
+	string textString = useLocalized ? text : dev_infoPanelTextString
+
 	var rui = RuiCreate( $"ui/info_debug_text.rpak", topo, RUI_DRAW_WORLD, 0 )
-	RuiSetString( rui, "titleText", dev_infoPanelTitleString )
-	RuiSetString( rui, "mainText", dev_infoPanelTextString )
+	RuiSetString( rui, "titleText", titleTextString )
+	RuiSetString( rui, "mainText", textString )
 	RuiSetFloat3( rui, "pos", origin )
 	RuiSetFloat( rui, "textScale", textScale )
 
@@ -1468,15 +1595,15 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 }
 
 #if DEVELOPER
-void function DumpFullscreenRuis()
-{
-	printt( "DumpFullscreenRuis" )
-	foreach ( k, v in clGlobal.fullscreenRuiSet )
+	void function DumpFullscreenRuis()
 	{
-		printt( "\t", v )
+		printt( "DumpFullscreenRuis" )
+		foreach ( k, v in clGlobal.fullscreenRuiSet )
+		{
+			printt( "\t", k, v )
+		}
+		printt( "Done" )
 	}
-	printt( "Done" )
-}
 #endif
 
 bool function IsMenuOpen()
@@ -1927,6 +2054,9 @@ void function ServerCallback_DeleteSpawnedClientSideDynamicLights()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+/////// mkos ///////
+
 table function GetPlayerPos( entity player = null )
 {
 	if ( !player )
@@ -1952,3 +2082,11 @@ table function GetPlayerPos( entity player = null )
 		// 505
 	// )
 // }
+
+int function KeyNameToKeyCode( string keyName )
+{
+	if( keyName in keyNameToKeyCodeMap )
+		return keyNameToKeyCodeMap[ keyName ]
+		
+	return -1
+}

@@ -1,7 +1,7 @@
-global function Desertlands_PreMapInit_Common
 global function Desertlands_MapInit_Common
 global function CodeCallback_PlayerEnterUpdraftTrigger
 global function CodeCallback_PlayerLeaveUpdraftTrigger
+global function CodeCallback_PreMapInit
 
 #if SERVER
 global function Desertlands_MU1_MapInit_Common
@@ -22,8 +22,7 @@ const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
 const float JUMP_PAD_VIEW_PUNCH_SOFT_TITAN = 120.0
 const float JUMP_PAD_VIEW_PUNCH_HARD_TITAN = 20.0
 const float JUMP_PAD_VIEW_PUNCH_RAND_TITAN = 20.0
-const TEAM_JUMPJET_DBL = $"P_team_jump_jet_ON_trails"
-const ENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_ON_trails"
+
 const asset JUMP_PAD_MODEL = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl"
 
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
@@ -48,9 +47,9 @@ struct
 
 } file
 
-void function Desertlands_PreMapInit_Common()
+void function CodeCallback_PreMapInit()
 {
-	//DesertlandsTrain_PreMapInit()
+	DesertlandsTrain_PreMapInit()
 }
 
 void function Desertlands_MapInit_Common()
@@ -74,14 +73,14 @@ void function Desertlands_MapInit_Common()
 		SURVIVAL_SetPlaneHeight( 15250 )
 		SURVIVAL_SetAirburstHeight( 2500 )
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
-		//Survival_SetMapFloorZ( -8000 )
+		// Survival_SetMapFloorZ( -8000 )
 
-		//if ( file.isTrainEnabled )
-		//	DesertlandsTrain_Precaches()
+		if ( file.isTrainEnabled )
+			DesertlandsTrain_Precaches()
 
 		AddSpawnCallback_ScriptName( "desertlands_train_mover_0", AddTrainToMinimap )
 		RegisterSignal( "ReachedPathEnd" )
-		//AddSpawnCallback_ScriptName( "conveyor_rotator_mover", OnSpawnConveyorRotatorMover )
+		AddSpawnCallback_ScriptName( "conveyor_rotator_mover", OnSpawnConveyorRotatorMover )
 	#endif
 
 	#if CLIENT
@@ -91,7 +90,7 @@ void function Desertlands_MapInit_Common()
 		SetVictorySequenceLocation( <11092.6162, -20878.0684, 1561.52222>, <0, 267.894653, 0> )
 		SetVictorySequenceSunSkyIntensity( 1.0, 0.5 )
 		SetMinimapBackgroundTileImage( $"overviews/mp_rr_canyonlands_bg" )
-
+		DesertlandsTrainAnnouncer_Init()
 		// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train, FULLMAP_OBJECT_RUI, FullmapPackage_Train )
 	#endif
 }
@@ -104,8 +103,7 @@ void function EntitiesDidLoad()
 
 	GeyserInit()
 	Updrafts_Init()
-	string currentPlaylist = GetCurrentPlaylistName()
-	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
+
 	if ( file.isTrainEnabled )
 		thread DesertlandsTrain_Init()
 
@@ -171,7 +169,6 @@ void function ConveyorRotatorMoverThink( entity mover )
 	mover.EndSignal( "OnDestroy" )
 
 	entity rotator = GetEntByScriptName( "conveyor_rotator" )
-	printt( "spawned mover at " + mover ) 
 	entity startNode
 	entity endNode
 
@@ -183,6 +180,8 @@ void function ConveyorRotatorMoverThink( entity mover )
 		if ( l.GetValueForKey( "script_noteworthy" ) == "start" )
 			startNode = l
 	}
+
+
 	float angle1 = VectorToAngles( startNode.GetOrigin() - rotator.GetOrigin() ).y
 	float angle2 = VectorToAngles( endNode.GetOrigin() - rotator.GetOrigin() ).y
 
@@ -193,13 +192,13 @@ void function ConveyorRotatorMoverThink( entity mover )
 	float waitTime     = fabs( angleDiff ) / rotatorSpeed
 
 	Assert( IsValid( endNode ) )
-	
-	while ( 1 )
+
+	while ( true )
 	{
 		mover.WaitSignal( "ReachedPathEnd" )
-		DebugDrawLine( mover.GetOrigin(), endNode.GetOrigin(), 255, 150, 0, true, 999 )
+
 		mover.SetParent( rotator, "", true )
-		printt( "wait time for this mover" + waitTime ) //Fix wait time and other things
+
 		wait waitTime
 
 		mover.ClearParent()

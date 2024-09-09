@@ -1,7 +1,7 @@
 global function SURVIVAL_Loot_InitShared
-#if SERVER
+
 global function SURVIVAL_Loot_GetAllLoot
-#endif
+
 global function CodeCallback_WeaponModCommandCheckMods
 
 global function Survival_PickupItem
@@ -25,6 +25,7 @@ global function GetCategoryTitleFromPriority
 global function SortByPriorityThenTier
 global function GetPriorityForLootType
 global function GetCommsActionEnumForName
+global function ShouldDropOpticForKittedWeapon
 global function GetWeaponClassNameWithLockedSet
 global function WeaponLootRefIsLockedSet
 
@@ -84,6 +85,7 @@ global function SURVIVAL_AddCallback_OnInventoryChanged
 global function SURVIVAL_AddCallback_OnHealingItemCountChanged
 global function Dev_SpawnAllLootTypes
 global function SURVIVAL_Loot_GetByType_InLevel
+global function SURVIVAL_Loot_GetByType_FixedTier
 global function SURVIVAL_Loot_DisableNetworkDistanceCullingManaged
 global function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged
 #if DEVELOPER
@@ -136,6 +138,7 @@ global function Inventory_RegisterNetworking
 #if SERVER
 global function BroadcastItemPickup
 global function BroadcastItemDrop
+global function BroadcastItemDrop_Retail
 #elseif CLIENT
 global function AddCallback_LocalPlayerPickedUpLoot
 global function ServerCallback_PickedupItem
@@ -146,6 +149,9 @@ global function ServerCallback_AttachedMod
 #if SERVER
 global function Inventory_SetPlayerEquipment
 global function Inventory_GetPlayerEquipment
+
+global function GetAllDeathBoxesSMEA
+global function OnDeathBoxUse
 #endif // SERVER
 
 #if CLIENT
@@ -175,6 +181,17 @@ global function SURVIVAL_GetStowedWeaponSlot
 
 global function IsValidAttachment
 global function GetAttachmentData
+global function SURVIVAL_EquipmentPretendsToBeBlank
+global function GetWeaponAmmoTypeFromWeaponEnt
+
+#if SERVER || CLIENT
+global function IsPlayerCloseEnoughToDeathBoxToLoot
+global function IsPlayerWithinStandardDeathBoxUseDistance
+global function IsValidAndUsableDeathBoxEnt
+global function IsLootEntAccessibleViaDeathBox
+global function IsValidAndStandardGrabbableLootEnt
+#endif
+
 
 global function GetNameOfTeammateWithVaultKey
 global const string WEAPON_LOCKEDSET_SUFFIX_GOLD = "_gold"
@@ -302,7 +319,6 @@ global enum eHealthPickupCategory
 
 global const int SURVIVAL_MAX_AMMO_PICKUPS = 2000
 
-global const bool DROP_BOX_ON_DEATH = true
 global const asset DEATH_BOX = $"mdl/props/death_box/death_box_01.rmdl"
 global const asset DEATH_BOX_FLAT_PLANE = $"mdl/props/death_box/death_box_02.rmdl"
 global const string DEATH_BOX_TARGETNAME = "player_death_box"
@@ -425,6 +441,7 @@ struct
 	array<void functionref( entity, array<ConsumableInventoryItem> )> inventoryChangeCallbacks
 	array<void functionref( entity, array<ConsumableInventoryItem> )> healingItemChangeCallbacks
 	table<entity,int> lootNetworkDistanceCullingState //Counts the number times a given piece of loot has had its network distance culling toggled off. For a piece of loot to be network distance culled the count value index in this table must be 0.
+	int                                                               scriptManagedDeathboxArrayID
 #elseif CLIENT
 	array<void functionref( entity , LootData , int )> localPlayerPickedupLootCallbacks
 
@@ -447,6 +464,11 @@ struct
 	}
 	array<string>                                                altModsToRemoveOnDrop = [ "altfire" ]
 	table<string, bool functionref( string, entity ) > conditionalLootChecks
+	
+	//playlist setting conditionals
+	int survival_shields
+	bool drop_optic_for_kitted_weapons
+
 } file
 
 
@@ -459,9 +481,15 @@ int function GetCommsActionEnumForName( string name )
 
 const bool DOES_ALT_USE_SWAP_WEAPON = true
 
+void function Sh_SurvivalLoot_PlaylistSettings_Init()
+{
+	file.survival_shields = GetCurrentPlaylistVarInt( "survival_shields", 1 )
+	file.drop_optic_for_kitted_weapons = GetCurrentPlaylistVarBool( "drop_optic_for_kitted_weapons", true )
+}
+
 void function SURVIVAL_Loot_InitShared()
 {
-
+	Sh_SurvivalLoot_PlaylistSettings_Init()
 	PrecacheModel( DEATH_BOX )
 	PrecacheModel( DEATH_BOX_FLAT_PLANE )
 	PrecacheModel( $"mdl/props/health_injector/health_injector.rmdl" )
@@ -481,6 +509,7 @@ void function SURVIVAL_Loot_InitShared()
 		AddCreateCallback( "prop_death_box", OnDeathBoxCreated )
 		AddDestroyCallback( "prop_death_box", OnDeathBoxDestroyed )
 	#elseif SERVER
+		file.scriptManagedDeathboxArrayID = CreateScriptManagedEntArray()
 		AddSpawnCallback( "prop_survival", OnPropSurvivalCreate )
 		AddSpawnCallback( "prop_dynamic", OnDeathBoxCreated )
 		AddSpawnCallback( "prop_death_box", OnDeathBoxCreated )
@@ -488,7 +517,9 @@ void function SURVIVAL_Loot_InitShared()
 
 #if SERVER
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+	
+	if( Gamemode() == eGamemodes.SURVIVAL )
+		AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 #endif // SERVER
 
 #if SERVER
@@ -873,10 +904,10 @@ bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, Attachment
 #if SERVER
 void function OnClientConnected( entity player )
 {
-	file.playerInventoryData[player] <- {}
+	file.playerInventoryData[ player ] <- {}
 	foreach ( slot,slotData in EquipmentSlot_GetAllEquipmentSlots() )
 	{
-		file.playerInventoryData[player][ slot ] <- ""
+		file.playerInventoryData[ player ][ slot ] <- ""
 	}
 
 	// ValidateDataTable( player, "datatable/flowstate_all_new.rpak" )
@@ -887,7 +918,7 @@ void function OnClientConnected( entity player )
 
 void function OnPlayerRespawned( entity player )
 {
-	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+	if ( file.survival_shields )
 		player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0 ) )
 }
 #endif // SERVER
@@ -908,6 +939,12 @@ array<entity> function SURVIVAL_Loot_GetAllLoot()
 {
 	return file.allLoot
 }
+
+bool function ShouldDropOpticForKittedWeapon()
+{
+	return file.drop_optic_for_kitted_weapons
+}
+
 string function GetWeaponClassNameWithLockedSet( entity weapon )
 {
 	string result = weapon.GetWeaponClassName()
@@ -1010,7 +1047,7 @@ void function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged( entity loot )
 	}
 }
 
-array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxTier = -1 )
+array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxTier = -1, int minTier = -1 )
 {
 	array<LootData> lootOfType = []
 	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
@@ -1022,6 +1059,32 @@ array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxT
 			continue
 
 		if ( maxTier > -1 && lootData.tier > maxTier )
+			continue
+
+		if ( minTier > -1 && lootData.tier < minTier )
+			continue
+
+		lootOfType.append( lootData )
+	}
+
+	return lootOfType
+}
+
+array<LootData> function SURVIVAL_Loot_GetByType_FixedTier( int lootType, int tier )
+{
+	array<LootData> lootOfType = []
+	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
+	{
+		if ( !IsLootTypeValid( lootData.lootType ) )
+			continue
+
+		if ( lootData.lootType != lootType )
+			continue
+
+		if ( !LootTypeHasAnyChanceToSpawn( lootRef ) )
+			continue
+
+		if ( tier > -1 && lootData.tier != tier )
 			continue
 
 		lootOfType.append( lootData )
@@ -1653,8 +1716,7 @@ int function SURVIVAL_AddToInventory( array<ConsumableInventoryItem> inventory, 
 
 
 int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count = 1, bool reallyAdd = true )
-{
-	                                                                                                 
+{                                                                                                
 	if ( !SURVIVAL_Loot_IsRefValid (ref) )                             
 	{
 		Warning( "Trying to add non-valid loot to player inventory" )
@@ -2097,6 +2159,7 @@ array<entity> function SURVIVAL_GetPrimaryWeapons( entity player )
 		entity weapon = player.GetNormalWeapon( slot )
 		if ( !IsValid( weapon ) )
 			continue
+			
 		Assert( SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
 
 		results.append( weapon )
@@ -3370,12 +3433,56 @@ void function BroadcastItemPickup( entity player, string ref, int lootAction )
 	if ( player.p.lastLootPickupTime >= Time() && player.p.lastLootPickupRef == ref )
 		return
 
+	entity altWeapon
+
 	player.p.lastLootPickupTime = Time()
 	player.p.lastLootPickupRef = ref
 
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 	foreach ( entity teamPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 		Remote_CallFunction_Replay( teamPlayer, "ServerCallback_PickedupItem", player, data.index, lootAction )
+
+	if ( data.lootType == eLootType.MAINWEAPON )
+	{
+		int newWeaponSlot0 = data.index
+		player.SetPlayerNetInt( "playerPrimaryWeapon0", newWeaponSlot0 )
+
+		array<entity> playerWeaponArray = SURVIVAL_GetPrimaryWeaponsSorted( player )
+
+		for ( int i = 0; i < playerWeaponArray.len(); i++ )
+		{
+			if ( playerWeaponArray[i].GetWeaponClassName() != ref )
+				altWeapon = playerWeaponArray[i]
+		}
+
+		if ( !IsValid( altWeapon ) )
+		{
+			if ( playerWeaponArray.len() > 1 )
+			{
+				if ( playerWeaponArray[0].GetWeaponClassName() == playerWeaponArray[1].GetWeaponClassName() )
+					altWeapon = playerWeaponArray[0]
+				else
+					Assert( false, "Failed to identify secondary weapon for unitframe" )
+			}
+			else
+			{
+				player.SetPlayerNetInt( "playerPrimaryWeapon1", -1 )
+			}
+		}
+		else
+		{
+			string weaponName = GetWeaponClassNameWithLockedSet( altWeapon )
+			if ( SURVIVAL_Loot_IsRefValid( weaponName ) )
+			{
+				LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
+				player.SetPlayerNetInt( "playerPrimaryWeapon1", weaponData.index )
+			}
+			else
+			{
+				player.SetPlayerNetInt( "playerPrimaryWeapon1", -1 )
+			}
+		}
+	}
 }
 
 void function BroadcastItemDrop( entity player, string ref )
@@ -3383,6 +3490,32 @@ void function BroadcastItemDrop( entity player, string ref )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 	foreach ( entity teamPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 		Remote_CallFunction_Replay( teamPlayer, "ServerCallback_DroppedItem", player, data.index )
+}
+
+void function BroadcastItemDrop_Retail( entity player, string ref, entity dropEnt, string weaponClassName = "" )
+{
+	player.p.lastDroppedLootEnt = dropEnt
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	foreach ( entity teamPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		Remote_CallFunction_Replay( teamPlayer, "ServerCallback_DroppedItem", player, data.index )
+
+	if ( data.lootType == eLootType.MAINWEAPON )
+	{
+		int oldIndex0 = player.GetPlayerNetInt( "playerPrimaryWeapon0" )
+		int oldIndex1 = player.GetPlayerNetInt( "playerPrimaryWeapon1" )
+
+		if ( data.index == oldIndex0 )
+		{
+			player.SetPlayerNetInt( "playerPrimaryWeapon0", oldIndex1 )
+		}
+
+		player.SetPlayerNetInt( "playerPrimaryWeapon1", -1 )
+	}
+
+	// Track the last owner on the auto pickup item to prevent it from being picked up again right away
+	if ( SurvivalLoot_IsAutoPickupOrdnance( data ) )
+		dropEnt.e.lastOwner = player
 }
 #elseif CLIENT	// #if SERVER
 
@@ -3462,23 +3595,25 @@ void function ServerCallback_AttachedMod( int wIdx, int mIdx )
 
 
 #if SERVER
-void function Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0,  int extraPropertyValue = -1 )
+void function Inventory_SetPlayerEquipment_Internal( entity player, string itemRef, string equipmentSlot, int propertyValue, entity deathBox, bool isForRefresh, int extraPropertyValue )
 {
-	string currentEquip = Inventory_GetPlayerEquipment( player, equipmentSlot )
-
-	if ( SURVIVAL_Loot_IsRefValid( currentEquip ) )
 	{
-		LootData data = SURVIVAL_Loot_GetLootDataByRef( currentEquip )
-		if ( data.passive != ePassives.INVALID )
-			TakePassive( player, data.passive )
+		string currentEquip = Inventory_GetPlayerEquipment( player, equipmentSlot )
+		if ( SURVIVAL_Loot_IsRefValid( currentEquip ) )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( currentEquip )
+			if ( data.passive != ePassives.INVALID )
+				TakePassive( player, data.passive )
+		}
 	}
 
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
-	int index = -1
+	int index        = -1
+	int prevShields = player.GetShieldHealth()
 
 	if ( equipmentSlot == "armor" )
 	{
-		if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+		if ( file.survival_shields )
 			player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0 ) )
 		else
 			player.SetShieldHealthMax( 0 )
@@ -3495,7 +3630,7 @@ void function Inventory_SetPlayerEquipment( entity player, string itemRef, strin
 			GivePassive( player, data.passive )
 		}
 
-		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && file.survival_shields )
 		{
 			if( extraPropertyValue != -1 )
 				player.SetShieldHealthMax( extraPropertyValue )
@@ -3513,10 +3648,20 @@ void function Inventory_SetPlayerEquipment( entity player, string itemRef, strin
 	file.playerInventoryData[ player ][ equipmentSlot ] = itemRef
 
 	if ( es.specialCaseEquipFunc != null )
-		es.specialCaseEquipFunc( player, itemRef )
+		es.specialCaseEquipFunc( player, itemRef, deathBox, isForRefresh )
 
-	if ( itemRef != "" )
+	if ( (itemRef != "") && !isForRefresh )
 		StatsHook_PlayerEquip( player )
+}
+
+void function Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0, entity deathBox = null, int extraPropertyValue = -1 )
+{
+	Inventory_SetPlayerEquipment_Internal( player, itemRef, equipmentSlot, propertyValue, deathBox, false, extraPropertyValue)
+}
+
+void function SetPlayerEquipmentForRefresh( entity player, string itemRef, string equipmentSlot, int propertyValue, int extraPropertyValue = -1 )
+{
+	Inventory_SetPlayerEquipment_Internal( player, itemRef, equipmentSlot, propertyValue, null, true, extraPropertyValue )
 }
 
 string function Inventory_GetPlayerEquipment( entity player, string equipmentSlot )
@@ -3534,6 +3679,11 @@ void function SURVIVAL_UpdateIcons( string weaponName, string category )
 	data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "hud_icon" )
 }
 #endif
+
+bool function SurvivalLoot_IsAutoPickupOrdnance( LootData data )
+{
+	return data.lootType == eLootType.ORDNANCE && GetCurrentPlaylistVarBool( "auto_pickup_ordnance", false )
+}
 
 bool function SurvivalLoot_CanUseFunction( entity player, entity ent )
 {
@@ -4113,28 +4263,38 @@ void function OnDeathBoxUse( entity box, entity player, int useInputFlags )
 array<entity> function GetAllDeathBoxes()
 {
 	#if SERVER
-	array<entity> temp
-	return temp
+		return GetScriptManagedEntArray( file.scriptManagedDeathboxArrayID )
 	#elseif CLIENT
-	return file.allDeathBoxes
-	#endif // SERVER / CLIENT
+		return file.allDeathBoxes
+	#endif
 }
+
+void function DestroyAllDeathBoxes()
+{
+	foreach ( entity deathBox in GetAllDeathBoxes() )
+		deathBox.Destroy()
+}
+
+#if SERVER
+int function GetAllDeathBoxesSMEA()
+{
+	return file.scriptManagedDeathboxArrayID
+}
+#endif
 
 void function OnDeathBoxCreated( entity ent )
 {
-	if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
-	{
+	if ( ent.GetTargetName() != DEATH_BOX_TARGETNAME )
+		return
 
-		#if(false)
-
-#elseif(CLIENT)
+	#if SERVER
+		AddToScriptManagedEntArray( file.scriptManagedDeathboxArrayID, ent )
+	#elseif CLIENT
 		file.allDeathBoxes.append( ent )
-		#endif // SERVER / CLIENT
+	#endif
 
-		SetCallback_CanUseEntityCallback( ent, DeathBox_CanUseFunction )
-
-		AddCallback_OnUseEntity( ent, OnDeathBoxUse )
-	}
+	SetCallback_CanUseEntityCallback( ent, DeathBox_CanUseFunction )
+	AddCallback_OnUseEntity( ent, OnDeathBoxUse )
 }
 
 void function OnDeathBoxDestroyed( entity ent )
@@ -4277,7 +4437,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 
 		//printt( "LOOTED by: " + player.GetPlayerName(), lootRef.lootData.ref, "x" + unitsPickedUp, "index: " + data.index)
 
-		SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
+		SURVIVAL_PlayerPickedupItem( pickup, player, unitsPickedUp, as.action, pickupFlags, !shouldDestroy, deathBox )
 
 		if( Gamemode() == eGamemodes.fs_snd && lootRef.lootData.ref == "snd_bomb" )
 		{
@@ -4442,3 +4602,86 @@ void function Flowstate_UpdateRainbowShieldExtraProperty( int propEhandle, int m
 	}()
 }
 #endif
+
+#if SERVER || CLIENT
+bool function IsValidAndStandardGrabbableLootEnt( entity lootEnt )
+{
+	if ( !IsValid( lootEnt ) )
+		return false
+
+	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
+		return false
+
+	return true
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function IsValidAndUsableDeathBoxEnt( entity deathBox )
+{
+	if ( !IsValid( deathBox ) )
+		return false
+
+	if ( deathBox.GetNetworkedClassName() == "prop_death_box" )
+		return true
+
+	return false
+}
+#endif
+
+#if SERVER || CLIENT
+bool function IsPlayerCloseEnoughToDeathBoxToLoot( entity player, entity deathBox )
+{
+	if ( !IsValidAndUsableDeathBoxEnt( deathBox ) )
+		return false
+
+	float distanceToDeathbox = DistanceSqr( player.GetOrigin(), deathBox.GetOrigin() )
+	float maxSquareDist = ( DEATH_BOX_MAX_DIST * DEATH_BOX_MAX_DIST )
+
+	return distanceToDeathbox <= maxSquareDist
+}
+
+                                
+bool function IsPlayerWithinStandardDeathBoxUseDistance( entity player, entity deathBox )
+{
+	float distanceToDeathbox = DistanceSqr( player.GetOrigin(), deathBox.GetOrigin() )
+	float maxSquareDist = ( DEATH_BOX_MAX_DIST * DEATH_BOX_MAX_DIST )
+
+	return distanceToDeathbox <= maxSquareDist
+}
+#endif
+
+#if SERVER || CLIENT
+bool function IsLootEntAccessibleViaDeathBox( entity lootEnt, entity deathBox, entity player )
+{
+	Assert( lootEnt.GetNetworkedClassName() == "prop_survival" )
+
+	if ( deathBox.GetNetworkedClassName() == "prop_death_box" )
+	{
+		#if SERVER
+			return deathBox.IsLinkedToEnt( lootEnt )
+		#elseif CLIENT
+			return deathBox.GetLinkEntArray().contains( lootEnt )
+		#endif
+	}
+
+	Assert( false, "Unhandled death box class: " + string(deathBox.GetNetworkedClassName()) )
+	return false
+}
+#endif
+
+string function GetWeaponAmmoTypeFromWeaponEnt( entity weapon )
+{
+	string ammoType = ""
+
+	if ( IsValid( weapon ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+		if ( SURVIVAL_Loot_IsRefValid( weaponData.ref ) )
+			ammoType = weaponData.ammoType
+	}
+
+	return ammoType
+}

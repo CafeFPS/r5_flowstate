@@ -23,7 +23,7 @@ function SetEntityVar( entity ent, varName, value )
 
 	ent._entityVars[varName] = value
 
-	if ( _entityClassVarsIsEnts[ent.GetClassName()][varName] && value != null )
+	if ( _entityClassVarsIsEnts[ent.GetClassName()][varName] && value == null )
 	{
 		//printl( "SET NETWORK ENTITY VAR TO AN ENTITY. GETTING EHANDLE" )
 		value = value.GetEncodedEHandle()
@@ -152,13 +152,17 @@ function SyncEntityVars( entity player )
 				//if ( className == "player" && !_entityClassVarsSyncToAllClients[className][varName] )
 				//	continue
                 //
-				if ( _entityClassVarsIsEnts[className][varName] )
-				{
-					if ( !IsValid( entValue ) )
-						continue
+				
+				
+				//no? 
+				
+				// if ( _entityClassVarsIsEnts[className][varName] )
+				// {
+					// if ( !IsValid( entValue ) )
+						// continue
 					// if this is an entity var, change over to e-handle
-					entValue = entValue.GetEncodedEHandle()
-				}
+					// entValue = entValue.GetEncodedEHandle()
+				// }
 
 				Assert( player.p.clientScriptInitialized )
 

@@ -75,7 +75,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					50
 			visible					1
 			fontHeight				60
-			labelText				"CHALLENGE RESULTS"
+			labelText				"#FS_CHALLENGE_RESULTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -242,7 +242,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"DUMMIES KILLED"
+			labelText				"#FS_DUMMIES_KILLED"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -284,7 +284,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"ACCURACY"
+			labelText				"#FS_ACCURACY_CAPS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -322,7 +322,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"SHOTS HIT"
+			labelText				"#FS_SHOTS_HIT_CAPS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -360,7 +360,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"DAMAGE DONE"
+			labelText				"#FS_DAMAGE_DONE"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -398,7 +398,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"CRITICAL SHOTS"
+			labelText				"#FS_CRITICAL_SHOTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"

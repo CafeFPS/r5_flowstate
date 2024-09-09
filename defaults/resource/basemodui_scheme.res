@@ -3026,7 +3026,34 @@ Scheme
             textAlignment			"center"
             ruiFont                 TitleRegularFont
             ruiFontHeight           22
-            ruiMinFontHeight        16
+            ruiMinFontHeight        10
+            keyboardTitle			"#ENTER_YOUR_EMAIL"
+            keyboardDescription		"#ENTER_YOUR_EMAIL_DESC"
+            allowRightClickMenu		0
+            allowSpecialCharacters	0
+            unicode					0
+            showConVarAsFloat		1
+            selectOnFocus           1
+            cursorVelocityModifier  0.7
+		}
+		
+		SliderControlTextEntrySmall
+		{
+            xpos                    -4
+            zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+            ypos					2 // meh
+			wide					60
+            tall					44
+            visible					1
+            enabled					1
+            textHidden				0
+            editable				1
+            maxchars				10
+            NumericInputOnly		1
+            textAlignment			"center"
+            ruiFont                 TitleRegularFont
+            ruiFontHeight           10
+            ruiMinFontHeight        10
             keyboardTitle			"#ENTER_YOUR_EMAIL"
             keyboardDescription		"#ENTER_YOUR_EMAIL_DESC"
             allowRightClickMenu		0

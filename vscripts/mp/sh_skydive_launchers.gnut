@@ -1,0 +1,1387 @@
+//Ported by @CafeFPS
+
+global function Sh_SkydiveLaunchers_Init
+
+#if SERVER
+	global function CreateSkydiveLauncher
+	global function IsTooCloseToSkydiveLauncher
+	global function SkydiveLauncher_SetDefaultMapInitializationFunction
+
+	// global function Ziprail_GetSkyDiveLauncherForHitEnt
+
+	const float SKYDIVE_TRIGGER_RADIUS = 36
+#endif //SERVER
+
+global const string SKYDIVE_LAUNCHER_TARGETNAME = "skydive_launcher"
+
+//SHARED
+global enum eSkydiveLauncherType
+{
+	DEFAULT,
+	SHORT_HEIGHT,
+	GRAVITY_CANNON,
+	GRAVITY_MINI,
+	IMC_ARMORY,
+	ZIPRAIL,
+	//add more variants as needed
+}
+
+global enum eSkydiveLauncherAirControlType
+{
+	DEFAULT,
+	LIMITED,
+	FULL
+}
+
+enum eSkydiveLauncherThreshold
+{
+	FLOOR,
+	CEILING
+}
+
+enum eSkydiveLauncherVelocityType
+{
+	VERTICAL,
+	ABSOLUTE
+}
+//END SHARED
+
+
+#if SERVER
+global struct DefaultLauncherData
+{
+	asset worldModel
+	int airControl
+	float airMoveSpeed
+	float airMoveAccel
+	bool doubleJump
+	vector launchDirection
+	vector targetPosition
+	bool allow_quickZipAttach
+	asset launchFx
+	asset idleFx
+	string sfxLaunchPlayer3p
+	string sfxAirborneMvmt3p
+	string scriptName
+}
+
+struct SkydiveLauncherData
+{
+	int launcherType
+	string sfxLaunchPlayer3p
+	string sfxAirborneMvmt3p
+	asset launchFx
+
+	float launchSpeed = 2500
+	int thresholdType = eSkydiveLauncherThreshold.FLOOR
+	int velocityType = eSkydiveLauncherVelocityType.VERTICAL
+	float speedThreshold = 512
+
+	bool shouldTransitionInertiaIntoSkydive = false
+	bool shouldSkyDive = true
+	bool shouldLaunchProjectiles = false
+	bool allow_quickZipAttach = false
+
+	entity launcherGeo
+}
+
+#endif //SERVER
+struct
+{
+	#if SERVER
+		void functionref() skydiveLauncherMapInitializationFunction
+		array <entity> skydiveLaunchers
+		table < entity, SkydiveLauncherData > skydiveLauncherEntityToDataMap
+		                      
+		table<entity, SkydiveLauncherData> vortexSphereToData
+		array<entity> gravityCannonEnts
+        
+	#endif // SERVER
+	bool holsterWeaponsOnAscent
+} file
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Assets are blank unless we actually include the precache script in the specific level rson
+/////////////////////////////////////////////////////////////////////////////////////////////
+global asset FX_SKYDIVE_LAUNCHER_LOOP_DEFAULT = $""
+global asset FX_SKYDIVE_LAUNCHER_LOOP_NO_SNOW = $""
+global asset FX_SKYDIVE_LAUNCHER_GRAVITY_MINI_IDLE = $""
+#if SERVER
+	global asset MODEL_SKYDIVE_LAUNCHER_DEFAULT = $""
+	global asset FX_SKYDIVE_LAUNCHER_LAUNCH = $""
+	global asset MODEL_SKYDIVE_LAUNCHER_GRAVITY_MINI = $""
+	global asset FX_SKYDIVE_LAUNCHER_GRAVITY_MINI_LAUNCH = $""
+	global asset FX_SKYDIVE_LAUNCHER_GRAVITY_ZIPRAIL_LAUNCH = $""
+#endif //SERVER
+
+asset HORIZONTAL_LAUNCHER_LAUNCH_SEQUENCE = $"animseq/props/district_horizontal_launcher/district_horizontal_launcher_fireA.rseq"
+
+void function Sh_SkydiveLaunchers_Init()
+{
+	#if CLIENT
+		AddCreateCallback( "trigger_cylinder_heavy", OnSkydiveLauncherCreated )
+	#endif
+
+	#if SERVER
+		AddSpawnCallbackEditorClass( "script_ref", "script_skydive_launcher", OnSpawnedSkydiveLauncherEditorClass )
+		AddSpawnCallbackEditorClass( "script_ref", "script_gravity_cannon", OnSpawnedGravityCannonEditorClass )
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		AddCallback_GameStateEnter( eGameState.Playing, OnGamestateStartPlaying_SkydiveLaunchers )
+
+		if ( file.skydiveLauncherMapInitializationFunction == null )
+			SkydiveLauncher_SetDefaultMapInitializationFunction( SkydiveLauncher_DefaultMapInitialization )
+
+
+		file.skydiveLauncherEntityToDataMap = {}
+	#endif
+
+	file.holsterWeaponsOnAscent = GetCurrentPlaylistVarBool( "skydive_launchers_holster_weapons", true )
+}
+
+
+#if SERVER
+void function SkydiveLauncher_SetDefaultMapInitializationFunction( void functionref() func )
+{
+	file.skydiveLauncherMapInitializationFunction = func
+}
+
+
+void function SkydiveLauncher_DefaultMapInitialization()
+{
+	printf( "SKYDIVE LAUNCHER: default init" )
+	//do nothing by default
+}
+
+
+void function OnSpawnedSkydiveLauncherEditorClass( entity ent )
+{
+	thread CreateSkydiveLauncherFromEditorClass_Thread( ent )
+}
+
+void function CreateSkydiveLauncherFromEditorClass_Thread( entity ent )
+{
+	ent.EndSignal( "OnDestroy" )
+	EndSignal( svGlobal.levelEnt, "GameEnd" )
+
+	if ( file.skydiveLauncherMapInitializationFunction != null )
+		file.skydiveLauncherMapInitializationFunction()
+
+	if ( !IsValid( ent ) )
+		return
+
+	int launcherType = 0
+	if( ent.HasKey( "launcher_type" ) )
+		launcherType = int( ent.GetValueForKey( "launcher_type" ) )
+
+	float launchVelocityScale = 2500
+	if ( ent.HasKey( "launcher_launch_velocity" ) )
+		launchVelocityScale = float( ent.GetValueForKey( "launcher_launch_velocity" ) )
+
+	float triggerRadius = SKYDIVE_TRIGGER_RADIUS
+	if ( ent.HasKey( "launcher_trigger_radius" ) )
+		triggerRadius = float( ent.GetValueForKey( "launcher_trigger_radius" ) )
+
+	bool skydiveEnabled = true
+	if ( ent.HasKey( "launcher_skydive_enabled" ) )
+		skydiveEnabled = ent.GetValueForKey( "launcher_skydive_enabled" ) == "1"
+
+	bool launchUpToZipline = false
+	DefaultLauncherData defaultLauncherData
+	if ( launcherType == eSkydiveLauncherType.DEFAULT )
+	{
+		defaultLauncherData.worldModel = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" //$"mdl/dev/empty_model.rmdl" Cafe was here
+		if( ent.HasKey( "use_world_model" ) && ent.GetValueForKey( "use_world_model" ) == "1" )
+			defaultLauncherData.worldModel = ent.GetValueForModelKey()
+
+		defaultLauncherData.airControl = eSkydiveLauncherAirControlType.DEFAULT
+		if( ent.HasKey( "air_control" ) )
+			defaultLauncherData.airControl = int( ent.GetValueForKey( "air_control" ) )
+
+		defaultLauncherData.airMoveSpeed = 0
+		if ( ent.HasKey( "air_moveSpeed" ) )
+			defaultLauncherData.airMoveSpeed = float( ent.GetValueForKey( "air_moveSpeed" ) )
+
+		defaultLauncherData.airMoveAccel = 0
+		if ( ent.HasKey( "air_moveAccel" ) )
+			defaultLauncherData.airMoveAccel = float( ent.GetValueForKey( "air_moveAccel" ) )
+
+		defaultLauncherData.doubleJump = false
+		if( ent.HasKey( "double_jump" ) )
+			defaultLauncherData.doubleJump = ( ent.GetValueForKey( "double_jump" ) ) == "1" ? true : false
+
+		if( ent.HasKey( "launch_up_to_zip" ) )
+			launchUpToZipline = ( ent.GetValueForKey( "launch_up_to_zip" ) ) == "1" ? true : false
+
+		if( ent.HasKey( "allow_quickZipAttach" ) )
+			defaultLauncherData.allow_quickZipAttach = ( ent.GetValueForKey( "allow_quickZipAttach" ) ) == "1" ? true : false
+
+		defaultLauncherData.launchFx = $""
+		if( ent.HasKey( "effect_name_launch" ) )
+			defaultLauncherData.launchFx = GetKeyValueAsAsset( { kn = ent.GetValueForKey( "effect_name_launch" ) }, "kn" )
+
+		defaultLauncherData.idleFx = $""
+		if( ent.HasKey( "effect_name_idle" ) )
+			defaultLauncherData.idleFx = GetKeyValueAsAsset( { kn = ent.GetValueForKey( "effect_name_idle" ) }, "kn" )
+
+		defaultLauncherData.sfxLaunchPlayer3p = ""
+		if( ent.HasKey( "sound_name_launch" ) )
+			defaultLauncherData.sfxLaunchPlayer3p = ent.GetValueForKey( "sound_name_launch" )
+
+		defaultLauncherData.sfxAirborneMvmt3p = ""
+		if( ent.HasKey( "sound_name_airborne_movement" ) )
+			defaultLauncherData.sfxAirborneMvmt3p = ent.GetValueForKey( "sound_name_airborne_movement" )
+
+		defaultLauncherData.scriptName = ""
+		if( ent.HasKey( "script_name" ) )
+			defaultLauncherData.scriptName = ent.GetValueForKey( "script_name" )
+
+		defaultLauncherData.launchDirection = <0, 0, 1>
+		defaultLauncherData.targetPosition = <0, 0, 0>
+		if ( !launchUpToZipline )
+		{
+			if ( ent.HasKey( "launch_direction" ) )
+				defaultLauncherData.launchDirection = Normalize( StringToVector( ent.GetValueForKey( "launch_direction" ) ) )
+
+			if ( ent.HasKey( "target_position" ) )
+				defaultLauncherData.targetPosition = StringToVector( ent.GetValueForKey( "target_position" ) )
+		}
+
+		array< entity > linkedEnts = ent.GetLinkEntArray()
+		if ( linkedEnts.len() > 0 )
+		{
+			entity targetEnt = linkedEnts[0]
+			if ( targetEnt.GetClassName() == "info_target" )
+				defaultLauncherData.targetPosition = targetEnt.GetOrigin()
+
+			foreach( le in linkedEnts )
+				le.Destroy()
+		}
+	}
+
+	// printt( "idk trigger created at", ent.GetOrigin() )
+	// if ( launcherType == eSkydiveLauncherType.ZIPRAIL || launchUpToZipline )
+	// {
+		// thread CreateMoonSkydiveLaunchers_Thread( ent.GetOrigin(), ent.GetAngles(), launchVelocityScale, triggerRadius )
+	// }
+	// else
+       
+	// {
+		CreateSkydiveLauncher( ent.GetOrigin(), ent.GetAngles(), launcherType, launchVelocityScale, triggerRadius, skydiveEnabled, <0, 0, 0>, defaultLauncherData )
+	// }
+	ent.Destroy() //no need to hang onto the reference spawner ent
+}
+
+
+                
+// void function CreateMoonSkydiveLaunchers_Thread( vector origin, vector angles, float launchVelocityScale, float triggerRadius )
+// {
+	// float waitTime = RandomFloatRange(2, 3)
+	// wait waitTime
+	// //start a bit off the ground to make sure that we don't risk hitting the terrain with the trace
+	// vector startPoint = origin + <0,0,3*METERS_TO_INCHES>
+	// vector endPoint = startPoint + ( GetMapName() == "mp_rr_divided_moon_mu1" ? <0,0,100*METERS_TO_INCHES> : <0,0,30*METERS_TO_INCHES> ) // Temporary fix for extending range of ziprail checks for mu1
+	// vector ziplinePos = GetClosestPointOnZiplineWithinRange( startPoint, endPoint, 5*METERS_TO_INCHES, null )
+
+	// float gravityScale = GetGlobalSettingsFloat( DEFAULT_PILOT_SETTINGS, "gravityScale" )
+	// float GRAVITY      = 750 * gravityScale // adjusted for new gravity scale
+	// float height
+
+	// if ( ziplinePos ==  <0,0,0> )
+	// {
+		// ////DebugDrawCylinder( startPoint, <-90, 0, 0 >, 5*METERS_TO_INCHES, 30*METERS_TO_INCHES, COLOR_RED, true, 200.0 )
+		// ziplinePos = < origin.x, origin.y, origin.z + 10*METERS_TO_INCHES >
+	// }
+	// else
+	// {
+		// //DebugDrawLine( origin, < origin.x, origin.y, ziplinePos.z >, COLOR_GREEN, true, 20.0 )
+		// height = ziplinePos.z - origin.z - GetBoundsMax( HULL_HUMAN ).z + 3.0
+		// launchVelocityScale = sqrt(2 * GRAVITY * height)
+	// }
+
+	// ziplinePos = < origin.x, origin.y, ziplinePos.z - fabs( (origin.z - ziplinePos.z) * 0.1 ) >
+
+	// entity launcher = CreateSkydiveLauncher( origin, angles, eSkydiveLauncherType.ZIPRAIL, launchVelocityScale, triggerRadius, false, ziplinePos )
+	// TraceResults tr = TraceLine( startPoint, origin - < 0, 0, 10*METERS_TO_INCHES >, null, TRACE_MASK_VISIBLE, TRACE_COLLISION_GROUP_NONE, launcher, true )
+	// if (tr.hitEnt != null && tr.hitEnt.GetScriptName() == "ziprail_launcher_prop" )
+		// file.skydiveLauncherEntityToDataMap[ launcher ].launcherGeo = tr.hitEnt
+	// else
+		// Warning("WARNING Couldn't find Ziprail launcher Geo for launcher at " + origin)
+// }
+
+// entity function Ziprail_GetSkyDiveLauncherForHitEnt ( entity hitEnt )
+// {
+	// foreach ( launcher, data in file.skydiveLauncherEntityToDataMap )
+	// {
+		// if ( data.launcherGeo != null &&  data.launcherGeo == hitEnt )
+			// return launcher
+	// }
+	// return null
+// }
+
+      
+
+                      
+void function OnSpawnedGravityCannonEditorClass( entity ent )
+{
+	if ( !IsValid( ent ) || !GetCurrentPlaylistVarBool( "tropics_grav_cannons_enabled", true ))
+		return
+
+	file.gravityCannonEnts.append( ent )
+}
+
+void function EntitiesDidLoad()
+{
+	// foreach ( ent in file.gravityCannonEnts )
+	// {
+		// vector landingLocation = <0, 0, 0>
+		// if ( ent.HasKey( "landing_location" ) )
+			// landingLocation = StringToVector( ent.GetValueForKey( "landing_location" ) )
+
+		// GravityCannon_Create( ent.GetOrigin(), ent.GetAngles(), landingLocation ) //implement this. Cafe
+		// ent.Destroy() //no need to hang onto the reference spawner ent
+	// }
+
+	// file.gravityCannonEnts.clear()
+}
+
+      
+#endif
+
+
+#if SERVER
+bool function IsTooCloseToSkydiveLauncher( entity ent )
+{
+	if ( !IsValid( ent ) )
+		return false
+
+	if ( file.skydiveLaunchers.len() == 0 )
+		return false
+
+	vector entOrigin = ent.GetOrigin()
+	float distToCheck = SKYDIVE_TRIGGER_RADIUS
+	float maxDist = distToCheck * distToCheck
+
+	foreach ( launcherModel in file.skydiveLaunchers )
+	{
+		if ( !IsValid( launcherModel ) )
+			continue
+
+		if ( DistanceSqr( entOrigin, launcherModel.GetOrigin() ) > maxDist )
+			continue
+
+		return true
+	}
+
+	return false
+}
+#endif
+
+#if SERVER
+entity function CreateSkydiveLauncher( vector origin, vector angles, int skydiveLauncherType = eSkydiveLauncherType.DEFAULT, float scaleValue = 2500, float radius = SKYDIVE_TRIGGER_RADIUS, bool skydiveEnabled = true, vector endPoint = < 0, 0, 0>, DefaultLauncherData ornull defaultLauncherData = null )
+{
+	if ( GetCurrentPlaylistVarInt( "skydive_launchers_enabled", 1 ) == 0 )
+	{
+		printl( "Skydive launchers disabled through playlist var" )
+		return null
+	}
+
+	asset modelAsset
+	asset fxLoop
+	float triggerRadius    = radius
+	float launchScaleValue = scaleValue
+                 
+		float launchMultiplierValue = skydiveLauncherType != eSkydiveLauncherType.ZIPRAIL ? 1.25 : 1.0
+      
+                                    
+       
+	string launcherScriptName   = ""
+	string sfxLaunchPlayer3p
+	string sfxAirborneMvmt3p
+	asset launchFx              = $""
+	float launcherViewPunchSoft = -20.0
+	float launcherViewPunchHard = -4.0
+	float launcherViewPunchRand = 2.0
+	float launcherScale
+	bool doubleJumpEnabled      = false
+	vector launchDirection      = < 0.0, 0.0, 1.0>
+	bool setTargetPosition      = false
+	vector targetPosition       = < 0, 0, 0 >
+	int airControl              = 0
+	float airMoveSpeed          = 0.0
+	float airMoveAccel          = 0.0
+
+	int thresholdType       = eSkydiveLauncherThreshold.FLOOR
+	int velocityType        = eSkydiveLauncherVelocityType.VERTICAL
+	float velocityThreshold = 512
+
+	entity launcherGeo = null
+
+	bool shouldTransitionInertiaIntoSkydive = false
+	bool shouldSkyDive                      = skydiveEnabled
+	bool shouldLaunchProjectiles            = false
+	bool allow_quickZipAttach               = false
+
+	switch ( skydiveLauncherType )
+	{
+		//add more variants as needed
+
+		case eSkydiveLauncherType.DEFAULT:
+			if ( defaultLauncherData )
+			{
+				DefaultLauncherData dld = expect DefaultLauncherData( defaultLauncherData )
+				modelAsset         = dld.worldModel
+				fxLoop             = (dld.idleFx != $"") ? dld.idleFx : $"P_s2s_flap_wind" //FX_SKYDIVE_LAUNCHER_LOOP_DEFAULT
+				sfxLaunchPlayer3p  = (dld.sfxLaunchPlayer3p != "") ? dld.sfxLaunchPlayer3p : "WXpress_LaunchPad_3p"
+				sfxAirborneMvmt3p  = (dld.sfxAirborneMvmt3p != "") ? dld.sfxAirborneMvmt3p : "JumpPad_AirborneMvmt_3p"
+				launcherScriptName = (dld.scriptName != "") ? dld.scriptName : ""
+				launchFx           = dld.launchFx
+				if ( fxLoop != $"" )
+					PrecacheParticleSystem( fxLoop )
+				if ( launchFx != $"" )
+					PrecacheParticleSystem( launchFx )
+				doubleJumpEnabled    = dld.doubleJump
+				launchDirection      = dld.launchDirection
+				airControl           = dld.airControl
+				airMoveSpeed         = dld.airMoveSpeed
+				airMoveAccel         = dld.airMoveAccel
+				targetPosition       = dld.targetPosition
+				allow_quickZipAttach = dld.allow_quickZipAttach
+				if ( targetPosition != < 0, 0, 0> )
+					setTargetPosition = true
+
+				//printt( "\nDefaultSkydiveLauncherFound: >>DSLF " + dld.scriptName + "\n" )
+				//printt( ">>DSLF: " + dld.worldModel + "; airControl " + dld.airControl + ", " + dld.airMoveSpeed + ", " + dld.airMoveAccel + "; doubleJump " + dld.doubleJump + "; launchVel " + dld.launchDirection + "; landLoc " + dld.targetPosition  )
+				//printt( "\n>>DSLF: dld sfx " + dld.sfxLaunchPlayer3p + ", " + dld.sfxAirborneMvmt3p )
+				//printt( "\n>>DSLF: dld vfx " + dld.launchFx + ", " + dld.idleFx )
+				//printt( "\n>>DSLF: trigger sfx " + sfxLaunchPlayer3p + ", " + sfxAirborneMvmt3p )
+
+				//if ( setTargetPosition )
+				//{
+				//	//DebugDrawSphere( targetPosition, 200.0, <255, 200, 0>, true, 6000.0 )
+				//	//DebugDrawSphere( targetPosition, 70.0, <255, 200, 0>, true, 6000.0 )
+				//	DebugDrawLine( origin, origin + < 0, 0, 1200 >, < 0, 255, 0 >, true, 6000.0 )
+				//}
+
+				break
+			}
+
+		case eSkydiveLauncherType.SHORT_HEIGHT:
+			modelAsset = MODEL_SKYDIVE_LAUNCHER_DEFAULT
+			fxLoop = FX_SKYDIVE_LAUNCHER_LOOP_DEFAULT
+			sfxLaunchPlayer3p = "WXpress_LaunchPad_3p"
+			sfxAirborneMvmt3p = "JumpPad_AirborneMvmt_3p"
+			break
+                      
+
+		case eSkydiveLauncherType.GRAVITY_CANNON:
+			modelAsset = $"mdl/dev/empty_model.rmdl"
+			fxLoop = FX_SKYDIVE_LAUNCHER_LOOP_NO_SNOW
+			launchMultiplierValue = 5
+			sfxLaunchPlayer3p = "GravityCannon_LaunchPad_Launch_Temp_3p"
+			sfxAirborneMvmt3p = "JumpPad_AirborneMvmt_3p"
+
+			thresholdType = eSkydiveLauncherThreshold.CEILING
+			velocityType = eSkydiveLauncherVelocityType.ABSOLUTE
+			velocityThreshold = 1550
+			shouldSkyDive = false
+			shouldLaunchProjectiles = true
+
+			Warning( "Found gravity cannon type skydive launcher. Should use script_gravity_cannon entity for gravity cannons. Please bug!" )
+			break
+      
+
+		case eSkydiveLauncherType.GRAVITY_MINI:
+                      
+
+		case eSkydiveLauncherType.IMC_ARMORY:
+      
+			modelAsset = MODEL_SKYDIVE_LAUNCHER_GRAVITY_MINI
+			fxLoop = FX_SKYDIVE_LAUNCHER_GRAVITY_MINI_IDLE
+			launchMultiplierValue = 1.25
+			sfxLaunchPlayer3p = "GravityMini_LaunchPad_3p"
+			sfxAirborneMvmt3p = "GravityMini_LaunchPad_AirborneMvmt_3p"
+			break
+                
+
+		case eSkydiveLauncherType.ZIPRAIL:
+			modelAsset = $"mdl/dev/empty_model.rmdl"
+			fxLoop = FX_SKYDIVE_LAUNCHER_GRAVITY_ZIPRAIL_LAUNCH
+			sfxLaunchPlayer3p = "ZipRail_Launcher_Activate_3p"
+			sfxAirborneMvmt3p = "ZipRail_Launcher_AirborneMvmt_3p"
+			allow_quickZipAttach = true
+			break
+      
+
+		default:
+			Assert( false, "Unhandled eSkydiveLauncherType: " + skydiveLauncherType )
+	}
+
+	//playlist overrides
+	launchScaleValue      = GetCurrentPlaylistVarFloat( "skydive_launcher_launch_scale_override", launchScaleValue )
+	launchMultiplierValue = GetCurrentPlaylistVarFloat( "skydive_launcher_launch_scale_override", launchMultiplierValue )
+	thresholdType         = GetCurrentPlaylistVarInt( "skydive_launcher_speed_threshold_type_override", thresholdType )
+	velocityType          = GetCurrentPlaylistVarInt( "skydive_launcher_velocity_type_override", velocityType )
+	velocityThreshold     = GetCurrentPlaylistVarFloat( "skydive_launcher_speed_threshold_to_begin_skydive", velocityThreshold )
+
+	entity launcherModel
+	if ( launcherScriptName == "district_launcher_horizontal" )
+	{
+		TraceResults traceResultsDown = TraceLine( origin + <0, 0, 50>, origin + <0, 0, -150>, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+		if ( IsValid( traceResultsDown.hitEnt ) && traceResultsDown.hitEnt.GetModelName() == "mdl/props/district_horizontal_launcher/district_horizontal_launcher_base_w.rmdl" )
+		{
+			launcherModel = traceResultsDown.hitEnt
+		}
+		else
+		{
+			launcherModel = CreatePropScript( modelAsset, origin, angles, SOLID_VPHYSICS )
+	launcherModel.DisableHibernation()
+	launcherModel.SetDamageNotifications( false )
+	launcherModel.SetDeathNotifications( false )
+	launcherModel.SetArmorType( ARMOR_TYPE_HEAVY )
+	launcherModel.SetBlocksRadiusDamage( false )
+	launcherModel.SetCanBeMeleed( false )
+	SetVisibleEntitiesInConeQueriableEnabled( launcherModel, false )
+	launcherModel.Highlight_Enable()
+		}
+	}
+	else
+	{
+		launcherModel = CreatePropScript( modelAsset, origin, angles, SOLID_VPHYSICS )
+		launcherModel.DisableHibernation()
+		launcherModel.SetDamageNotifications( false )
+		launcherModel.SetDeathNotifications( false )
+		launcherModel.SetArmorType( ARMOR_TYPE_HEAVY )
+		launcherModel.SetBlocksRadiusDamage( false )
+		launcherModel.SetCanBeMeleed( false )
+		SetVisibleEntitiesInConeQueriableEnabled( launcherModel, false )
+		launcherModel.Highlight_Enable()
+
+		if( Gamemode() == eGamemodes.WINTEREXPRESS )
+		{
+			launcherModel.SetOrigin( launcherModel.GetOrigin() - <0,0,16> )
+			launcherModel.SetModelScale( 2.0 )
+		}
+	}
+
+	if ( skydiveLauncherType == eSkydiveLauncherType.IMC_ARMORY || launcherScriptName == "district_launcher_horizontal" )
+	{
+		launcherModel.kv.collisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	}
+	else
+	{
+		launcherModel.kv.collisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+	}
+	if ( launcherScriptName != "" )
+	{
+		launcherModel.SetScriptName( launcherScriptName )
+		//if ( launcherScriptName == "district_launcher_vertical" )
+		//	//DebugDrawSphere( launcherModel.GetOrigin(), 40, COLOR_RED, true, 150 )
+		//if ( launcherScriptName == "district_launcher_horizontal" )
+		//	//DebugDrawSphere( launcherModel.GetOrigin(), 40, COLOR_YELLOW, true, 150 )
+	}
+
+	AddSonarDetectionForPropScript( launcherModel )
+	AddEMPDamageDevice( launcherModel )
+
+	if ( fxLoop != $"" )
+	{
+		entity fxLauncherLoop = StartParticleEffectOnEntityWithPos_ReturnEntity( launcherModel, GetParticleSystemIndex( fxLoop ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0,0,0>, Vector(-90,0,0) )
+		fxLauncherLoop.SetParent( launcherModel )
+		                
+		if ( skydiveLauncherType == eSkydiveLauncherType.ZIPRAIL && endPoint != < 0,0,0 > )
+			EffectSetControlPointVector( fxLauncherLoop, 1, endPoint )
+		else
+        
+			EffectSetControlPointVector( fxLauncherLoop, 1, <32,255,128> )
+	}
+
+	                      
+	//TODO: using a vortex sphere now to hack this. Based on talking with Conger, projectiles only touch triggers after hitting a solid, and these don't have a solid
+	//todo: so we would need to request a code fix for this behavior
+	//todo: vehicles and decoys also have divergent launch behavior that doesn't respect the angle of the trigger
+	entity launcherVortexSphere
+	if ( shouldLaunchProjectiles )
+	{
+		launcherVortexSphere = CreateEntity( "vortex_sphere" )
+
+		launcherVortexSphere.kv.spawnflags = SF_BLOCK_OWNER_WEAPON
+		launcherVortexSphere.kv.enabled = 0
+		launcherVortexSphere.kv.radius = triggerRadius
+		launcherVortexSphere.kv.height = triggerRadius
+		launcherVortexSphere.kv.bullet_fov = 360
+		launcherVortexSphere.kv.physics_pull_strength = 0//25
+		launcherVortexSphere.kv.physics_side_dampening = 0//6
+		launcherVortexSphere.kv.physics_fov = 360
+		launcherVortexSphere.kv.physics_max_mass = 0//2
+		launcherVortexSphere.kv.physics_max_size = 0//6
+
+		launcherVortexSphere.SetAngles( angles ) // viewvec?
+		launcherVortexSphere.SetOrigin( origin )
+		launcherVortexSphere.SetMaxHealth( 100 )
+		launcherVortexSphere.SetHealth( 100 )
+
+		DispatchSpawn( launcherVortexSphere )
+
+		//HACK: Until we get a better way to do this use the vortex's target name to specify that it is a vortex trigger that
+		//will run a set callback when a projectile or bullet hits it instead of preforming its normal vortex logic.
+		Vortex_ConvertToVortexTriggerArea( launcherVortexSphere )
+		SetCallback_VortexSphereTriggerOnBulletHit( launcherVortexSphere, SkydiveLauncher_OnBulletHitVortexTrigger )
+		SetCallback_VortexSphereTriggerOnProjectileHit( launcherVortexSphere, SkydiveLauncher_OnProjectileHitVortexTrigger )
+
+		VortexFireEnable( launcherVortexSphere )
+		launcherVortexSphere.SetInvulnerable() // make invulnerable to weapon damage. It will still drain over time
+		launcherVortexSphere.SetOwner( launcherModel )
+		launcherVortexSphere.SetParent( launcherModel, "", true, 0.0 )
+	}
+       
+
+	SetTargetName( launcherModel, SKYDIVE_LAUNCHER_TARGETNAME ) //for pings...using jump pad dialogue for now
+
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
+	trigger.SetOwner( launcherModel )
+	SetTargetName( trigger, "skydive_launcher_trigger" )
+	trigger.SetScriptName( skydiveLauncherType.tostring() )
+	trigger.SetRadius( triggerRadius )
+	trigger.SetAboveHeight( 32 )
+	if( skydiveLauncherType == eSkydiveLauncherType.IMC_ARMORY )
+		trigger.SetBelowHeight( 20 )
+	else
+		//need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
+		trigger.SetBelowHeight( 16 )
+	trigger.SetOrigin( origin )
+	trigger.SetTriggerType( TT_JUMP_PAD )
+	trigger.SetLaunchScaleValues( launchScaleValue, launchMultiplierValue )
+	trigger.SetViewPunchValues( launcherViewPunchSoft, launcherViewPunchHard, launcherViewPunchRand )
+	trigger.SetLaunchDir( launchDirection )
+	// trigger.SetEnableDoubleJump( doubleJumpEnabled )
+	// if ( setTargetPosition )
+		// trigger.SetLaunchTargetLocation( targetPosition )
+	// if ( airControl == eSkydiveLauncherAirControlType.FULL )
+		// trigger.SetLaunchAirControlParams( airMoveSpeed, airMoveAccel )
+	// else if ( airControl == eSkydiveLauncherAirControlType.LIMITED )
+		// trigger.SetLimitedAirControl( true )
+	trigger.UsePointCollision()
+	if( shouldLaunchProjectiles )
+		trigger.kv.triggerFilterNonCharacter = "1"
+	else
+		trigger.kv.triggerFilterNonCharacter = "0"
+
+	//Parent the trigger to the launcherModel so that it works with moving geo.
+	trigger.SetParent( launcherModel, "", false, 0.0 )
+
+	DispatchSpawn( trigger )
+
+	AddEntityDestroyedCallback( trigger, OnSkydiveLauncherDestroyed )
+
+
+	trigger.SetAbsOrigin( origin )
+	trigger.SetAbsAngles( angles )
+
+	trigger.SetParent( launcherModel )
+
+	                      
+	// bool DEBUG_SHOULD_DRAW = false
+	// if ( DEBUG_SHOULD_DRAW )
+	// {
+		// if ( shouldLaunchProjectiles )
+			// thread DrawVortexSphere( launcherVortexSphere )
+		// thread DrawTriggerCylinder( origin, trigger )
+	// }
+       
+
+	SkydiveLauncherData data
+	data.sfxLaunchPlayer3p = sfxLaunchPlayer3p
+	data.sfxAirborneMvmt3p = sfxAirborneMvmt3p
+	data.launcherType = skydiveLauncherType
+	data.launchFx = launchFx
+
+	data.launchSpeed = launchScaleValue
+	data.velocityType = velocityType
+	data.thresholdType = thresholdType
+	data.speedThreshold = velocityThreshold
+	data.shouldTransitionInertiaIntoSkydive = shouldTransitionInertiaIntoSkydive
+	data.shouldSkyDive = shouldSkyDive
+	data.allow_quickZipAttach = allow_quickZipAttach
+
+	                      
+	if ( shouldLaunchProjectiles )
+		file.vortexSphereToData[launcherVortexSphere] <- data
+       
+
+	trigger.SetEnterCallback( void function( entity trigger, entity ent ) : ( data )
+	{
+		if ( !IsValid( trigger ) )
+			return
+
+		if ( !SkydiveLauncherPushEnt( trigger, ent, data ) )
+			return
+
+	} )
+
+	file.skydiveLaunchers.append( launcherModel )
+	file.skydiveLauncherEntityToDataMap[ launcherModel ] <- data
+
+	return launcherModel
+}
+
+                      
+void function DrawTriggerCylinder( vector origin, entity trigger )
+{
+	while ( true )
+	{
+		 //DebugDrawCylinder( origin, AnglesCompose( trigger.GetAngles(), < -90, 0, 0 > ), trigger.GetRadius(), trigger.GetAboveHeight(), COLOR_RED, true, FrameTime() * 1.5 )
+		WaitFrame()
+	}
+}
+
+void function DrawVortexSphere( entity trigger )
+{
+	while ( true )
+	{
+		//DebugDrawSphere( trigger.GetOrigin(), float(trigger.kv.radius), COLOR_RED, true, FrameTime() * 1.5 )
+		WaitFrame()
+	}
+}
+      
+
+#endif //SERVER
+
+
+
+#if SERVER
+void function OnGamestateStartPlaying_SkydiveLaunchers()
+{
+	if ( GetCurrentPlaylistVarBool( "skydive_launchers_waypoints_enabled", false ) == false )
+		return
+
+	foreach( launcherModel in file.skydiveLaunchers )
+	{
+		entity wp = CreateWaypoint_BasicLocation( launcherModel.GetOrigin() + <0, 0, 64>, ePingType.SKYDIVE_LAUNCHER )
+		wp.SetParent( launcherModel, "", true, 0.0 )
+		// wp.SetWaypointGroupFlags( WPGF_NO_CREATE_MINIMAP_ICONS | WPGF_DO_SIMPLE_MAXDRAWDIST_CHECK )
+	}
+}
+#endif //SERVER
+
+
+#if SERVER
+bool function SkydiveLauncherPushEnt( entity trigger, entity ent, SkydiveLauncherData data )
+{
+	if ( !SkydiveLauncherShouldPushPlayerOrNPC( ent ) )
+		return false
+
+	entity launcherModel = trigger.GetOwner()
+
+	if ( ent.IsPlayer() )
+	{
+		entity trigger_maybeNull = null
+		if ( IsValid( launcherModel ) )
+		{
+			int fxId = -1
+
+			switch( data.launcherType )
+			{
+				case eSkydiveLauncherType.GRAVITY_MINI:
+				                      
+				case eSkydiveLauncherType.IMC_ARMORY:
+          
+				                
+				case eSkydiveLauncherType.ZIPRAIL:
+          
+					fxId = GetParticleSystemIndex( FX_SKYDIVE_LAUNCHER_GRAVITY_MINI_LAUNCH )
+					trigger_maybeNull = trigger
+					break
+				default:
+					fxId = GetParticleSystemIndex( (data.launchFx != $"") ? data.launchFx : FX_SKYDIVE_LAUNCHER_LAUNCH )
+					break
+			}
+			if( fxId > 0 )
+			{
+				entity fxEnt = StartParticleEffectInWorld_ReturnEntity(fxId, launcherModel.GetOrigin(), launcherModel.GetAngles()  )
+				thread DestroyAfterDelay( fxEnt, 2.0 )
+			}
+
+			if ( launcherModel.GetScriptName() == "district_launcher_horizontal" )
+			{
+				EmitSoundOnEntity( launcherModel, "District_GravityMini_Launcher_Charge_3p" )	// Temp; remove once animation is fixed and add the sound as an event on the sequence
+				// launcherModel.Anim_Play( HORIZONTAL_LAUNCHER_LAUNCH_SEQUENCE )
+			}
+		}
+		thread PlayerLaunched( ent, data, trigger_maybeNull )
+		//TrackingVision_PlayerUsedLaunchPad( ent )
+		//void function PIN_Interact( entity player, string actionName, vector ornull optionalEndpoint = null, string argItemID="null", int argItemCost = 0 )
+		PIN_Interact( ent, "launcher",  null, GetEnumString( "eSkydiveLauncherType", data.launcherType ) )
+	}
+	else if ( ent.IsPlayerDecoy() )
+	{
+		EmitSoundOnEntity( ent, data.sfxLaunchPlayer3p )
+		EmitSoundOnEntity( ent, data.sfxAirborneMvmt3p )
+		if ( data.launcherType == eSkydiveLauncherType.DEFAULT && IsValid( launcherModel ) )
+		{
+			int launchfxId = GetParticleSystemIndex( (data.launchFx != $"") ? data.launchFx : FX_SKYDIVE_LAUNCHER_LAUNCH )
+			if( launchfxId > 0 )
+			{
+				entity fxEnt = StartParticleEffectInWorld_ReturnEntity(launchfxId, launcherModel.GetOrigin(), launcherModel.GetAngles()  )
+				thread DestroyAfterDelay( fxEnt, 2.0 )
+			}
+		}
+		thread SkydiveLauncherEndSoundGeneric( ent, data )
+	}
+
+	return true
+}
+#endif //SERVER
+
+
+
+#if SERVER
+void function PlayerLaunched( entity player, SkydiveLauncherData data, entity trigger = null )
+{
+	if ( !IsPilot( player ) )
+		return
+/*
+	if ( !data.shouldSkyDive )
+		return
+*/
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.Signal( "JumpPadStart" )
+	player.EndSignal( "JumpPadStart" )
+	                
+	// player.EndSignal( "ZiprailAttach" )
+       
+	player.EnableSlowMo()
+
+	                
+	if ( data.launcherType != eSkydiveLauncherType.ZIPRAIL )
+		file.holsterWeaponsOnAscent = false
+       
+
+	if ( file.holsterWeaponsOnAscent )
+		HolsterAndDisableWeapons( player )
+
+	// RemoveDoubleJump ( player )
+
+	if( IsValid( trigger ))
+	{
+		EmitSoundOnEntityExceptToPlayer( trigger, player, data.sfxLaunchPlayer3p )
+		EmitSoundOnEntityOnlyToPlayer( trigger, player, data.sfxLaunchPlayer3p )
+	}
+	else
+	{
+		EmitSoundOnEntityExceptToPlayer( player, player, data.sfxLaunchPlayer3p )
+		EmitSoundOnEntityOnlyToPlayer( player, player, data.sfxLaunchPlayer3p )
+	}
+	EmitSoundOnEntityExceptToPlayer( player, player, data.sfxAirborneMvmt3p )
+	// play for spectators
+	EmitSoundOnEntityOnlyToPlayer( player, player, data.sfxAirborneMvmt3p )
+
+	bool shouldSnapViewVector = false
+	if ( shouldSnapViewVector )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+
+	/*
+	if ( PlayerHasPassive( player, ePassives.PAS_OCTANE ) )
+	{
+		PlayBattleChatterLineToSpeakerAndTeamWithDebounceTime( player, "bc_octane_jumppad_launch", 30.0, 60.0 )
+	}
+	*/
+
+	array<entity> jumpJetFXs
+	array<string> attachments = [ "vent_left", "vent_right" ]
+
+	CreateJumpJetEffects( player, jumpJetFXs, attachments )
+
+	OnThreadEnd(
+		function() : ( jumpJetFXs, player, data )
+		{
+			DestroyJumpJetEffects( jumpJetFXs )
+
+			if ( IsValid( player ) )
+			{
+				player.DisableSlowMo()
+				StopSoundOnEntity( player, data.sfxAirborneMvmt3p )
+
+				if ( file.holsterWeaponsOnAscent )
+					DeployAndEnableWeapons( player )
+			}
+		}
+	)
+
+	WaitFrame()
+
+	wait 0.1
+
+	                
+	if ( data.launcherType == eSkydiveLauncherType.ZIPRAIL )
+	{
+		// AddCallback_ZiplineMount ( CheckForZiprailMount )
+		OnThreadEnd(
+			function ():()
+			{
+				// RemoveCallback_ZiplineMount ( CheckForZiprailMount )
+			}
+		)
+	}
+       
+
+	if ( shouldSnapViewVector )
+		player.SnapEyeAngles( VectorToAngles( player.GetVelocity() ) )
+
+	float speedThresholdToStartSkydive = data.speedThreshold
+
+	while( !player.IsOnGround() )
+	{
+		//restart or destroy jump jets
+		if ( player.IsPhaseShifted() )
+			DestroyJumpJetEffects( jumpJetFXs )
+		else if ( jumpJetFXs.len() <= 0 )
+			CreateJumpJetEffects( player, jumpJetFXs, attachments )
+
+		//break out if at apex of jump
+		float speedZ
+		if ( data.velocityType == eSkydiveLauncherVelocityType.ABSOLUTE )
+		{
+			speedZ = player.GetVelocity().Length()
+		}
+		else if ( data.velocityType == eSkydiveLauncherVelocityType.VERTICAL )
+		{
+			speedZ = player.GetVelocity().z
+		}
+
+
+		float speed = player.GetVelocity().Length()
+		vector speedNorm = Normalize( player.GetVelocity() )
+		float speedNormZ = speedNorm.z
+
+		/*printl( "**********************" )
+		printl( "speed: " + speed )
+		printl( "speedspeedNorm: " + speedNorm )
+		printl( "speedZ: " + speedZ )
+		printl( "speedNormZ: " + speedNormZ )*/
+
+		if ( data.thresholdType == eSkydiveLauncherThreshold.FLOOR )
+		{
+			if ( speedZ < speedThresholdToStartSkydive )
+			{
+				DestroyJumpJetEffects( jumpJetFXs )
+				break
+			}
+		} else if ( data.thresholdType == eSkydiveLauncherThreshold.CEILING )
+		{
+			if ( speedZ >= speedThresholdToStartSkydive )
+			{
+				DestroyJumpJetEffects( jumpJetFXs )
+				break
+			}
+		}
+
+		WaitFrame()
+	}
+
+	if ( !ShouldSkydiveFromCurrentPosition( player ) )
+		return
+
+	if ( player.IsZiplining() && !data.allow_quickZipAttach )
+		player.Zipline_Stop()
+
+	if ( data.shouldTransitionInertiaIntoSkydive )
+	{
+		                        
+			// Control_PrintSkydiveDebug( player, " PlayerLaunched shouldTransitionInertiaIntoSkydive going to trigger PlayerSkydiveFromCurrentPositionWithInitVelocity" )
+                                
+		// PlayerSkydiveFromCurrentPositionWithInitVelocity( player, player.GetVelocity() * 0.85 )
+		#if DEVELOPER
+		printt( " PlayerLaunched shouldTransitionInertiaIntoSkydive going to trigger PlayerSkydiveFromCurrentPositionWithInitVelocity FIXME. Cafe" )
+		#endif
+	}
+	else if ( data.shouldSkyDive )
+	{
+		                        
+			// Control_PrintSkydiveDebug( player, " PlayerLaunched shouldSkyDive going to trigger PlayerSkydiveFromCurrentPosition" )
+                                
+		PlayerSkydiveFromCurrentPosition( player )
+	}
+}
+
+void function CreateJumpJetEffects( entity player, array<entity> jumpJetFXs, array<string> attachments )
+{
+	int team = player.GetTeam()
+	foreach ( attachment in attachments )
+	{
+		int friendlyID    = GetParticleSystemIndex( TEAM_JUMPJET_DBL )
+		entity friendlyFX = StartParticleEffectOnEntity_ReturnEntity( player, friendlyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		friendlyFX.SetOwner( player )
+		SetTeam( friendlyFX, team )
+		friendlyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+		jumpJetFXs.append( friendlyFX )
+
+		int enemyID    = GetParticleSystemIndex( ENEMY_JUMPJET_DBL )
+		entity enemyFX = StartParticleEffectOnEntity_ReturnEntity( player, enemyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		SetTeam( enemyFX, team )
+		enemyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+		jumpJetFXs.append( enemyFX )
+	}
+}
+
+void function DestroyJumpJetEffects( array<entity> jumpJetFXs )
+{
+	foreach ( fx in jumpJetFXs )
+	{
+		if ( IsValid( fx ) )
+			fx.Destroy()
+	}
+
+	jumpJetFXs.clear()
+}
+
+// void function CheckForZiprailMount(entity player, entity ziprail)
+// {
+	// if ( !IsValid(player) && ziprail.Zipline_IsCurvedZipline() )
+		// player.Signal("ZiprailAttach")
+// }
+#endif //SERVER
+
+#if SERVER
+bool function ShouldSkydiveFromCurrentPosition( entity player )
+{
+	if ( player.IsOnGround() )
+		return false
+
+	if ( player.p.isSkydiving )
+		return false
+
+	if ( player.GetParent() )
+		return false
+
+	if ( StatusEffect_GetSeverity( player, eStatusEffect.placing_phase_tunnel ) > 0.0 )
+		return false
+
+	vector playerOrigin = player.GetOrigin() + <0, 0, 16>
+
+	if( playerOrigin.z - OriginToGround( playerOrigin ).z < 256 )
+		return false
+
+	return true
+
+}
+#endif //SERVER
+
+
+#if SERVER
+bool function SkydiveLauncherShouldPushPlayerOrNPC( entity target )
+{
+	if ( target.GetNetworkedClassName() == "phys_bone_follower" )
+		return false
+
+	if ( !target.IsPlayer() && !target.IsPlayerDecoy() )
+		return false
+
+	/*
+	if ( target.IsTitan() )
+		return false
+
+	if ( IsSuperSpectre( target ) )
+		return false
+
+	if ( IsTurret( target ) )
+		return false
+
+	if ( IsDropship( target ) )
+		return false
+	*/
+
+	return true
+}
+#endif //SERVER
+
+
+#if SERVER
+void function SkydiveLauncherEndSoundGeneric( entity ent, SkydiveLauncherData data )
+{
+	ent.EndSignal( "OnDeath" )
+	ent.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( ent, data )
+		{
+			if ( IsValid( ent ) )
+				StopSoundOnEntity( ent, data.sfxAirborneMvmt3p )
+		}
+	)
+
+	while( IsValid( ent ) && !ent.IsOnGround() )
+		WaitFrame()
+}
+#endif //SERVER
+
+void function OnSkydiveLauncherDestroyed( entity trigger )
+{
+	if ( trigger.GetTargetName() != "skydive_launcher_trigger" )
+		return
+
+	if ( trigger.GetScriptName() == "" )
+		return
+
+	trigger.SetScriptName( "" )
+}
+
+
+#if CLIENT
+void function OnSkydiveLauncherCreated( entity trigger )
+{
+	if ( trigger.GetTargetName() != "skydive_launcher_trigger" )
+		return
+
+	AddEntityDestroyedCallback( trigger, OnSkydiveLauncherDestroyed )
+
+	vector triggerOrigin = trigger.GetOrigin()
+
+	string ambientFxName = ""
+	string scriptName = trigger.GetScriptName()
+	Assert( IsValid( scriptName ), "Client can't get the script name of the skydive launch trigger" )
+	int skydiveLauncherType = scriptName.tointeger()
+	switch( skydiveLauncherType )
+	{
+		case eSkydiveLauncherType.GRAVITY_MINI:
+			ambientFxName = "GravityMini_LaunchPad_Idle_Loop"
+			break
+		                      
+		case eSkydiveLauncherType.IMC_ARMORY:
+			ambientFxName = "GravityMini_LaunchPad_SpectreShack_Idle_Loop"
+			break
+        
+		                
+		case eSkydiveLauncherType.ZIPRAIL:
+			ambientFxName = "ZipRail_Launcher_Idle_Loop"
+			break
+        
+
+		case eSkydiveLauncherType.DEFAULT:
+			{
+				entity launcherModel = trigger.GetOwner()
+				if ( IsValid( launcherModel ) )
+				{
+					string launcherName = launcherModel.GetScriptName()
+					if ( launcherName == "district_launcher_horizontal" )
+					{
+						ambientFxName = "District_GravityMini_LaunchPad_Idle_Loop_Horizontal_3p"
+						break
+					}
+					if ( launcherName == "district_launcher_vertical" )
+					{
+						ambientFxName = "District_GravityMini_LaunchPad_Idle_Loop_Vertical_3p"
+						break
+					}
+				}
+			}
+
+		default:
+			ambientFxName = "WXpress_Emit_LaunchPad_Loop"
+			break
+	}
+	entity clientAG = CreateClientSideAmbientGeneric( triggerOrigin + <0,0,16>, ambientFxName, 0 )
+	clientAG.SetSegmentEndpoints( triggerOrigin + <0,0,16>, triggerOrigin + <0, 0, 72> )
+	clientAG.SetEnabled( true )
+	clientAG.RemoveFromAllRealms()
+	clientAG.AddToOtherEntitysRealms( trigger )
+	clientAG.SetParent( trigger, "", true, 0.0 )
+
+	trigger.SetClientEnterCallback( void function( entity trigger, entity player )
+	{
+		entity localViewPlayer = GetLocalViewPlayer()
+		if ( player != localViewPlayer )
+			return
+
+		if ( !IsPilot( player ) )
+			return
+
+		string scriptName = trigger.GetScriptName()
+		Assert( IsValid( scriptName ), "Client can't get the script name of the skydive launch trigger" )
+		int skydiveLauncherType = scriptName.tointeger()
+		string sfxLaunchPlayer1p
+		string sfxAirborneMvmt1p
+		bool launcherSounds = true
+
+		switch( skydiveLauncherType )
+		{
+			case eSkydiveLauncherType.DEFAULT:
+			{
+				entity launcherModel = trigger.GetOwner()
+				if ( IsValid( launcherModel ) )
+				{
+					string launcherName = launcherModel.GetScriptName()
+					if ( launcherName == "district_launcher_horizontal" )
+					{
+						sfxLaunchPlayer1p = "District_GravityMini_LaunchPad_Horizontal_1p"
+						sfxAirborneMvmt1p = "District_GravityMini_LaunchPad_AirborneMvmt_Horizontal_3p"
+						break
+					}
+					if ( launcherName == "district_launcher_vertical" )
+					{
+						sfxLaunchPlayer1p = "District_GravityMini_LaunchPad_Vertical_1p"
+						sfxAirborneMvmt1p = "JumpPad_Ascent_Windrush"
+						break
+					}
+				}
+			}
+			case eSkydiveLauncherType.SHORT_HEIGHT:
+				sfxLaunchPlayer1p = "WXpress_LaunchPad"
+				sfxAirborneMvmt1p = "JumpPad_Ascent_Windrush"
+			case eSkydiveLauncherType.GRAVITY_MINI:
+			                      
+			case eSkydiveLauncherType.IMC_ARMORY:
+         
+				sfxLaunchPlayer1p = "GravityMini_LaunchPad_1p"
+				sfxAirborneMvmt1p = "JumpPad_Ascent_Windrush"
+				break
+			                      
+			case eSkydiveLauncherType.GRAVITY_CANNON:
+				// GravityCannon_OnEnterTrigger_Client enter callback for gravity cannon
+				launcherSounds = false
+				break
+         
+			                
+			case eSkydiveLauncherType.ZIPRAIL:
+				sfxLaunchPlayer1p = "ZipRail_Launcher_Activate_1p"
+				sfxAirborneMvmt1p = "ZipRail_Launcher_AirborneMvmt_1p"
+				break
+         
+			default:
+				Assert( false, "Unhandled eSkydiveLauncherType on client: " + skydiveLauncherType )
+
+		}
+
+		if ( launcherSounds )
+		{
+			EmitSoundOnEntity( player, sfxLaunchPlayer1p )
+			EmitSoundOnEntity( player, sfxAirborneMvmt1p )
+		}
+
+		Chroma_UsedJumpPad()
+
+	} )
+
+                      
+	if( skydiveLauncherType == eSkydiveLauncherType.IMC_ARMORY )
+	{
+		thread Cl_ManageAmbientSound_Thread( trigger, clientAG )
+	}
+      
+}
+
+                      
+void function Cl_ManageAmbientSound_Thread( entity trigger, entity clientAG )
+{
+	Assert( IsNewThread(), "Must be threaded" )
+	trigger.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function () : ( trigger, clientAG )
+		{
+			#if DEV
+				printf( "mini gravity skydive launcher thread end" )
+			#endif
+			if ( IsValid( clientAG ) )
+			{
+				#if DEV
+					printf( "DESTROYING AG" )
+				#endif
+				clientAG.SetEnabled( false )
+				clientAG.Destroy()
+			}
+		}
+	)
+
+	WaitForever()
+}
+      
+
+#endif //CLIENT
+
+
+#if SERVER
+void function SkydiveLauncher_OnBulletHitVortexTrigger( entity weapon, entity vortexSphere, var damageInfo )
+{
+	//printt( "BULLET HIT VORTEX TRIGGER" )
+	return
+}
+#endif //SERVER
+
+#if SERVER
+void function SkydiveLauncher_OnProjectileHitVortexTrigger( entity weapon, entity vortexSphere, entity attacker, entity projectile, vector contactPos )
+{
+
+	                      
+	entity launcher = vortexSphere.GetOwner()
+
+	if ( !IsValid( launcher ) )
+		return
+
+	if ( !( vortexSphere in file.vortexSphereToData ) )
+		return
+
+	if ( !Launcher_ShouldLaunchProjectile( projectile ) )
+		return
+
+	vector origin = launcher.GetOrigin()
+
+	float timeSinceLastBounce = Time() - projectile.proj.lastVortexBounceTime
+	//Don't push planted projectiles
+	if ( projectile.proj.isPlanted || timeSinceLastBounce < GetCurrentPlaylistVarFloat( "jump_pad_debounce_time", 1.0 ) )
+		return
+
+	//push projectiles
+	vector posToTarget = Normalize( projectile.GetOrigin() - origin )
+
+	//printt( projectile )
+
+	//DebugDrawLine( origin, origin + ( posToTarget * JUMP_PAD_PUSH_PROJECTILE_RADIUS ), COLOR_RED, true, 5.0 )
+	//DebugDrawLine( origin, origin + ( surfaceNormal * JUMP_PAD_PUSH_PROJECTILE_RADIUS ), COLOR_GREEN, true, 5.0 )
+
+	//printt( dot )
+	//printt( accuracyScalar )
+
+	SkydiveLauncherData data = file.vortexSphereToData[vortexSphere]
+
+	Launcher_PushProjectileAway( projectile, Normalize( launcher.GetUpVector() ) * data.launchSpeed )
+
+	EmitSoundOnEntity( projectile, data.sfxLaunchPlayer3p )
+	int fxId = GetParticleSystemIndex( FX_SKYDIVE_LAUNCHER_LAUNCH )
+	StartParticleEffectInWorld_ReturnEntity(fxId, launcher.GetOrigin(), launcher.GetAngles()  )
+
+	projectile.proj.lastVortexBounceTime = Time()
+       
+
+	return
+}
+
+                      
+bool function Launcher_ShouldLaunchProjectile( entity projectile )
+{
+	string weaponClassName = projectile.ProjectileGetWeaponClassName()
+	if ( weaponClassName == "mp_weapon_deployable_medic" )
+		return false
+
+	bool isGrenade = IsABaseGrenade( projectile )
+	return isGrenade
+}
+
+void function Launcher_PushProjectileAway( entity projectile, vector velocity )
+{
+	Assert ( projectile.IsProjectile() )
+
+	//Don't push planted projectiles.
+	if ( projectile.proj.isPlanted )
+		return
+
+	vector result = velocity // + projectile.GetVelocity()
+	//result.z = max( 200, fabs( velocity.z ) )
+	projectile.SetVelocity( result )
+	//DebugDrawLine( projectile.GetOrigin(), projectile.GetOrigin() + result * 5, COLOR_RED, true, 5.0 )
+}
+      
+
+#endif //SERVER
+

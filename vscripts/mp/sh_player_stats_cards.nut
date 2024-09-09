@@ -1036,10 +1036,19 @@ array< ItemFlavor > function StatCard_GetAvailableSeasons()
 {
 	array< ItemFlavor > seasons = GetAllSeasonFlavors()
 
-	foreach( ItemFlavor season in seasons )
+	//R5RDEV-1
+	// foreach( ItemFlavor season in seasons )
+	// {
+		// if ( !CalEvent_IsRevealed( season, GetUnixTimestamp() ) )
+			// seasons.removebyvalue( season )
+	// }
+	
+	int maxIter = seasons.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !CalEvent_IsRevealed( season, GetUnixTimestamp() ) )
-			seasons.removebyvalue( season )
+		if( !CalEvent_IsRevealed( seasons[ i ], GetUnixTimestamp() ) ) 
+			seasons.remove( i )
 	}
 
 	return seasons
@@ -1049,17 +1058,36 @@ array< ItemFlavor > function StatCard_GetAvailableSeasonsAndRankedPeriods()
 {
 	array< ItemFlavor > seasons = GetAllSeasonFlavors()
 
-	foreach( ItemFlavor season in seasons )
+	//R5RDEV-1
+	// foreach( ItemFlavor season in seasons )
+	// {
+		// if ( !CalEvent_IsRevealed( season, GetUnixTimestamp() ) )
+			// seasons.removebyvalue( season )
+	// }
+	
+	int maxIter = seasons.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !CalEvent_IsRevealed( season, GetUnixTimestamp() ) )
-			seasons.removebyvalue( season )
+		if( !CalEvent_IsRevealed( seasons[ i ], GetUnixTimestamp() ) ) 
+			seasons.remove( i )
 	}
 
 	array< ItemFlavor > rankedPeriods = GetAllRankedPeriodFlavors()
-	foreach( ItemFlavor period in rankedPeriods )
+	
+	//R5RDEV-1
+	// foreach( ItemFlavor period in rankedPeriods )
+	// {
+		// if ( !CalEvent_IsRevealed( period, GetUnixTimestamp() ) )
+			// rankedPeriods.removebyvalue( period )
+	// }
+	
+	maxIter = rankedPeriods.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if ( !CalEvent_IsRevealed( period, GetUnixTimestamp() ) )
-			rankedPeriods.removebyvalue( period )
+		if( !CalEvent_IsRevealed( rankedPeriods[ i ], GetUnixTimestamp() ) ) 
+			rankedPeriods.remove( i )
 	}
 
 	array< ItemFlavor > seasonsAndPeriods = []

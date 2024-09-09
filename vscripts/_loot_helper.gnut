@@ -1,0 +1,1949 @@
+// ███████╗███╗   ███╗ █████╗ ██████╗ ████████╗    ██╗      ██████╗  ██████╗ ████████╗
+// ██╔════╝████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝    ██║     ██╔═══██╗██╔═══██╗╚══██╔══╝
+// ███████╗██╔████╔██║███████║██████╔╝   ██║       ██║     ██║   ██║██║   ██║   ██║
+// ╚════██║██║╚██╔╝██║██╔══██║██╔══██╗   ██║       ██║     ██║   ██║██║   ██║   ██║
+// ███████║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║       ███████╗╚██████╔╝╚██████╔╝   ██║
+// ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝  ╚═════╝    ╚═╝
+
+#if SERVER
+global function LootHelper_Init
+
+global function SmartLoot_GetLoot
+global function SmartLoot_GetTeamLoot
+
+global function LootHelper_GetLootUpgradeTier
+global function LootHelper_GetLootRefs_ByTier
+global function LootHelper_GetLootData_OfType_OfTier
+global function LootHelper_GetLootTier
+global function LootHelper_GetPlayerLootTier_Armor
+global function LootHelper_GetLootForWeaponRef
+global function LootHelper_UpgradeLootRefToTier
+
+global function LootHelper_GetTeamAmmoTypes_Weighted
+global function LootHelper_GetAmmoNeededByTeam
+global function LootHelper_GetAmmoNeededByPlayer
+
+global function LootHelper_GetCompatibleScopes
+global function LootHelper_GetCompatibleScopesForWeapon
+global function LootHelper_GetCompatibleHopUps
+global function LootHelper_GetCompatibleStocks
+global function LootHelper_GetCompatibleMags
+global function LootHelper_GetCompatibleBarrels
+global function LootHelper_GetAllCompatibleAttachments
+global function LootHelper_GetAllCompatibleAttachmentsForWeapon
+global function LootHelper_GetDefaultScopeForWeaponRef
+
+global function LootHelper_GetRandomLootRefFromGroupAndRemove
+
+global function LootHelper_GetAttachmentRefs_OfType_AllTiers
+global function LootHelper_GetAttachmentData_OfType_OfTier
+global function LootHelper_GetAttachmentData_MaxTier_OfAttachment
+global function LootHelper_GetLootData_MaxTier_OfLootType
+global function LootHelper_ReturnLowestTieredOption
+global function LootHelper_IsLootEquipment
+
+#if DEVELOPER
+global function LootHelper_TestAmmoGrant
+global function LootHelper_TestCompatibleScopes
+global function LootHelper_TestCompatibleBarrels
+global function LootHelper_TestCompatibleMags
+global function LootHelper_TestCompatibleStocks
+global function LootHelper_TestCompatibleHopUps
+global function LootHelper_TestAllCompatibleAttachments
+#endif
+
+table< int, array< string > > attachmentRefs
+
+const bool SMARTLOOT_DEBUG = false
+
+void function LootHelper_Init()
+{
+	LootHelper_BuildAttachmentTable( attachmentRefs )
+}
+
+array< string > function SmartLoot_GetLoot(
+		entity player,
+		bool onlyProvideUpgradesForEquipment,
+		bool onlyProvideUpgradesForAttachments,
+		array<int> equipmentTypes = [eLootType.ARMOR, eLootType.HELMET, eLootType.INCAPSHIELD, eLootType.BACKPACK ],
+		array<int> attachmentTypes= [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP],
+		array<int> primarySlots = [WEAPON_INVENTORY_SLOT_PRIMARY_0,WEAPON_INVENTORY_SLOT_PRIMARY_1] )
+{
+	array< string > smartLoot
+
+	foreach( int et in equipmentTypes )
+	{
+		array<string> lootStrings
+		bool lootFound = true;
+
+		int currentTier = 0
+		int upgradeTier = 0
+
+		switch( et )
+		{
+			case eLootType.BACKPACK:
+				currentTier = LootHelper_GetPlayerLootTier_Backpack( player )
+				upgradeTier = LootHelper_GetLootUpgradeTier( et, currentTier )
+				lootStrings = LootHelper_GetLootRefs_ByTier( et, upgradeTier )
+				break
+			case eLootType.ARMOR:
+				currentTier = LootHelper_GetPlayerLootTier_Armor( player )
+				upgradeTier = LootHelper_GetLootUpgradeTier( et, currentTier )
+				lootStrings = LootHelper_GetLootRefs_ByTier( et, upgradeTier )
+				break
+			case eLootType.HELMET:
+				currentTier = LootHelper_GetPlayerLootTier_Helmet( player )
+				upgradeTier = LootHelper_GetLootUpgradeTier( et, currentTier )
+				upgradeTier = int( max( upgradeTier, 2 ) )
+				lootStrings = LootHelper_GetLootRefs_ByTier( et, upgradeTier )
+				break
+			case eLootType.INCAPSHIELD:
+				currentTier = LootHelper_GetPlayerLootTier_IncapShield( player )
+				upgradeTier = LootHelper_GetLootUpgradeTier( et, currentTier )
+				upgradeTier = int( max( upgradeTier, 2 ) )
+				lootStrings = LootHelper_GetLootRefs_ByTier( et, upgradeTier )
+				break
+			default:
+				lootFound = false
+				break
+		}
+
+		if ( onlyProvideUpgradesForEquipment && ( currentTier == upgradeTier ) )
+			lootFound = false
+
+		if ( lootFound )
+			smartLoot.extend( lootStrings )
+	}
+
+	PerfStart( PerfIndexServer.SmartLoot )
+
+	foreach ( int weaponSlot in primarySlots )
+	{
+		entity weapon = player.GetNormalWeapon( weaponSlot )
+		if ( !IsValid( weapon ) )
+			continue
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		foreach( int at in attachmentTypes )
+		{
+			switch( at )
+			{
+				case eWeaponAttachmentType.SCOPE:
+					array< string > scopes = LootHelper_FilterAndGrabCompatibleScopes( weaponData, attachmentRefs, installedAttachments, [], 1 )
+					#if DEVELOPER
+						if ( SMARTLOOT_DEBUG )
+						{
+							foreach ( string s in scopes )
+								printf( "SmartLoot team scope candidate: " + s )
+						}
+					#endif
+					smartLoot.extend( scopes )
+					break
+				case eWeaponAttachmentType.STOCK:
+				case eWeaponAttachmentType.MAG:
+				case eWeaponAttachmentType.BARREL:
+					array< string > attachments = LootHelper_FilterAndGrabCompatibleAttachmentUpgrades( weaponData, attachmentRefs, installedAttachments, at, onlyProvideUpgradesForAttachments )
+					#if DEVELOPER
+						if ( SMARTLOOT_DEBUG )
+						{
+							foreach ( string s in attachments )
+								printf( "SmartLoot team attachment candidate: " + s )
+						}
+					#endif
+					smartLoot.extend( attachments )
+					break
+				case eWeaponAttachmentType.HOPUP:
+					array< string > hopUps = LootHelper_FilterAndGrabCompatibleHopUps( weaponData, attachmentRefs, installedAttachments )
+					#if DEVELOPER
+						if ( SMARTLOOT_DEBUG )
+						{
+							foreach ( string s in hopUps )
+								printf( "SmartLoot team hopup candidate: " + s )
+						}
+					#endif
+					smartLoot.extend( hopUps )
+					break
+				default:
+					break
+			}
+		}
+	}
+
+	PerfEnd( PerfIndexServer.SmartLoot )
+
+	return smartLoot
+}
+
+array< string > function SmartLoot_GetTeamLoot(
+		int team,
+		bool onlyProvideUpgradesForEquipment,
+		bool onlyProvideUpgradesForAttachments,
+		array<int> equipmentTypes = [eLootType.ARMOR, eLootType.HELMET, eLootType.INCAPSHIELD, eLootType.BACKPACK ],
+		array<int> attachmentTypes= [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+{
+	array< string > smartLoot
+	array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
+	foreach( entity teammate in teammates )
+	{
+		smartLoot.extend( SmartLoot_GetLoot( teammate, onlyProvideUpgradesForEquipment, onlyProvideUpgradesForAttachments, equipmentTypes, attachmentTypes ) )
+	}
+
+	return smartLoot
+}
+
+string function LootHelper_UpgradeLootRefToTier( string ref, int tier )
+{
+	bool isLootRefWeaponAttachment = false
+
+	int maxTier
+
+	LootData lootItem = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	if( lootItem.tier >= tier )
+		return ref
+
+	if( lootItem.lootType == eLootType.ATTACHMENT)
+	{
+		isLootRefWeaponAttachment = true
+	}
+
+	if( !isLootRefWeaponAttachment )
+	{
+		maxTier = LootHelper_GetLootData_MaxTier_OfLootType( lootItem.lootType )
+
+		if( tier > maxTier )
+		{
+			tier = maxTier
+		}
+
+		array<LootData> upgrades = LootHelper_GetLootData_OfType_OfTier( lootItem.lootType, tier )
+
+		foreach ( LootData item in upgrades )
+		{
+			if ( item.lootType == lootItem.lootType )
+			{
+				return item.ref
+			}
+		}
+	}
+	else
+	{
+		 maxTier = LootHelper_GetAttachmentData_MaxTier_OfAttachment( lootItem.attachmentType )
+
+		if( tier > maxTier )
+		{
+			tier = maxTier
+		}
+
+		array<LootData> upgrades = LootHelper_GetAttachmentData_OfType_OfTier( lootItem.attachmentType, tier )
+
+		foreach ( LootData item in upgrades )
+		{
+			if ( item.attachmentStyle == lootItem.attachmentStyle )
+			{
+				return item.ref
+			}
+		}
+	}
+
+	return ref
+}
+
+table<string,string> function LootHelper_GetEmptyAttachmentTable()
+{
+	array<string> slots = GetAllAttachmentPoints()
+
+	table<string, string> emptyAttachments
+	foreach( string slot in slots )
+	{
+		emptyAttachments[slot] <- ""
+	}
+	return emptyAttachments
+}
+
+array<string> function LootHelper_GetLootForWeaponRef( string ref, array<int> attachmentTypes = [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+{
+	table<string, string> emptyAttachments = LootHelper_GetEmptyAttachmentTable()
+
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	array<string> potentialLoot
+	foreach( int attachType in attachmentTypes )
+	{
+		array<string> attachments
+		if( attachType == eWeaponAttachmentType.SCOPE )
+		{
+			attachments = LootHelper_FilterAndGrabCompatibleScopes( weaponData, attachmentRefs, emptyAttachments, [], 1 )
+		}
+		else if( attachType == eWeaponAttachmentType.HOPUP )
+		{
+			attachments = LootHelper_FilterAndGrabCompatibleHopUps( weaponData, attachmentRefs, emptyAttachments )
+		}
+		else
+		{
+			attachments = LootHelper_FilterAndGrabCompatibleAttachmentUpgrades( weaponData, attachmentRefs, emptyAttachments, attachType, true )
+		}
+		potentialLoot.extend( attachments )
+	}
+
+	return potentialLoot
+}
+
+string function LootHelper_GetRandomLootRefFromGroupAndRemove( array<string> group )
+{
+	// not sure this is the right way to deal with the failure case
+	if ( group.len() <= 0 )
+	{
+		return "health_pickup_combo_small"
+	}
+
+	int randomIndex = RandomInt( group.len() )
+	string ref = group[ randomIndex ]
+	group.remove( randomIndex )
+
+	return ref
+}
+
+//
+// ATTACHMENTS
+//
+string function GetLootString_CompatibleBarrel_ByInt( LootData weaponData, int tier )
+{
+	array<string> candidates = LootHelper_GetAttachmentRefs_OfType_OfTier( eWeaponAttachmentType.BARREL, tier )
+	if( candidates.len() < 1 )
+	{
+#if DEVELOPER
+		if( SMARTLOOT_DEBUG )
+		{
+			printf( "SmartLoot: No barrel attachments were found at tier %i", tier )
+		}
+#endif
+		return ""
+	}
+	foreach ( attachPoint in weaponData.supportedAttachments )
+	{
+		if ( attachPoint.find( "barrel" ) >= 0 )
+		{
+			foreach( string s in candidates )
+			{
+				if( s.find( "barrel" ) >= 0 )
+				{
+					return s
+				}
+			}
+		}
+	}
+
+	// barrel stabilizer is not supported by this weapon
+	return ""
+}
+
+string function GetLootString_CompatibleMag_ByTier( string weaponRef, int tier )
+{
+	if( weaponRef == "" )
+	{
+		return weaponRef
+	}
+
+	array<string> candidates = LootHelper_GetAttachmentRefs_OfType_OfTier( eWeaponAttachmentType.MAG, tier)
+	if( candidates.len() < 1 )
+	{
+#if DEVELOPER
+		if( SMARTLOOT_DEBUG )
+		{
+			printf( "SmartLoot: No mag attachments were found at tier %i", tier )
+		}
+#endif
+		return ""
+	}
+
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+	foreach ( attachPoint in weaponData.supportedAttachments )
+	{
+		if( attachPoint.find( "mag" ) >= 0 )
+		{
+			switch ( weaponData.ammoType )
+			{
+				case ( BULLET_AMMO ):
+					foreach( string s in candidates )
+					{
+						if( s.find( "bullets" ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+				case ( SPECIAL_AMMO ):
+					foreach( string s in candidates )
+					{
+						if( s.find( "energy" ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+				case ( SHOTGUN_AMMO ):
+				case ( HIGHCAL_AMMO ):
+				case ( SNIPER_AMMO ):
+					foreach( string s in candidates )
+					{
+						if( s.find( weaponData.ammoType ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+				default:
+					return ""
+					break
+			}
+		}
+	}
+
+	// mag is not supported by this weapon
+	return ""
+}
+
+string function GetLootString_CompatibleStock_ByTier( string weaponRef, int tier )
+{
+	array<string> candidates = LootHelper_GetAttachmentRefs_OfType_OfTier( eWeaponAttachmentType.STOCK, tier )
+	if( candidates.len() < 1 )
+	{
+#if DEVELOPER
+		if( SMARTLOOT_DEBUG )
+		{
+			printf( "SmartLoot: No stock attachments were found at tier %i", tier )
+		}
+#endif
+		return ""
+	}
+
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+	foreach ( attachPoint in weaponData.supportedAttachments )
+	{
+		if( attachPoint.find( "grip" ) >= 0 )
+		{
+			switch ( weaponData.ammoType )
+			{
+				case ( SNIPER_AMMO ):
+					foreach( string s in candidates )
+					{
+						if( s.find( SNIPER_AMMO ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+				default:
+					foreach( string s in candidates )
+					{
+						if( s.find( "tactical" ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+			}
+		}
+	}
+
+	// stock is not supported by this weapon
+	return ""
+}
+
+string function GetLootString_CompatibleScope_ByTier( string weaponRef, int tier )
+{
+	array<string> candidates = LootHelper_GetAttachmentRefs_OfType_OfTier( eWeaponAttachmentType.SCOPE, tier )
+	if( candidates.len() < 1 )
+	{
+#if DEVELOPER
+		if( SMARTLOOT_DEBUG )
+		{
+			printf( "SmartLoot: No scope attachments were found at tier %i", tier )
+		}
+#endif
+		return ""
+	}
+
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+	foreach ( attachPoint in weaponData.supportedAttachments )
+	{
+		if( attachPoint.find( "sight" ) >= 0 )
+		{
+			switch ( weaponData.ammoType )
+			{
+				case ( SNIPER_AMMO ):
+					foreach( string s in candidates )
+					{
+						if( s.find( SNIPER_AMMO ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+				default:
+					foreach( string s in candidates )
+					{
+						if( s.find( "tactical" ) >= 0 )
+						{
+							return s
+						}
+					}
+					break
+			}
+		}
+	}
+
+	// scope is not supported by this weapon
+	return ""
+}
+
+int function LootHelper_GetLootUpgradeTier( int lootType, int currentTier )
+{
+	int returnTier = -1
+	switch( lootType )
+	{
+		case eLootType.ARMOR:
+			if( currentTier == 3 ) // purple -> red
+			{
+				returnTier = 5
+			}
+			else if( currentTier == 5 ) // red -> gold
+			{
+				returnTier = 4
+			}
+			else
+			{
+				returnTier = int( min( currentTier+1, 5) )
+			}
+			break
+		case eLootType.HELMET:
+		case eLootType.BACKPACK:
+		case eLootType.INCAPSHIELD:
+			returnTier = int( min( currentTier+1, 4) )
+			break
+	}
+	return returnTier
+}
+
+int function LootHelper_GetAttachmentUpgradeTier( string attachPoint, int currentTier )
+{
+	int returnTier = -1
+	switch( attachPoint )
+	{
+		case "mag":
+		case "sight":
+		case "barrel":
+		case "grip":
+			returnTier = int( min( currentTier+1, 4) )
+			break
+		case "hopup":
+		case "hopupMulti_a":
+		case "hopupMulti_b":
+		default:
+			// don't upgrade any of these
+			// instead use LootHelper_GetCompatibleHopUps()
+			break
+	}
+	return returnTier
+}
+
+bool function IsDesiredTier( int tier, array< int > desiredTiers )
+{
+	if ( desiredTiers.len() == 0 )
+		return true
+
+	foreach ( int testTier in desiredTiers )
+	{
+		if ( testTier == tier )
+			return true
+	}
+
+	return false
+}
+
+bool function IsCompatibleAttchment( string weaponRef, string attachment )
+{
+	AttachmentData aData = GetAttachmentData( attachment )
+	if ( aData.compatibleWeapons.contains( weaponRef ) )
+		return true
+	return false
+}
+
+array<string> function LootHelper_FilterAndGrabCompatibleHopUps( LootData weaponData, table< int, array< string > > attachmentTable, table< string, string > installedAttachments, int limit = 0 )
+{
+	array<string> unequippedHopUps
+	array<string> candidates = attachmentTable[eWeaponAttachmentType.HOPUP]
+
+	// filter out any attachments already equipped
+	foreach ( string attachment in candidates )
+	{
+		if ( !IsCompatibleAttchment( weaponData.ref, attachment ) )
+			continue
+
+		bool alreadyAttached = false
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == attachment )
+			{
+				alreadyAttached = true
+				break
+			}
+		}
+
+		if ( alreadyAttached == false )
+			unequippedHopUps.append( attachment )
+	}
+
+	if ( limit > 0 )
+	{
+		while( unequippedHopUps.len() > limit )
+			unequippedHopUps.remove( RandomInt( unequippedHopUps.len() ) )
+	}
+
+	return unequippedHopUps
+}
+
+array<string> function LootHelper_GetCompatibleHopUps_Internal( entity player, LootData weaponData, table< string, string > installedAttachments, int limit = 0 )
+{
+	array<string> unequippedHopUps
+	foreach ( string s in LootHelper_GetCompatibleAttachments_OfType( weaponData.ref, eWeaponAttachmentType.HOPUP, limit ) )
+	{
+		bool alreadyAttached = false
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == s )
+			{
+				alreadyAttached = true
+				break
+			}
+		}
+
+		if ( alreadyAttached == false )
+			unequippedHopUps.append( s )
+	}
+	return unequippedHopUps
+}
+
+array<string> function LootHelper_GetCompatibleHopUps( entity player, int limit = 0 )
+{
+	array<string> unequippedHopUps
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		unequippedHopUps.extend( LootHelper_GetCompatibleHopUps_Internal( player, weaponData, installedAttachments, limit ) )
+	}
+	return unequippedHopUps
+}
+
+array<string> function LootHelper_GetCompatibleAttachments_OfType( string weaponRef, int attachmentType, int limit = 0 )
+{
+	array<string> candidates
+	foreach ( string aRef in LootHelper_GetAttachmentRefs_OfType_AllTiers( attachmentType ) )
+	{
+		AttachmentData ad = GetAttachmentData( aRef )
+		foreach( string cw in ad.compatibleWeapons )
+		{
+			// scopes do a find instead of a compare because of gold kitted weapons, which have a different ref and can have scopes swapped out
+			bool isCompatible = ( attachmentType == eWeaponAttachmentType.SCOPE ) ? weaponRef.find( cw ) >= 0 : cw == weaponRef
+			if( isCompatible )
+			{
+#if DEVELOPER
+				if( SMARTLOOT_DEBUG )
+				{
+					printf( "SmartLoot Attachment Debugging | cw: %s | weaponRef: %s", cw, weaponRef )
+				}
+#endif
+				candidates.append( aRef )
+				break
+			}
+		}
+	}
+
+	if( limit > 0 )
+	{
+		while( candidates.len() > limit )
+		{
+			candidates.remove( RandomInt( candidates.len() ) )
+		}
+	}
+
+	return candidates
+}
+
+array<string> function LootHelper_GetCompatibleAttachments_OfType_OfTier( string weaponRef, int attachmentType, int tier, int limit = 0 )
+{
+	array<string> candidates
+	foreach ( string aRef in LootHelper_GetAttachmentRefs_OfType_OfTier( attachmentType, tier ) )
+	{
+		AttachmentData ad = GetAttachmentData( aRef )
+		foreach( string cw in ad.compatibleWeapons )
+		{
+			// scopes do a find instead of a compare because of gold kitted weapons, which have a different ref and can have scopes swapped out
+			bool isCompatible = ( attachmentType == eWeaponAttachmentType.SCOPE ) ? weaponRef.find( cw ) >= 0 : cw == weaponRef
+			if( isCompatible )
+			{
+#if DEVELOPER
+				if( SMARTLOOT_DEBUG )
+				{
+					printf( "SmartLoot Attachment Debugging | cw: %s | weaponRef: %s", cw, weaponRef )
+				}
+#endif
+				candidates.append( aRef )
+				break
+			}
+		}
+	}
+
+	if ( limit > 0 )
+	{
+		while( candidates.len() > limit )
+			candidates.remove( RandomInt( candidates.len() ) )
+	}
+
+	return candidates
+}
+
+array<string> function LootHelper_FilterAndGrabCompatibleScopes( LootData weaponData, table< int, array< string > > attachmentTable, table< string, string > installedAttachments, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	array<string> candidates = attachmentTable[eWeaponAttachmentType.SCOPE]
+
+	// filter out any attachments already equipped
+	foreach ( string attachment in candidates )
+	{
+		if ( !IsCompatibleAttchment( weaponData.ref, attachment ) )
+			continue
+
+		LootData data = SURVIVAL_Loot_GetLootDataByRef( attachment )
+		if ( !IsDesiredTier( data.tier, tiers ) )
+			continue
+
+		bool alreadyAttached = false
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == attachment )
+			{
+				alreadyAttached = true
+				break
+			}
+		}
+
+		if ( alreadyAttached == false )
+			unequippedAttachment.append( attachment )
+	}
+
+	if ( limit > 0 )
+	{
+		while( unequippedAttachment.len() > limit )
+			unequippedAttachment.remove( RandomInt( unequippedAttachment.len() ) )
+	}
+
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetCompatibleScopes_Internal( entity player, LootData weaponData, table< string, string > installedAttachments, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	array<string> candidates = []
+	if ( tiers.len() == 0 )
+	{
+		foreach ( string attachmentName in LootHelper_GetCompatibleAttachments_OfType( weaponData.ref, eWeaponAttachmentType.SCOPE, limit ))
+			candidates.append( attachmentName )
+	}
+	else
+	{
+		foreach ( int tier in tiers)
+		{
+			foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.SCOPE, tier, limit ) )
+				candidates.append( attachmentName )
+		}
+	}
+
+	// filter out any attachments already equipped
+	foreach ( string s in candidates )
+	{
+		bool alreadyAttached = false
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == s )
+			{
+				alreadyAttached = true
+				break
+			}
+		}
+
+		if ( alreadyAttached == false )
+			unequippedAttachment.append( s )
+	}
+
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetCompatibleScopes( entity player, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		unequippedAttachment.extend( LootHelper_GetCompatibleScopes_Internal( player, weaponData, installedAttachments, tiers, limit ) )
+	}
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetCompatibleScopesForWeapon( entity player, LootData weaponData, array<int> tiers = [], int limit = 0 )
+{
+	table< string, string > emptyInstalledAttachments
+	return LootHelper_GetCompatibleScopes_Internal( player, weaponData, emptyInstalledAttachments, tiers, limit )
+}
+
+array<string> function LootHelper_GetPlayerScopeUpgrades( entity player, int limit = 0 )
+{
+	array<string> unequippedAttachment
+
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		int upgradeTier = 1
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachPoint.find( "sight" ) >= 0 && attachmentName.len() > 0 )
+			{
+				int equippedTier = LootHelper_GetLootTier( attachmentName )
+				upgradeTier = LootHelper_GetAttachmentUpgradeTier( attachPoint, equippedTier )
+			}
+		}
+
+		array<string> candidates = []
+
+		foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.SCOPE, upgradeTier, limit ) )
+		{
+			candidates.append( attachmentName )
+		}
+
+		foreach ( string s in candidates )
+		{
+			bool alreadyAttached = false
+			foreach ( string attachPoint, string attachmentName in installedAttachments )
+			{
+				if( attachmentName == s )
+				{
+					alreadyAttached = true
+					break
+				}
+			}
+			if( alreadyAttached == false )
+			{
+				unequippedAttachment.append( s )
+			}
+		}
+	}
+	return unequippedAttachment
+}
+
+string function LootHelper_GetDefaultScopeForWeaponRef( string weaponRef )
+{
+	LootData weaponLootData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+	array < string > weaponMods = weaponLootData.baseMods
+	string defaultScope
+
+	foreach ( attachment in weaponMods )
+	{
+		LootData attachmentLootData = SURVIVAL_Loot_GetLootDataByRef( attachment )
+		if ( attachmentLootData.attachmentType == eWeaponAttachmentType.SCOPE )
+		{
+			defaultScope = attachment
+			break
+		}
+	}
+
+	return defaultScope
+}
+
+array<string> function LootHelper_GetCompatibleStocks( entity player, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		array<string> candidates = []
+		if( tiers.len() == 0 )
+		{
+			foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType( weaponData.ref, eWeaponAttachmentType.STOCK, limit ) )
+			{
+				candidates.append( attachmentName )
+			}
+		}
+		else
+		{
+			foreach ( int tier in tiers)
+			{
+				foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.STOCK, tier, limit ) )
+				{
+					candidates.append( attachmentName )
+				}
+			}
+		}
+
+		foreach ( string s in candidates )
+		{
+			bool alreadyAttached = false
+			foreach ( string attachPoint, string attachmentName in installedAttachments )
+			{
+				if( attachmentName == s )
+				{
+					alreadyAttached = true
+					break
+				}
+			}
+			if( alreadyAttached == false )
+			{
+				unequippedAttachment.append( s )
+			}
+		}
+	}
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetPlayerStockUpgrades_Internal( entity player, LootData weaponData, table< string, string > installedAttachments, int limit = 0 )
+{
+	int upgradeTier = 1
+	array<string> unequippedAttachment
+
+	foreach ( string attachPoint, string attachmentName in installedAttachments )
+	{
+		if ( attachPoint.find( "grip" ) >= 0 && attachmentName.len() > 0 )
+		{
+			int equippedTier = LootHelper_GetLootTier( attachmentName )
+			upgradeTier = LootHelper_GetAttachmentUpgradeTier( attachPoint, equippedTier )
+		}
+	}
+
+	array<string> candidates = []
+
+	foreach ( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.STOCK, upgradeTier, limit ) )
+		candidates.append( attachmentName )
+
+	foreach ( string s in candidates )
+	{
+		bool alreadyAttached = false
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == s )
+			{
+				alreadyAttached = true
+				break
+			}
+		}
+
+		if ( alreadyAttached == false )
+			unequippedAttachment.append( s )
+	}
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetPlayerStockUpgrades( entity player, int limit = 0 )
+{
+	array<string> unequippedAttachment
+
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		unequippedAttachment.extend( LootHelper_GetPlayerStockUpgrades_Internal( player, weaponData, installedAttachments, limit ) )
+	}
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetCompatibleMags( entity player, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		array<string> candidates = []
+		if( tiers.len() == 0 )
+		{
+			foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType( weaponData.ref, eWeaponAttachmentType.MAG, limit ) )
+			{
+				candidates.append( attachmentName )
+			}
+		}
+		else
+		{
+			foreach ( int tier in tiers)
+			{
+				foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.MAG, tier, limit ) )
+				{
+					candidates.append( attachmentName )
+				}
+			}
+		}
+
+		foreach ( string s in candidates )
+		{
+			bool alreadyAttached = false
+			foreach ( string attachPoint, string attachmentName in installedAttachments )
+			{
+				if( attachmentName == s )
+				{
+					alreadyAttached = true
+					break
+				}
+			}
+			if( alreadyAttached == false )
+			{
+				unequippedAttachment.append( s )
+			}
+		}
+	}
+	return unequippedAttachment
+}
+
+array<string> function LootHelper_GetCompatibleBarrels( entity player, array<int> tiers = [], int limit = 0 )
+{
+	array<string> unequippedAttachment
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		array<string> candidates = []
+		if( tiers.len() == 0 )
+		{
+			foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType( weaponData.ref, eWeaponAttachmentType.BARREL, limit ) )
+			{
+				candidates.append( attachmentName )
+			}
+		}
+		else
+		{
+			foreach ( int tier in tiers)
+			{
+				foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( weaponData.ref, eWeaponAttachmentType.BARREL, tier, limit ) )
+				{
+					candidates.append( attachmentName )
+				}
+			}
+		}
+
+		foreach ( string s in candidates )
+		{
+			bool alreadyAttached = false
+			foreach ( string attachPoint, string attachmentName in installedAttachments )
+			{
+				if( attachmentName == s )
+				{
+					alreadyAttached = true
+					break
+				}
+			}
+			if( alreadyAttached == false )
+			{
+				unequippedAttachment.append( s )
+			}
+		}
+	}
+	return unequippedAttachment
+}
+
+// NOTE: this function will skip compatible attachments that are already equipped on a held weapon
+array<string> function LootHelper_GetAllCompatibleAttachments( entity player, array<int> attachmentTypes = [] )
+{
+	array<string> candidates
+	if( attachmentTypes.len() == 0 )
+		attachmentTypes.extend( [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+
+	foreach( int type in attachmentTypes )
+	{
+		switch( type )
+		{
+			case eWeaponAttachmentType.SCOPE:
+				candidates.extend( LootHelper_GetCompatibleScopes( player ) )
+				break
+			case eWeaponAttachmentType.STOCK:
+				candidates.extend( LootHelper_GetCompatibleStocks( player ) )
+				break
+			case eWeaponAttachmentType.MAG:
+				candidates.extend( LootHelper_GetCompatibleMags( player ) )
+				break
+			case eWeaponAttachmentType.BARREL:
+				candidates.extend( LootHelper_GetCompatibleBarrels( player ) )
+				break
+			case eWeaponAttachmentType.HOPUP:
+				candidates.extend( LootHelper_GetCompatibleHopUps( player ) )
+				break
+		}
+	}
+
+	return candidates
+}
+
+// Grab all available attachments for a weapon
+// Will skip already attached attachments if shouldSkipEquippedAttachments is true, otherwise will return all attachments that could be equipped on this weapon
+// Can define specific tiers using the tiers array variable
+// Can define only specific attachment types using the attachmentTypes array variable
+array<string> function LootHelper_GetAllCompatibleAttachmentsForWeapon( entity weapon, bool shouldSkipEquippedAttachments, array<int> tiers = [], array<int> attachmentTypes = [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+{
+	array<string> compatibleAttachments
+	table< string, string > installedAttachments
+
+	if ( shouldSkipEquippedAttachments )
+		installedAttachments = GetAllWeaponAttachments( weapon )
+
+	LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+	string baseWeaponRef = weaponData.baseWeapon
+
+
+	foreach( int type in attachmentTypes )
+	{
+		array<string> candidates = []
+		if( tiers.len() == 0 )
+		{
+			foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType( baseWeaponRef, type, 0 ) )
+			{
+				candidates.append( attachmentName )
+			}
+		}
+		else
+		{
+			foreach ( int tier in tiers)
+			{
+				foreach( string attachmentName in LootHelper_GetCompatibleAttachments_OfType_OfTier( baseWeaponRef, type, tier, 0 ) )
+				{
+					candidates.append( attachmentName )
+				}
+			}
+		}
+
+		if ( shouldSkipEquippedAttachments )
+		{
+			foreach ( string s in candidates )
+			{
+				bool alreadyAttached = false
+				foreach ( string attachPoint, string attachmentName in installedAttachments )
+				{
+					if ( attachmentName == s )
+					{
+						alreadyAttached = true
+						break
+					}
+				}
+				if ( !alreadyAttached )
+				{
+					compatibleAttachments.append( s )
+				}
+			}
+		}
+		else
+		{
+			compatibleAttachments.extend( candidates )
+		}
+	}
+
+	return compatibleAttachments
+}
+
+// Returns a table of what ammo a team could needed weighted by how many of them have guns supporting a specific type
+table< int, string > function LootHelper_GetTeamAmmoTypes_Weighted( int team, vector radiusCenter = <0, 0, -100000> , float radius = -1 )
+{
+	//array< string > ammoTypes
+	table< string, int > weightedAmmoTypes
+	int sum = 0
+
+	array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
+
+	foreach (entity teammate in teammates )
+	{
+		if( !IsAlive( teammate ) )
+		{
+			continue
+		}
+
+		if( radius > -1)
+		{
+			if( DistanceSqr( radiusCenter, teammate.GetOrigin() ) > (radius * radius) )
+			{
+				continue
+			}
+		}
+
+		// ammo
+		foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( teammate ) )
+		{
+			// skip ammo for crated weapons that have fixed ammo
+			// these return weaponData.ammoType as "" which isn't helpful
+
+			if( weapon.GetActiveAmmoSource() != AMMOSOURCE_POOL )
+			{
+				continue
+			}
+
+			LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+			// primary ammo
+			if( weaponData.ammoType in weightedAmmoTypes)
+			{
+				weightedAmmoTypes[weaponData.ammoType] += 1
+			}
+			else
+			{
+				weightedAmmoTypes[weaponData.ammoType] <- 1
+			}
+			sum += 1
+
+			// secondary ammo
+			if( weaponData.secondaryAmmoType == "" )
+			{
+				continue
+			}
+			if( weaponData.secondaryAmmoType in weightedAmmoTypes )
+			{
+				weightedAmmoTypes[weaponData.secondaryAmmoType] += 1
+			}
+			else
+			{
+				weightedAmmoTypes[weaponData.secondaryAmmoType] <- 1
+			}
+			sum += 1
+		}
+	}
+
+	table< int, string > ammoIndexMapping
+	int insertIndex = 0
+	foreach( key, value in weightedAmmoTypes)
+	{
+		for( int i = 0; i < value; i++ )
+		{
+			ammoIndexMapping[insertIndex] <- key
+			insertIndex += 1
+		}
+	}
+
+	return ammoIndexMapping
+}
+
+// Gets the number of ammo stacks a team would need determined by whether a player needs a type of ammo for their weapon
+// but has less than minStacksAmount of said ammo type
+table<string, int> function LootHelper_GetAmmoNeededByTeam( int teamNum, int minStacksAmount )
+{
+	table< string, int > neededStacks
+	foreach( teamMate in GetPlayerArrayOfTeam_Alive( teamNum ) )
+	{
+		table< string, int > teammatesNeededStacks = LootHelper_GetAmmoNeededByPlayer( teamMate, minStacksAmount )
+		foreach( type, amount in teammatesNeededStacks )
+		{
+			if ( type in neededStacks )
+			{
+				neededStacks[type] += amount
+			}
+			else
+			{
+				neededStacks[type] <- amount
+			}
+		}
+	}
+
+	return neededStacks
+}
+
+table<string, int> function LootHelper_GetAmmoNeededByPlayer( entity player, int minStacksAmount )
+{
+	table< string, int > neededStacks
+	array<entity> primaryWeapons = SURVIVAL_GetPrimaryWeapons( player )
+
+	if ( primaryWeapons.len() > 0 )
+	{
+		foreach( weapon in primaryWeapons )
+		{
+			if( !IsValid( weapon ) )
+			{
+				continue
+			}
+
+			LootData weaponData   = SURVIVAL_GetLootDataFromWeapon( weapon )
+			string ammoRef = weaponData.ammoType
+
+			//check if the weapon is a crate weapon and does not use normal ammo. continue if so
+			if( weaponData.ammoType == "" )
+			{
+				continue
+			}
+
+			LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoRef )
+			int type = ammoData.index
+
+			int ammoStacks = 0
+
+			array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+			foreach ( invItem in playerInventory )
+			{
+				if ( invItem.type == type )
+					ammoStacks++
+			}
+
+			if ( ammoStacks < minStacksAmount )
+			{
+				if( ammoRef in neededStacks )
+				{
+					neededStacks[ammoRef] += 1
+				}
+				else
+				{
+					neededStacks[ammoRef] <- 1
+				}
+			}
+		}
+	}
+
+	return neededStacks
+}
+
+array<string> function LootHelper_FilterAndGrabCompatibleAttachmentUpgrades( LootData weaponData, table< int, array< string > > attachmentTable, table< string, string > installedAttachments, int attachmentType, bool onlyProvideUpgrades )
+{
+	array<string> unequippedAttachment
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref ) )
+		return unequippedAttachment
+
+	array<string> candidates = attachmentTable[attachmentType]
+	array< int > upgradeTiers
+
+	foreach ( string attachPoint, string attachmentName in installedAttachments )
+	{
+		if ( attachmentType != SURVIVAL_Loot_GetAttachmentType_Enum( attachPoint ) )
+			continue
+
+		int attachmentTier = 0
+
+		if ( attachmentName != "" )
+		{
+			LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( attachmentName )
+			attachmentTier = attachmentData.tier
+		}
+
+		int upgradeTier = LootHelper_GetAttachmentUpgradeTier( attachPoint, attachmentTier )
+		if ( upgradeTier == -1 )
+			continue
+
+		if( onlyProvideUpgrades && attachmentTier == upgradeTier )
+			continue
+
+		upgradeTiers.append( upgradeTier )
+	}
+
+	if ( upgradeTiers.len() == 0 )
+		return unequippedAttachment
+
+	// filter out any attachments already equipped
+	foreach ( string attachment in candidates )
+	{
+		LootData data = SURVIVAL_Loot_GetLootDataByRef( attachment )
+		if ( !IsDesiredTier( data.tier, upgradeTiers ) )
+			continue
+
+		if ( !IsCompatibleAttchment( weaponData.ref, attachment ) )
+			continue
+
+		unequippedAttachment.append( attachment )
+	}
+
+	// only return 1 mag for the CAR
+	if( attachmentType == eWeaponAttachmentType.MAG && weaponData.ref == "mp_weapon_car" && unequippedAttachment.len() > 1 )
+	{
+		// #if ASSERTS
+			// printt( "SMART LOOT | Found too many MAG candidates for the CAR SMG:" )
+			// foreach( s in unequippedAttachment )
+				// printt( "SMART LOOT: MAG candidate: " + s )
+		// #endif
+		unequippedAttachment.fastremove(0)
+		Assert( unequippedAttachment.len() == 1 )
+	}
+
+	return unequippedAttachment
+}
+
+array< string > function LootHelper_GetPlayerAttachmentUpgrades_Internal( entity player,
+		LootData weaponData,
+		table< string, string > installedAttachments,
+		array<int> attachmentTypes= [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+{
+	array< string > attachmentPool
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref ) )
+		return attachmentPool
+
+	foreach ( string attachPoint, string attachmentName in installedAttachments)
+	{
+#if DEVELOPER
+		if ( SMARTLOOT_DEBUG )
+			printf( "SmartLoot installed attachments | point: %s | name: %s", attachPoint, attachmentName )
+#endif
+
+		if ( !attachmentTypes.contains( SURVIVAL_Loot_GetAttachmentType_Enum( attachPoint ) ) )
+			continue
+
+		int attachmentTier = 0
+
+		if ( attachmentName != "" )
+			attachmentTier = SURVIVAL_Loot_GetLootDataByRef( attachmentName ).tier
+
+		int upgradeTier = LootHelper_GetAttachmentUpgradeTier( attachPoint, attachmentTier )
+		if ( upgradeTier == -1 )
+			continue
+#if DEVELOPER
+		if ( SMARTLOOT_DEBUG )
+			printf( "SmartLoot upgrade tier: %i", upgradeTier )
+#endif
+		array<string> attachmentRefs_internal = LootHelper_GetAttachmentRefs_OfType_OfTier_Filtered( SURVIVAL_Loot_GetAttachmentType_Enum( attachPoint ), upgradeTier, weaponData.ref )
+#if DEVELOPER
+		if ( SMARTLOOT_DEBUG )
+			printf( "SmartLoot attachmentRefs length: %i", attachmentRefs_internal.len() )
+#endif
+		foreach ( string s in attachmentRefs_internal )
+		{
+			if ( s == "" )
+				continue
+
+			AttachmentData aData = GetAttachmentData( s )
+			if ( aData.compatibleWeapons.contains( weaponData.ref ) )
+				attachmentPool.append( s )
+		}
+	}
+	return attachmentPool
+}
+
+array< string > function LootHelper_GetPlayerAttachmentUpgrades( entity player,
+		array<int> attachmentTypes= [eWeaponAttachmentType.SCOPE, eWeaponAttachmentType.STOCK, eWeaponAttachmentType.MAG, eWeaponAttachmentType.BARREL, eWeaponAttachmentType.HOPUP] )
+{
+	array< string > attachmentPool
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+
+		attachmentPool.extend( LootHelper_GetPlayerAttachmentUpgrades_Internal( player, weaponData, installedAttachments, attachmentTypes ) )
+	}
+	return attachmentPool
+}
+
+int function LootHelper_GetPlayerLootTier_Helmet( entity player )
+{
+	return EquipmentSlot_GetEquipmentTier( player, "helmet" )
+}
+
+int function LootHelper_GetPlayerLootTier_Armor( entity player )
+{
+	return EquipmentSlot_GetEquipmentTier( player, "armor" )
+}
+
+int function LootHelper_GetPlayerLootTier_IncapShield( entity player )
+{
+	return EquipmentSlot_GetEquipmentTier( player, "incapshield" )
+}
+
+int function LootHelper_GetPlayerLootTier_Backpack( entity player )
+{
+	return EquipmentSlot_GetEquipmentTier( player, "backpack" )
+}
+
+int function LootHelper_GetLootTier( string lootRef )
+{
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
+	return data.tier
+}
+
+int function LootHelper_GetLootType( string lootRef )
+{
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
+	return data.lootType
+}
+
+int function LootHelper_GetLootType_Expensive( string lootRef )
+{
+	// load the spreadsheet
+	var lootTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	int amRowCount = GetDatatableRowCount( lootTable )
+
+	// get the column index of ref
+	int col_lootRef = GetDataTableColumnByName( lootTable, "ref" )
+
+	// find the row with lootRef in the ref column
+	int rows = GetDatatableRowCount( lootTable )
+	int lootRow = -1
+	for( int i = 0; i < rows; i++ )
+	{
+		if( GetDataTableString( lootTable, i, col_lootRef ) == lootRef )
+		{
+			lootRow = i
+			break
+		}
+	}
+
+	// get the column index of type
+	int col_lootType = GetDataTableColumnByName( lootTable, "type" )
+
+	// get the int at the lootRef / type intersection
+	if( lootRow == -1 )
+	{
+		//// print an error
+#if DEVELOPER
+		if( SMARTLOOT_DEBUG )
+		{
+			printf( "SmartLoot: Could not find type for %s", lootRef )
+		}
+#endif
+		return lootRow
+	}
+
+	string returnType = GetDataTableString( lootTable, lootRow, col_lootType )
+
+	int lootType = -1
+	switch( returnType )
+	{
+		case "main_weapon":
+			lootType = eLootType.MAINWEAPON
+			break
+		case "ammo":
+			lootType = eLootType.AMMO
+			break
+		case "health":
+			lootType = eLootType.HEALTH
+			break
+		case "helmet":
+			lootType = eLootType.HELMET
+			break
+		case "incapshield":
+			lootType = eLootType.INCAPSHIELD
+			break
+		case "backpack":
+			lootType = eLootType.BACKPACK
+			break
+		case "ordnance":
+			lootType = eLootType.ORDNANCE
+			break
+		case "attachment":
+			lootType = eLootType.ATTACHMENT
+			break
+		default:
+			break
+
+	}
+
+	Assert( lootType > -1, "Loot type must be 0 or greater" )
+
+	return lootType
+}
+
+array< string > function LootHelper_GetAttachmentRefs_OfType_OfTier( int attachmentType, int tier, string weaponRef = "" )
+{
+	if( weaponRef != "" )
+	{
+		return LootHelper_GetAttachmentRefs_OfType_OfTier_Filtered( attachmentType, tier, weaponRef )
+	}
+	array< string > returnRefs
+	string attachmentLookupString = GetAttachmentType_String( attachmentType )
+	array<LootData> attachments = SURVIVAL_Loot_GetByType_FixedTier( eLootType.ATTACHMENT, tier )
+	array<string> excludeList //= Crafting_GetDisabledGroundLoot()
+
+	foreach( LootData ld in attachments )
+	{
+		////print( "SmartLoot: ld.attachmentStyle =" )
+		if ( ld.attachmentStyle.find( attachmentLookupString ) >= 0 )
+		{
+			bool isLaserSightFalsePositive = ( attachmentType == eWeaponAttachmentType.SCOPE && ld.attachmentStyle == "laser_sight" )
+			if( !isLaserSightFalsePositive )
+			{
+				if ( ld.tier == tier )
+				{
+					if ( Gamemode() == eGamemodes.SURVIVAL )
+					{
+						if ( !excludeList.contains( ld.ref ) )
+						{
+							returnRefs.append( ld.ref )
+						}
+					}
+					else
+					{
+						returnRefs.append( ld.ref )
+					}
+				}
+			}
+		}
+	}
+	return returnRefs
+}
+
+array< string > function LootHelper_GetAttachmentRefs_OfType_OfTier_Filtered( int attachmentType, int tier, string weaponRef )
+{
+	array< string > returnRefs
+	string attachmentLookupString = GetAttachmentType_String( attachmentType )
+	array<LootData> attachments = SURVIVAL_Loot_GetByType_FixedTier( eLootType.ATTACHMENT, tier )
+	string candidate
+	array<string> excludeList //= Crafting_GetDisabledGroundLoot()
+
+	switch( attachmentType )
+	{
+		case eWeaponAttachmentType.MAG:
+			candidate = GetLootString_CompatibleMag_ByTier( weaponRef, tier )
+			if( Gamemode() == eGamemodes.SURVIVAL )
+			{
+				if ( !excludeList.contains( candidate ) )
+				{
+					returnRefs.append( candidate )
+				}
+			}
+			else
+			{
+				returnRefs.append( candidate )
+			}
+			break
+		case eWeaponAttachmentType.STOCK:
+			candidate = GetLootString_CompatibleStock_ByTier( weaponRef, tier )
+			if( Gamemode() == eGamemodes.SURVIVAL )
+			{
+				if ( !excludeList.contains( candidate ) )
+				{
+					returnRefs.append( candidate )
+				}
+			}
+			else
+			{
+				returnRefs.append( candidate )
+			}
+			break
+		case eWeaponAttachmentType.SCOPE:
+
+		default:
+			foreach( LootData ld in attachments )
+			{
+				////print( "SmartLoot: ld.attachmentStyle =" )
+				if ( ld.attachmentStyle.find( attachmentLookupString ) >= 0 )
+				{
+					if( ld.tier == tier)
+					{
+						if( Gamemode() == eGamemodes.SURVIVAL )
+						{
+							if ( !excludeList.contains( ld.ref ) )
+							{
+								returnRefs.append( ld.ref )
+							}
+						}
+						else
+						{
+							returnRefs.append( ld.ref )
+						}
+					}
+				}
+			}
+			break
+	}
+	return returnRefs
+}
+
+array< string > function LootHelper_GetLootRefs_ByTier( int lootType, int tier)
+{
+	array< string > returnRefs
+	array<LootData> lootData = SURVIVAL_Loot_GetByType_FixedTier( lootType, tier )
+
+	foreach( LootData ld in lootData )
+	{
+		if( lootType == eLootType.ARMOR )
+		{
+			// filter out armor that isn't evolving or gold
+			if( ld.ref.find( "evolving" ) < 0 && ld.ref.find( "all_fast" ) < 0 )
+			{
+				continue
+			}
+		}
+		returnRefs.append( ld.ref )
+	}
+	return returnRefs
+}
+
+array< LootData > function LootHelper_GetLootData_OfType_OfTier( int lootType, int tier)
+{
+	array<LootData> lootData = SURVIVAL_Loot_GetByType_FixedTier( lootType, tier )
+	return lootData
+}
+
+array< LootData > function LootHelper_GetLootData_OfType_AllTiers( int lootType)
+{
+	array<LootData> lootData
+	lootData = SURVIVAL_Loot_GetByType_InLevel( lootType )
+	return lootData
+}
+
+array< LootData > function LootHelper_GetAttachmentData_OfType_AllTiers( int attachmentType, int tier)
+{
+	array< LootData > returnData
+	array<LootData> attachments = SURVIVAL_Loot_GetByType_FixedTier( eLootType.ATTACHMENT, tier )
+
+	foreach( LootData ld in attachments )
+	{
+		if ( ld.attachmentType == attachmentType )
+			returnData.append( ld )
+	}
+
+	return returnData
+}
+
+array< LootData > function LootHelper_GetAttachmentData_OfType_OfTier( int attachmentType, int tier)
+{
+	array< LootData > returnData
+	array<LootData> attachments = SURVIVAL_Loot_GetByType_FixedTier( eLootType.ATTACHMENT, tier )
+
+	foreach( LootData ld in attachments )
+	{
+		if ( ld.attachmentType != attachmentType )
+			continue
+
+		if( ld.tier == tier)
+			returnData.append( ld )
+	}
+	return returnData
+}
+
+int function LootHelper_GetLootData_MaxTier_OfLootType( int lootType )
+{
+	array<LootData> allLootOfType = SURVIVAL_Loot_GetByType( lootType )
+
+	int currentMaxTier = 0
+
+	foreach( LootData ld in allLootOfType )
+	{
+		if( ld.tier <= currentMaxTier)
+			continue
+
+		if( ld.tier > currentMaxTier)
+			currentMaxTier = ld.tier
+	}
+
+	return currentMaxTier
+}
+
+int function LootHelper_GetAttachmentData_MaxTier_OfAttachment( int attachmentType )
+{
+	array< LootData > returnData
+	array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
+
+	int currentMaxTier = 0
+
+	foreach( LootData ld in attachments )
+	{
+		if ( ld.attachmentType != attachmentType )
+			continue
+
+		if( ld.tier <= currentMaxTier)
+			continue
+
+		if( ld.tier > currentMaxTier)
+			currentMaxTier = ld.tier
+	}
+
+	return currentMaxTier
+}
+
+array< string > function LootHelper_GetAttachmentRefs_OfType_AllTiers( int attachmentType )
+{
+	array< string > returnRefs
+	array<LootData> attachments = SURVIVAL_Loot_GetByType_InLevel( eLootType.ATTACHMENT, 5, 0 )
+	array<string> excludeList //= Crafting_GetDisabledGroundLoot()
+
+	foreach( LootData ld in attachments )
+	{
+		if ( ld.attachmentType != attachmentType )
+			continue
+
+		if ( Gamemode() == eGamemodes.SURVIVAL )
+		{
+			if ( !excludeList.contains( ld.ref ) )
+				returnRefs.append( ld.ref )
+			else
+				returnRefs.append( ld.ref )
+		}
+	}
+
+	return returnRefs
+}
+
+void function LootHelper_BuildAttachmentTable( table< int, array< string > > attachmentTable )
+{
+	array< LootData > attachments = SURVIVAL_Loot_GetByType_InLevel( eLootType.ATTACHMENT, 5, 0 )
+
+	foreach( LootData data in attachments )
+	{
+		int attachmentType = data.attachmentType
+		if ( !(attachmentType in attachmentTable) )
+			attachmentTable[attachmentType] <- []
+
+		attachmentTable[attachmentType].append( data.ref )
+	}
+}
+
+string function GetAttachmentType_String( int attachmentType )
+{
+	string attachmentStyle = ""
+	switch( attachmentType )
+	{
+		case eWeaponAttachmentType.MAG:
+			attachmentStyle = "mag"
+			break
+		case eWeaponAttachmentType.SCOPE:
+			attachmentStyle = "sight"
+			break
+		case eWeaponAttachmentType.BARREL:
+			attachmentStyle = "barrel"
+			break
+		case eWeaponAttachmentType.STOCK:
+			attachmentStyle = "stock" // THIS IS CORRECT BUT INCONSISTENT WITH ATTACHPOINT "GRIP"
+			break
+		case eWeaponAttachmentType.HOPUP:
+			attachmentStyle = "hopup"
+			break
+		default:
+			break
+	}
+	return attachmentStyle
+}
+
+bool function LootHelper_GetAttachmentIsEquipped( entity player, string attachmentRef )
+{
+	foreach ( entity weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+		if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref ) )
+			continue
+
+		table< string, string > installedAttachments = GetAllWeaponAttachments( weapon )
+		foreach ( string attachPoint, string attachmentName in installedAttachments )
+		{
+			if ( attachmentName == attachmentRef )
+				return true
+		}
+
+	}
+	return false
+}
+
+void function LootHelper_TestAmmoGrant( entity player, vector radiusCenter, float radius )
+{
+	#if DEVELOPER
+	// table< int, string > candidates = LootHelper_GetTeamAmmoTypes_Weighted( player.GetTeam(), radiusCenter, radius )
+
+	// LootThrowData throwData
+	// throwData.throwAngle = 0
+	// throwData.throwScale = 1
+
+	// foreach( i, ammoType in candidates)
+	// {
+		// entity itemEnt = SpawnGenericLoot( ammoType, player.GetOrigin(), < -1, -1, -1 >, 1 )
+		// vector throwDir = <sin( throwData.throwAngle ), cos( throwData.throwAngle ), 0>
+		// float speed     = throwData.throwScale * sqrt( RandomFloatRange( 0.75, 1.0 ) ) * 150
+		// vector vel      = throwDir * speed
+		// thread FakePhysicsThrow( player, itemEnt, <vel.x, vel.y, 200>, true )
+		// throwData = SURVIVAL_DropLoot_IncrementThrowAngle( throwData )
+	// }
+	#endif // DEV
+}
+
+void function LootHelper_TestCompatibleScopes( entity player )
+{
+	array<string> refs = LootHelper_GetCompatibleScopes( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+void function LootHelper_TestCompatibleBarrels( entity player )
+{
+	array<string> refs = LootHelper_GetCompatibleBarrels( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+void function LootHelper_TestCompatibleMags( entity player )
+{
+	array<string> refs = LootHelper_GetCompatibleMags( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+void function LootHelper_TestCompatibleStocks( entity player )
+{
+	array<string> refs = LootHelper_GetCompatibleStocks( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+void function LootHelper_TestCompatibleHopUps( entity player )
+{
+	array<string> refs = LootHelper_GetCompatibleHopUps( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+void function LootHelper_TestAllCompatibleAttachments( entity player )
+{
+	array<string> refs = LootHelper_GetAllCompatibleAttachments( player )
+	for( int i = 0; i < refs.len(); i++ )
+	{
+		SpawnLoot( refs[i], player.GetOrigin() + ( player.GetForwardVector() * (i+1) * 50), false )
+	}
+}
+
+string function LootHelper_ReturnLowestTieredOption( array<string> lootStrings, bool random )
+{
+	if ( lootStrings.len() == 0 )
+		return ""
+
+	if ( random )
+		lootStrings.randomize()
+
+	int lowestTier = LootHelper_GetLootTier ( lootStrings[0] )
+	string lowestTieredItem = lootStrings[0]
+	foreach ( loot in lootStrings)
+	{
+		int currentTier = LootHelper_GetLootTier ( loot )
+
+		if ( currentTier < lowestTier )
+		{
+			lowestTier = LootHelper_GetLootTier ( loot )
+			lowestTieredItem = loot
+		}
+	}
+
+	return lowestTieredItem
+}
+
+bool function LootHelper_IsLootEquipment( LootRef lootItem )
+{
+	if ( lootItem.lootData.ref != "" )
+	{
+		if ( lootItem.lootData.lootType == eLootType.BACKPACK || lootItem.lootData.lootType == eLootType.INCAPSHIELD || lootItem.lootData.lootType == eLootType.HELMET || lootItem.lootData.lootType == eLootType.ARMOR )
+			return true
+	}
+	return false
+}
+#endif // SERVER

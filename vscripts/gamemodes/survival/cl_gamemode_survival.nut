@@ -111,6 +111,7 @@ global function CircleAnnouncementsEnable
 global function SetDpadMenuHidden
 global function UpdateImageAndScaleOnFullmapRUI
 global function GetFullMapScale
+global function Survival_SetVictorySoundPackageFunction
 
 global struct NextCircleDisplayCustomData
 {
@@ -130,7 +131,7 @@ global struct NextCircleDisplayCustomData
 	string altIconText
 }
 
-struct VictorySoundPackage
+global struct VictorySoundPackage
 {
 	string youAreChampPlural
 	string youAreChampSingular
@@ -296,6 +297,7 @@ struct
 
 	table<entity, var> playerArrows
 	var fullmaprui
+	VictorySoundPackage functionref() victorySoundPackageCallback
 } file
 
 void function ClGamemodeSurvival_Init()
@@ -325,7 +327,6 @@ void function ClGamemodeSurvival_Init()
 	RegisterSignal( "DroppodLanded" )
 	RegisterSignal( "SquadEliminated" )
 	RegisterSignal( "RestartLaserSightThread" )
-	RegisterSignal( "InitSurvivalHealthBarReset" )
 	FlagInit( "SquadEliminated" )
 
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_survival.rpak" )
@@ -398,6 +399,7 @@ void function ClGamemodeSurvival_Init()
 
 	AddFirstPersonSpectateStartedCallback( OnFirstPersonSpectateStarted )
 	AddCallback_OnViewPlayerChanged( OnViewPlayerChanged )
+	AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnPlayerLoadoutChanged )
 	AddCallback_OnPlayerConsumableInventoryChanged( UpdateDpadHud )
 	
 	AddClientCallback_OnResolutionChanged( OnResolutionChanged_FixRuiSize )
@@ -744,13 +746,15 @@ var function AddInWorldMinimapTopo( entity ent, float width, float height )
 }
 
 const array<int> nonCompassModes = [
+	ePlaylists.winterexpress,
 	ePlaylists.custom_ctf,
 	ePlaylists.fs_haloMod_ctf,
 	ePlaylists.fs_haloMod_oddball,
 	ePlaylists.fs_scenarios,
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_snd
+	ePlaylists.fs_snd,
+	ePlaylists.fs_apexkart
 ]
 
 void function Cl_Survival_AddClient( entity player )
@@ -832,30 +836,16 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	if( IsLobby() )
-		return 
-		
-	Signal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
-	EndSignal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
-
+	Assert( IsNewThread(), "Must be threaded off" )
 	entity player = GetLocalViewPlayer()
-	
-	// if( GameRules_GetGameMode() != SURVIVAL )
-		// player = GetLocalClientPlayer()
-	
-	OnThreadEnd(
-		function() : ( player )
-		{
-			if(IsValid(player))
-				thread SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 
-			if( Playlist() == ePlaylists.fs_movementgym )
-					MG_CustomPilotRUI( player, file.pilotRui )
-		}
-	)
-	
-	while( !IsValid(player) )
-		WaitFrame()
+	if( Playlist() == ePlaylists.fs_movementgym )
+	{
+		MG_CustomPilotRUI( player, file.pilotRui )
+		return
+	}
+
+	SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 }
 
 
@@ -926,11 +916,6 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	
 	if(RGB_HUD)
 		thread RGBRui(rui)
-
-	// if( GameRules_GetGameMode() != "fs_dm" ) return
-	
-	// if ( IsControllerModeActive() )
-		// player.ClientCommand( "controllerstate true")
 }
 
 void function RGBRui(var rui)
@@ -1301,7 +1286,7 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
 	
-	if( Gamemode() != eGamemodes.fs_snd ) //&& Playlist() != ePlaylists.fs_scenarios
+	if( Gamemode() != eGamemodes.fs_snd && Playlist() != ePlaylists.fs_scenarios )
 	{
 		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
@@ -1402,7 +1387,13 @@ void function AddCallback_OnVictoryCharacterModelSpawned( void functionref( enti
 
 void function OnResolutionChanged_FixRuiSize()
 {
-	
+	if( GetGameState() == eGameState.WaitingForPlayers )
+	{
+		UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true, true )
+		UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true, true )
+		UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
+		FS_GamemodeHudSetup()
+	}
 }
 
 bool s_didScorebarSetup = false
@@ -2469,7 +2460,18 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	if ( ent.IsPlayer() && Gamemode() == eGamemodes.fs_snd ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
+	if ( ent.IsPlayer() ) //Colombia
+	{
+		foreach(player, savedRui in file.playerArrows)
+		{
+			if(ent == player)
+				return
+		}
+		
+		file.playerArrows[ent] <- rui
+	}
+	
+	if ( ent.IsPlayer() && Gamemode() == eGamemodes.fs_snd || ent.IsPlayer() && Flowstate_IsHaloMode() ) //add enabled var and refresh funct so if we change location to a map one it works
 	{
 		foreach(player, savedRui in file.playerArrows)
 		{
@@ -2482,7 +2484,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
 		file.mapCornerX = 0
 		file.mapCornerY = 0
-	} else if( Gamemode() != eGamemodes.fs_snd ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	} else if( Gamemode() != eGamemodes.fs_snd )
 	{
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
@@ -2753,8 +2755,11 @@ void function Survival_OnPlayerClassChanged( entity player )
 			ResetInventoryMenu( player )
 		}
 
-
-		thread InitSurvivalHealthBar()
+		bool isReady = LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() )
+		if ( isReady )
+		{
+			thread InitSurvivalHealthBar()
+		}
 	}
 
 	if ( player == GetLocalClientPlayer() )
@@ -3314,7 +3319,7 @@ void function OnToggleMute( var button )
 
 bool function GetWaitingForPlayersOverlayEnabled( entity player )
 {
-	if( Playlist() == ePlaylists.fs_movementgym || MapName() == eMaps.mp_flowstate )
+	if( Playlist() == ePlaylists.fs_movementgym )
 		return false
 
 	if ( IsTestMap() )
@@ -3396,6 +3401,16 @@ void function WaitingForPlayers_CreateCustomCameras()
 	player.SetMenuCameraEntityWithAudio( camera )
 	camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 
+	if( Gamemode() == eGamemodes.fs_aimtrainer )
+	{
+		DisableCustomMapAndGamemodeNameFrames()
+		return
+	}
+	FS_GamemodeHudSetup()
+}
+
+void function FS_GamemodeHudSetup()
+{
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 
 	if( Gamemode() == eGamemodes.SURVIVAL )
@@ -3413,8 +3428,39 @@ void function WaitingForPlayers_CreateCustomCameras()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), true)
 
-	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), GetCurrentPlaylistVarString( "name", "APEX" ) )
-	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), "#" + GetMapName())
+	string modeString
+	string modeSubString
+	switch( Playlist() )
+	{
+		case ePlaylists.winterexpress:
+		modeString = "FLOWSTATE"
+		modeSubString = "WINTER EXPRESS"
+		break
+		
+		case ePlaylists.fs_haloMod_ctf:
+		modeString = "Halo Mod"
+		modeSubString = "CAPTURE THE FLAG"
+		break
+		
+		case ePlaylists.fs_haloMod_oddball:
+		modeString = "Halo Mod"
+		modeSubString = "ODDBALL"
+		break
+
+		case ePlaylists.fs_haloMod:
+		modeString = "Halo Mod"
+		modeSubString = "DEATH MATCH"
+		break
+		
+		default:
+		modeString = GetCurrentPlaylistVarString( "name", "APEX" )
+		modeSubString = "#" + GetMapName()
+		break
+	}
+
+	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), modeString )
+	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), modeSubString)
+	
 }
 
 void function DisableCustomMapAndGamemodeNameFrames()
@@ -3466,6 +3512,7 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 	
 	switch(map)
 	{
+		case "mp_rr_desertlands_holiday":
 		case "mp_rr_desertlands_64k_x_64k":
 		case "mp_rr_desertlands_64k_x_64k_nx":
 		case "mp_rr_desertlands_64k_x_64k_tt":
@@ -3488,6 +3535,10 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 		
 		case "mp_rr_olympus_mu1":
 			cutsceneSpawns.append(NewCameraPair( <0,0,0>, <0,0,0> ) )
+		break
+		
+		case "mp_flowstate":
+			cutsceneSpawns.append(NewCameraPair( <41000,-10000,0>, <0,0,0> ) )
 		break
 	}
 	
@@ -4292,7 +4343,7 @@ bool function IsSquadDataPersistenceEmpty()
 	{
 		int eHandle = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].eHandle" )
 
-		//
+		//This will only check one player's data and not necessesarily check the entire squad... will need modified before proper usage ~mkos
 		if ( eHandle > 0 )
 			return false
 	}
@@ -4676,10 +4727,17 @@ bool function IsShowingVictorySequence()
 	return file.IsShowingVictorySequence
 }
 
+void function Survival_SetVictorySoundPackageFunction( VictorySoundPackage functionref() func )
+{
+	file.victorySoundPackageCallback = func
+}
 
 VictorySoundPackage function GetVictorySoundPackage()
 {
 	VictorySoundPackage victorySoundPackage
+
+	if ( file.victorySoundPackageCallback != null )
+		return file.victorySoundPackageCallback()
 
 	#if(true)
 		if ( IsFallLTM() )
@@ -5003,6 +5061,16 @@ void function OnViewPlayerChanged( entity newViewPlayer )
 	}
 }
 
+void function OnPlayerLoadoutChanged( EHI playerEHI, ItemFlavor flavour )
+{
+	entity player = FromEHI( playerEHI )
+	if ( player == GetLocalViewPlayer() )
+	{
+		thread InitSurvivalHealthBar()
+	}
+
+	Squads_SetCustomPlayerInfo( player )
+}
 
 void function OnLocalPlayerSpawned( entity localPlayer )
 {

@@ -21,6 +21,22 @@ WeaponSprings
 // Thus in the oscillating case, the decay is determined only by damping, and is unaffected by springConstant.
 // So it may be useful to adjust the decay first, and then adjust the springConstant to adjust the frequency.
 // Adjusting them in the other order may be trickier, because adjusting damping affects both frequency and decay.
+	magnum
+	{
+		"hipfire_pitch_springConstant"	"35.0"
+		"hipfire_pitch_damping"			"12.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"8.0"
+		"hipfire_roll_springConstant"	"7500.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"60.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"17000.0"
+		"ADS_roll_damping"				"15.0"
+	}
 
 	sniper
 	{

@@ -95,6 +95,7 @@ struct
 	bool Flowstate_GivePassive
 	bool FlowState_GiveTactical
 	bool FlowState_RestMsg
+	float Flowstate_itemDissolveTime
 	
 } SH_flowstateSettings
 
@@ -189,10 +190,11 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
-	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
-	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
+	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= g_is1v1GameType()
+	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", true )
 	SH_flowstateSettings.FlowState_GiveTactical							= GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	SH_flowstateSettings.FlowState_RestMsg 								= GetCurrentPlaylistVarBool( "rest_msg", false )
+	SH_flowstateSettings.Flowstate_itemDissolveTime						= GetCurrentPlaylistVarFloat( "dissolve_drops_time", 7 )
 }
 
 // Playlist GET
@@ -287,3 +289,12 @@ bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowst
 bool function Equipment_GetRespawnKitEnabled()                  { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }
 bool function FlowState_GiveTactical()							{ return SH_flowstateSettings.FlowState_GiveTactical }
 bool function FlowState_RestMsg()								{ return SH_flowstateSettings.FlowState_RestMsg }
+float function Flowstate_GetDissolveTime()						{ return SH_flowstateSettings.Flowstate_itemDissolveTime }
+
+void function DEV_RegisterNetworking_SpawnSystem()
+{
+	#if DEVELOPER
+		RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+		RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+	#endif
+}

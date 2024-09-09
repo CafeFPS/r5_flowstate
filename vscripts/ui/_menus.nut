@@ -42,6 +42,7 @@ global function RemoveCallback_OnPartyMemberRemoved
 global function AddCallback_OnTopLevelCustomizeContextChanged
 global function RemoveCallback_OnTopLevelCustomizeContextChanged
 global function AddUICallback_LevelLoadingFinished
+global function RemoveUICallback_LevelLoadingFinished
 global function AddUICallback_LevelShutdown
 global function AddUICallback_OnResolutionChanged
 global function UICodeCallback_UserInfoUpdated
@@ -154,6 +155,8 @@ global function OpenDevMenu
 global function OpenModelMenu
 
 global function UILevelLoadCallback
+
+global function CloseAllMenusExcept
 
 struct
 {
@@ -1047,6 +1050,37 @@ void function CloseAllToTargetMenu( var targetMenu )
 		CloseActiveMenu( true, false )
 }
 
+void function CloseAllMenusExcept( array<var> targetMenus )
+{
+	int breakPoint = targetMenus.len()
+	var currentMenu
+	
+	if( uiGlobal.menuStack.len() == 0 )
+		return
+			
+	for( ; ; )
+	{		
+		currentMenu = GetActiveMenu()
+			
+		if( !targetMenus.contains( currentMenu ) )
+			CloseActiveMenu( true, false )
+		
+		if( uiGlobal.menuStack.len() <= breakPoint )
+			break
+	}
+}
+
+// void function CloseAllMenusExcept( array<var> targetMenus )
+// {
+	// foreach( MenuDef menuDef in uiGlobal.menuStack )
+	// {
+		// if ( menuDef.menu )
+		// {
+			// if( !targetMenus.contains( menuDef.menu ) )	
+				// CloseMenu( menuDef.menu ) //CloseMenuWrapper( menuDef.menu )
+		// }
+	// }
+// }
 
 void function PrintMenuStack()
 {
@@ -1546,7 +1580,7 @@ void function UILevelLoadCallback()
 		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
 		Hud_SetColor( titletext, 252, 198, 3, 255 )
 	}
-	else if( is1v1GameType() )
+	else if( g_is1v1GameType() )
 	{	
 		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
 		
@@ -1807,6 +1841,9 @@ void function InitMenus()
 	var controlsADSConsole = AddMenu( "ControlsAdvancedLookMenuConsole", $"resource/ui/menus/controls_ads_console.menu", InitADSControlsMenuConsole, "#CONTROLS_ADVANCED_LOOK" )
 	AddPanel( controlsADSConsole, "ADSControlsPanel", InitADSControlsPanelConsole )
 
+	var controlsADSAdvancedConsole = AddMenu( "ControlsAdsAdvancedLookMenuConsole", $"resource/ui/menus/controls_ads_advanced_console.menu", InitADSAdvancedControlsMenuConsole, "#CONTROLS_ADVANCED_LOOK" )
+	AddPanel( controlsADSAdvancedConsole, "ADSAdvancedControlsPanel", InitADSAdvancedControlsPanelConsole )
+
 	AddMenu( "LootBoxOpen", $"resource/ui/menus/loot_box.menu", InitLootBoxMenu )
 	AddMenu( "InviteFriendsMenu", $"resource/ui/menus/invite_friends.menu", InitInviteFriendsMenu )
 	AddMenu( "SocialMenu", $"resource/ui/menus/social.menu", InitSocialMenu )
@@ -1821,6 +1858,8 @@ void function InitMenus()
 	AddMenu( "DevMenu", $"resource/ui/menus/dev.menu", InitDevMenu, "Dev" )
 	
 	AddMenu( "SERVER_MOTD", $"platform/scripts/resource/ui/menus/dialogs/server_motd.menu", Init_Server_MOTD, "Server MOTD" )
+
+	AddMenu( "ScenariosStandingsMenu", $"platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu", InitScenariosMenu, "Match Standings" )
 
 	InitTabs()
 	InitSurveys()
@@ -2957,6 +2996,12 @@ void function SetTopLevelCustomizeContext( ItemFlavor ornull item )
 void function AddUICallback_LevelLoadingFinished( void functionref() callback )
 {
 	file.levelLoadingFinishedCallbacks.append( callback )
+}
+
+void function RemoveUICallback_LevelLoadingFinished( void functionref() callback )
+{
+	if( file.levelLoadingFinishedCallbacks.contains( callback ) )
+		file.levelLoadingFinishedCallbacks.removebyvalue( callback )
 }
 
 

@@ -47,10 +47,10 @@ function ClientCommand( client, command, delay = 0 )
 	EntFireByHandle( _cc, "Command", command, delay, client, null )
 }
 
-//function ServerCommand( command, delay = 0 )
-//{
-//	EntFireByHandle( _sc, "Command", command, delay, null, null )
-//}
+// function __ServerCommand( command, delay = 0 )
+// {
+	// EntFireByHandle( _sc, "Command", command, delay, null, null )
+// }
 
 table __trackedRefs = {}
 

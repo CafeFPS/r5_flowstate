@@ -23,6 +23,7 @@ global function RefreshLootBin
 global function ClearLootBinContents
 global function LootBin_PlayCloseSequence
 global function FS_Scenarios_InitLootBin
+global function LootBin_OnUse
 #elseif CLIENT
 global function ServerCallback_RefreshLootbinHighlight
 #endif
@@ -66,7 +67,17 @@ struct
 	int                              numLootBins
 	
 	array<OnLootBinOpenedCallbackType> onLootBinOpenedCallbacks
+	
+	bool returnFromModesForRefreshBinBool
 } file
+
+const array<int> returnFromModesForRefreshBin = 
+[
+	eGamemodes.fs_snd,
+	eGamemodes.fs_prophunt,
+	eGamemodes.fs_duckhunt,
+	eGamemodes.flowstate_pkknockback
+]
 
 void function ShLootBin_Init()
 {
@@ -80,12 +91,24 @@ void function ShLootBin_Init()
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		PrecacheParticleSystem( $"P_impact_exp_artillery" )
+		SetupLootbinPlaylistSettings()
 	#endif
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 		AddDestroyCallback( "prop_dynamic", OnPropDynamicDestroyed )
 	#endif
 }
+
+#if SERVER
+	void function SetupLootbinPlaylistSettings()
+	{
+		if( returnFromModesForRefreshBin.contains( Gamemode() ) 
+		|| GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) )
+		{
+			file.returnFromModesForRefreshBinBool = true
+		}
+	}
+#endif 
 
 // These callbacks are called before loot is spawned in a lootbin
 #if SERVER
@@ -138,11 +161,39 @@ void function InitLootBinFromMap( entity lootbin )
 	
 	SURVIVAL_AddLootBin( lootbin )
 
+	//Check for moving geo such as train
+	TraceResults trace = TraceLineHighDetail( lootbin.GetOrigin(), lootbin.GetOrigin() - <0, 0, 88>, lootbin, LOOT_TRACE, LOOT_COLLISION_GROUP )
+	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+	{
+		if( Gamemode() == eGamemodes.WINTEREXPRESS ) //removes train lootbins in winter express mode
+		{
+			lootbin.Destroy()
+			return
+		}
+		//Cafe was here
+		entity parentPoint = CreateEntity( "script_mover_lightweight" )
+		{
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( lootbin.GetOrigin() )
+			parentPoint.SetAngles( lootbin.GetAngles() )
+			DispatchSpawn( parentPoint )
+			parentPoint.Hide()
+			lootbin.SetParent(parentPoint)
+			parentPoint.SetParent( trace.hitEnt, "", true, 0 )
+		}
+		
+		if( IsValid( parentPoint ) && trace.hitEnt.GetScriptName() == "train_brush" )
+			SetTargetName( lootbin, "train_bin" )
+	}
+
 	if ( IsValid( lootbin ) )
 	{
 		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
 		InitLootBin( lootbin )
 	}
+
 }
 #endif
 
@@ -203,14 +254,8 @@ void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems
 	if ( LootBin_IsOpen( lootBin ) )
 		waitthread LootBin_PlayCloseSequence( lootBin )
 
-	//todo: change to array.contains( Gamemode() ) ~mkos
-	array<int> returnFromModes = [
-		eGamemodes.fs_snd,
-		eGamemodes.fs_prophunt,
-		eGamemodes.fs_duckhunt,
-		eGamemodes.flowstate_pkknockback
-	]
-	if( returnFromModes.contains( Gamemode() ) || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
+	if( file.returnFromModesForRefreshBinBool ) 
+		return
 	
 	// New refs
 	file.lootBinsLootInside[ lootBin ] = []
@@ -293,7 +338,13 @@ void function InitLootBin( entity lootbin )
 		//lootbin.SetSkin(2)
 		return
 	}
-	array<string> Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
+	array<string> Refs
+
+	if( lootbin.GetTargetName() == "train_bin" )
+	{
+		Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 )
+	} else
+		Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
 
 	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && Gamemode() != eGamemodes.fs_snd )
 	{
@@ -481,6 +532,8 @@ Point function GetLootBinSpawnLocation( entity lootbin, int lootI, int lootCount
 void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount, string previousRef = "")
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
+	if( ref == "" )
+		return
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	int countPerDrop = data.countPerDrop
@@ -533,6 +586,20 @@ void function OnLootBinUse( entity lootbin, entity player, int useInputFlags )
 
 	thread HandleLootbinUse( lootbin, player )
 }
+
+bool function LootBin_OnUse( entity lootbin, entity player, int useInputFlags )
+{
+	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+		return false
+
+	if ( lootbin.Anim_IsActive() || LootBin_IsOpen( lootbin ) )
+		return false
+
+	thread HandleLootbinUse( lootbin, player )
+	
+	return true
+}
+
 void function HandleLootbinUse( entity lootbin, entity player )
 {
 	lootbin.EndSignal( "OnDestroy" )

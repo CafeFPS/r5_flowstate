@@ -30,6 +30,8 @@ global function ClApexScreens_OnStaticPropRuiVisibilityChange
 global function DEV_CreatePerfectApexScreen
 global function DEV_ToggleActiveApexScreenDebug
 global function DEV_ToggleFloatyBitsPrototype
+global int countCreation = 0
+global int countDestruction = 0
 #endif
 
 #if CLIENT
@@ -229,7 +231,7 @@ void function ShApexScreens_Init()
 	if ( !GetCurrentPlaylistVarBool( "enable_apex_screens", true ) )
 		return
 
-	Remote_RegisterClientFunction( "ServerToClient_ApexScreenKillDataChanged", "int", 0, 512, "float", 0.0, 10000.0, 32, "int", 0, 32, "entity" )
+	//Remote_RegisterClientFunction( "ServerToClient_ApexScreenKillDataChanged", "int", 0, 512, "float", 0.0, 10000.0, 32, "int", 0, 32, "entity" )
 	Remote_RegisterClientFunction( "ServerToClient_ApexScreenRefreshAll" )
 
 	for ( int screenPosition = eApexScreenPosition.L; screenPosition <= eApexScreenPosition.R; screenPosition++ )
@@ -960,9 +962,13 @@ bool function ClApexScreens_PosInStaticBanner( vector pos )
 
 void function UpdateScreensContent( array<ApexScreenState> screenList )
 {
+	if ( GetGameState() >= eGameState.WinnerDetermined )
+		return
+
+
 	entity localViewPlayer = GetLocalViewPlayer()
 	bool isCrypto          = PlayerHasPassive( localViewPlayer, ePassives.PAS_CRYPTO )
-	bool inCamera          = StatusEffect_GetSeverity( localViewPlayer, eStatusEffect.camera_view ) > 0.0
+	bool inCamera          = IsValid( localViewPlayer.p.cryptoActiveCamera )
 	foreach( ApexScreenState screen in screenList )
 	{
 		bool shouldShow = true
@@ -976,23 +982,18 @@ void function UpdateScreensContent( array<ApexScreenState> screenList )
 		else if ( screen.isOutsideCircle )
 			shouldShow = false
 
-		bool needShutdown = ((screen.rui != null) && (!shouldShow || (screen.ruiToCreate != screen.ruiLastCreated)))
-		if ( needShutdown )
-		{
-			screen.commenceTime = -1.0
-			Signal( screen, "ScreenOff" ) // to clean up any threads expecting the RUI to exist
-
-			CleanupNestedGladiatorCard( screen.nestedGladiatorCard0Handle )
-
-			RuiDestroyIfAlive( screen.rui )
-			screen.rui = null
-		}
 
 		bool doStandardVars = (!screen.overrideInfoIsValid || !screen.overrideInfo.skipStandardVars)
 
 		bool needStartup = (shouldShow && (screen.rui == null))
 		if ( needStartup )
 		{
+			// #if DEVELOPER
+				// ++countCreation
+				// Warning ( "Creating screen" )
+				// Warning( "------------------" + countCreation )
+			// #endif
+			
 			screen.rui = CreateApexScreenRUIElement( screen )
 			if ( screen.rui != null )
 			{
@@ -1003,6 +1004,28 @@ void function UpdateScreensContent( array<ApexScreenState> screenList )
 			{
 				shouldShow = false
 			}
+		}
+		
+		// RUI: Couldn't allocate a client rui instance.
+		
+		//because this block sets the screen.rui to null on the same frame, the needstartup condition can potentially 
+		//execute due to the screen.rui being null and bool shouldshow being true
+		//TEMP FIX: moved shutdown after startup check. Needs more tracking to determine why shouldShow is not handling this (todo after release) ~mkos
+		bool needShutdown = ((screen.rui != null) && (!shouldShow || (screen.ruiToCreate != screen.ruiLastCreated)))
+		if ( needShutdown )
+		{
+			// #if DEVELOPER
+				// ++countDestruction
+				// Warning( "Is this block being reached?? --------------------- " + countDestruction )
+			// #endif	
+			
+			screen.commenceTime = -1.0
+			Signal( screen, "ScreenOff" ) // to clean up any threads expecting the RUI to exist
+
+			CleanupNestedGladiatorCard( screen.nestedGladiatorCard0Handle )
+
+			RuiDestroyIfAlive( screen.rui )
+			screen.rui = null
 		}
 
 		if ( !shouldShow )

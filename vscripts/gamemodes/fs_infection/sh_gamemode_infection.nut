@@ -18,7 +18,6 @@ global const string EVAC_START                   = "dropship_VTOL_evac_start"
 global const string EVAC_END                     = "dropship_VTOL_evac_end"
 global const string EVAC_IDLE                    = "dropship_VTOL_evac_idle"
 
-global const int   EVAC_SHIP_PASSENGERS_MAX = 6
 global const float DEFAULT_TIME_UNTIL_SHIP_ARRIVES = 30
 global const float DEFAULT_TIME_UNTIL_SHIP_DEPARTS = 30
 global const float DEFAULT_EVAC_RADIUS = 256
@@ -51,7 +50,8 @@ void function Sh_GamemodeInfection_Init()
 	ShPrecacheShadowSquadAssets()
 
 	SurvivalFreefall_Init() //Enables freefall/skydive
-	
+	ShZombieMysteryBox_Init()
+
     switch( MapName() )
     {
 		case eMaps.mp_rr_canyonlands_mu1:

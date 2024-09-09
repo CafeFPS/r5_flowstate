@@ -40,6 +40,8 @@ struct
 
 void function ClRespawnselect_MP_Init()
 {
+	return //disabled for R5R
+	
     //PrecacheHUDMaterial( IMAGE_SELECT_TITAN )
     //PrecacheHUDMaterial( IMAGE_SELECT_PILOT )
     //PrecacheHUDMaterial( IMAGE_SELECT_FEMALE )
@@ -93,24 +95,24 @@ void function UpdateRespawnSelectHud()
 
 	if ( RespawnSelect_ShouldShowRespawnAsPilot( player ) )
 	{
-		RegisterRespawnCommands()
+		//RegisterRespawnCommands()
 		RuiSetBool( file.respawnHintRui, "isVisible", true )
-		RuiSetBool( file.respawnHintRui, "isTitanAvailable", RespawnSelect_ShouldShowResapwnAsTitan( player ) )
-		RuiSetBool( file.respawnHintRui, "isTitanAlive", RespawnSelect_CanPlayerSpawnIntoTitan( player ) )
+		RuiSetBool( file.respawnHintRui, "isTitanAvailable", false ) //RespawnSelect_ShouldShowResapwnAsTitan( player ) )
+		RuiSetBool( file.respawnHintRui, "isTitanAlive", false ) // RespawnSelect_CanPlayerSpawnIntoTitan( player ) )
 		RuiSetGameTime( file.respawnHintRui, "nextSpawnTime", GetNextRespawnTime( player ) )
 		RuiSetString( file.respawnHintRui, "titanSpawnAsText", GetTitanSpawnAsText() )
 		RuiSetBool( file.respawnHintRui, "shouldShowSkipReplay", false )
 	}
 	else if ( RespawnSelect_ShouldShowSkipReplay( player ) )
 	{
-		RegisterRespawnCommands()
+		//RegisterRespawnCommands()
 		RuiSetBool( file.respawnHintRui, "isVisible", true )
 		RuiSetBool( file.respawnHintRui, "shouldShowSkipReplay", true )
 		RuiSetBool( file.respawnHintRui, "isTitanAvailable", false )
 	}
 	else
 	{
-		DeregisterRespawnCommands()
+		//DeregisterRespawnCommands()
 		RuiSetBool( file.respawnHintRui, "isVisible", false )
 	}
 }
@@ -228,6 +230,7 @@ bool function RespawnSelect_ShouldShowRespawnAsPilot( entity player )
 {
 	if ( IsAlive( player ) && !IsWatchingKillReplay() )
 	{
+		//printt( "IsWatchingKillReplay()", IsWatchingKillReplay() )
 		//printt( "IsAlive( player )" )
 		return false
 	}
@@ -238,11 +241,11 @@ bool function RespawnSelect_ShouldShowRespawnAsPilot( entity player )
 		return false
 	}
 
-	if ( !IsRespawnAvailable( player ) )
-	{
-		//printt( "!IsRespawnAvailable( player )" )
-		return false
-	}
+	// if ( !IsRespawnAvailable( player ) )
+	// {
+		// printt( "!IsRespawnAvailable( player )" )
+		// return false
+	// }
 
 	if ( GetGameState() != eGameState.Playing && GetGameState() != eGameState.Epilogue && GetGameState() != eGameState.WinnerDetermined )
 	{

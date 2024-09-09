@@ -265,9 +265,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
+	PrecacheModel( $"mdl/robots/marvin/marvin.rmdl" )
 
-	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
+	// PrecacheWeapon( $"mp_weapon_smart_pistol" )
+
+	PrecacheWeapon( $"mp_titanweapon_flightcore_rockets" )
 
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_melee_halo" )
@@ -335,6 +338,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
+	PrecacheWeapon( $"mp_weapon_haloshotgun" )
 
 	switch( GameRules_GetGameMode() )
 	{
@@ -398,6 +402,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/flowstate_custom/evac_tower_weight.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+	PrecacheModel( $"mdl/domestic/nessy_doll.rmdl" )
 
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_w.rmdl" )
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_v.rmdl" )
@@ -415,7 +420,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl" )
 	PrecacheModel( $"mdl/creatures/prowler/prowler_apex.rmdl" )
 	PrecacheModel( $"mdl/creatures/spider/spider.rmdl" )
-	
+
 	PrecacheModel( $"mdl/fx/cloud_fill_01.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_16x128_01.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x352_01.rmdl" )
@@ -428,10 +433,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/canyonlands/fabric_canopy_02.rmdl" )
 	PrecacheModel( $"mdl/pipes/pipe_modular_painted_yellow_32_04.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x32_01.rmdl" )
-	
+
+	PrecacheWeapon( $"mp_weapon_turret" )
 	PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"melee_titan_sword" )
 	PrecacheWeapon( $"mp_weapon_titan_sword" )
+	PrecacheWeapon( $"npc_weapon_turret_volt" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
@@ -472,6 +479,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_white.rmdl" )
 		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
+		
+		PrecacheModel( $"mdl/flowstate_custom/w_haloelite.rmdl" )
+		PrecacheModel( $"mdl/flowstate_custom/ptpov_haloelite.rmdl" )
 	}
 
 	SV_CL_Shared_Init()
@@ -509,10 +519,21 @@ void function CodeCallback_MapSpawn() // original script entry point
 		break
 		
 		case "fs_lgduels_1v1":
+			
+			PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+			PrecacheModel( $"mdl/imc_base/generator_IMC_01.rmdl" )
+			PrecacheModel( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl" )
+			PrecacheModel( $"mdl/containers/underbelly_cargo_container_128_blue_02.rmdl" )
+			
+		
 		case "fs_1v1":
 		
 		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash
 			thread FS_TrackPlayersPositionInScoreboard()
+		break
+
+		case "fs_rankupmapmovementpractice":
+		rankupmap_init()
 		break
 	}
 	
@@ -586,7 +607,10 @@ void function FS_TrackPlayersPositionInScoreboard()
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if( !IsCommandsEnabled( player ) ) return 
+	if( !IsCommandsEnabled( player ) ) 
+		return
+		
+	//TODO: Track down Why VModEnable is being called from code?
 	if( args[0] == "VModEnable" || args[0] == "vban" ) return
 	
 	#if DEVELOPER
@@ -600,7 +624,6 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 
 	string commandString = args.remove( 0 )
 	bool bFound = false
-	//TODO: Track down Why VModEnable is being called from code?
 
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{

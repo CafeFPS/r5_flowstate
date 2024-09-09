@@ -4,7 +4,7 @@ global function CodeCallback_PlayerLeaveUpdraftTrigger
 
 #if SERVER && DEVELOPER
 	global function HoverTankTestPositions
-
+	global function Dev_TestHoverTankIntro
 #endif
 
 #if SERVER
@@ -39,7 +39,7 @@ global function CodeCallback_PlayerLeaveUpdraftTrigger
 		MAP_UNCHANGED,
 		LEVIATHANS_MOVE_CLOSER,
 		LEVIATHANS_MOVE_MUCH_CLOSER,
-		//FLYERS_APPEAR,
+		FLYERS_APPEAR,
 		REPULSOR_TOWER_TURNS_ON,
 		CRYPTO_TEASE,
 	}
@@ -48,11 +48,39 @@ global function CodeCallback_PlayerLeaveUpdraftTrigger
 const int HOVER_TANKS_DEFAULT_COUNT_INTRO = 1
 const int HOVER_TANKS_DEFAULT_COUNT_MID = 1
 global const asset LEVIATHAN_MODEL = $"mdl/creatures/leviathan/leviathan_kingscanyon_preview_animated.rmdl"
-//const asset FLYER_SWARM_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const asset FLYER_SWARM_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
 global const string CANYONLANDS_LEVIATHAN1_NAME = "leviathan1"
 global const string CANYONLANDS_LEVIATHAN2_NAME= "leviathan2"
+global const string CANYONLANDS_LEVIATHANBABY_NAME= "leviathan3"
+const string HOVER_TANKS_ZIP_MOVER_SCRIPTNAME = "hovertank_zip_mover"
 
 global const asset MU1_LEVIATHAN_MODEL = $"mdl/Creatures/leviathan/leviathan_kingscanyon_animated.rmdl"
+//Crypto TT
+const array< asset > CRYPTO_TT_MODELS = [
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_01.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_02.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_03.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_04.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_05.rmdl"
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_01_mu3.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_02_mu3.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_02_mu3_b.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_03_mu3.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_04_mu3.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_05_mu3.rmdl"
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_hu_01.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_hu_02.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_hu_03.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_hu_04.rmdl",
+	$"mdl/levels_terrain/mp_rr_canyonlands/crypto_holo_map_hu_05.rmdl"
+]
+const array< asset > CRYPTO_TT_PFX = [
+	$"P_holo_ar_radius_pc64_CP_1x20",
+	$"P_map_holo_ring_CP",
+	$"P_map_player_pt_enemy",
+	$"P_map_player_pt_team",
+	$"P_crypto_holo_sat_scan"
+]
 
 struct
 {
@@ -64,6 +92,7 @@ struct
 		array<entity> hoverTankEndNodesMid
 		vector skyboxStartingOrigin
 		vector skyboxStartingAngles
+		table<HoverTank,SupplyShip> TEMP_hoverTankToSupplyShip
 	#endif
 	int numHoverTanksIntro = 0
 	int numHoverTanksMid = 0
@@ -71,6 +100,7 @@ struct
 	#if CLIENT
 		entity clientSideLeviathan1
 		entity clientSideLeviathan2
+		entity clientSideLeviathan3
 		float lastLevAnimCycleChosen = -1.0
 	#endif
 
@@ -78,46 +108,48 @@ struct
 
 void function Canyonlands_MapInit_Common()
 {
+	printt( "Canyonlands_MapInit_Common" )
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 	
-	// if(GameRules_GetGameMode() != SURVIVAL)
-		// return
+	FlagInit( "IntroHovertanksSet", false )
 
 	#if SERVER
 	RegisterSignal( "NessyDamaged" )
 	PrecacheModel( NESSY_MODEL )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	Flyers_SetFlyersToSpawn( GetCurrentPlaylistVarInt( "flyers_to_spawn", 8 ) )
 	#endif
 
-	//printt( "Canyonlands_MapInit_Common" )
 	PrecacheModel( LEVIATHAN_MODEL )
 	//PrecacheModel( FLYER_SWARM_MODEL )
 
-	// file.numHoverTanksIntro = GetCurrentPlaylistVarInt( "hovertanks_count_intro", HOVER_TANKS_DEFAULT_COUNT_INTRO )
-	// #if DEVELOPER
-		// printt( "HOVER TANKS INTRO MAX:", file.numHoverTanksIntro )
-	// #endif
-	// float chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_intro", 1.0 ) * 100.0
-	// if ( RandomInt(100) > chance )
-		// file.numHoverTanksIntro = 0
-	// #if DEVELOPER
-		// printt( "HOVER TANKS INTRO ACTUAL:", file.numHoverTanksIntro, "(was " + chance + "% chance)" )
-	// #endif
+	file.numHoverTanksIntro = GetCurrentPlaylistVarInt( "hovertanks_count_intro", HOVER_TANKS_DEFAULT_COUNT_INTRO )
+	#if SERVER
+		printt( "HOVER TANKS INTRO MAX:", file.numHoverTanksIntro )
+	#endif
+	float chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_intro", 1.0 ) * 100.0
+	if ( RandomInt(100) > chance )
+		file.numHoverTanksIntro = 0
+	#if SERVER
+		printt( "HOVER TANKS INTRO ACTUAL:", file.numHoverTanksIntro, "(was " + chance + "% chance)" )
+	#endif
 
-	// file.numHoverTanksMid = GetCurrentPlaylistVarInt( "hovertanks_count_mid", HOVER_TANKS_DEFAULT_COUNT_MID )
-	// #if DEVELOPER
-		// printt( "HOVER TANKS MID MAX:", file.numHoverTanksMid )
-	// #endif
-	// chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_mid", 0.33 ) * 100.0
-	// if ( RandomInt(100) > chance )
-		// file.numHoverTanksMid = 0
-	// #if DEVELOPER
-		// printt( "HOVER TANKS MID ACTUAL:", file.numHoverTanksMid, "(was " + chance + "% chance)" )
-	// #endif
+	file.numHoverTanksMid = GetCurrentPlaylistVarInt( "hovertanks_count_mid", HOVER_TANKS_DEFAULT_COUNT_MID )
+	#if SERVER
+		printt( "HOVER TANKS MID MAX:", file.numHoverTanksMid )
+	#endif
+	chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_mid", 0.33 ) * 100.0
+	if ( RandomInt(100) > chance )
+		file.numHoverTanksMid = 0
+	#if SERVER
+		printt( "HOVER TANKS MID ACTUAL:", file.numHoverTanksMid, "(was " + chance + "% chance)" )
+	#endif
 
 	SupplyShip_Init()
 
 	#if SERVER
+		if ( NewSupplyShipEnabled() )
+			SURVIVAL_AddLootGroupRemapping( "Bldg_Hovertank", "Bldg_SupplyShip" )
         InitWaterLeviathans()
 
 		FlagSet( "DisableDropships" )
@@ -133,8 +165,8 @@ void function Canyonlands_MapInit_Common()
 
 		// AddCallback_AINFileBuilt( HoverTank_DebugFlightPaths )
 
-		// AddCallback_GameStateEnter( eGameState.Playing, HoverTanksOnGamestatePlaying )
-		// AddCallback_OnSurvivalDeathFieldStageChanged( HoverTanksOnDeathFieldStageChanged )
+		AddCallback_GameStateEnter( eGameState.Playing, HoverTanksOnGamestatePlaying )
+		AddCallback_OnSurvivalDeathFieldStageChanged( HoverTanksOnDeathFieldStageChanged )
 
 		SURVIVAL_SetPlaneHeight( 24000 )
 		SURVIVAL_SetAirburstHeight( 8000 )
@@ -212,24 +244,18 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if( MapName() != eMaps.mp_rr_canyonlands_staging && Gamemode() != eGamemodes.fs_dm && Gamemode() != eGamemodes.fs_aimtrainer )
-	{
-		//InitLootDrones() //flyers
-		//InitLootRollers() //flyers
-		//InitLootDronePaths() //flyers
-	}
 	thread __EntitiesDidLoad()
 }
 
 void function __EntitiesDidLoad()
 {
-	// waitthread FindHoverTankEndNodes()
-	// SpawnHoverTanks()
+	waitthread FindHoverTankEndNodes()
+	SpawnHoverTanks()
 
 	if ( GetCurrentPlaylistVarBool( "enable_nessies", false ) )
 		Nessies()
 
-	DestroyHoverTankNodes()
+	//DestroyHoverTankNodes()
 }
 
 void function DestroyHoverTankNodes()
@@ -281,10 +307,10 @@ void function CreateClientSideLeviathanMarkers( entity leviathan )
 				leviathanAngles = isLeviathan1 ? < 0, 70, 0 > : < 0, 117, 0 >
 				break
 
-			//case eCanyonlandsMapUpdatePreviewPhases.FLYERS_APPEAR:
-			//	leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
-			//	leviathanAngles = isLeviathan1 ? < 0, 22, 0 > : < 0, 117, 0 >
-			//	break
+			case eCanyonlandsMapUpdatePreviewPhases.FLYERS_APPEAR:
+				leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
+				leviathanAngles = isLeviathan1 ? < 0, 22, 0 > : < 0, 117, 0 >
+				break
 
 			case eCanyonlandsMapUpdatePreviewPhases.REPULSOR_TOWER_TURNS_ON:
 				leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
@@ -318,7 +344,7 @@ void function CreateClientSideLeviathanMarkers( entity leviathan )
 
 void function FindHoverTankEndNodes()
 {
-	//FlagWait( "DeathFieldCalculationComplete" )
+	// FlagWait( "DeathFieldCalculationComplete" )
 
 	file.hoverTankEndNodesMid = GetHoverTankEndNodes( file.numHoverTanksMid, HOVER_TANKS_TYPE_MID, [] )
 	file.hoverTankEndNodesIntro = GetHoverTankEndNodes( file.numHoverTanksIntro, HOVER_TANKS_TYPE_INTRO, file.hoverTankEndNodesMid )
@@ -329,14 +355,11 @@ void function FindHoverTankEndNodes()
 	file.numHoverTanksIntro = int( min( file.numHoverTanksIntro, file.hoverTankEndNodesIntro.len() ) )
 	file.numHoverTanksMid = int( min( file.numHoverTanksMid, file.hoverTankEndNodesMid.len() ) )
 
-	DestroyUnusedHovertankSpecificEnts()
+	HideUnusedHovertankSpecificGeo()
 }
 
 void function SpawnHoverTanks()
 {
-	// if( !GetCurrentPlaylistVarBool( "bad_hover_tank_enabled", false ) )
-		// return
-
 	// Spawn hover tanks at level load, even though they don't fly in yet, so they exist when loot is spawned.
 	if ( file.numHoverTanksIntro == 0 && file.numHoverTanksMid == 0 )
 		return
@@ -359,13 +382,76 @@ void function SpawnHoverTanks()
 		{
 			printt( "HOVER TANKS INTRO SPAWNER:", spawnerName )
 			file.hoverTanksIntro.append( hoverTank )
-
+			TEMP_TestNewSupplyShip( hoverTank )
 		}
 		else
 		{
 			printt( "HOVER TANKS MID SPAWNER:", spawnerName )
 			file.hoverTanksMid.append( hoverTank )
 		}
+	}
+}
+
+bool function NewSupplyShipEnabled()
+{
+	return GetCurrentPlaylistVarBool( "enable_supply_ship_v2", false )
+}
+
+void function TEMP_TestNewSupplyShip( HoverTank hoverTank )
+{
+	if ( !NewSupplyShipEnabled() )
+		return
+
+	array<SupplyShip> ships = GetAllSupplyShips()
+	SupplyShip ornull selected = null
+	foreach ( ship in ships )
+	{
+		if ( IsValid( ship.mover.GetParent() ) )
+			continue
+
+		selected = ship
+		break
+	}
+
+	if ( selected == null )
+		return
+
+	expect SupplyShip( selected )
+
+	HideHoverTank( hoverTank )
+	file.TEMP_hoverTankToSupplyShip[ hoverTank ] <- selected
+
+	thread SupplyShipThink( hoverTank, selected )
+}
+
+void function SupplyShipThink( HoverTank hoverTank, SupplyShip ship )
+{
+	FlagWait( "Survival_LootSpawned" )
+
+	WaitFrame()
+
+	ship.mover.SetParent( hoverTank.flightMover, "", false )
+
+	WaitSignal( hoverTank, SIGNAL_HOVERTANK_AT_ENDPOINT )
+
+	SupplyShip_OpenDoors( ship )
+}
+
+void function HideHoverTank( HoverTank hoverTank )
+{
+	hoverTank.turret.NotSolid()
+	hoverTank.turret.Hide()
+	hoverTank.turretBarrelClip.NotSolid()
+	hoverTank.turretBarrelClip.Hide()
+	hoverTank.interiorModel.NotSolid()
+	hoverTank.interiorModel.Hide()
+	hoverTank.flightMover.NotSolid()
+	hoverTank.flightMover.Hide()
+	hoverTank.triggerVolume.Disable()
+	foreach ( ent in hoverTank.linkedEnts )
+	{
+		ent.NotSolid()
+		ent.Hide()
 	}
 }
 
@@ -381,81 +467,84 @@ void function HoverTanksOnGamestatePlaying_Thread()
 {
 	FlagWait( "Survival_LootSpawned" )
 
-	// if ( GetCurrentPlaylistVarInt( "canyonlands_hovertank_flyin", 1 ) == 1 )
-	// {
+	if ( GetCurrentPlaylistVarInt( "canyonlands_hovertank_flyin", 1 ) == 1 )
+	{
 		// Fly to final nodes
 		FlyHoverTanksIntoPosition( file.hoverTanksIntro, HOVER_TANKS_TYPE_INTRO )
-		// FlyHoverTanksIntoPosition( file.hoverTanksMid, HOVER_TANKS_TYPE_INTRO )
-		
-	// }
-	// else
-	// {
-		// // Teleport to final nodes
-		// TeleportHoverTanksIntoPosition( file.hoverTanksIntro, HOVER_TANKS_TYPE_INTRO )
-	// }
+	}
+	else if ( GetCurrentPlaylistVarInt( "canyonlands_hovertank_flyin", 1 ) == 2 )
+	{
+		//override behavior elsewhere
+	}
+	else
+	{
+		// Teleport to final nodes
+		TeleportHoverTanksIntoPosition( file.hoverTanksIntro, HOVER_TANKS_TYPE_INTRO )
+	}
+
+	FlagSet( "IntroHovertanksSet" )
 }
 
-// void function HoverTanksOnDeathFieldStageChanged( int stage, float nextCircleStartTime )
-// {
-	// if ( file.numHoverTanksMid == 0 )
-		// return
+void function HoverTanksOnDeathFieldStageChanged( int stage, float nextCircleStartTime )
+{
+	if ( file.numHoverTanksMid == 0 )
+		return
 
-	// if ( stage == GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX ) )
-	// {
-		// thread FlyHoverTanksIntoPosition( file.hoverTanksMid, HOVER_TANKS_TYPE_MID )
-		// wait 7.0
-		// AddSurvivalCommentaryEvent( eSurvivalEventType.HOVER_TANK_INBOUND )
-	// }
-// }
+	if ( stage == GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX ) )
+	{
+		thread FlyHoverTanksIntoPosition( file.hoverTanksMid, HOVER_TANKS_TYPE_MID )
+		wait 7.0
+		AddSurvivalCommentaryEvent( eSurvivalEventType.HOVER_TANK_INBOUND )
+	}
+}
+
+#if DEVELOPER
+void function Dev_TestHoverTankIntro()
+{
+	FlyHoverTanksIntoPosition( GetAllHoverTanks(), HOVER_TANKS_TYPE_INTRO )
+}
+#endif
 
 void function FlyHoverTanksIntoPosition( array<HoverTank> hoverTanks, int hoverTanksType )
 {
 	// Get start nodes and end nodes. Playlist vars change how these are selected.
 	array<entity> startNodes
-	startNodes.extend( file.hoverTankEndNodesIntro )
-	startNodes.extend( file.hoverTankEndNodesMid )
-
 	array<entity> endNodes
-	endNodes.extend( file.hoverTankEndNodesIntro )
-	endNodes.extend( file.hoverTankEndNodesMid )
-	
-	// if ( hoverTanksType == HOVER_TANKS_TYPE_INTRO )
-	// {
-		//Assert( file.hoverTankEndNodesIntro.len() == hoverTanks.len(), "Not enough hover tank end locations found!" )
-		startNodes = GetHoverTankStartNodes( startNodes )
-		//endNodes = file.hoverTankEndNodesIntro
-	// }
-	// else if ( hoverTanksType == HOVER_TANKS_TYPE_MID )
-	// {
-		// Assert( file.hoverTankEndNodesMid.len() == hoverTanks.len(), "Not enough hover tank end locations found!" )
-		// startNodes = GetHoverTankStartNodes( file.hoverTankEndNodesMid )
-		// endNodes = file.hoverTankEndNodesMid
-	// }
-	// else
-		// return
+	if ( hoverTanksType == HOVER_TANKS_TYPE_INTRO )
+	{
+		Assert( file.hoverTankEndNodesIntro.len() == hoverTanks.len(), "Not enough hover tank end locations found!" )
+		startNodes = GetHoverTankStartNodes( file.hoverTankEndNodesIntro )
+		endNodes = file.hoverTankEndNodesIntro
+	}
+	else if ( hoverTanksType == HOVER_TANKS_TYPE_MID )
+	{
+		Assert( file.hoverTankEndNodesMid.len() == hoverTanks.len(), "Not enough hover tank end locations found!" )
+		startNodes = GetHoverTankStartNodes( file.hoverTankEndNodesMid )
+		endNodes = file.hoverTankEndNodesMid
+	}
+	else
+	{
+		Assert( false )
+	}
 
-	//Assert( startNodes.len() == hoverTanks.len(), "Not enough hover tank start locations found!" )
-	// foreach( startNode in startNodes )
-	// {
-		// printt( "DEBUG START NODES FOR HOVERTANK " + startNode )
-		// DebugDrawSphere( startNode.GetOrigin(), 100, 255, 0, 255, true, 100 )
-	// }
-	
+	Assert( startNodes.len() == hoverTanks.len(), "Not enough hover tank start locations found!" )
+
 	if ( endNodes.len() == 0 )
 		return
 
-	foreach( HoverTank hoverTank in hoverTanks )
+	foreach( int i, HoverTank hoverTank in hoverTanks )
 	{
 		CreateHoverTankMinimapIconForPlayers( hoverTank )
-		
-		array<entity> nodeChain = GetEntityChainOfType( endNodes[ hoverTanksType ] )
-		
-		HoverTankTeleportToPosition( hoverTank, startNodes[hoverTanksType].GetOrigin(), startNodes[hoverTanksType].GetAngles() )
 
+		array<entity> nodeChain = GetEntityChainOfType( endNodes[ i ] )
+
+		HoverTankTeleportToPosition( hoverTank, startNodes[i].GetOrigin(), startNodes[i].GetAngles() )
 		//thread HoverTankDrawPathFX( hoverTank, nodeChain[ 0 ] )
+
 		thread HoverTankAdjustSpeed( hoverTank )
 		thread HoverTankForceBoost( hoverTank )
-		
+		thread HoverTankAttractLeviathans( hoverTank )
+
 		thread HoverTankFlyNodeChain( hoverTank, nodeChain )
 		thread HideMinimapEndpointsWhenHoverTankFinishesFlyin( hoverTank )
 		CreateHoverTankEndpointIconForPlayers( nodeChain.top(), hoverTank )
@@ -489,10 +578,22 @@ void function HoverTankForceBoost( HoverTank hoverTank )
 	EndSignal( hoverTank, "OnDestroy" )
 	EndSignal( hoverTank, "PathFinished" )
 
-	while ( 1 )
+	while ( true )
 	{
 		HoverTankEngineBoost( hoverTank )
 		wait RandomFloatRange( 1.0 , 5.0 )
+	}
+}
+
+void function HoverTankAttractLeviathans( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
+	EndSignal( hoverTank, "PathFinished" )
+
+	while ( true )
+	{
+		Leviathan_ConsiderLookAtEnt( hoverTank.flightMover, RandomFloatRange( 5, 20 ), 0.25 )
+		wait RandomFloatRange( 8.0, 20.0 )
 	}
 }
 
@@ -513,30 +614,27 @@ void function TeleportHoverTanksIntoPosition( array<HoverTank> hoverTanks, int h
 	}
 }
 
-void function DestroyUnusedHovertankSpecificEnts()
+void function HideUnusedHovertankSpecificGeo()
 {
-	// array<entity> hoverTankSpecificGeo
-	// array<entity> unusedEndNodes = GetAllHoverTankEndNodes()
+	array<entity> hoverTankSpecificGeo
+	array<entity> unusedEndNodes = GetAllHoverTankEndNodes()
 
-	// foreach( entity node in file.hoverTankEndNodesIntro )
-		// unusedEndNodes.fastremovebyvalue( node )
+	foreach( entity node in file.hoverTankEndNodesIntro )
+		unusedEndNodes.fastremovebyvalue( node )
 
-	// foreach( entity node in file.hoverTankEndNodesMid )
-		// unusedEndNodes.fastremovebyvalue( node )
+	foreach( entity node in file.hoverTankEndNodesMid )
+		unusedEndNodes.fastremovebyvalue( node )
 
-	// foreach( entity node in unusedEndNodes )
-	// {
-		// entity lastNode = GetLastLinkedEntOfType( node )
-		// array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray() // [SERVER] Given object is not an entity (type = null)
-		// foreach( linkedEnt in endNodeLinkedEnts )
-		// {
-			// if ( linkedEnt.GetClassName() == "func_brush_lightweight" )
-			// {
-				// printt("seems to work")
-				// linkedEnt.Destroy()
-			// }
-		// }
-	// }
+	foreach( entity node in unusedEndNodes )
+	{
+		entity lastNode = GetLastLinkedEntOfType( node )
+		array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray()
+		foreach( linkedEnt in endNodeLinkedEnts )
+		{
+			if ( linkedEnt.GetClassName() == "func_brush_lightweight" )
+				linkedEnt.Destroy()
+		}
+	}
 }
 
 void function CreateHoverTankMinimapIconForPlayers( HoverTank hoverTank )
@@ -598,17 +696,30 @@ void function SetMinimapObjectVisibleToPlayers( entity minimapObj, bool visible 
 	}
 }
 
+
+//#if NAVMESH_ALL_SUPPORTED
+const int HULL_HOVERTANK = HULL_TITAN
+//#else
+//const int HULL_HOVERTANK = HULL_PROWLER
+//#endif
+
 const int ZIP_ATTACH_RIGHT_IDX 		= 0
 const int ZIP_ATTACH_LEFT_IDX 		= 1
 const int ZIP_ATTACH_BACK_IDX 		= 2
 
 const int NUM_ZIP_ATTACHMENTS		= 3
 const float ZIPLINE_ATTACH_FOV		= 0.707
+
+
 void function FireHoverTankZiplines( HoverTank hoverTank, entity endNode )
 {
+	bool hasSupplyShip = ( hoverTank in file.TEMP_hoverTankToSupplyShip )
+	bool flattenVector = true
+
 	if ( IsValid( hoverTank.flightMover ) )
 	{
 		hoverTank.flightMover.AllowZiplines()
+		hoverTank.flightMover.AllowMantle()
 	}
 	array<entity> endNodeZiplineTargets = endNode.GetLinkEntArray()
 	array<vector> endNodeZiplineTargetOrigins
@@ -620,128 +731,129 @@ void function FireHoverTankZiplines( HoverTank hoverTank, entity endNode )
 
 		endNodeZiplineTargetOrigins.append( targetEnt.GetOrigin() )
 		numZiplineTargets++
-		// #if DEVELOPER
-		// DebugDrawSphere( targetEnt.GetOrigin(), 25, 255, 255, 255, true, 100 )
-		// #endif
 	}
 	array<vector> hoverTankZiplineAttachOrigins
-	entity extModel = hoverTank.flightMover
-	int ziplineRAttach 	= extModel.LookupAttachment( "ZIPLINE_R" )
-	int ziplineLAttach 	= extModel.LookupAttachment( "ZIPLINE_L" )
-	int ziplineBAttach 	= extModel.LookupAttachment( "ZIPLINE_B" )
-	hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineRAttach ) )
-	hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineLAttach ) )
-	hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineBAttach ) )
+	array<vector> hoverTankZiplineAttachDirs
+
+	if ( !hasSupplyShip )
+	{
+		entity extModel = hoverTank.flightMover
+		int ziplineRAttach 	= extModel.LookupAttachment( "ZIPLINE_R" )
+		int ziplineLAttach 	= extModel.LookupAttachment( "ZIPLINE_L" )
+		int ziplineBAttach 	= extModel.LookupAttachment( "ZIPLINE_B" )
+		hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineRAttach ) )
+		hoverTankZiplineAttachDirs.append( extModel.GetRightVector() * -1 )
+		hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineLAttach ) )
+		hoverTankZiplineAttachDirs.append( extModel.GetRightVector() )
+		hoverTankZiplineAttachOrigins.append( extModel.GetAttachmentOrigin( ziplineBAttach ) )
+		hoverTankZiplineAttachDirs.append( extModel.GetForwardVector() * -1 )
+	}
+	else
+	{
+		SupplyShip ship = file.TEMP_hoverTankToSupplyShip[ hoverTank ]
+
+		while ( !ship.frontDoorOpened || !ship.backDoorOpened )
+			WaitFrame()
+
+		endNodeZiplineTargetOrigins.clear()
+
+		array<entity> startPoints = ship.ziplineNodes
+
+		foreach ( ent in startPoints )
+		{
+			vector start = ent.GetOrigin()
+
+			vector dir = <0,0,-1>
+
+			hoverTankZiplineAttachOrigins.append( start )
+			hoverTankZiplineAttachDirs.append( dir )
+
+			TraceResults trace = TraceLine( start, start + (dir*8000), [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+			vector org = trace.endPos
+
+			vector ornull point = NavMesh_ClampPointForHullWithExtents( org, HULL_HOVERTANK, <100,100,100> )
+
+			if ( point != null )
+			{
+				org = expect vector( point )
+				endNodeZiplineTargetOrigins.append( org )
+			}
+		}
+
+		flattenVector = false
+	}
 
 	array< array< vector > > zipAttachPairCandidates
 
-	for( int i; i < NUM_ZIP_ATTACHMENTS; i++ )
+	for( int i; i < hoverTankZiplineAttachOrigins.len(); i++ )
 	{
 		zipAttachPairCandidates.append( [] )
-		vector attachDir = GetZiplineAttachDirectionFromIndex( i, extModel )
-		bool spawnedZip = false
-		for( int j; j < numZiplineTargets; j++ )
-		{
-			if( spawnedZip )
-				continue
+		vector attachDir = hoverTankZiplineAttachDirs[ i ]
 
-			vector attachOrigin = hoverTankZiplineAttachOrigins[ i ]
-			vector hoverTankToPoint = Normalize( FlattenVector( endNodeZiplineTargetOrigins[ j ] - attachOrigin ) )
+		float maxDot = 0.0
+		int indexToUse = -1
+
+		vector attachOrigin = hoverTankZiplineAttachOrigins[ i ]
+
+		for( int j; j < endNodeZiplineTargetOrigins.len() ; j++ )
+		{
+			vector fwd = flattenVector ? FlattenVec( endNodeZiplineTargetOrigins[ j ] - attachOrigin ) : ( endNodeZiplineTargetOrigins[ j ] - attachOrigin )
+			vector hoverTankToPoint = Normalize( fwd )
 			float dot2D             = DotProduct( hoverTankToPoint, attachDir )
-			if ( dot2D > ZIPLINE_ATTACH_FOV )
+			if ( dot2D > ZIPLINE_ATTACH_FOV && dot2D > maxDot )
 			{
-				vector ziplineEndOrigin = endNodeZiplineTargetOrigins[ j ]
-				zipAttachPairCandidates[ i ].append( ziplineEndOrigin )
-				array<entity> ziplineEnts = CreateHovertankZipline( attachOrigin, ziplineEndOrigin )
-				#if DEVELOPER
-				printt( "[+] Hovertank zipline spawned in ", attachOrigin, ziplineEndOrigin )
-				#endif
-				spawnedZip = true
-				//thread HovertankZiplineLaunchSequence( ziplineEnts, attachOrigin, ziplineEndOrigin )
+				maxDot = dot2D
+				indexToUse = j
 			}
+		}
+
+		if ( indexToUse != -1 )
+		{
+			int j = indexToUse
+			vector ziplineEndOrigin = endNodeZiplineTargetOrigins[ j ]
+			zipAttachPairCandidates[ i ].append( ziplineEndOrigin )
+			array<entity> ziplineEnts = CreateHovertankZipline( attachOrigin, ziplineEndOrigin )
+			thread HovertankZiplineLaunchSequence( ziplineEnts, attachOrigin, ziplineEndOrigin )
+			#if DEVELOPER
+			DebugDrawSphere( ziplineEndOrigin, 16, 255, 0, 255, true, 20 )
+			#endif
+			endNodeZiplineTargetOrigins.remove( j )
 		}
 	}
 }
 
-vector function GetZiplineAttachDirectionFromIndex( int idx, entity model )
-{
-	switch( idx )
-	{
-		case ZIP_ATTACH_RIGHT_IDX:
-			return model.GetRightVector() * -1
-		case ZIP_ATTACH_LEFT_IDX:
-			return model.GetRightVector()
-		case ZIP_ATTACH_BACK_IDX:
-			return model.GetForwardVector() * -1
-	}
-
-	unreachable
-}
-
 void function HovertankZiplineLaunchSequence( array<entity> ziplineEnts, vector startPos, vector endPos )
 {
-	printt( "Hovertank zipline launch sequence!" )
 	float time
-	while ( time < 10 )
-	{
-		DebugDrawSphere( ziplineEnts[ 1 ].GetOrigin(), 64, 255, 0, 0, true, 0.2 )
-		time += 0.1
-		wait 0.1
-	}
-	entity mover = CreateScriptMover( startPos )
+
+	entity mover = CreateScriptMover_NEW( HOVER_TANKS_ZIP_MOVER_SCRIPTNAME, startPos )
+
+	ziplineEnts[ 0 ].Zipline_Disable()
+	ziplineEnts[ 1 ].SetOrigin( startPos )
 	ziplineEnts[ 1 ].SetParent( mover )
 
 	mover.NonPhysicsMoveTo( endPos, 0.5, 0, 0 )
-	while ( time < 10.5 )
-	{
-		DebugDrawSphere( mover.GetOrigin(), 16, 255, 0, 255, true, 0.2 )
-		DebugDrawSphere( ziplineEnts[ 1 ].GetOrigin(), 64, 255, 0, 0, true, 0.2 )
-		time += 0.1
-		wait 0.1
-	}
-	DebugDrawSphere( mover.GetOrigin(), 16, 255, 0, 255, true, 20 )
-	DebugDrawSphere( ziplineEnts[ 1 ].GetOrigin(), 64, 255, 0, 0, true, 20 )
-	mover.Destroy()
+	wait 0.5
+	ziplineEnts[ 1 ].ClearParent()
 	ziplineEnts[ 0 ].Zipline_Enable()
+	mover.Destroy()
 }
 
 array<entity> function CreateHovertankZipline( vector startPos, vector endPos )
 {
-	entity zipline_start = CreateEntity( "zipline" )
-	zipline_start.kv.Material = "cable/zipline.vmt"
-	zipline_start.kv.ZiplineAutoDetachDistance = "160"
-	zipline_start.kv._zipline_rest_point_0 = startPos.x + " " + startPos.y + " " + startPos.z
-	zipline_start.kv._zipline_rest_point_1 = endPos.x + " " + endPos.y + " " + endPos.z
-	zipline_start.SetOrigin( startPos )
-
-	entity zipline_end = CreateEntity( "zipline_end" )
-	zipline_end.kv.ZiplineAutoDetachDistance = "160"
-	zipline_end.SetOrigin( endPos )
-	// Comment in if using zipline sequence
-	//zipline_end.SetOrigin( startPos )
-
-	zipline_start.LinkToEnt( zipline_end )
-
-	DispatchSpawn( zipline_start )
-	DispatchSpawn( zipline_end )
-
-	// Comment in if using zipline sequence
-	//zipline_start.Zipline_Disable()
-
-	array<entity> ziplineEnts = [ zipline_start, zipline_end ]
-	return ziplineEnts
+	return CreateZipline( startPos, endPos )
 }
 
 array<entity> function GetHoverTankStartNodes( array<entity> endNodes )
 {
-	// if ( endNodes.len() == 1 )
-	// {
-		// array<entity> startNodes = GetEntArrayByScriptName( HOVERTANK_START_NODE_NAME )
-		// Assert( startNodes.len() >= 1 )
-		// startNodes.randomize()
-		// startNodes.resize(1)
-		// return startNodes
-	// }
+	if ( endNodes.len() == 1 )
+	{
+		array<entity> startNodes = GetEntArrayByScriptName( HOVERTANK_START_NODE_NAME )
+		Assert( startNodes.len() >= 1 )
+		startNodes.randomize()
+		startNodes.resize(1)
+		return startNodes
+	}
 
 	const vector DEV_APPROX_Z_OFFSET = < 0, 0, 8000 >
 	const float NODE_TO_TARGET_DIR_DOT_TOLERANCE = cos( PI / 4 ) 			// Start nodes to be considered for selection must be within 45 degrees of target dir
@@ -873,7 +985,13 @@ array<entity> function GetHoverTankEndNodes( int count, int endNodeType, array<e
 
 	// Don't allow hover tank positions that will be within one of the final circles because they are OP positions for end game
 	array<entity> nodesNotInFinalCircles
-	DeathFieldStageData deathFieldStageDataSmall = GetDeathFieldStage( GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX ) + 1 )
+	int deathFieldStageIndexSmall = GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX ) + 1
+	if ( deathFieldStageIndexSmall >= SURVIVAL_GetDeathFieldStages().len() )
+	{
+		Warning( "Hovertank playlist var 'canyonlands_hovertanks_circle_index' has bad death field stage: %d", deathFieldStageIndexSmall )
+		deathFieldStageIndexSmall = SURVIVAL_GetDeathFieldStages().len() - 1
+	}
+	DeathFieldStageData deathFieldStageDataSmall = GetDeathFieldStage(  deathFieldStageIndexSmall )
 	float invalidRadius = deathFieldStageDataSmall.endRadius + HOVER_TANK_RADIUS
 	for ( int i = potentialEndNodes.len() - 1; i >= 0; i-- )
 	{
@@ -884,7 +1002,13 @@ array<entity> function GetHoverTankEndNodes( int count, int endNodeType, array<e
 	if ( endNodeType == HOVER_TANKS_TYPE_MID )
 	{
 		// Exclude end nodes that are outside the current safe circle
-		DeathFieldStageData deathFieldStageDataLarge = GetDeathFieldStage( GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX ) )
+		int deathFieldStageIndexLarge = GetCurrentPlaylistVarInt( "canyonlands_hovertanks_circle_index", HOVER_TANKS_DEFAULT_CIRCLE_INDEX )
+		if ( deathFieldStageIndexLarge >= SURVIVAL_GetDeathFieldStages().len() )
+		{
+			Warning( "Hovertank playlist var 'canyonlands_hovertanks_circle_index' has bad death field stage: %d", deathFieldStageIndexLarge )
+			deathFieldStageIndexLarge = SURVIVAL_GetDeathFieldStages().len() - 1
+		}
+		DeathFieldStageData deathFieldStageDataLarge = GetDeathFieldStage(  deathFieldStageIndexLarge )
 		for ( int i = potentialEndNodes.len() - 1; i >= 0; i-- )
 		{
 			if ( Distance2D( deathFieldStageDataLarge.endPos, potentialEndNodes[i].GetOrigin() ) >= deathFieldStageDataLarge.endRadius )
@@ -1275,7 +1399,7 @@ void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity pla
 
 void function MinimapPackage_HoverTank( entity ent, var rui )
 {
-	#if DEV
+	#if DEVELOPER
 		printt( "Adding 'rui/hud/gametype_icons/survival/sur_hovertank_minimap' icon to minimap" )
 	#endif
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap" )
@@ -1286,7 +1410,7 @@ void function MinimapPackage_HoverTank( entity ent, var rui )
 
 void function MinimapPackage_HoverTankDestination( entity ent, var rui )
 {
-	#if DEV
+	#if DEVELOPER
 		printt( "Adding 'rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination' icon to minimap" )
 	#endif
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination" )

@@ -331,7 +331,7 @@ void function SetupDefaultDevCommandsMP()
 
 		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
+		SetupDevCommand( "Spawn Deathbox", "SpawnDeathboxAtCrosshair" )
 		//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
 		//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
 		//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
@@ -390,7 +390,7 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "Melee: Shadow Hands", "script thread SetupHeirloom(3)" )
 		SetupDevCommand( "Melee: Boxing Hands", "script thread SetupHeirloom(4)" )
 		SetupDevCommand( "Custom Melee: Bolo Sword", "script thread SetupHeirloom(0)" )
-		SetupDevCommand( "Custom Melee: VCTBlue Knife", "script thread SetupHeirloom(2)" )
+		// SetupDevCommand( "Custom Melee: VCTBlue Knife", "script thread SetupHeirloom(2)" )
 
 		// This adds CAPTURE MODE every time you load a level.
 		// Capture mode doesn't work, so I am commenting this out.
@@ -745,6 +745,7 @@ void function SetupFS_NPCs()
 {
 	SetupDevCommand( "Dummy", "script DEV_SpawnDummyAtCrosshair()" )
 	SetupDevCommand( "Legend as Dummy", "script DEV_SpawnLegendAtCrosshair()" )
+	SetupDevCommand( "Marvin", "script DEV_SpawnMarvinAtCrosshair()" )
 	SetupDevCommand( "Prowler", "script DEV_SpawnProwlerAtCrosshair()" )
 	SetupDevCommand( "Spider", "script DEV_SpawnSpiderAtCrosshair()" )
 	SetupDevCommand( "Spectre", "script DEV_SpawnSpectreAtCrosshair()" )
@@ -753,6 +754,7 @@ void function SetupFS_NPCs()
 	SetupDevCommand( "Elite Pilot", "script DEV_SpawnElitePilotAtCrosshair()" )
 	SetupDevCommand( "Explosive Tick", "script DEV_SpawnExplosiveTickAtCrosshair()" )
 }
+
 void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles

@@ -1,0 +1,18 @@
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_rr_desertlands_64k_x_64k.nut
+	mp/levels/survival_preprocess/mp_rr_desertlands_64k_x_64k.nut
+	mp/_lasermesh.gnut
+]
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_rr_desertlands_64k_x_64k.nut
+	mp/cl_lasermesh.gnut
+]
+When: "SERVER || CLIENT"
+Scripts:
+[
+	mp/levels/mp_rr_desertlands_common.nut
+]

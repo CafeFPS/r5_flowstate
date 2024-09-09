@@ -26,7 +26,7 @@ void function ServerCallback_SetEntityVar( int eHandle, varHandle, value )
 	if ( !( eHandle in _entityVarsByEHandle[ className ] ) )
 	{
 		_entityVarsByEHandle[ className ][ eHandle ] <- clone ent._entityVars
-		ent._entityVars = _entityVarsByEHandle[ className ][ eHandle ]
+		ent._entityVars = _entityVarsByEHandle[ className ][ eHandle ] //wtf?
 	}
 
 
@@ -35,16 +35,16 @@ void function ServerCallback_SetEntityVar( int eHandle, varHandle, value )
 
 	Assert( ("_entityVars" in ent) )
 
-	if ( _entityClassVarsIsEnts[className][varName] && value != null )
+	if ( _entityClassVarsIsEnts[className][varName] && value == null )
 	{
-		//printl( "NETWORK VAR VALUE IS EHANDLE. FINDING ENTITY" )
-		value = GetEntityFromEncodedEHandle( value )
+		//printl( "NETWORK VAR VALUE IS EHANDLE. FINDING ENTITY" ) //?wtf?
+		value = GetEntityFromEncodedEHandle( eHandle )
 	}
 
 	local oldValue = ent._entityVars[varName]
 	ent._entityVars[varName] = value
 
-	//printl( "Set entityVar " + varName + " to " + value )
+	Warning( "Set entityVar " + varName + " to " + value )
 	CodeCallback_EntityVarChanged( ent, varName, value, oldValue )
 }
 

@@ -32,6 +32,14 @@ void function DropoffPatch_Init()
 		NewLocPair( < 2380.27, 377.874, 469.924 >, < 89, 222.47, 0 > ),
 		NewLocPair( < 1998.2, 51.0162, 464.697 >, < 89, 315.202, 0 > )
 	]
+	
+	AddCallback_OnClientConnected
+	(
+		void function( entity player )
+		{
+			DropoffPatch_SpawnLights( player )
+		}
+	)
 }
 
 void function Patch_Barrier_Dropoff() 

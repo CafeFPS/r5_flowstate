@@ -5,8 +5,10 @@ global function UpdateSystemPanel
 global function ToggleSetHunter
 global function OpenSystemMenu
 
+global function UI_Callback_MOTD
 global function SetMotdText
 global function OpenMOTD
+
 
 global function ShouldDisplayOptInOptions
 
@@ -51,6 +53,7 @@ struct
 	table<var, ButtonData > DestroyDummiesAdmin
 	table<var, ButtonData > OpenWeaponsMenu
 	table<var, ButtonData > OpenMOTD
+	table<var, ButtonData > OpenScenariosStandings
 
 	InputDef& qaFooter
 	
@@ -70,6 +73,14 @@ void function InitSystemMenu( var newMenuArg ) //
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnSystemMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnSystemMenu_Close )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnSystemMenu_NavigateBack )
+
+	AddUICallback_LevelShutdown
+	(
+		void function()
+		{
+			file.motdText = ""
+		}
+	)
 }
 
 void function InitSystemPanelMain( var panel )
@@ -174,17 +185,18 @@ void function InitSystemPanel( var panel )
 	file.DestroyDummiesAdmin[ panel ] <- clone data
 	file.OpenWeaponsMenu[ panel ] <- clone data
 	file.OpenMOTD[ panel ] <- clone data
+	file.OpenScenariosStandings[ panel ] <- clone data
 
-	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].label = "#FS_FINISH_CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
 	
-	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
+	file.SetHunterButtonData[ panel ].label = "#FS_SET_HUNTER"
 	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
 		
-	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
+	file.TDM_ChangeWeapons[ panel ].label = "#FS_CHANGE_WEAPON"
 	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
@@ -208,16 +220,16 @@ void function InitSystemPanel( var panel )
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
 	
-	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].label = "#FS_TOGGLE_THIRD_PERSON"
 	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
-	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
+	file.endmatchButtonData[ panel ].label = "#FS_END_GAME_LOBBY"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
 	
-	file.hubButtonData[ panel ].label = "HUB"
+	file.hubButtonData[ panel ].label = "#FS_HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
 
-	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
+	file.MGsettingsButtonData[ panel ].label = "#FS_GYM_SETTINGS"
 	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
 
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
@@ -226,35 +238,38 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
-	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
+	file.ToggleScoreboardFocus[ panel ].label = "#FS_TOGGLE_SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
-	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "#FS_TOGGLE_VS_UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
-	file.OpenLGDuelsSettingsData[ panel ].label = "LG DUELS SETTINGS"
+	file.OpenLGDuelsSettingsData[ panel ].label = "#FS_LG_DUELS_SETTINGS"
 	file.OpenLGDuelsSettingsData[ panel ].activateFunc = OpenLGDuelsSettings_System
 
-	file.OpenValkSimulatorSettingsData[ panel ].label = "VALK ULT SIM SETTINGS"
+	file.OpenValkSimulatorSettingsData[ panel ].label = "#FS_VALK_ULT_SIM_SETTINGS"
 	file.OpenValkSimulatorSettingsData[ panel ].activateFunc = OpenValkSimulatorSettings_System
 	
-	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK"
+	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK" //set by server, not used here
 	file.LockCurrent1v1Enemy[ panel ].activateFunc = OpenLockCurrent1v1Enemy_System
 	
-	file.ToggleRest[ panel ].label = "TOGGLE REST"
+	file.ToggleRest[ panel ].label = "#FS_TOGGLE_REST"
 	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
 	
-	file.DestroyDummies[ panel ].label = "Destroy Dummies"
+	file.DestroyDummies[ panel ].label = "#FS_DESTROY_DUMMIES"
 	file.DestroyDummies[ panel ].activateFunc = DestroyDummys_MovementRecorder
 	
-	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
+	file.DestroyDummiesAdmin[ panel ].label = "#FS_ADMIN_DESTROY_DUMMIES"
 	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
 	
-	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
+	file.OpenWeaponsMenu[ panel ].label = "#FS_WEAPONS_MENU"
 	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
 	
-	file.OpenMOTD[ panel ].label = "SERVER MOTD"
+	file.OpenMOTD[ panel ].label = "#FS_SERVER_MOTD"
 	file.OpenMOTD[ panel ].activateFunc = OpenMOTD	
+	
+	file.OpenScenariosStandings[ panel ].label = "#FS_SCENARIOS_STANDINGS"
+	file.OpenScenariosStandings[ panel ].activateFunc = UI_OpenScenariosStandingsMenu	
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -280,7 +295,7 @@ void function UpdateSystemPanel( var panel )
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
 	else if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
-		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
+		file.lobbyReturnButtonData[ panel ].label = "#FS_EXIT_AIM_TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	foreach ( index, button in file.buttons[ panel ] )
@@ -305,16 +320,15 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
-			
-			//if( Playlist() != ePlaylists.fs_lgduels_1v1 && Playlist() != ePlaylists.fs_dm_fast_instagib )
-			//{
-				SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
-			//}
-			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 		}
 		else if( Playlist() == ePlaylists.fs_movementrecorder )
 		{
 			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+		}
+		else if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 		}
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
@@ -346,6 +360,10 @@ void function UpdateSystemPanel( var panel )
 			{	
 				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
 			}
+		}
+		if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			SetButtonData( panel, buttonIndex++, file.OpenScenariosStandings[ panel ] )
 		}
 		
 		SetButtonData( panel, buttonIndex++, file.OpenMOTD[ panel ] )
@@ -574,16 +592,27 @@ bool function ShouldDisplayOptInOptions()
 	return GetGlobalNetBool( "isOptInServer" )
 }
 
+void function UI_Callback_MOTD()
+{
+	SetMotdText( "" )
+}
+
 void function SetMotdText( string text )
 {
 	file.motdText = text
 	
 	// auto-opening motd disabled as per amos request
+
+	if( !GetConVarInt( "show_motd_on_server_first_join" ) )
+		return
+
+	string server = GetServerID()
 	
-	// if( !("server" in file.seenMotdForServer) )
-	// {
-		// OpenMOTD()
-	// }
+	if( !( server in file.seenMotdForServer ) )
+	{
+		OpenMOTD()
+		file.seenMotdForServer[ server ] <- true
+	}
 }
 
 void function OpenMOTD()
@@ -591,26 +620,29 @@ void function OpenMOTD()
 	if ( IsLobby() )
 		return
 		
-	string motd = ""
-	
 	if ( file.motdText != "" )
 	{ 
-		motd = file.motdText
-	} 
-	else if( Localize("#FS_PLAYLIST_MOTD") != "" )
+		OpenServerMOTD( file.motdText )
+		return
+	}
+	
+	string motd = ""
+	string motdLocalized = Localize( "#FS_PLAYLIST_MOTD" )
+	string motdLocaliziedContinue = Localize( "#FS_PLAYLIST_MOTD_CONTINUE" )
+	
+	if( motdLocalized != "" && motdLocalized != "#FS_PLAYLIST_MOTD" )
 	{
-		motd = Localize("#FS_PLAYLIST_MOTD")
+		motd = motdLocalized
+		
+		if( motdLocaliziedContinue != "" && motdLocaliziedContinue != "#FS_PLAYLIST_MOTD_CONTINUE" )
+		{
+			motd = motd + motdLocaliziedContinue	
+		}
+		
+		file.motdText = motd //save for repeat opens
 	}
 	
 	OpenServerMOTD( motd )
-	
-	// DialogData dialog
-	// dialog.header = "Server Message of the Day"
-	// dialog.message = motd
-	// dialog.darkenBackground = true
-	// dialog.showPCBackButton = true
-	// dialog.useFullMessageHeight = true
-	// OpenDialog( dialog )
 }
 
 void function UpdateOptInFooter()

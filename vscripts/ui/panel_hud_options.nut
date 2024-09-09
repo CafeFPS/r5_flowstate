@@ -33,6 +33,7 @@ void function InitHudOptionsPanel( var panel )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchAutoSprint" ), "#SETTING_AUTOSPRINT", "#SETTING_AUTOSPRINT_DESC", $"rui/menu/settings/settings_hud" )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchPilotDamageIndicators" ), "#HUD_PILOT_DAMAGE_INDICATOR_STYLE", "#HUD_PILOT_DAMAGE_INDICATOR_STYLE_DESC", $"rui/menu/settings/settings_hud" )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchDamageClosesMenu" ), "#HUD_DAMAGE_CLOSES_MENU", "#HUD_DAMAGE_CLOSES_MENU_DESC", $"rui/menu/settings/settings_hud" )
+	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchShowHealthbars" ), "#HUD_SHOW_HEALTHBARS", "#HUD_SHOW_HEALTHBARS_DESC", $"rui/menu/settings/settings_hud" )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchStreamerMode" ), "#HUD_STREAMER_MODE", "#HUD_STREAMER_MODE_DESC", $"rui/menu/settings/settings_hud" )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchAnalytics" ), "#HUD_PIN_OPT_IN", "#HUD_PIN_OPT_IN_DESC", $"rui/menu/settings/settings_hud" )
 	
@@ -48,10 +49,13 @@ void function InitHudOptionsPanel( var panel )
 
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), "#MENU_CHAT_SPEECH_TO_TEXT", "#OPTIONS_MENU_CHAT_SPEECH_TO_TEXT_DESC", $"rui/menu/settings/settings_hud" )
 	Hud_SetVisible( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), IsAccessibilityAvailable() )
+	
 	#if PC_PROG
 		SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchChatMessages" ), "#MENU_CHAT_TEXT_TO_SPEECH", "#OPTIONS_MENU_CHAT_TEXT_TO_SPEECH_DESC", $"rui/menu/settings/settings_hud" )
 		Hud_SetVisible( Hud_GetChild( contentPanel, "SwitchChatMessages" ), IsAccessibilityAvailable() )
 	#endif //PC_PROG
+	
+	SetupSettingsButton( Hud_GetChild( contentPanel, "SwitchShowMotd" ), "#HUD_SHOW_MOTD", "#HUD_SHOW_MOTD_DESC", $"rui/menu/settings/settings_hud" )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_BACK, true, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESTORE_DEFAULTS", OpenConfirmRestoreHUDDefaultsDialog )
@@ -60,13 +64,14 @@ void function InitHudOptionsPanel( var panel )
 	#if CONSOLE_PROG
 		AddPanelFooterOption( panel, RIGHT, BUTTON_Y, true, "#BUTTON_REVIEW_TERMS", "#REVIEW_TERMS", OpenEULAReviewFromFooter, IsLobbyAndEULAAccepted )
 	#endif // CONSOLE_PROG
+	
 	//#if DURANGO_PROG
-	//AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
+		//AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
 	//#endif // DURANGO_PROG
 
 	ScrollPanel_InitPanel( panel )
 	ScrollPanel_InitScrollBar( panel, Hud_GetChild( panel, "ScrollBar" ) )
-
+	
 	file.conVarDataList.append( CreateSettingsConVarData( "hud_setting_showButtonHints", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "hud_setting_accessibleChat", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "hud_setting_damageIndicatorStyle", eConVarType.INT ) )
@@ -79,10 +84,13 @@ void function InitHudOptionsPanel( var panel )
 	file.conVarDataList.append( CreateSettingsConVarData( "damage_indicator_style_pilot", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "speechtotext_enabled", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "player_setting_damage_closes_deathbox_menu", eConVarType.INT ) )
+	file.conVarDataList.append( CreateSettingsConVarData( "enable_healthbar", eConVarType.INT ) )
 	
 	#if PC_PROG
 		file.conVarDataList.append( CreateSettingsConVarData( "hudchat_play_text_to_speech", eConVarType.INT ) )
 	#endif
+	
+	file.conVarDataList.append( CreateSettingsConVarData( "show_motd_on_server_first_join", eConVarType.INT ) )
 }
 
 void function OpenConfirmRestoreHUDDefaultsDialog( var button )
@@ -129,10 +137,13 @@ void function RestoreHUDDefaults()
 	SetConVarToDefault( "weapon_setting_autocycle_on_empty" )
 	SetConVarToDefault( "player_setting_autosprint" )
 	SetConVarToDefault( "player_setting_damage_closes_deathbox_menu" )
+	SetConVarToDefault( "enable_healthbar" )
 
 	#if PC_PROG
 		SetConVarToDefault( "hudchat_visibility" )
 	#endif //PC_PROG
+	
+	SetConVarToDefault( "show_motd_on_server_first_join" )
 
 	SaveSettingsConVars( file.conVarDataList )
 

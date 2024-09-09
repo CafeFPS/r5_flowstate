@@ -53,7 +53,7 @@
 	"PanelTopText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Maps"
+		"labelText"				"#FS_MAPS"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"

@@ -46,6 +46,7 @@ global function DisplaySpectatorCardSidePane
 #endif
 
 global function AddCallback_ShouldShowDeathScreen
+global function DeathScreen_SpectatorTargetChanged
 
 global function UpdateRespawnStatus
 global function DeathScreen_UpdateRespawnTime
@@ -344,7 +345,7 @@ void function DeathScreen_BleedoutEnded( entity player )
 
 void function DeathScreen_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
 {
-	mAssert( player == GetLocalClientPlayer(), "player != GetLocalClientPlayer()" )
+	//mAssert( player == GetLocalClientPlayer(), "player != GetLocalClientPlayer()" )
 
 	RunUIScript( "UI_SetShouldShowSkip", false )
 
@@ -1799,7 +1800,7 @@ array<int> function GetRecapPlayerEHIArray( EncodedEHandle playerEHandle )
 
 void function UpdateSelectedRecapBlock( int blockIndex )
 {
-	//Todo(dw): Debug long damage blocks
+	//Todo(dw): Debug long damage blocks //done?
 	//mAssert( file.damageBlockElementArray.len() > blockIndex, "file.damageBlockElementArray.len IS LESS THAN blockIndex" )
 	
 	if( blockIndex > file.damageBlockElementArray.len() - 1 )
@@ -1967,7 +1968,7 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 	return $""
 }
 
-void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime )
+void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime, int index, int numSentBlock )
 {
 	if ( file.deathRecapDataUpdated )
 	{
@@ -1975,11 +1976,11 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 		file.deathRecapDamageBlocks.clear()
 	}
 	
-	foreach( damageBlockTest in file.deathRecapDamageBlocks )
-	{
-		if( Time() > damageBlockTest.blockTime + 60 )
-			file.deathRecapDamageBlocks.fastremovebyvalue( damageBlockTest )
-	}
+	// foreach( damageBlockTest in file.deathRecapDamageBlocks )
+	// {
+		// if( Time() > damageBlockTest.blockTime + 60 )
+			// file.deathRecapDamageBlocks.fastremovebyvalue( damageBlockTest )
+	// }
 
 	DeathRecapDamageData damageBlock
 	damageBlock.attackerEHandle = attackerEHandle
@@ -1994,6 +1995,10 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 	damageBlock.blockTime = blockTime
 
 	file.deathRecapDamageBlocks.append( damageBlock )
+	
+	#if DEVELOPER
+		printt( "Got damage block on client from server", numSentBlock, "- DAMAGE", totalDamage, "- ATTACKER", attackerEHandle )
+	#endif
 }
 
 void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, EncodedEHandle killerEHandle )

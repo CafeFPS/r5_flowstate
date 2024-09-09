@@ -1721,116 +1721,110 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 			fgFrameRuiAsset = $""
 		}
 	}
-	
-	try{
-		if ( handle.cardRui != null )
+
+	if ( handle.cardRui != null )
+	{
+		RuiSetString( handle.cardRui, "playerName", playerName )
+		RuiSetInt( handle.cardRui, "teamMemberIndex", teamMemberIndex )
+		RuiSetBool( handle.cardRui, "shouldShowDetails", handle.shouldShowDetails )
+
+		for ( int idx = 0; idx < GLADIATOR_CARDS_NUM_FRAME_KEY_COLORS; idx++ )
+			RuiSetFloat3( handle.cardRui, "keyCol" + idx, keyColors[idx] )
+
+		if ( handle.isFrontFace )
 		{
-			RuiSetString( handle.cardRui, "playerName", playerName )
-			RuiSetInt( handle.cardRui, "teamMemberIndex", teamMemberIndex )
-			RuiSetBool( handle.cardRui, "shouldShowDetails", handle.shouldShowDetails )
+			Assert( handle.parentRui != null )
+			RuiSetBool( handle.cardRui, "isAlive", isAlive || IsLobby() )
+			#if DEVELOPER
+				RuiSetBool( handle.cardRui, "devShowSafeAreaOverlay", fileLevel.DEV_showSafeAreaOverlay )
+			#endif
 
-			for ( int idx = 0; idx < GLADIATOR_CARDS_NUM_FRAME_KEY_COLORS; idx++ )
-				RuiSetFloat3( handle.cardRui, "keyCol" + idx, keyColors[idx] )
-
-			if ( handle.isFrontFace )
+			var bgFrameRui = UpdateGladiatorCardNestedWidget( handle, "bgFrameInstance", handle.bgFrameNWS, bgFrameRuiAsset )
+			if ( bgFrameRui != null )
 			{
-				Assert( handle.parentRui != null )
-				RuiSetBool( handle.cardRui, "isAlive", isAlive || IsLobby() )
-				#if DEVELOPER
-					RuiSetBool( handle.cardRui, "devShowSafeAreaOverlay", fileLevel.DEV_showSafeAreaOverlay )
-				#endif
-
-				var bgFrameRui = UpdateGladiatorCardNestedWidget( handle, "bgFrameInstance", handle.bgFrameNWS, bgFrameRuiAsset )
-				if ( bgFrameRui != null )
+				if ( !frameHasOwnRUI )
 				{
-					if ( !frameHasOwnRUI )
-					{
-						RuiSetBool( bgFrameRui, "isArtFullFrame", isArtFullFrame )
-						RuiSetImage( bgFrameRui, "bgImage", bgFrameImageAsset )
-					}
+					RuiSetBool( bgFrameRui, "isArtFullFrame", isArtFullFrame )
+					RuiSetImage( bgFrameRui, "bgImage", bgFrameImageAsset )
 				}
+			}
 
-				var fgFrameRui = UpdateGladiatorCardNestedWidget( handle, "fgFrameInstance", handle.fgFrameNWS, fgFrameRuiAsset )
-				if ( fgFrameRui != null )
+			var fgFrameRui = UpdateGladiatorCardNestedWidget( handle, "fgFrameInstance", handle.fgFrameNWS, fgFrameRuiAsset )
+			if ( fgFrameRui != null )
+			{
+				//RuiSetString( fgFrameRui, "playerName", playerName )
+				int stancePIPSlotIndex = -1
+				if ( handle.characterCaptureStateOrNull != null )
 				{
-					//RuiSetString( fgFrameRui, "playerName", playerName )
-					int stancePIPSlotIndex = -1
-					if ( handle.characterCaptureStateOrNull != null )
-					{
-						CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
-						if ( ccs.stancePIPSlotStateOrNull != null )
-							stancePIPSlotIndex = PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) )
+					CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
+					if ( ccs.stancePIPSlotStateOrNull != null )
+						stancePIPSlotIndex = PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) )
 
-						if ( handle.onStancePIPSlotReadyFunc == null )
+					if ( handle.onStancePIPSlotReadyFunc == null )
+					{
+						handle.onStancePIPSlotReadyFunc = void function( int stancePIPSlotIndex, float movingSeqEndTime ) : ( handle )
 						{
-							handle.onStancePIPSlotReadyFunc = void function( int stancePIPSlotIndex, float movingSeqEndTime ) : ( handle )
+							// start of closure
+							if ( handle.cardRui != null && handle.fgFrameNWS.rui != null )
 							{
-								// start of closure
-								if ( handle.cardRui != null && handle.fgFrameNWS.rui != null )
-								{
-									RuiSetGameTime( handle.cardRui, "movingSeqEndTime", movingSeqEndTime )
-									RuiSetInt( handle.fgFrameNWS.rui, "stancePIPSlot", stancePIPSlotIndex )
+								RuiSetGameTime( handle.cardRui, "movingSeqEndTime", movingSeqEndTime )
+								RuiSetInt( handle.fgFrameNWS.rui, "stancePIPSlot", stancePIPSlotIndex )
 
-									//CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
-									//printt( "#SETTTTT", stancePIPSlotIndex, ccs.key, handle.currentOwnerEHI )
-								}
-								// end of closure
+								//CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
+								//printt( "#SETTTTT", stancePIPSlotIndex, ccs.key, handle.currentOwnerEHI )
 							}
+							// end of closure
 						}
-						if ( !(handle.onStancePIPSlotReadyFunc in ccs.onPIPSlotReadyFuncSet) )
-							ccs.onPIPSlotReadyFuncSet[handle.onStancePIPSlotReadyFunc] <- true
 					}
-					RuiSetInt( fgFrameRui, "stancePIPSlot", stancePIPSlotIndex )
-
-					if ( !frameHasOwnRUI )
-					{
-						RuiSetBool( fgFrameRui, "isArtFullFrame", isArtFullFrame )
-						RuiSetImage( fgFrameRui, "fgImage", fgFrameImageAsset )
-						RuiSetFloat( fgFrameRui, "fgImageBlend", fgFrameBlend )
-						RuiSetFloat( fgFrameRui, "fgImagePremul", fgFramePremul )
-						RuiSetImage( fgFrameRui, "bgImage", bgFrameImageAsset )
-					}
+					if ( !(handle.onStancePIPSlotReadyFunc in ccs.onPIPSlotReadyFuncSet) )
+						ccs.onPIPSlotReadyFuncSet[handle.onStancePIPSlotReadyFunc] <- true
 				}
-			}
+				RuiSetInt( fgFrameRui, "stancePIPSlot", stancePIPSlotIndex )
 
-			if ( handle.isBackFace )
-			{
-				UpdateStatTrackersOfNestedGladiatorCard( handle, characterOrNull )
-			}
-
-			if ( handle.presentation == eGladCardPresentation.FULL_BOX )
-			{
-				RuiSetBool( handle.cardRui, "frameHasOwnRUI", frameHasOwnRUI )
-
-
-				RuiSetBool( handle.cardRui, "isKiller", handle.isKiller )
-				RuiSetBool( handle.cardRui, "disableBlur", handle.disableBlur )
-			}
-
-			if ( handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL
-					|| handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_ANIMATED )
-			{
-				RuiSetInt( handle.cardRui, "teamMemberIndex", -1 )
-				RuiSetBool( handle.cardRui, "isChampion", (handle.currentOwnerEHI == GetGlobalNetInt( "championEEH" )) )
-			}
-
-			for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
-			{
-				var badgeRui = UpdateGladiatorCardNestedWidget( handle, "badge" + badgeIndex + "Instance", handle.badgeNWSList[badgeIndex], badgeRuiAssets[badgeIndex] )
-				if ( badgeRui != null )
+				if ( !frameHasOwnRUI )
 				{
-					RuiSetInt( badgeRui, "tier", badgeTiers[badgeIndex] )
-					if ( badgeImageAssets[badgeIndex] != $"" )
-						RuiSetImage( badgeRui, "img", badgeImageAssets[badgeIndex] )
+					RuiSetBool( fgFrameRui, "isArtFullFrame", isArtFullFrame )
+					RuiSetImage( fgFrameRui, "fgImage", fgFrameImageAsset )
+					RuiSetFloat( fgFrameRui, "fgImageBlend", fgFrameBlend )
+					RuiSetFloat( fgFrameRui, "fgImagePremul", fgFramePremul )
+					RuiSetImage( fgFrameRui, "bgImage", bgFrameImageAsset )
 				}
 			}
 		}
+
+		if ( handle.isBackFace )
+		{
+			UpdateStatTrackersOfNestedGladiatorCard( handle, characterOrNull )
+		}
+
+		if ( handle.presentation == eGladCardPresentation.FULL_BOX )
+		{
+			RuiSetBool( handle.cardRui, "frameHasOwnRUI", frameHasOwnRUI )
+
+
+			RuiSetBool( handle.cardRui, "isKiller", handle.isKiller )
+			RuiSetBool( handle.cardRui, "disableBlur", handle.disableBlur )
+		}
+
+		if ( handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL
+				|| handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_ANIMATED )
+		{
+			RuiSetInt( handle.cardRui, "teamMemberIndex", -1 )
+			RuiSetBool( handle.cardRui, "isChampion", (handle.currentOwnerEHI == GetGlobalNetInt( "championEEH" )) )
+		}
+
+		for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
+		{
+			var badgeRui = UpdateGladiatorCardNestedWidget( handle, "badge" + badgeIndex + "Instance", handle.badgeNWSList[badgeIndex], badgeRuiAssets[badgeIndex] )
+			if ( badgeRui != null )
+			{
+				RuiSetInt( badgeRui, "tier", badgeTiers[badgeIndex] )
+				if ( badgeImageAssets[badgeIndex] != $"" )
+					RuiSetImage( badgeRui, "img", badgeImageAssets[badgeIndex] )
+			}
+		}
 	}
-	catch(e420)
-	{
-		printt("gladiators error, debug it" )
-	}
-		
+
 	handle.updateQueued = false
 }
 #endif
@@ -2517,6 +2511,7 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 	{
 		ItemFlavor ornull trackerFlavOrNull = null
 		int ornull overrideDataIntegerOrNull = null
+		entity player = FromEHI( handle.currentOwnerEHI )
 
 		switch( index )
 		{
@@ -2524,38 +2519,36 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01814522143" ) ) //gcard_tracker_bangalore_kills
 			overrideDataIntegerOrNull = 0
 			
-			entity player = FromEHI( handle.currentOwnerEHI )
-
-			#if HAS_TRACKER_DLL
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonKills" )
-			#else
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "kills" )
-			#endif
-
+			if( IsValid( player ) )
+			{
+				if( GetServerVar( "tracker_enabled" ) )
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonKills" )
+				else
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "kills" )
+			}
 			break
 			case 1:
 			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00278004241" ) ) //gcard_tracker_bangalore_games_played
 			overrideDataIntegerOrNull = 0
-			entity player = FromEHI( handle.currentOwnerEHI )
 
-			#if HAS_TRACKER_DLL
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonGamesplayed" )
-			#else
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "deaths" )
-			#endif
-
+			if( IsValid( player ) )
+			{
+				if( GetServerVar( "tracker_enabled" ) )
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonGamesplayed" )
+				else
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "deaths" )
+			}
 			break
 			case 2:
 			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00833459246" ) ) //gcard_tracker_bangalore_damage_done
 			overrideDataIntegerOrNull = 0
-			entity player = FromEHI( handle.currentOwnerEHI )
-
-			#if HAS_TRACKER_DLL
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonDeaths" )
-			#else
-				overrideDataIntegerOrNull = player.GetPlayerNetInt( "damage" )
-			#endif
-
+			if( IsValid( player ) )
+			{
+				if( GetServerVar( "tracker_enabled" ) )
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonDeaths" )
+				else
+					overrideDataIntegerOrNull = player.GetPlayerNetInt( "damage" )
+			}
 			break
 		}
 

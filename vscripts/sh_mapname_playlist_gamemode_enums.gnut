@@ -16,10 +16,13 @@ global function shGlobalErrorCheck
 global const PRINT_GAMEMODE_DEBUGS = true
 
 //mode functions:
-global function is1v1GameType
+global function g_is1v1GameType
+global function g_bSinglePlayerChampion
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
+global function Flowstate_MapHasTrain
+global function Flowstate_ModeDissolveItems
 
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
@@ -57,6 +60,7 @@ global enum eMaps
 	mp_rr_desertlands_mu1, //24
 	mp_rr_canyonlands_mu2, //25
 	mp_rr_tropic_island, //26
+	mp_rr_desertlands_holiday, //27
 	
 	
 	_MAP_COUNT //LAST
@@ -102,7 +106,10 @@ global enum ePlaylists
 	fs_firstmovementmappractice, //35
 	fs_gymmovementmappractice, //36
 	survival_training, //37
-	
+	fs_apexkart, //38
+	winterexpress, //39
+	fs_vamp_1v1, //40
+	fs_1v1_headshots_only, //41
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -122,7 +129,8 @@ global enum eGamemodes
 	fs_snd, //10
 	flowstate_pkknockback, //11
 	map_editor_deprecated, //12
-	
+	fs_apexkart, //13
+	WINTEREXPRESS, //14	
 	
 	_GAMEMODES_COUNT //LAST
 }
@@ -146,6 +154,7 @@ const array<int> playlist1v1Types = [
 	
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_vamp_1v1
 ]
 
 const array<int> gamemode1v1Types = [
@@ -253,7 +262,7 @@ int function getMapEnumFromName( string mapString )
 {
 	string mapStringLower = mapString.tolower()
 	
-	for ( int i = 0; i < eMaps._MAP_COUNT; ++i ) 
+	for ( int i = 0; i < eMaps._MAP_COUNT; i++ ) 
 	{
 		if ( SH_globals.mapNames[i].tolower() == mapStringLower ) 
 		{
@@ -268,7 +277,7 @@ int function getPlaylistEnumFromName( string playlistString )
 {
 	string playlistStringLower = playlistString.tolower()
 	
-	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; ++i ) 
+	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; i++ ) 
 	{
 		if ( SH_globals.playlists[i].tolower() == playlistStringLower ) 
 		{
@@ -281,7 +290,7 @@ int function getPlaylistEnumFromName( string playlistString )
 
 int function getGamemodeEnumFromName( string gamemodeString ) 
 {
-	for ( int i = 0; i < eGamemodes._GAMEMODES_COUNT; ++i ) 
+	for ( int i = 0; i < eGamemodes._GAMEMODES_COUNT; i++ ) 
 	{
 		if ( SH_globals.gamemodes[i] == gamemodeString ) 
 		{
@@ -339,7 +348,7 @@ bool function shGlobalErrorCheck()
 //	gamemode conditional INIT functions	//
 //////////////////////////////////////////
 
-bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
+bool function g_is1v1GameType() //this function should be called to set a local script bool for conditionals, not directly used as conditional
 {
 	return ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 }
@@ -351,6 +360,9 @@ void function AllModeConditionals_Init()
 	TrackerSupportedMode_Init()
 	PassivesAllowed_Init()
 	PlayerRespawnModes_Init()
+	MapHasTrain_Init()
+	GamemodeHasSinglePlayerChampion()
+	ModeDissolvesDrops_Init()
 }
 
 
@@ -360,35 +372,61 @@ void function AllModeConditionals_Init()
 
 struct  
 {
-	bool passivesAllowed = false
-	bool trackerSupportedMode = false
-	bool playerDoesRespawn = false
+	bool passivesAllowed		= false
+	bool trackerSupportedMode	= false
+	bool playerDoesRespawn		= false
+	bool mapHasTrain			= false
+	bool bSinglePlayerChampion	= false
+	bool dissolveDrops			= false
 	
 } modeSettings
 
-
+//
 void function PassivesAllowed_Init()
 {
-	array<int> allowedPassiveGamemodes = [
+	array<int> allowedPassiveGamemodes = 
+	[
 		eGamemodes.SURVIVAL,
+		eGamemodes.WINTEREXPRESS,
 		eGamemodes.fs_dm
 	]
 	
-	array<int> allowedPassivePlaylists = [
+	array<int> allowedPassivePlaylists = 
+	[
 		ePlaylists.fs_1v1,
-		ePlaylists.fs_scenarios
+		ePlaylists.fs_scenarios,
+		ePlaylists.survival_dev,
+		ePlaylists.winterexpress,
+		ePlaylists.fs_survival_solos,
+		ePlaylists.fs_survival_duos,
+		ePlaylists.fs_survival
 	]
-	
-	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	
+
+	bool result = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		if( !result )
+		{
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for passives. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", 
+				Gamemode(), 
+				Gamemode() > -1 ? AllGamemodesArray()[Gamemode()] : "_INVALID", 
+				Playlist(), 
+				Playlist() > - 1 ? AllPlaylistsArray()[Playlist()]  : "_INVALID"
+			))
+		}
+	#endif 
+		
+	modeSettings.passivesAllowed = result
 }
 
-
+//
 void function TrackerSupportedMode_Init()
 {	
-	array<int> supportedTrackerPlaylists = [
+	array<int> supportedTrackerPlaylists = 
+	[
 		ePlaylists.fs_1v1,
 		ePlaylists.fs_dm,
 		ePlaylists.fs_tdm,
+		ePlaylists.fs_vamp_1v1,
 		ePlaylists.fs_lgduels_1v1,
 		ePlaylists.fs_scenarios,
 		ePlaylists.fs_survival,
@@ -399,7 +437,8 @@ void function TrackerSupportedMode_Init()
 		//ePlaylists.fs_survival_trios,
 	]
 
-	array<int> supportedTrackerGamemodes = [
+	array<int> supportedTrackerGamemodes = 
+	[
 		eGamemodes.fs_dm,
 		eGamemodes.SURVIVAL,
 		eGamemodes.TEAM_DEATHMATCH
@@ -424,14 +463,68 @@ void function TrackerSupportedMode_Init()
 	
 }
 
+//
 void function PlayerRespawnModes_Init()
 {
 	array<int> playerRespawnModes = 
 	[
 		ePlaylists.fs_movementrecorder
-	];
+	]
 	
 	modeSettings.playerDoesRespawn = ( IsFiringRangeGameMode() || playerRespawnModes.contains( Playlist() ) )
+}
+
+//
+void function MapHasTrain_Init()
+{
+	array<int> trainEnabledMaps = 
+	[
+		eMaps.mp_rr_desertlands_64k_x_64k,
+		eMaps.mp_rr_desertlands_64k_x_64k_nx,
+		eMaps.mp_rr_desertlands_64k_x_64k_tt,
+		eMaps.mp_rr_desertlands_holiday
+	]
+	
+	modeSettings.mapHasTrain = trainEnabledMaps.contains( MapName() )
+}
+
+//
+void function GamemodeHasSinglePlayerChampion()
+{
+	array<int> singlePlayerChampionPlaylists =
+	[
+		ePlaylists.fs_scenarios,
+		ePlaylists.fs_1v1
+	]
+	
+	modeSettings.bSinglePlayerChampion = singlePlayerChampionPlaylists.contains( Playlist() )
+}
+
+//
+void function ModeDissolvesDrops_Init()
+{
+	array<int> dissolveDropsPlaylists = 
+	[
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_dm,
+		ePlaylists.fs_tdm,
+		ePlaylists.fs_haloMod,
+		ePlaylists.fs_haloMod_ctf,
+		ePlaylists.fs_haloMod_oddball,
+		ePlaylists.fs_dm_oddball
+	]
+
+	array<int> dissolveDropsGamemodes = 
+	[
+		eGamemodes.fs_dm,
+		eGamemodes.SURVIVAL,
+		eGamemodes.TEAM_DEATHMATCH
+	]
+		
+	bool result = ( dissolveDropsGamemodes.contains( Gamemode() ) 
+	&& dissolveDropsPlaylists.contains( Playlist() ) )
+	
+	modeSettings.dissolveDrops = result
 }
 
 //////////////////////////////////////////
@@ -458,4 +551,19 @@ bool function Flowstate_IsTrackerSupportedMode()
 bool function Flowstate_PlayerDoesRespawn()
 {
 	return modeSettings.playerDoesRespawn
+}
+
+bool function Flowstate_MapHasTrain()
+{
+	return modeSettings.mapHasTrain
+}
+
+bool function g_bSinglePlayerChampion()
+{
+	return modeSettings.bSinglePlayerChampion
+}
+
+bool function Flowstate_ModeDissolveItems()
+{
+	return modeSettings.dissolveDrops
 }

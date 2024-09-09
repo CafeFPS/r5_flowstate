@@ -125,7 +125,9 @@ void function SetTimedEventNotification( float duration, string eventText, event
 {
 	entity player = GetLocalClientPlayer()
 
-	printt( "SetTimedEventNotification", duration, eventText, player.p.lastEventNotificationText )
+	#if DEVELOPER
+		printt( "SetTimedEventNotification", duration, eventText, player.p.lastEventNotificationText )
+	#endif
 
 	if ( eventText == player.p.lastEventNotificationText )
 	{
@@ -255,8 +257,8 @@ void function AddPermanentEventNotification( int enumValue, string displayString
 	clGlobal.permanentEventNotifications[ enumValue ] <- displayString
 }
 
-// TODO: Not typed since RegisterEntityVarChangeCallback is untyped
-function PermanentEventNotificationChanged( player, newValue, oldValue )
+// TODO: Not typed since RegisterEntityVarChangeCallback is untyped // ~mkos: DONE
+void function PermanentEventNotificationChanged( player, varName, newValue, oldValue )
 {
 	Assert( player == GetLocalClientPlayer() )
 	expect int( newValue )

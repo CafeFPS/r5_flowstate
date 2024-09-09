@@ -1,616 +1,2300 @@
-// stub script
-
 global function HoverTank_Init
-global function IsPointWithinAnyHoverTank
+global function SpawnHoverTank
 global function SpawnHoverTank_Cheap
+global function SpawnStaticHoverTank
 global function HoverTankTeleportToPosition
-global function HoverTankSetCustomFlySpeed
-global function HoverTankEngineBoost
+global function HoverTankPlayAnim
 global function HoverTankFlyToNode
+global function HoverTankSetPathGroup
+global function HoverTankTurretEnabled
+global function HoverTankSetTeam
+global function HoverTankBobEnabled
+global function DeleteHoverTank
+global function GetAllHoverTanks
 global function HoverTankCanFlyPath
-global function GetHoverTankByInstance
+global function HoverTankSetCustomFlySpeed
+global function HoverTankClearCustomFlySpeed
+global function HoverTankEngineBoost
+global function HovertankGetGoalNodesForPath
+global function IsPointWithinAnyHoverTank
+global function IsPlayerRidingAnyHoverTank
+global function GetAllHovertankNodes
+global function GetWaypointForNode
+
+global function HoverTank_AddCallback_OnPlayerEnteredVolume
+global function HoverTank_AddCallback_OnPlayerExitedVolume
+
+//for PVE custom crash
+global function GetFlySpeed
+global function HoverTankDeathExplosions
+
+global const asset HOVER_TANK_LEGS_MODEL 		= $"mdl/vehicle/hovership/hovership_platform_mp.rmdl"
+global const asset HOVER_TANK_INTERIOR_MODEL	= $"mdl/vehicle/hovership/hovership_platform_mp_body_static.rmdl"
+const asset HOVER_TANK_TURRET_MODEL 			= $"mdl/vehicle/hovership/hovership_turret.rmdl"
+
+global const float HOVER_TANK_FLY_FRAME_UPDATE_TIME 	= 0.099
+
+//#####################################################################
+// Fly / move rates
+//#####################################################################
+
+// Settings for normal flying behavior when player is not riding
+const float HOVER_TANK_NORMAL_ADDATIVE_MAX_BOB_AMOUNT = 64.0
+const float HOVER_TANK_NORMAL_ADDATIVE_MAX_BOB_RATE = 2.5
+const float HOVER_TANK_NORMAL_ADDATIVE_PITCH_AMOUNT = 2.0
+const float HOVER_TANK_NORMAL_ADDATIVE_YAW_AMOUNT = 1.0
+const float HOVER_TANK_NORMAL_ADDATIVE_ROLL_AMOUNT = 2.0
+const float HOVER_TANK_NORMAL_ADDATIVE_PITCH_RATE = 1.0
+const float HOVER_TANK_NORMAL_ADDATIVE_YAW_RATE = 0.72
+const float HOVER_TANK_NORMAL_ADDATIVE_ROLL_RATE = 1.27
+const float HOVER_TANK_NORMAL_FLY_SPEED = 1000.0
+const float HOVER_TANK_NORMAL_YAW_RATE = 20.0
+const float HOVER_TANK_NORMAL_TILT_RATE = 2.5
+const float HOVER_TANK_NORMAL_MAX_FLIGHT_TILT = 8.0
+
+// Settings for flying behavior when player is riding
+const float HOVER_TANK_PLAYER_ADDATIVE_MAX_BOB_AMOUNT = 12.0
+const float HOVER_TANK_PLAYER_ADDATIVE_MAX_BOB_RATE = 2.5
+const float HOVER_TANK_PLAYER_ADDATIVE_PITCH_AMOUNT = 0.4
+const float HOVER_TANK_PLAYER_ADDATIVE_YAW_AMOUNT = 0.2
+const float HOVER_TANK_PLAYER_ADDATIVE_ROLL_AMOUNT = 0.4
+const float HOVER_TANK_PLAYER_ADDATIVE_PITCH_RATE = 1.0
+const float HOVER_TANK_PLAYER_ADDATIVE_YAW_RATE = 0.72
+const float HOVER_TANK_PLAYER_ADDATIVE_ROLL_RATE = 1.27
+const float HOVER_TANK_PLAYER_FLY_SPEED = HOVER_TANK_NORMAL_FLY_SPEED
+const float HOVER_TANK_PLAYER_YAW_RATE = 8.0
+const float HOVER_TANK_PLAYER_TILT_RATE = 1.0
+const float HOVER_TANK_PLAYER_MAX_FLIGHT_TILT = 4.0
+
+//#####################################################################
+//#####################################################################
+//#####################################################################
+
+const float HOVER_TANK_ACCEL_DECEL_FRAC = 0.5 // 0.0 - 0.5 range
+const float HOVER_TANK_WAYPOINT_MANUAL_MAX_CONNECT_DIST = 9000
+const float HOVER_TANK_WAYPOINT_AUTO_MAX_CONNECT_DIST = 4096
+const float HOVER_TANK_NODE_VOLUME_AUTO_SPACING = 2048
+const float HOVER_TANK_ACCEL_DURATION = 2.0
+const float HOVER_TANK_DECEL_DISTANCE = 1500.0
+const float HOVER_TANK_JET_WASH_MAX_HEIGHT = 1500.0
+
+const float HOVER_TANK_HULL_TRACE_RADIUS = 400.0 // Used when doing 9 hull traces. We have to do 9 because Trace Hull makes a capsule, which doesn't allow traces to pass when flying close to the ground
+const float HOVER_TANK_HULL_TRACE_SPACING = 720.0
+const vector HOVER_TANK_HULL_TRACE_MINS = < -HOVER_TANK_HULL_TRACE_RADIUS, -HOVER_TANK_HULL_TRACE_RADIUS, -HOVER_TANK_HULL_TRACE_RADIUS >
+const vector HOVER_TANK_HULL_TRACE_MAXS = < HOVER_TANK_HULL_TRACE_RADIUS, HOVER_TANK_HULL_TRACE_RADIUS, HOVER_TANK_HULL_TRACE_RADIUS >
+global const float HOVER_TANK_RADIUS = 1300.0
+const vector HOVER_TANK_MINS = < -HOVER_TANK_RADIUS, -HOVER_TANK_RADIUS, -300 >
+const vector HOVER_TANK_MAXS = < HOVER_TANK_RADIUS, HOVER_TANK_RADIUS, 630 >
+
+const asset HOVER_TANK_ENGINE_EFFECT 						= $"P_veh_hovertank_jet_main"
+const asset HOVER_TANK_ENGINE_EFFECT_BOOST 					= $"P_veh_hovertank_afterburn"
+const asset HOVER_TANK_JETWASH_EFFECT 						= $"veh_jetwash_concrete"
+const asset HOVER_TANK_DEATH_EFFECT_SMOKE					= $"P_redeye_engine_smoke"
+const asset HOVER_TANK_DEATH_EFFECT_EXPLOSION_SMALL			= $"p_exp_redeye_sml"
+const asset HOVER_TANK_DEATH_EFFECT_EXPLOSION_MEDIUM		= $"p_exp_redeye_med"
+
+const bool HOVER_TANK_YAW_DURING_FLIGHT_ENABLED = true
+const bool HOVER_TANK_TILT_DURING_FLIGHT_ENABLED = true
+const bool HOVER_TANK_TILT_TOWARDS_LOOKAHEAD = true
+//const bool HOVER_TANK_BANK_DURING_FLIGHT_ENABLED = true
+
+const float HOVER_TANK_LOOKAHEAD_DIST = 2200.0
+const bool LOOKAHEAD_USES_SMOOTH_PATH = true
+const bool FLIGHT_MOVEMENT_LOCKED_TO_PATH = true
+const bool USE_SMOOTHED_FLIGHT_PATH = true
+const float HOVER_TANK_SMOOTH_PATHING_TENSION = 0.15 // 1 is high, 0 normal, -1 is low
+const float HOVER_TANK_SMOOTH_PATHING_SEGMENT_LENGTH = 1024.0 // higher number more optimized but path may look less smooth
+const string HOVER_TANK_PATHING_DEFAULT_GROUP = "all"
+const float HOVER_TANK_PATH_START_NODE_TOLLERANCE = 2048.0
+
+const int LONG_RANGE = 0
+const int SHORT_RANGE = 1
+
+const string HOVER_TANK_MOVER_SCRIPTNAME = "hovertank_thruster_movers"
+
+//#####################################################################
+// DEBUG ONLY
+//#####################################################################
+
+const int[3] YELLOW = [ 255, 255, 0 ]
+const int[3] ORANGE = [ 249, 140, 44 ]
+const int[3] GREEN = [ 25, 255, 25 ]
+const int[3] BLUE = [ 100, 170, 215 ]
+
+const bool DEBUG_PATHING = false
+const bool DEBUG_DRAW_NODES = false
+const bool DEBUG_DRAW_NODE_CONNECTIONS = false
+
+//#####################################################################
+
+global struct HoverTank
+{
+	entity interiorModel
+	entity turret
+	entity turretBarrelClip
+	entity flightMover
+	entity triggerVolume
+	entity controlPanel
+	float addativeBobAmount
+	float addativeBobAmount_last
+	vector addativeRotationAmount
+	vector addativeRotationAmount_last
+	array<entity> alarmEnts
+	array<entity> explosionEnts
+	array<entity> thursterEmitters
+	array<entity> engineEffectHandles
+	array<entity> engineBoostEffectHandles
+	array<entity> linkedEnts
+	array<entity> npcRiders
+	string assignedPathGroup = ""
+	bool flyingPath = false
+	bool crashing = false
+	bool alive = true
+	bool doCrashPath = true
+	bool playerRiding = false
+	bool turretEnabled = true
+	bool bobEnabled = true
+	bool playingScritpedAnim = false
+	bool isCheapVersion = false
+	float customFlySpeed = 0.0
+
+	array<string> specialFlags
+}
+
+global struct Waypoint
+{
+	entity node
+	vector origin
+	vector angles
+	table< string, array<Waypoint> > connectingWaypoints
+	table< string, array<float> > connectingWaypointDistances
+	float priority
+	array<string> groups
+	bool isCrashNode
+	bool autoGenerated
+}
 
 #if DEVELOPER
-// global function Dev_PlayAnimOnHoverTank
-#endif
+void function HoverTankPrintReport( HoverTank ht )
+{
+	printf( "" )
+	printf( "===================" )
+	printf( "HoverTank: " )
+	printf( " interiorModel = %s", string( ht.interiorModel ) )
+	printf( " turret = %s", string( ht.turret ) )
+	printf( " turretBarrelClip = %s", string( ht.turretBarrelClip ) )
+	printf( " flightMover = %s", string( ht.flightMover ) )
+	printf( " triggerVolume = %s", string( ht.triggerVolume ) )
+	printf( " controlPanel = %s", string( ht.controlPanel ) )
 
-global const HOVER_TANK_RADIUS = 0
-global const HOVER_TANK_DURATION = 20
+	printf( "" )
+	printf( " alarmEnts (%d) :", ht.alarmEnts.len() )
+	foreach( entity ent in ht.alarmEnts )
+		printf( "   %s", string( ent ) )
 
-	// Line  399: P_hovertank_fire_engine
-	// Line 2951: P_wpn_hovertank_aim
-	// Line 2953: P_veh_hovertank_jet_main
-	// Line 2955: P_veh_hovertank_afterburn
-	
+	printf( "" )
+	printf( " explosionEnts (%d) :", ht.explosionEnts.len() )
+	foreach( entity ent in ht.explosionEnts )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( " thursterEmitters (%d) :", ht.thursterEmitters.len() )
+	foreach( entity ent in ht.thursterEmitters )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( " engineEffectHandles (%d) :", ht.engineEffectHandles.len() )
+	foreach( entity ent in ht.engineEffectHandles )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( " engineBoostEffectHandles (%d) :", ht.engineBoostEffectHandles.len() )
+	foreach( entity ent in ht.engineBoostEffectHandles )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( " linkedEnts (%d) :", ht.linkedEnts.len() )
+	foreach( entity ent in ht.linkedEnts )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( " npcRiders (%d) :", ht.npcRiders.len() )
+	foreach( entity ent in ht.npcRiders )
+		printf( "   %s", string( ent ) )
+
+	printf( "" )
+	printf( "===================" )
+	printf( "" )
+}
+#endif // DEV
+
+struct FlyPathData
+{
+	array<vector> path
+	array<vector> smoothPath
+	array<vector> lookaheadPath
+	float goalYaw
+}
+
 struct
 {
-	float currentHoverTankSpeed_1
-	float currentHoverTankSpeed_2
-	// array<HoverTank> spawnedHoverTanks
+	table< string, array<Waypoint> > waypoints
+	table< string, array<Waypoint> > crashWaypoints
+	array<Waypoint> priorityQueue
+	array<HoverTank> allHoverTanks
+	table< string, array<int> > pathDebugColors
+	int nextEngineSoundIndex = 0
+	array<entity> navVolumes
+
+	table< entity, array<string> > riderWeaponAssignments
+
+	array<void functionref(entity)> hovertank_OnPlayerEnteredVolume
+	array<void functionref(entity)> hovertank_OnPlayerExitedVolume
 } file
 
 void function HoverTank_Init()
 {
-	AddCallback_EntitiesDidLoad( HoverTanks_EntitiesDidLoad )
-	//AddSpawnCallbackEditorClass( "info_target", "info_hover_tank_node", OnAllHoverTankNodesSpawned )
+	PrecacheModel( HOVER_TANK_LEGS_MODEL )
+	PrecacheModel( HOVER_TANK_TURRET_MODEL )
+	PrecacheParticleSystem( HOVER_TANK_ENGINE_EFFECT )
+	PrecacheParticleSystem( HOVER_TANK_ENGINE_EFFECT_BOOST )
+	PrecacheParticleSystem( HOVER_TANK_JETWASH_EFFECT )
+	PrecacheParticleSystem( HOVER_TANK_DEATH_EFFECT_SMOKE )
+	PrecacheParticleSystem( HOVER_TANK_DEATH_EFFECT_EXPLOSION_SMALL )
+	PrecacheParticleSystem( HOVER_TANK_DEATH_EFFECT_EXPLOSION_MEDIUM )
 
-	PrecacheParticleSystem( $"P_veh_hovertank_jet_main" )
-	PrecacheParticleSystem( $"P_hovertank_fire_engine" )
-	PrecacheParticleSystem( $"P_veh_hovertank_afterburn" )
-	PrecacheModel( $"mdl/vehicle/hovership/hovership_turret.rmdl" )
+	RegisterSignal( "HoverTankStopFlyingPath" )
+	RegisterSignal( "StopAddativeOnlyThread" )
+	RegisterSignal( "PathFinished" )
+	RegisterSignal( "GoalReached" )
+	RegisterSignal( "PlayerRidingUpdated" )
+	RegisterSignal( "SabotagingPanel" )
+	RegisterSignal( "NewCustomSpeed" )
+	RegisterSignal( "StartLoopSounds" )
+
+	AddSpawnCallbackEditorClass( "info_target", "info_hover_tank_node", HoverTankNodeInit )
+	AddSpawnCallbackEditorClass( "info_target", "info_hover_tank_crash", HoverTankNodeInit )
+	AddSpawnCallbackEditorClass( "trigger_multiple", "info_hover_tank_nav_volume", HoverTankNavVolumeInit )
+	AddSpawnCallback_ScriptName( "HoverTankExteriorForStaticPlacement", SpawnStaticHoverTank )
+
+	AddCallback_EntitiesDidLoad( HoverTank_EntitiesDidLoad )
 }
 
-void function OnAllHoverTankNodesSpawned( entity node )
+void function HoverTank_EntitiesDidLoad()
 {
-	DebugDrawSphere( node.GetOrigin(), 100, 255, 0, 255, true, 100 )
+	HideHoverTanks()
+	GenerateNodesFromNavVolumes()
+	LinkNodes()
+	thread DebugDrawPathConnections()
 }
 
-void function HoverTanks_EntitiesDidLoad()
+void function HideHoverTanks()
 {
-	array<entity> alarms = GetEntArrayByScriptName( "_hover_tank_alarm" )
-
-	foreach( alarm in alarms )
-		alarm.Hide()
-	
-	thread function () : ()
+	// Hide hover tanks until they are "spawned". We have to hide them because they are static props that can't properly be spawned.
+	array<entity> hoverTankMovers = GetEntArrayByScriptName( "_hover_tank_mover" )
+	foreach ( entity mover in hoverTankMovers )
 	{
+		// check if this mover is in use already by a spawned hovertank
+		bool isInUse = false
+		foreach ( HoverTank hovertank in file.allHoverTanks )
+		{
+			if ( hovertank.flightMover == mover )
+			{
+				isInUse = true
+				break
+			}
+		}
+
+		if ( isInUse )
+			continue
+
+		array<entity> linkedEnts = mover.GetLinkEntArray()
+		foreach( entity ent in linkedEnts )
+		{
+			ent.Hide()
+			ent.NotSolid()
+		}
+	}
+	array<entity> turretClips = GetEntArrayByScriptName( "_hover_tank_turret_clip" )
+	foreach( entity clip in turretClips )
+	{
+		// check if this clip is in use already by a spawned hovertank
+		bool isInUse = false
+		foreach ( HoverTank hovertank in file.allHoverTanks )
+		{
+			if ( hovertank.turretBarrelClip == clip )
+			{
+				isInUse = true
+				break
+			}
+		}
+
+		if ( isInUse )
+			continue
+
+		//clip.Hide()
+		clip.NotSolid()
+	}
+}
+
+void function HoverTankNavVolumeInit( entity volume )
+{
+	file.navVolumes.append( volume )
+}
+
+void function GenerateNodesFromNavVolumes()
+{
+	foreach( entity volume in file.navVolumes )
+	{
+		//DebugDrawRotatedBox( volume.GetOrigin(), volume.GetBoundingMins(), volume.GetBoundingMaxs(), <0,0,0> , COLOR_MAGENTA, true, 60.0 )
+		string scriptGroups
+		if ( volume.HasKey( "script_group" ) )
+		{
+			if ( volume.GetValueForKey( "script_group" ) != "" )
+				scriptGroups = volume.GetValueForKey( "script_group" )
+		}
+
+		// Auto generate nodes within the volume
+		vector MAP_MINS = volume.GetOrigin() + volume.GetBoundingMins()
+		MAP_MINS.x = RoundToNearestMultiplier( MAP_MINS.x, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		MAP_MINS.y = RoundToNearestMultiplier( MAP_MINS.y, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		MAP_MINS.z = RoundToNearestMultiplier( MAP_MINS.z, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		vector MAP_MAXS = volume.GetOrigin() + volume.GetBoundingMaxs()
+		MAP_MAXS.x = RoundToNearestMultiplier( MAP_MAXS.x, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		MAP_MAXS.y = RoundToNearestMultiplier( MAP_MAXS.y, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		MAP_MAXS.z = RoundToNearestMultiplier( MAP_MAXS.z, HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+
+		int numIterationsX = int( ( MAP_MAXS.x - MAP_MINS.x ) / HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		int numIterationsY = int( ( MAP_MAXS.y - MAP_MINS.y ) / HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+		int numIterationsZ = int( ( MAP_MAXS.z - MAP_MINS.z ) / HOVER_TANK_NODE_VOLUME_AUTO_SPACING )
+
+		for( float zIt = 0 ; zIt <= numIterationsZ ; zIt++ )
+		{
+			float z = MAP_MINS.z + ( zIt * HOVER_TANK_NODE_VOLUME_AUTO_SPACING ) + 4.0
+			for( float yIt = 0 ; yIt <= numIterationsY ; yIt++ )
+			{
+				float y = MAP_MINS.y + ( yIt * HOVER_TANK_NODE_VOLUME_AUTO_SPACING ) + 4.0
+				for( float xIt = 0 ; xIt <= numIterationsX ; xIt++ )
+				{
+					float x = MAP_MINS.x + ( xIt * HOVER_TANK_NODE_VOLUME_AUTO_SPACING ) + 4.0
+					vector point = <x, y, z>
+
+					// If we've somehow ended up outside the volume don't make a waypoint. This can happen with convex volumes, rotated boxes, etc.
+					if ( !volume.ContainsPoint( point ) )
+						continue
+
+					// If the point is in solid don't make a waypoint
+					TraceResults result = TraceHull( point, point + <0,0,1>, <-64,-64,-64>, <64,64,64>, [], TRACE_MASK_NPCSOLID, TRACE_COLLISION_GROUP_NONE )
+					if ( result.startSolid || result.allSolid || result.fraction < 1.0 )
+						continue
+
+					CreateWaypoint( point, <0,0,0>, scriptGroups, null, true )
+				}
+			}
+		}
+	}
+}
+
+void function HoverTankNodeInit( entity node )
+{
+	string scriptGroupVal
+	if ( node.HasKey( "script_group" ) )
+	{
+		if ( node.GetValueForKey( "script_group" ) != "" )
+			scriptGroupVal = node.GetValueForKey( "script_group" )
+	}
+
+	CreateWaypoint( node.GetOrigin(), node.GetAngles(), scriptGroupVal, node, false )
+}
+
+void function CreateWaypoint( vector origin, vector angles, string groupsString, entity node, bool autoGenerated )
+{
+	// Create data for the node. The linking will happen after EntitiesDidLoad when all nodes are available
+	Waypoint waypoint
+	waypoint.node = node
+	waypoint.origin = origin
+	waypoint.angles = angles
+	waypoint.autoGenerated = autoGenerated
+
+	array<string> groups = split( groupsString, WHITESPACE_CHARACTERS )
+	Assert( !groups.contains( HOVER_TANK_PATHING_DEFAULT_GROUP ) )
+	groups.append( HOVER_TANK_PATHING_DEFAULT_GROUP )
+
+	foreach( string group in groups )
+	{
+		if ( !waypoint.groups.contains( group ) )
+			waypoint.groups.append( group )
+
+		if ( !( group in file.waypoints ) )
+			file.waypoints[ group ] <- []
+		file.waypoints[ group ].append( waypoint )
+
+		if ( !( group in file.pathDebugColors ) )
+			file.pathDebugColors[ group ] <- [ file.pathDebugColors.len() * 10, RandomInt(255), RandomInt(255), RandomInt(255) ]
+	}
+
+	waypoint.isCrashNode = IsValid( node ) && GetEditorClass( node ) == "info_hover_tank_crash"
+
+	if ( waypoint.isCrashNode )
+	{
+		foreach( string group in groups )
+		{
+			if ( !( group in file.crashWaypoints ) )
+				file.crashWaypoints[ group ] <- []
+			file.crashWaypoints[ group ].append( waypoint )
+		}
+	}
+}
+
+void function LinkNodes()
+{
+	// Determines what other nodes each node can fly to without obstruction and stores that data per node
+	// Only link nodes of the same group
+
+	float r = HOVER_TANK_HULL_TRACE_SPACING
+	array<vector> traceOffsets
+	traceOffsets.append( < 0, 0, 0 > )
+	traceOffsets.append( < -r, -r, 0 > )
+	traceOffsets.append( < 0, -r, 0 > )
+	traceOffsets.append( < r, -r, 0 > )
+	traceOffsets.append( < -r, 0, 0 > )
+	traceOffsets.append( < r, 0, 0 > )
+	traceOffsets.append( < -r, r, 0 > )
+	traceOffsets.append( < 0, r, 0 > )
+	traceOffsets.append( < r, r, 0 > )
+
+	foreach( string group, array<Waypoint> waypoints in file.waypoints )
+	{
+		foreach ( int i, Waypoint waypoint in waypoints )
+		{
+			if ( !( group in waypoint.connectingWaypoints ) )
+			{
+				waypoint.connectingWaypoints[ group ] <- []
+				waypoint.connectingWaypointDistances[ group ] <- []
+			}
+
+			foreach ( int _i, Waypoint _waypoint in waypoints )
+			{
+				if ( !( group in _waypoint.connectingWaypoints ) )
+				{
+					_waypoint.connectingWaypoints[ group ] <- []
+					_waypoint.connectingWaypointDistances[ group ] <- []
+				}
+
+				if ( _waypoint == waypoint )
+					continue
+
+				if ( waypoint.connectingWaypoints[ group ].contains( _waypoint ) )
+					continue
+
+				float d = Distance( waypoint.origin, _waypoint.origin )
+				float maxConnectDist = HOVER_TANK_WAYPOINT_AUTO_MAX_CONNECT_DIST
+				if ( !waypoint.autoGenerated || !_waypoint.autoGenerated )
+					maxConnectDist = HOVER_TANK_WAYPOINT_MANUAL_MAX_CONNECT_DIST
+
+				if ( d > maxConnectDist )
+					continue
+
+				bool areNodesLinked = IsValid( waypoint.node ) && IsValid( _waypoint.node ) && _waypoint.node.GetLinkEntArray().contains( waypoint.node )
+				if ( !areNodesLinked && !NodeLinkHullTracePassed( traceOffsets, waypoint.origin, _waypoint.origin ) )
+					continue
+
+				Assert( waypoint.connectingWaypoints[ group ].len() == waypoint.connectingWaypointDistances[ group ].len() )
+				waypoint.connectingWaypoints[ group ].append( _waypoint )
+				waypoint.connectingWaypointDistances[ group ].append( d )
+
+				Assert( _waypoint.connectingWaypoints[ group ].len() == _waypoint.connectingWaypointDistances[ group ].len() )
+				_waypoint.connectingWaypoints[ group ].append( waypoint )
+				_waypoint.connectingWaypointDistances[ group ].append( d )
+			}
+
+			if ( waypoint.connectingWaypoints[ group ].len() == 0 && !waypoint.autoGenerated )
+				Warning( "Hover Tank waypoint at " + waypoint.origin + " has no connections for group " + group )
+		}
+	}
+
+	// Remove autogenerated nodes that don't connect to anything
+	foreach( string group, array<Waypoint> waypoints in file.waypoints )
+	{
+		for ( int i = waypoints.len() - 1 ; i >= 0 ; i-- )
+		{
+			if ( waypoints[i].connectingWaypoints[ group ].len() == 0 )
+			{
+				//Assert( waypoints[i].autoGenerated )
+				//Warning( "Removing auto-generated hover tank node with no connections at " + waypoints[i].origin + " for group " + group )
+				//printt( "Removing auto-generated hover tank node with no connections at " + waypoints[i].origin + " for group " + group )
+				waypoints.remove(i)
+			}
+		}
+	}
+}
+
+bool function NodeLinkHullTracePassed( array<vector> traceOffsets, vector start, vector end )
+{
+	foreach( vector traceOffset in traceOffsets )
+	{
+		vector p0 = start + traceOffset
+		vector p1 = end + traceOffset
+		TraceResults result = TraceHull( p0, p1, HOVER_TANK_HULL_TRACE_MINS, HOVER_TANK_HULL_TRACE_MAXS, [], TRACE_MASK_NPCSOLID, TRACE_COLLISION_GROUP_PLAYER )
+		if ( result.allSolid || result.startSolid || result.fraction < 1.0 )
+		{
+			// DebugDrawCylinder( p0, VectorToAngles( p1 - p0 ), HOVER_TANK_HULL_TRACE_RADIUS, Distance( p0, p1 ), COLOR_RED, false, 30.0 )
+			return false
+		}
+	}
+
+	/*
+	foreach( vector traceOffset in traceOffsets )
+	{
+		vector p0 = start + traceOffset
+		vector p1 = end + traceOffset
+		 DebugDrawCylinder( p0, VectorToAngles( p1 - p0 ), HOVER_TANK_HULL_TRACE_RADIUS, Distance( p0, p1 ), COLOR_GREEN, false, 30.0 )
+	}
+	*/
+
+	return true
+}
+
+array<entity> function GetAllHovertankNodes()
+{
+	array<entity> nodes
+	foreach( string group, array<Waypoint> waypoints in file.waypoints  )
+	{
+		foreach( waypoint in waypoints )
+			nodes.append( waypoint.node )
+	}
+
+	return nodes
+}
+
+void function DebugDrawPathConnections()
+{
+	if ( !DEBUG_DRAW_NODES && !DEBUG_DRAW_NODE_CONNECTIONS )
+		return
+
+	// Skip a script error, give warn instead
+	if ( file.waypoints.len() == 0 )
+	{
+		Warning( "Warning! No hovertank path connections to debug draw!" )
+		return
+	}
+
+	wait 1.0
+
+	float duration = 2.0
+
+	while( true )
+	{
+		foreach( string group, array<Waypoint> waypoints in file.waypoints )
+		{
+			printt( "DEBUG DRAWING PATHS FOR GROUP:", group )
+			foreach ( int i, Waypoint waypoint in waypoints )
+			{
+				if ( DEBUG_DRAW_NODES )
+				{
+					if ( waypoint.isCrashNode )
+						DebugDrawRotatedBox( waypoint.origin, HOVER_TANK_MINS, HOVER_TANK_MAXS, waypoint.angles, COLOR_RED, false, duration )
+					else if ( IsValid( waypoint.node ) )
+						DebugDrawRotatedBox( waypoint.origin, HOVER_TANK_MINS, HOVER_TANK_MAXS, waypoint.angles, COLOR_YELLOW, false, duration )
+					else
+						DebugDrawCircle( waypoint.origin, <0,0,0>, HOVER_TANK_RADIUS, COLOR_YELLOW, false, duration, 6 )
+				}
+
+				if ( DEBUG_DRAW_NODE_CONNECTIONS )
+				{
+					foreach( Waypoint _waypoint in waypoint.connectingWaypoints[group] )
+						DebugDrawLine( waypoint.origin + <0, 0, file.pathDebugColors[group][0]>, _waypoint.origin + <0, 0, file.pathDebugColors[group][0]>, <file.pathDebugColors[group][1], file.pathDebugColors[group][2], file.pathDebugColors[group][3]>, false, duration )
+				}
+			}
+			wait duration
+		}
+	}
+}
+
+void function HoverTankSetPathGroup( HoverTank hoverTank, string pathGroup )
+{
+	string assertMsg = "Called HoverTankSetPathGroup with invalid pathGroup " + pathGroup + ". Valid groups are:"
+	foreach( string group, array<Waypoint> w in file.waypoints )
+		assertMsg = assertMsg + " " + group
+	Assert( pathGroup in file.waypoints, assertMsg )
+
+	hoverTank.assignedPathGroup = pathGroup
+
+	if ( DEBUG_PATHING )
+	{
+		vector color = < RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 ) >
+		foreach( Waypoint waypoint in file.waypoints[ pathGroup ] )
+			DebugDrawLine( hoverTank.flightMover.GetOrigin(), waypoint.origin, color, true, 10.0 )
+	}
+}
+
+void function HoverTankTurretEnabled( HoverTank hoverTank, bool enabled )
+{
+	hoverTank.turretEnabled = enabled
+}
+
+void function HoverTankSetTeam( HoverTank hoverTank, int team )
+{
+	SetTeam( hoverTank.turret, team )
+}
+
+void function HoverTankBobEnabled( HoverTank hoverTank, bool enabled )
+{
+	hoverTank.bobEnabled = enabled
+}
+
+HoverTank function SpawnHoverTank_Cheap( string instanceName, string assignedPathGroup = HOVER_TANK_PATHING_DEFAULT_GROUP, string spawnersName = "", string ridersActivateFlag = "" )
+{
+	return SpawnHoverTank( instanceName, assignedPathGroup, spawnersName, ridersActivateFlag, true )
+}
+
+HoverTank function Flowstate_CreateCheapHoverTankFromScript( string instanceName, string assignedPathGroup = HOVER_TANK_PATHING_DEFAULT_GROUP, string spawnersName = "", string ridersActivateFlag = "" )
+{
+	return SpawnHoverTankFromScript( instanceName, assignedPathGroup, spawnersName, ridersActivateFlag, true )
+}
+
+//////////////////////////////////////////////////////////
+entity function SpawnHoverTankTurret( string classname, asset model, string weapon, string title, int team, vector origin, vector angles, string name, int solidType )
+{
+	entity new_turret = CreateEntity( classname )
+	new_turret.kv.solid = solidType
+	new_turret.kv.spawnflags = 0
+	new_turret.SetOrigin( origin )
+	new_turret.SetAngles( angles )	// must set origin first or the entity may hit the map floor kill trigger on teleport from SetAngles
+	new_turret.SetModel( model )
+	SetTargetName( new_turret, name )
+	new_turret.kv.AccuracyMultiplier = 1.0
+	SetTeam( new_turret, team )
+	new_turret.SetTitle( title )
+
+	new_turret.kv.additionalequipment = weapon
+
+	return new_turret
+}
+
+HoverTank function SpawnHoverTankFromScript( string instanceName, string assignedPathGroup = HOVER_TANK_PATHING_DEFAULT_GROUP, string spawnersName = "", string ridersActivateFlag = "", bool isCheap = false )
+{
+	// global const asset HOVER_TANK_LEGS_MODEL 		= $"mdl/vehicle/hovership/hovership_platform_mp.rmdl"
+	// global const asset HOVER_TANK_INTERIOR_MODEL	= $"mdl/vehicle/hovership/hovership_platform_mp_body_static.rmdl"
+	// const asset HOVER_TANK_TURRET_MODEL 			= $"mdl/vehicle/hovership/hovership_turret.rmdl"
+
+	// Script_mover in LevelEd instance is used for bob addative movement
+	entity flightMover = CreateScriptMover( <0,0,0>, <0,0,0> ) //GetEntByScriptNameInInstance( "_hover_tank_mover", instanceName )
+	Assert( IsValid( flightMover ), "SpawnHoverTank: Can't find the mover in the Hover Tank instance " + instanceName )
+	flightMover.SetPusher( true )
+	// flightMover.SetPusherMovesNearbyVehicles( true )
+	flightMover.DisallowZiplines()
+	flightMover.DisableHibernation()
+	SetHoverTankMover( flightMover, true )
+
+	// Mover has model for exterior (used to be a seperate attached model but this is better for performance)
+	flightMover.SetModel( HOVER_TANK_LEGS_MODEL )
+	flightMover.Show()
+	SetTargetName( flightMover, "hover_tank" )
+
+	//thread DebugDrawEntity( flightMover )
+
+	// Unhide everything that is linked to the script_mover because when entities loaded they were hidden until the hover tank is spawned
+	array<entity> linkedEnts = flightMover.GetLinkEntArray()
+	foreach( entity ent in linkedEnts )
+	{
+		ent.Show()
+		ent.Solid()
+	}
+
+	// Get the static tank entity placed in LevelEd that matches the instance name
+	entity interiorModelFuncBrush = CreatePropDynamic( HOVER_TANK_INTERIOR_MODEL, flightMover.GetOrigin(), flightMover.GetAngles() , SOLID_VPHYSICS, -1 ) // GetEntByScriptNameInInstance( "_hover_tank_interior", instanceName )
+	Assert( IsValid( interiorModelFuncBrush ), "Tried to spawn Hover Tank but couldn't locate instance " + instanceName )
+
+	entity triggerVolume = null
+	// GetEntByScriptNameInInstance( "_hover_tank_volume", instanceName )
+	// Assert( IsValid( triggerVolume ), "Tried to spawn Hover Tank but couldn't locate the trigger volume in instance " + instanceName )
+	// triggerVolume.ConnectOutput( "OnStartTouch", EntityEnterHoverTankVolume )
+	// triggerVolume.ConnectOutput( "OnEndTouch", EntityLeaveHoverTankVolume )
+
+	// Spawn the turret
+	entity turret
+
+	// Create a dummy turret
+	vector angleOffset = <0,0,0>
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS ) //instanceName.find( "holiday" ) != -1 )
+	{
+		printf( "WINTER EXPRESS: Adding offset to turret" )
+		angleOffset = < 0,45, 0 >  //rotate 45 degrees to the left if holiday
+	}
+	turret = CreatePropDynamic( HOVER_TANK_TURRET_MODEL, flightMover.GetOrigin(), flightMover.GetAngles() , SOLID_VPHYSICS, -1 ) //, true )
+	turret.DisableHibernation()
+
+	// hardcode attachment offset so it doesn't need to set up bones to position it
+	int attachIndex = flightMover.LookupAttachment( "REMOTE_TURRET_ATTACH" )
+	turret.SetOrigin( flightMover.GetAttachmentOrigin( attachIndex ) )
+	turret.SetAngles( flightMover.GetAttachmentAngles( attachIndex ) + angleOffset )
+	turret.SetParent( flightMover )
+
+	entity turretBarrelClip = GetEntByScriptNameInInstance( "_hover_tank_turret_clip", instanceName )
+	if ( IsValid( turretBarrelClip ) )
+	{
+		if ( isCheap )
+			turretBarrelClip.SetParent( turret )
+		else
+			turretBarrelClip.SetParent( turret, "HEADSHOT", true )
+		turretBarrelClip.Solid()
+	}
+
+	// Create the struct
+	HoverTank hoverTank
+	hoverTank.interiorModel = interiorModelFuncBrush
+	hoverTank.turret = turret
+	hoverTank.turretBarrelClip = turretBarrelClip
+	hoverTank.flightMover = flightMover
+	hoverTank.triggerVolume = triggerVolume
+	hoverTank.linkedEnts = linkedEnts
+	hoverTank.assignedPathGroup = assignedPathGroup
+	hoverTank.alarmEnts = GetEntArrayByScriptNameInInstance( "_hover_tank_alarm", instanceName )
+	hoverTank.explosionEnts = GetEntArrayByScriptNameInInstance( "_hover_tank_explosion", instanceName )
+	hoverTank.isCheapVersion = isCheap
+
+	if ( instanceName.find("holiday") != -1 )
+		hoverTank.specialFlags.append( "holiday" )
+
+	// Disable hibernation on these sound emitters because sounds wont play on them otherwise
+	foreach( entity ent in hoverTank.alarmEnts )
+		ent.DisableHibernation()
+	foreach( entity ent in hoverTank.explosionEnts )
+		ent.DisableHibernation()
+
+	hoverTank.flightMover.ChangeNPCPathsOnMove( true )
+
+	if ( isCheap )
+	{
+		// Delete ents we don't need in the cheap version
+		DestroyArray( hoverTank.alarmEnts )
+		hoverTank.alarmEnts.clear()
+		DestroyArray( hoverTank.explosionEnts )
+		hoverTank.explosionEnts.clear()
+	}
+
+	if ( !isCheap )
+	{
+		thread HoverTankAddativeBobMovement( hoverTank )
+		thread HoverTankAddativeBobRotation( hoverTank )
+		thread ApplyAddativeMovementOnly( hoverTank )
+		thread HoverTankPlayerRidingUpdate( hoverTank )
+		thread HoverTankShakeAndRumble( hoverTank )
+	}
+
+	thread InitEngineEffectsDelayed( hoverTank )
+	thread HoverTankLoopingSounds( hoverTank, true )
+	thread JetWashEffect( hoverTank )
+	thread ThrusterPoseParamUpdate( hoverTank )
+
+	file.allHoverTanks.append( hoverTank )
+
+#if DEVELOPER
+	//HoverTankPrintReport( hoverTank )
+#endif
+
+	return hoverTank
+}
+
+HoverTank function SpawnHoverTank( string instanceName, string assignedPathGroup = HOVER_TANK_PATHING_DEFAULT_GROUP, string spawnersName = "", string ridersActivateFlag = "", bool isCheap = false )
+{
+	// Script_mover in LevelEd instance is used for bob addative movement
+	entity flightMover = GetEntByScriptNameInInstance( "_hover_tank_mover", instanceName )
+	Assert( IsValid( flightMover ), "SpawnHoverTank: Can't find the mover in the Hover Tank instance " + instanceName )
+	flightMover.SetPusher( true )
+	// flightMover.SetPusherMovesNearbyVehicles( true )
+	flightMover.DisallowZiplines()
+	flightMover.DisableHibernation()
+	SetHoverTankMover( flightMover, true )
+
+	// Mover has model for exterior (used to be a seperate attached model but this is better for performance)
+	flightMover.SetModel( HOVER_TANK_LEGS_MODEL )
+	flightMover.Show()
+	SetTargetName( flightMover, "hover_tank" )
+
+	//thread DebugDrawEntity( flightMover )
+
+	// Unhide everything that is linked to the script_mover because when entities loaded they were hidden until the hover tank is spawned
+	array<entity> linkedEnts = flightMover.GetLinkEntArray()
+	foreach( entity ent in linkedEnts )
+	{
+		ent.Show()
+		ent.Solid()
+	}
+
+	// Get the static tank entity placed in LevelEd that matches the instance name
+	entity interiorModelFuncBrush = GetEntByScriptNameInInstance( "_hover_tank_interior", instanceName )
+	Assert( IsValid( interiorModelFuncBrush ), "Tried to spawn Hover Tank but couldn't locate instance " + instanceName )
+
+	entity triggerVolume = GetEntByScriptNameInInstance( "_hover_tank_volume", instanceName )
+	Assert( IsValid( triggerVolume ), "Tried to spawn Hover Tank but couldn't locate the trigger volume in instance " + instanceName )
+	triggerVolume.ConnectOutput( "OnStartTouch", EntityEnterHoverTankVolume )
+	triggerVolume.ConnectOutput( "OnEndTouch", EntityLeaveHoverTankVolume )
+
+	// Spawn the turret
+	entity turret
+
+	// Create a dummy turret
+	vector angleOffset = <0,0,0>
+	if ( instanceName.find( "holiday" ) != -1 )
+	{
+		printf( "WINTER EXPRESS: Adding offset to turret" )
+		angleOffset = < 0,45, 0 >  //rotate 45 degrees to the left if holiday
+	}
+	turret = CreatePropDynamic( HOVER_TANK_TURRET_MODEL, flightMover.GetOrigin(), flightMover.GetAngles() , SOLID_VPHYSICS, -1 ) //, true )
+	turret.DisableHibernation()
+
+	// hardcode attachment offset so it doesn't need to set up bones to position it
+	int attachIndex = flightMover.LookupAttachment( "REMOTE_TURRET_ATTACH" )
+	turret.SetOrigin( flightMover.GetAttachmentOrigin( attachIndex ) )
+	turret.SetAngles( flightMover.GetAttachmentAngles( attachIndex ) + angleOffset )
+	turret.SetParent( flightMover )
+
+	entity turretBarrelClip = GetEntByScriptNameInInstance( "_hover_tank_turret_clip", instanceName )
+	if ( IsValid( turretBarrelClip ) )
+	{
+		if ( isCheap )
+			turretBarrelClip.SetParent( turret )
+		else
+			turretBarrelClip.SetParent( turret, "HEADSHOT", true )
+		turretBarrelClip.Solid()
+	}
+
+	// Create the struct
+	HoverTank hoverTank
+	hoverTank.interiorModel = interiorModelFuncBrush
+	// interiorModelFuncBrush.SetModel( HOVER_TANK_INTERIOR_MODEL )
+	// printt( interiorModelFuncBrush.GetModelName() )
+	// printt( turretBarrelClip.GetModelName() )
+	// printt( turret.GetModelName() )
+	// printt( flightMover.GetModelName() )
+	
+	hoverTank.turret = turret
+	hoverTank.turretBarrelClip = turretBarrelClip
+	hoverTank.flightMover = flightMover
+	hoverTank.triggerVolume = triggerVolume
+	hoverTank.linkedEnts = linkedEnts
+	hoverTank.assignedPathGroup = assignedPathGroup
+	hoverTank.alarmEnts = GetEntArrayByScriptNameInInstance( "_hover_tank_alarm", instanceName )
+	hoverTank.explosionEnts = GetEntArrayByScriptNameInInstance( "_hover_tank_explosion", instanceName )
+	hoverTank.isCheapVersion = isCheap
+
+	if ( instanceName.find("holiday") != -1 )
+		hoverTank.specialFlags.append( "holiday" )
+
+	// Disable hibernation on these sound emitters because sounds wont play on them otherwise
+	foreach( entity ent in hoverTank.alarmEnts )
+		ent.DisableHibernation()
+	foreach( entity ent in hoverTank.explosionEnts )
+		ent.DisableHibernation()
+
+	hoverTank.flightMover.ChangeNPCPathsOnMove( true )
+
+	if ( isCheap )
+	{
+		// Delete ents we don't need in the cheap version
+		DestroyArray( hoverTank.alarmEnts )
+		hoverTank.alarmEnts.clear()
+		DestroyArray( hoverTank.explosionEnts )
+		hoverTank.explosionEnts.clear()
+	}
+
+	if ( !isCheap )
+	{
+		thread HoverTankAddativeBobMovement( hoverTank )
+		thread HoverTankAddativeBobRotation( hoverTank )
+		thread ApplyAddativeMovementOnly( hoverTank )
+		thread HoverTankPlayerRidingUpdate( hoverTank )
+		thread HoverTankShakeAndRumble( hoverTank )
+	}
+
+	thread InitEngineEffectsDelayed( hoverTank )
+	thread HoverTankLoopingSounds( hoverTank, true )
+	thread JetWashEffect( hoverTank )
+	thread ThrusterPoseParamUpdate( hoverTank )
+
+	file.allHoverTanks.append( hoverTank )
+
+#if DEVELOPER
+	//HoverTankPrintReport( hoverTank )
+#endif
+
+	return hoverTank
+}
+
+void function SpawnStaticHoverTank( entity body )
+{
+	body.DisableHibernation()
+
+	HoverTank hoverTank
+	hoverTank.isCheapVersion = true
+	hoverTank.flightMover = body
+
+	thread InitEngineEffectsDelayed( hoverTank )
+	thread HoverTankLoopingSounds( hoverTank, false )
+	thread HoverTankShakeAndRumble( hoverTank )
+	thread ThrusterPoseParamUpdate( hoverTank )
+}
+
+void function HoverTankLoopingSounds( HoverTank hoverTank, bool waitForMovement )
+{
+	if ( waitForMovement )
+		WaitSignal( hoverTank, "StartLoopSounds" )
+
+	// Engine sounds. We want different aliases to be used on different hover tanks so we just cycle through the list of available engine loop sounds
+
+	array<string> engineSounds = [ "HoverTank_Mvmt_Engine_1_Survival", "HoverTank_Mvmt_Engine_2_Survival" ]
+
+	if ( hoverTank.specialFlags.contains( "holiday" ) )
+	{
+		engineSounds = [ "HoverTank_Mvmt_Engine_1_Survival_WinterExpress", "HoverTank_Mvmt_Engine_2_Survival_WinterExpress" ]
+	}
+
+
+	if ( file.nextEngineSoundIndex >= engineSounds.len() )
+		file.nextEngineSoundIndex = 0
+	EmitSoundOnEntity( hoverTank.flightMover, engineSounds[file.nextEngineSoundIndex] )
+
+	file.nextEngineSoundIndex++
+
+	wait 1.0
+
+	// Thruster sounds
+	array<string> thursterTags = [ "ENGINE_LB", "ENGINE_RB", "ENGINE_LF", "ENGINE_RF" ]
+	foreach( string tag in thursterTags )
+	{
+		entity emitter = CreateScriptMover_NEW( HOVER_TANK_MOVER_SCRIPTNAME )
+		emitter.DisableHibernation()
+		emitter.SetParent( hoverTank.flightMover, tag, false )
+
+		if ( hoverTank.specialFlags.contains( "holiday" ) )
+		{
+			EmitSoundOnEntity( emitter, "HoverTank_Mvmt_Thrusters_Survival_WinterExpress" )
+		}
+		else
+		{
+			EmitSoundOnEntity( emitter, "HoverTank_Mvmt_Thrusters_Survival" )
+		}
+
+		hoverTank.thursterEmitters.append( emitter )
+	}
+
+	// Wait for it to be crashing (hacked)
+	WaitSignal( hoverTank, "OnDeath" )
+
+	StopSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_Engine" )
+	EmitSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_EngineDestroyed" )
+
+	// Alarms
+	foreach( entity ent in hoverTank.alarmEnts )
+		EmitSoundOnEntity( ent, "HoverTank_CrashAlarm" )
+}
+
+void function InitEngineEffectsDelayed( HoverTank hoverTank )
+{
+	wait 0.25//WaitFrame() // Wait a frame because we may be teleporting the hover tank at spawn and the effects don't look right if we don't wait a frame
+
+	int effectIndex = GetParticleSystemIndex( HOVER_TANK_ENGINE_EFFECT )
+	hoverTank.engineEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_LB" ) ) )
+	hoverTank.engineEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_RB" ) ) )
+	hoverTank.engineEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_LF" ) ) )
+	hoverTank.engineEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_RF" ) ) )
+	foreach( entity handle in hoverTank.engineEffectHandles )
+		handle.DisableHibernation()
+}
+
+void function HoverTankTurretThink( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDeath" )
+
+	while ( IsAlive( hoverTank.turret ) )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		if ( hoverTank.playerRiding || !hoverTank.turretEnabled )
+			hoverTank.turret.DisableTurret()
+		else if ( hoverTank.turretEnabled )
+			hoverTank.turret.EnableTurret()
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		wait 0.25
+	}
+}
+
+void function JetWashEffect( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
+
+	int particleIndex = GetParticleSystemIndex( HOVER_TANK_JETWASH_EFFECT )
+	array<string> thursterTags = [ "ENGINE_LB", "ENGINE_RB", "ENGINE_LF", "ENGINE_RF" ]
+	array<int> thrusterTagIDs
+	foreach( string tag in thursterTags )
+		thrusterTagIDs.append( hoverTank.flightMover.LookupAttachment( tag ) )
+
+	while ( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		foreach( int tagID in thrusterTagIDs )
+		{
+			vector start = hoverTank.flightMover.GetAttachmentOrigin( tagID )
+			TraceResults result = TraceLine( start, start - <0,0,HOVER_TANK_JET_WASH_MAX_HEIGHT>, hoverTank.flightMover, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+			if ( result.fraction < 1.0 )
+				StartParticleEffectInWorld( particleIndex, result.endPos, <0,0,0> )
+		}
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		wait 0.2
+	}
+}
+
+void function HoverTankAddativeBobMovement( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
+
+	while( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+		hoverTank.addativeBobAmount_last = hoverTank.addativeBobAmount
+		float bobAmount = GetBobAmount( hoverTank ) / 2.0
+		float bobRate = GetBobRate( hoverTank )
+		float sinVal = sin( Time() * bobRate )
+		hoverTank.addativeBobAmount = GraphCapped( sinVal, -1, 1, -bobAmount, bobAmount )
+
+		if ( !hoverTank.bobEnabled )
+			hoverTank.addativeBobAmount = 0.0
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
 		WaitFrame()
-
-		array<entity> itemEnts
-		entity startLootEnt = Entities_FindByClassname( null, "info_target" )
-
-		while( IsValid( startLootEnt ) )
-		{
-			itemEnts.append( startLootEnt )
-			startLootEnt = Entities_FindByClassname( startLootEnt, "info_target" )
-		}
-
-		foreach( ent in itemEnts )
-		{
-			if( ent.GetScriptName() == "negation_zone_target" )
-				ent.Destroy()
-		}
-	}()
+	}
 }
 
-bool function IsPointWithinAnyHoverTank( vector pos )
+void function HoverTankAddativeBobRotation( HoverTank hoverTank )
 {
-	
-    return false
-}
+	EndSignal( hoverTank, "OnDestroy" )
 
-HoverTank function SpawnHoverTank_Cheap( string spawnerName )
-{
-    HoverTank hoverTank
-	
-	array<entity> hovertanks = GetEntArrayByScriptName( "_hover_tank_mover" )
-
-	foreach( hovertank in hovertanks )
+	while ( true )
 	{
-		string instance = ""
-		if ( hovertank.HasKey( "instance_name" ) )
-			instance = expect string( hovertank.kv.instance_name )
-		
-		if( instance == spawnerName )
-		{
-			hoverTank.flightMover = hovertank
-			SetHoverTankMover( hoverTank.flightMover, true )
-			hoverTank.hoverTankOrigin = hovertank.GetOrigin()
-			continue
-		}
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		hoverTank.addativeRotationAmount_last = hoverTank.addativeRotationAmount
+		vector amounts = GetSwayAmounts( hoverTank )
+		vector rates = GetSwayRates( hoverTank )
+
+		float t = Time()
+		float pitch = sin( t * rates.x ) * amounts.x
+		float roll = sin( t * rates.z ) * amounts.z
+		float yaw = sin( t * rates.y ) * amounts.y
+
+		hoverTank.addativeRotationAmount = < pitch, yaw, roll >
+
+		if ( !hoverTank.bobEnabled )
+			hoverTank.addativeRotationAmount = <0,0,0>
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		if ( !hoverTank.alive )
+			break
+
+		WaitFrame()
 	}
 
-	array<entity> hovertanksInteriors = GetEntArrayByScriptName( "_hover_tank_interior" )
+	// Death Spiral
+	//printt( "DOING DEATH SPIRAL ADDATIVE ROTATION" )
 
-	foreach( hovertank in hovertanksInteriors )
+	float startTime = Time()
+	float endTime = startTime + 15.0
+	float minSpinRate = 7.5
+	float maxSpinRate = 10.5
+	if ( CoinFlip() )
 	{
-		string instance = ""
-		if ( hovertank.HasKey( "instance_name" ) )
-			instance = expect string( hovertank.kv.instance_name )
-		
-		if( instance == spawnerName )
-		{
-			hoverTank.interiorModel = hovertank
-			hoverTank.interiorModel.SetParent( hoverTank.flightMover )
-			continue
-		}
-	}
-	
-	array<entity> hovertanksTurretClip = GetEntArrayByScriptName( "_hover_tank_turret_clip" )
-
-	foreach( hovertank in hovertanksTurretClip )
-	{
-		string instance = ""
-		if ( hovertank.HasKey( "instance_name" ) )
-			instance = expect string( hovertank.kv.instance_name )
-		
-		if( instance == spawnerName )
-		{
-			hoverTank.turretBarrelClip = hovertank
-			continue
-		}
+		minSpinRate *= -1
+		maxSpinRate *= -1
 	}
 
-	hoverTank.turret = CreateExpensiveScriptMover( hoverTank.flightMover.GetOrigin(), hoverTank.flightMover.GetAngles(), 6 )
-	hoverTank.turret.SetModel( $"mdl/vehicle/hovership/hovership_turret.rmdl" )
-	hoverTank.turret.SetParent( hoverTank.flightMover, "REMOTE_TURRET_ATTACH" )
-	
-	array<entity> hovertanksTriggerVolume = GetEntArrayByScriptName( "_hover_tank_volume" )
+	//float yaw = FlattenAngles( hoverTank.bobMover.GetLocalAngles() ).y
+	float yaw = 0.0
 
-	foreach( hovertank in hovertanksTriggerVolume )
+	while( true )
 	{
-		string instance = ""
-		if ( hovertank.HasKey( "instance_name" ) )
-			instance = expect string( hovertank.kv.instance_name )
-		
-		if( instance == spawnerName )
-		{
-			hoverTank.triggerVolume = hovertank
-			continue
-		}
+		float t = Time()
+		float rate = GraphCapped( t, startTime, endTime, minSpinRate, maxSpinRate )
+		float pitch = sin( t * 2.0 ) * 8.0
+		float roll = sin( t * 2.54 ) * 8.0
+		yaw = ClampAngle( yaw + rate )
+
+		hoverTank.addativeRotationAmount_last = hoverTank.addativeRotationAmount
+		hoverTank.addativeRotationAmount = < pitch, yaw, roll >
+
+		WaitFrame()
 	}
-	hoverTank.linkedEnts = hoverTank.flightMover.GetLinkEntArray()
-	
-	#if DEVELOPER
-	foreach( linkedEnt in hoverTank.linkedEnts )
-		printt( "linked ent for hovertank " + linkedEnt )
-	#endif
-
-	hoverTank.playerRiding = false
-	
-	HoverTankAddMainFX( hoverTank )
-
-    return hoverTank
-}
-
-void function HoverTankAddMainFX( HoverTank hoverTank )
-{
-	array<int> enginesOrigins
-	entity flightMover = hoverTank.flightMover
-
-	int engine_lf 	= flightMover.LookupAttachment( "ENGINE_LF" )
-	int engine_lb 	= flightMover.LookupAttachment( "ENGINE_LB" )
-	int engine_rf 	= flightMover.LookupAttachment( "ENGINE_RF" )
-	int engine_rb 	= flightMover.LookupAttachment( "ENGINE_RB" )
-	enginesOrigins.append( engine_lf )
-	enginesOrigins.append( engine_lb )
-	enginesOrigins.append( engine_rf )
-	enginesOrigins.append( engine_rb )
-	
-	foreach( engine in enginesOrigins )
-	{
-		StartParticleEffectOnEntity( flightMover, GetParticleSystemIndex( $"P_hovertank_fire_engine" ), FX_PATTACH_POINT_FOLLOW, engine )
-	}
-
 }
 
 void function HoverTankTeleportToPosition( HoverTank hoverTank, vector origin, vector angles )
 {
-    if( !IsValid( hoverTank ) )
-        return
+	Signal( hoverTank, "StopAddativeOnlyThread" )
+	Signal( hoverTank, "StartLoopSounds" )
 
-    hoverTank.flightMover.SetOrigin( origin )
-    hoverTank.flightMover.SetAngles( angles )
+	foreach( entity npc in hoverTank.npcRiders )
+	{
+		if ( !IsAlive( npc ) )
+			continue
+
+		npc.SetParent( hoverTank.interiorModel, "", true )
+		npc.SetInvulnerable()
+	}
+
+	Signal( hoverTank, "HoverTankStopFlyingPath" )
+	hoverTank.flightMover.SetAbsOrigin( origin )
+	hoverTank.flightMover.SetAngles( angles )
+
+	foreach( entity npc in hoverTank.npcRiders )
+	{
+		if ( !IsAlive( npc ) )
+			continue
+
+		npc.ClearParent()
+		npc.ClearInvulnerable()
+	}
+
+	thread ApplyAddativeMovementOnly( hoverTank )
 }
 
-void function HoverTankSetCustomFlySpeed( HoverTank hoverTank, float speed )
+void function HoverTankPlayerRidingUpdate( HoverTank hoverTank )
 {
-	entity hovertank = hoverTank.flightMover
+	EndSignal( hoverTank, "OnDestroy" )
 
-	string instance = ""
-	if ( hovertank.HasKey( "instance_name" ) )
-		instance = expect string( hovertank.kv.instance_name )
-	
-	if( instance != "" && instance == "HoverTank_1" )
+	bool isRiding
+	while( true )
 	{
-		file.currentHoverTankSpeed_1 = speed
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		isRiding = IsAnyPlayerRidingHoverTank( hoverTank )
+		bool signalUpdate = false
+
+		if ( hoverTank.playerRiding != isRiding )
+		{
+			signalUpdate = true
+
+			// Update rider weapons
+			foreach( entity npc in hoverTank.npcRiders )
+			{
+				if ( !IsValid( npc ) || !IsAlive( npc ) )
+					continue
+				Assert( npc in file.riderWeaponAssignments )
+				int index = isRiding ? SHORT_RANGE : LONG_RANGE
+				npc.SetActiveWeaponByName( eActiveInventorySlot.mainHand, file.riderWeaponAssignments[ npc ][ index ] )
+			}
+		}
+
+		hoverTank.playerRiding = isRiding
+
+		if ( signalUpdate )
+			Signal( hoverTank, "PlayerRidingUpdated" )
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		WaitFrame()
 	}
-	else if( instance != "" && instance == "HoverTank_2" )
+}
+
+bool function IsPointWithinAnyHoverTank( vector pos )
+{
+	foreach( HoverTank hoverTank in file.allHoverTanks )
 	{
-		file.currentHoverTankSpeed_2 = speed
+		if ( !IsValid( hoverTank.triggerVolume ) )
+			continue
+
+		if ( hoverTank.triggerVolume.ContainsPoint( pos ) )
+			return true
 	}
+
+	return false
+}
+
+bool function IsAnyPlayerRidingHoverTank( HoverTank hoverTank )
+{
+	foreach( entity player in GetPlayerArray() )
+	{
+		if ( IsPlayerRidingHoverTank( hoverTank, player ) )
+			return true
+	}
+	return false
+}
+
+bool function IsPlayerRidingHoverTank( HoverTank hoverTank, entity player )
+{
+	if ( hoverTank.triggerVolume.IsTouching( player ) )
+		return true
+
+	if ( player.IsGrappleActive() )
+	{
+		entity grappleHook = Entities_FindByClassnameNearest( "grapple_hook", hoverTank.flightMover.GetOrigin(), 0 )
+		if ( IsValid( grappleHook ) && hoverTank.triggerVolume.IsTouching( grappleHook ) )
+			return true
+	}
+
+	return false
+}
+
+bool function IsPlayerRidingAnyHoverTank( entity player )
+{
+	foreach( HoverTank hoverTank in file.allHoverTanks )
+	{
+		if ( IsPlayerRidingHoverTank( hoverTank, player ) )
+			return true
+	}
+
+	return false
+}
+
+void function HoverTank_AddCallback_OnPlayerEnteredVolume( void functionref(entity) func )
+{
+	file.hovertank_OnPlayerEnteredVolume.append( func )
+}
+
+void function HoverTank_AddCallback_OnPlayerExitedVolume( void functionref(entity) func )
+{
+	file.hovertank_OnPlayerExitedVolume.append( func )
+}
+
+void function EntityEnterHoverTankVolume( entity trigger, entity ent, entity caller, var value )
+{
+	if ( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+	printt( "HoverTank: Player Entered Volume", ent )
+	// DisableEntityOutOfBounds( ent )
+
+	foreach(  func in file.hovertank_OnPlayerEnteredVolume )
+		func( ent )
+}
+
+void function EntityLeaveHoverTankVolume( entity trigger, entity ent, entity caller, var value )
+{
+	if ( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+	printt( "HoverTank: Player Left Volume", ent )
+	//EnableEntityOutOfBounds( ent )
+
+	foreach(  func in file.hovertank_OnPlayerExitedVolume )
+		func( ent )
+}
+
+void function ThrusterPoseParamUpdate( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
+
+	vector velocity = <0,0,0>
+	float dotForward = DotProduct( hoverTank.flightMover.GetForwardVector(), velocity )
+	float dotSide = DotProduct( hoverTank.flightMover.GetRightVector(), velocity )
+
+	float poseForward
+	float poseBack
+	float poseLeft
+	float poseRight
+	float poseDuration
+
+	int forwardID	= hoverTank.flightMover.LookupPoseParameterIndex( "move_forward" )
+	int backID 		= hoverTank.flightMover.LookupPoseParameterIndex( "move_back" )
+	int leftID 		= hoverTank.flightMover.LookupPoseParameterIndex( "move_left" )
+	int rightID 	= hoverTank.flightMover.LookupPoseParameterIndex( "move_right" )
+
+	while( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		velocity = hoverTank.flightMover.GetVelocity()
+		dotForward = DotProduct( hoverTank.flightMover.GetForwardVector(), velocity )
+		dotSide = DotProduct( hoverTank.flightMover.GetRightVector(), velocity )
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		// Todo: if we are decelerating we should do back pose instead of forward pose
+		// Todo: if we are yawing we want to apply some side or reverse side pose
+
+		if ( velocity.Length() > 40 )
+		{
+			PerfStart( PerfIndexServer.HoverTankThink )
+
+			poseForward = GraphCapped( dotForward, 50, 350, 0.0, 0.95 ) + RandomFloatRange( 0.0, 0.05 )
+			poseBack = GraphCapped( dotForward, -50, -350, 0.0, 0.95 ) + RandomFloatRange( 0.0, 0.05 )
+			poseRight = GraphCapped( dotSide, 50, 350, 0.0, 0.95 ) + RandomFloatRange( 0.0, 0.05 )
+			poseLeft = GraphCapped( dotSide, -50, -350, 0.0, 0.95 ) + RandomFloatRange( 0.0, 0.05 )
+			poseDuration = 0.25
+
+			PerfEnd( PerfIndexServer.HoverTankThink )
+		}
+		else
+		{
+			poseForward = RandomFloatRange( 0.0, 0.05 )
+			poseBack = RandomFloatRange( 0.0, 0.05 )
+			poseRight = RandomFloatRange( 0.0, 0.05 )
+			poseLeft = RandomFloatRange( 0.0, 0.05 )
+			poseDuration = 1.5
+			wait 1.0
+		}
+
+		hoverTank.flightMover.SetPoseParameterOverTime( forwardID, poseForward, poseDuration )
+		hoverTank.flightMover.SetPoseParameterOverTime( backID, poseBack, poseDuration )
+		hoverTank.flightMover.SetPoseParameterOverTime( rightID, poseRight, poseDuration )
+		hoverTank.flightMover.SetPoseParameterOverTime( leftID, poseLeft, poseDuration )
+
+		WaitFrame()
+	}
+}
+
+void function HoverTankPlayAnim( HoverTank hoverTank, string anim, entity node )
+{
+	EndSignal( hoverTank, "OnDeath" )
+	Assert( !hoverTank.crashing )
+
+	hoverTank.playingScritpedAnim = true
+	hoverTank.flightMover.NonPhysicsSetMoveModeLocal( true )
+	hoverTank.flightMover.NonPhysicsSetRotateModeLocal( true )
+
+	// Spawn a hidden dynamic dummy model that will play the anim
+	entity dummyModel = CreatePropDynamic( HOVER_TANK_LEGS_MODEL )
+	dummyModel.NotSolid()
+
+	// Makes the dummy model invisible without using Hide() which would also hide the real hover tank since it's parented
+	dummyModel.kv.rendermode = 3
+	dummyModel.kv.renderamt = 0
+
+	// Attach the hover tank to the dynamic model
+	hoverTank.flightMover.SetParent( dummyModel, "body", false )
+	hoverTank.flightMover.SetLocalOrigin( <0,0,0> )
+	hoverTank.flightMover.SetLocalAngles( <0,0,0> )
+
+	// Play the anim on the dynamic model, hover tank should follow
+	waitthread PlayAnim( dummyModel, anim, node )
+
+	// Detach the hover tank and delete the dynamic dummy model
+	//int attachID = dummyModel.LookupAttachment( "body" )
+	//vector absOrigin = dummyModel.GetAttachmentOrigin( attachID )
+	//vector absAngles = dummyModel.GetAttachmentAngles( attachID )
+	//DebugDrawSphere( absOrigin, 128.0, COLOR_YELLOW, true, 30.0 )
+	//hoverTank.flightMover.SetAbsOrigin( absOrigin )
+	//hoverTank.flightMover.SetAbsAngles( absAngles )
+
+	hoverTank.flightMover.ClearParent()
+	dummyModel.Destroy()
+
+	hoverTank.flightMover.NonPhysicsSetMoveModeLocal( false )
+	hoverTank.flightMover.NonPhysicsSetRotateModeLocal( false )
+	hoverTank.playingScritpedAnim = false
+}
+
+void function HoverTankFlyToNode( HoverTank hoverTank, entity node, bool ignoreStartNodeTolerance = false )
+{
+	EndSignal( hoverTank, "OnDeath" )
+	Signal( hoverTank, "StartLoopSounds" )
+
+	// Make sure that the node being passed in is a hover tank waypoint and registered
+	Assert( IsValid( node ) )
+	Assert( GetEditorClass( node ) == "info_hover_tank_node" || GetEditorClass( node ) == "info_hover_tank_crash", "Must pass a info_hover_tank_node entity to HoverTankFlyToNode" )
+	Waypoint endWaypoint = GetWaypointForNode( node )
+	Assert( endWaypoint.node == node )
+	string assertMsg = "Hover tank with pathing group '" + hoverTank.assignedPathGroup + "' can't fly to node " + node.GetScriptName() + " with pathing groups:"
+	foreach( string group in endWaypoint.groups )
+		assertMsg = assertMsg + " '" + group + "'"
+	Assert( endWaypoint.groups.contains( hoverTank.assignedPathGroup ), assertMsg )
+
+	vector currentPosition = hoverTank.flightMover.GetOrigin()
+	float goalYaw = node.GetAngles().y
+
+	// Use the closest waypoint to our current position as the start for pathing
+	Waypoint startWaypoint = GetClosestWaypoint( hoverTank.flightMover.GetOrigin(), hoverTank.assignedPathGroup )
+	//Assert( IsValid( startWaypoint.node ) )
+	if ( DEBUG_PATHING )
+		DebugDrawLine( startWaypoint.origin, hoverTank.flightMover.GetOrigin(), COLOR_WHITE, true, 2.0 )
+
+	float d = Distance( startWaypoint.origin, hoverTank.flightMover.GetOrigin() )
+	if ( !ignoreStartNodeTolerance )
+		Assert( d <= HOVER_TANK_PATH_START_NODE_TOLLERANCE, "Tried to call HoverTankFlyToNode but the hover tank isn't close enough to the starting node. Distance was " + d + " but needs to be " + HOVER_TANK_PATH_START_NODE_TOLLERANCE + " or less" )
+
+	// Calculate the fly path using A* and then path smoothing
+	if ( startWaypoint.node != endWaypoint.node )
+	{
+		FlyPathData flyPathData = GetFlyPath( hoverTank.flightMover.GetOrigin(), startWaypoint, endWaypoint, hoverTank.assignedPathGroup, goalYaw )
+		flyPathData.goalYaw = goalYaw
+		thread HoverTankEngineBoost( hoverTank )
+		thread HoverTankFlyPath( hoverTank, flyPathData )
+		WaitSignal( hoverTank, "PathFinished" )
+	}
+}
+
+array<vector> function HovertankGetGoalNodesForPath( HoverTank hoverTank, entity node )
+{
+	Waypoint endWaypoint = GetWaypointForNode( node )
+	Waypoint startWaypoint = GetClosestWaypoint( hoverTank.flightMover.GetOrigin(), hoverTank.assignedPathGroup )
+	float goalYaw = node.GetAngles().y
+	FlyPathData flyPathData = GetFlyPath( hoverTank.flightMover.GetOrigin(), startWaypoint, endWaypoint, hoverTank.assignedPathGroup, goalYaw )
+	return flyPathData.path
+}
+
+bool function IsVelocityVertical( vector velocity )
+{
+	if ( velocity.x == 0 && velocity.y == 0 )
+		return velocity.z != 0
+	return false
 }
 
 void function HoverTankEngineBoost( HoverTank hoverTank )
 {
-	//it plays engine boost fxs
-}
+	// When it boosts
 
-void function HoverTankFlyToNode( HoverTank hoverTank, entity node )
-{
-    // HoverTankTeleportToPosition( hoverTank, node.GetOrigin(), node.GetAngles() )
-	// HoverTank_PlayAnim( hoverTank, 1 )
-	// hoverTank.flightMover.NonPhysicsMoveTo( node.GetOrigin(), HOVER_TANK_DURATION, 0, 0 ) //10, 10)
-	// hoverTank.flightMover.NonPhysicsRotateTo( node.GetAngles(), HOVER_TANK_DURATION, 0, 0 )
-	
-	// thread MoverThink( hoverTank.flightMover, nodes )
-	// waitthread HoverTank_MovementIdk( hoverTank, nodes )
-	// wait HOVER_TANK_DURATION
+	int effectIndex = GetParticleSystemIndex( HOVER_TANK_ENGINE_EFFECT_BOOST )
+	hoverTank.engineBoostEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_LB" ) ) )
+	hoverTank.engineBoostEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_RB" ) ) )
+	hoverTank.engineBoostEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_LF" ) ) )
+	hoverTank.engineBoostEffectHandles.append( StartParticleEffectOnEntity_ReturnEntity( hoverTank.flightMover, effectIndex, FX_PATTACH_POINT_FOLLOW, hoverTank.flightMover.LookupAttachment( "ENGINE_RF" ) ) )
 
-	// cuando está easing out, empieza a rotar
-	// los paths están seleccionados de tal forma que se demoren 1 min en empezar a descender, o sea en 1 min ya deben estar allá, al parecer el start node se selecciona con base a la distancia 
-
-	entity mover = hoverTank.flightMover
-
-	string instance = ""
-	float pathSpeed
-	if ( mover.HasKey( "instance_name" ) )
-		instance = expect string( mover.kv.instance_name )
-	
-	if( instance != "" && instance == "HoverTank_1" )
+	if ( hoverTank.specialFlags.contains( "holiday" ) )
 	{
-		pathSpeed = file.currentHoverTankSpeed_1
-	}
-	else if( instance != "" && instance == "HoverTank_2" )
-	{
-		pathSpeed = file.currentHoverTankSpeed_2
-	}
-	float dist = Distance( node.GetOrigin(), mover.GetOrigin() )
-	float speed = dist / pathSpeed
-
-	while( dist > 0 && speed > 0 )
-	{
-
-		mover.NonPhysicsMoveTo( node.GetOrigin(), speed, 0, 0 ) //10, 10)
-		mover.NonPhysicsRotateTo( node.GetAngles(), speed, 0, 0 )
-
-		wait 0.01
-
-		//Update the speed
-		if ( mover.HasKey( "instance_name" ) )
-			instance = expect string( mover.kv.instance_name )
-		
-		if( instance != "" && instance == "HoverTank_1" )
-		{
-			pathSpeed = file.currentHoverTankSpeed_1
-		}
-		else if( instance != "" && instance == "HoverTank_2" )
-		{
-			pathSpeed = file.currentHoverTankSpeed_2
-		}
-		
-		dist = Distance( node.GetOrigin(), mover.GetOrigin() )
-		speed = dist / pathSpeed
-		
-	}
-	
-
-}
-
-void function HoverTank_MovementIdk( HoverTank hoverTank, array<entity> nodes)
-{
-	entity mover = hoverTank.flightMover
-	EndSignal( mover, "OnDestroy" )
-
-	if ( mover.GetModelName() == $"models/dev/editor_ref.mdl" )
-		mover.Hide()
-
-	array<entity> pathNodes
-
-    pathNodes = nodes
-	entity hovertank = hoverTank.flightMover
-
-	string instance = ""
-	float pathSpeed
-	if ( hovertank.HasKey( "instance_name" ) )
-		instance = expect string( hovertank.kv.instance_name )
-	
-	if( instance != "" && instance == "HoverTank_1" )
-	{
-		pathSpeed = file.currentHoverTankSpeed_1
-	}
-	else if( instance != "" && instance == "HoverTank_2" )
-	{
-		pathSpeed = file.currentHoverTankSpeed_2
-	}
-	 // = 100//float( mover.kv.path_speed )
-	bool easeIn
-	bool easeOut
-
-	if ( pathNodes.len() == 0 )
-		return
-
-	entity pathNode = pathNodes.getrandom()
-	entity lastNode
-
-	easeOut = false //pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
-
-	bool isMoving = false
-
-	while( IsValid( pathNode ) )
-	{
-		// bool teleport = false
-		// if ( pathNode.HasKey( "teleport_to_node" ) )
-			// teleport = pathNode.GetValueForKey( "teleport_to_node" ) == "1"
-
-		// bool perfectRotation = false
-		// if ( IsValid( lastNode ) && lastNode.HasKey( "perfect_circular_rotation" ) )
-			// perfectRotation = lastNode.GetValueForKey( "perfect_circular_rotation" ) == "1"
-
-		float rotationTime = 0.0
-		// if ( IsValid( lastNode ) && lastNode.HasKey( "circular_rotation_time" ) )
-			// rotationTime = float( lastNode.GetValueForKey( "circular_rotation_time" ) )
-
-		float dist = Distance( pathNode.GetOrigin(), mover.GetOrigin() )
-
-		// if ( !isMoving )
-			// MoverPath_StartSound( mover, pathNode )
-
-		if ( dist > 0.0 )
-		{
-			easeIn = false //pathNode.HasKey( "ease_to_node" ) && pathNode.GetValueForKey( "ease_to_node" ) == "1"
-			float moveTime = dist / pathSpeed
-			float easeLeaving = easeOut ? moveTime * 0.5 : 0.0
-			float easeArriving = easeIn ? moveTime * 0.5 : 0.0
-			float angleChange = IsValid( lastNode ) ? MoverPath_GetAngleChange( lastNode, pathNode ) : 0.0
-
-			if ( angleChange != 0 )
-			{
-				string rotationSoundEvent = ""
-				if ( mover.HasKey( "sound_circular_rotation" ) )
-					rotationSoundEvent = mover.GetValueForKey( "sound_circular_rotation" )
-				if ( rotationSoundEvent != "" )
-					EmitSoundOnEntity( mover, rotationSoundEvent )
-
-				vector turnAnchorPos = MoverPath_GetAngleAnchor( lastNode, pathNode )
-
-				// Create a new mover because as far as I know I can't get all the children of the mover and clearparent and reparent.
-				entity curveMover = CreateScriptMover( turnAnchorPos, lastNode.GetAngles() )
-				curveMover.SetPusher( mover.GetPusher() )
-				mover.SetParent( curveMover, "", true )
-
-				// Find the circumference of the turn so we can calculate the rotation time based on the distance traveled around the bend
-				float c = 2 * PI * Length(turnAnchorPos - lastNode.GetOrigin())
-				float frac = fabs(angleChange) / 360.0
-				moveTime = (c * frac) / pathSpeed
-
-				isMoving = true
-				curveMover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, 0.0, 0.0 )
-
-				wait moveTime - 0.01
-
-				mover.ClearParent()
-				curveMover.Destroy()
-
-				if ( rotationSoundEvent != "" )
-					StopSoundOnEntity( mover, rotationSoundEvent )
-			}
-			else
-			{
-				// Linear move/rotate
-				isMoving = true
-				
-				mover.NonPhysicsMoveTo( pathNode.GetOrigin(), moveTime, easeLeaving, easeArriving )
-				mover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, easeLeaving, easeArriving )
-				wait moveTime - 0.01
-			}
-		}
-		else if ( dist == 0.0 && rotationTime > 0.0 )
-		{
-			// Rotation in place
-			string rotationSoundEvent = ""
-			if ( mover.HasKey( "sound_rotation" ) )
-				rotationSoundEvent = mover.GetValueForKey( "sound_rotation" )
-			if ( rotationSoundEvent != "" )
-				EmitSoundOnEntity( mover, rotationSoundEvent )
-
-			isMoving = false
-			// MoverPath_StopMoveSound( mover )
-			// MoverPath_StopSound( mover, pathNode )
-			float easeInF = easeOut ? rotationTime * 0.5 : 0.0
-			float easeOutF = easeIn ? rotationTime * 0.5 : 0.0
-			mover.NonPhysicsRotateTo( pathNode.GetAngles(), rotationTime, easeInF, easeOutF )
-			wait rotationTime - 0.01
-
-			if ( rotationSoundEvent != "" )
-				StopSoundOnEntity( mover, rotationSoundEvent )
-		}
-		else
-		{
-			mover.SetOrigin( pathNode.GetOrigin() )
-			mover.SetAngles( pathNode.GetAngles() )
-		}
-
-		// easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
-
-		// if ( pathNode.HasKey( "scr_flag_set" ) )
-			// FlagSet( pathNode.GetValueForKey( "scr_flag_set" ) )
-
-		// if ( pathNode.HasKey( "scr_flag_clear" ) )
-			// FlagClear( pathNode.GetValueForKey( "scr_flag_clear" ) )
-
-		// if ( pathNode.HasKey( "scr_flag_wait" ) )
-		// {
-			// string flag = pathNode.GetValueForKey( "scr_flag_wait" )
-			// if ( !Flag( flag ) )
-			// {
-				// isMoving = false
-				// MoverPath_StopMoveSound( mover )
-				// MoverPath_StopSound( mover, pathNode )
-				// FlagWait( flag )
-			// }
-		// }
-
-		// if ( pathNode.HasKey( "scr_flag_wait_clear" ) )
-		// {
-			// string flag = pathNode.GetValueForKey( "scr_flag_wait_clear" )
-			// if ( Flag( flag ) )
-			// {
-				// isMoving = false
-				// MoverPath_StopMoveSound( mover )
-				// MoverPath_StopSound( mover, pathNode )
-				// FlagWaitClear( flag )
-			// }
-		// }
-
-		// if ( pathNode.HasKey( "path_wait" ) )
-		// {
-			// float time = float( pathNode.GetValueForKey( "path_wait" ) )
-			// if ( time > 0.0 )
-			// {
-				// isMoving = false
-				// MoverPath_StopMoveSound( mover )
-				// MoverPath_StopSound( mover, pathNode )
-				// wait time
-			// }
-		// }
-
-		// pathNodes = GetNextMoverPathNodes( pathNode )
-		// if ( pathNodes.len() == 0 )
-		// {
-			// MoverPath_StopMoveSound( mover )
-			// MoverPath_StopSound( mover, pathNode )
-			// break
-		// }
-
-		// // Update speed based on the node
-		// if ( pathNode.HasKey( "path_speed" ) )
-			// pathSpeed = float( pathNode.GetValueForKey( "path_speed" ) )
-		if( instance != "" && instance == "HoverTank_1" )
-		{
-			pathSpeed = file.currentHoverTankSpeed_1
-		}
-		else if( instance != "" && instance == "HoverTank_2" )
-		{
-			pathSpeed = file.currentHoverTankSpeed_2
-		}
-		
-		lastNode = pathNode
-		pathNode = pathNodes.getrandom()
-	}	
-}
-
-float function MoverPath_GetAngleChange( entity node1, entity node2 )
-{
-	vector vec1 = node1.GetForwardVector()
-	vector vec2 = node2.GetForwardVector()
-	float angle = acos( DotProduct( vec1, vec2 ) ) * 180 / PI
-	return angle
-}
-
-vector function MoverPath_GetAngleAnchor( entity node1, entity node2 )
-{
-	vector node1Origin = node1.GetOrigin()
-	vector node2Origin = node2.GetOrigin()
-	vector node1Angles = node1.GetAngles()
-	vector node2Angles = node2.GetAngles()
-	vector node1SideVec
-	vector node2SideVec
-
-	if ( node1Origin.z != node2Origin.z )
-	{
-		// vertical turn
-		node1SideVec = AnglesToUp( node1Angles )
-		node2SideVec = AnglesToUp( node2Angles )
+		StopSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_ThrusterStart_Survival_WinterExpress" )
+		EmitSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_ThrusterStart_Survival_WinterExpress" )
 	}
 	else
 	{
-		// horizontal turn
-		node1SideVec = AnglesToRight( node1Angles )
-		node2SideVec = AnglesToRight( node2Angles )
+		StopSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_ThrusterStart_Survival" )
+		EmitSoundOnEntity( hoverTank.flightMover, "HoverTank_Mvmt_ThrusterStart_Survival" )
 	}
 
-	float angleChange = MoverPath_GetAngleChange( node1, node2 )
-	Assert( angleChange != 0 )
-	if ( angleChange > 0 )
+	wait 5
+
+	foreach( entity handle in hoverTank.engineBoostEffectHandles )
 	{
-		node1SideVec *= -1
-		node2SideVec *= -1
+		if ( IsValid( handle ) )
+			handle.Destroy()
 	}
-	float d = Distance( node1Origin, node2Origin )
-	vector intersect = GetClosestPointToLineSegments( node1Origin, node1Origin + node1SideVec * d, node2Origin, node2Origin + node2SideVec * d )
 
-	//DebugDrawLine( intersect, node1Origin, 255, 255, 0, true, 5.0 )
-	//DebugDrawLine( intersect, node2Origin, 0, 255, 255, true, 5.0 )
-	//DebugDrawLine( node1Origin, node1Origin + node1SideVec * 250, 100, 100, 100, true, 5.0 )
-	//DebugDrawLine( node2Origin, node2Origin + node2SideVec * 250, 100, 100, 100, true, 5.0 )
-	//DebugDrawLine( intersect, intersect - <0,0,128>, 100, 0, 0, true, 5.0 )
-	//DebugDrawText( intersect, angleChange.tostring(), true, 5.0 )
-
-	return intersect
 }
 
-bool function HoverTankCanFlyPath( vector currentStartNode, entity currentEndNode )
+Waypoint function GetWaypointForNode( entity node )
 {
-    return true
-}
-
-entity function GetHoverTankByInstance( string instanceOg )
-{
-	array<entity> hovertanks = GetEntArrayByScriptName( "_hover_tank_mover" )
-	entity hoverTank
-
-	foreach( hovertank in hovertanks )
+	// find the struct for this node
+	foreach( string group, array<Waypoint> waypoints in file.waypoints )
 	{
-		string instance = ""
-		if ( hovertank.HasKey( "instance_name" ) )
-			instance = expect string( hovertank.kv.instance_name )
-		
-		if( instance != "" && instance == instanceOg )
+		foreach ( int i, Waypoint waypoint in waypoints )
 		{
-			hoverTank = hovertank
-			continue
+			if ( waypoint.node == node )
+				return waypoint
 		}
 	}
-	return hoverTank
+	Assert( false, "Couldn't find a Waypoint using node " + node )
+	Waypoint w
+	return w
 }
 
-#if DEVELOPER
-// void function Dev_PlayAnimOnHoverTank( int animIndex )
-// {
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_back.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_forward.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_left.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_right.rseq
-// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/test.rseq
-	// asset anim
-	// switch( animIndex )
-	// {
-		// case 0: 
-			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq"
-		// break
-		
-		// case 1:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq"
-		// break
-		
-		// case 2:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq"
-		// break
-		
-		// case 3:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq"
-		// break
+void function HoverTankShakeAndRumble( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
 
-		// case 4:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq"
-		// break
+	// amplitude, freq, durtation, radius
 
-		// case 5:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq"
-		// break
-		
-		// case 6:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq"
-		// break
+	float shakeDuration = 3.0
+	float updateTime = 1.0
 
-		// case 7:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq"
-		// break
+	array<string> thursterTags = [ "ENGINE_LB", "ENGINE_RB", "ENGINE_LF", "ENGINE_RF" ]
 
-		// case 8:
-			// anim = $"animseq/vehicle/hovership/hovership_platform/test.rseq"
-		// break
-	// }
-	
-	// thread PlayAnim( file.hoverTanksIntro[0].flightMover, anim ) //, file.hoverTanksIntro[0].interiorModel )
-// }
+	while( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		// Rumble at center for interior/exterior shakes
+		if ( hoverTank.alive )
+		{
+			CreateShakeRumbleOnly( hoverTank.flightMover.GetOrigin(), 8, 105, shakeDuration, 1100 )
+			CreateShakeNoRumble( hoverTank.flightMover.GetOrigin(), 0.4, 105, shakeDuration, 1100 )
+		}
+		else
+		{
+			CreateShakeRumbleOnly( hoverTank.flightMover.GetOrigin(), 32, 105, shakeDuration, 1100 )
+			CreateShakeNoRumble( hoverTank.flightMover.GetOrigin(), 5.0, 105, shakeDuration, 1100 )
+		}
+
+		foreach( string tag in thursterTags )
+		{
+			int attachID = hoverTank.flightMover.LookupAttachment( tag )
+			vector attachPos = hoverTank.flightMover.GetAttachmentOrigin( attachID ) - <0,0,1500>
+
+			CreateShakeRumbleOnly( attachPos, 64, 105, shakeDuration, 1200 )
+			CreateShakeNoRumble( attachPos, 3.0, 105, shakeDuration, 1200 )
+			//shake.SetParent( hoverTank.flightMover, tagName, true )
+		}
+
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		wait updateTime
+	}
+}
+
+void function HoverTankDeathExplosions( HoverTank hoverTank )
+{
+	EndSignal( hoverTank, "OnDestroy" )
+
+	StartParticleEffectOnEntity( hoverTank.flightMover, GetParticleSystemIndex( HOVER_TANK_DEATH_EFFECT_SMOKE ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+
+	while( true )
+	{
+		hoverTank.explosionEnts.randomize()
+		foreach( entity ent in hoverTank.explosionEnts )
+		{
+			int effectIndex = CoinFlip() ? GetParticleSystemIndex( HOVER_TANK_DEATH_EFFECT_EXPLOSION_SMALL ) : GetParticleSystemIndex( HOVER_TANK_DEATH_EFFECT_EXPLOSION_MEDIUM )
+			StartParticleEffectOnEntity( ent, effectIndex, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "ref" ) )
+			EmitSoundOnEntity( ent, "HoverTank_Destruction_Explosions" )
+			wait RandomFloatRange( 1.0, 2.0 )
+		}
+		wait 0.1
+	}
+}
+
+void function DeleteHoverTank( HoverTank hoverTank )
+{
+	Signal( hoverTank, "OnDeath" )
+	Signal( hoverTank, "OnDestroy" )
+
+	foreach ( hoverTankCandidate in file.allHoverTanks )
+	{
+		if ( hoverTank == hoverTankCandidate)
+			file.allHoverTanks.fastremovebyvalue( hoverTank ) //only trying to find one
+	}
+
+	DestroyArray( hoverTank.alarmEnts )
+	DestroyArray( hoverTank.explosionEnts )
+	DestroyArray( hoverTank.engineEffectHandles )
+	DestroyArray( hoverTank.engineBoostEffectHandles )
+	DestroyArray( hoverTank.thursterEmitters )
+	DestroyArray( hoverTank.npcRiders )
+
+	if ( IsValid( hoverTank.triggerVolume ) )
+		hoverTank.triggerVolume.Destroy()
+
+	// Can't destroy a brush so we just make it not solid and forget about it
+	if ( IsValid( hoverTank.turretBarrelClip ) )
+	{
+		hoverTank.turretBarrelClip.NotSolid()
+		hoverTank.turretBarrelClip.ClearParent()
+	}
+
+	// this gets destroyed if you kill all enemies using dev commands
+	if ( IsValid( hoverTank.turret ) )
+		hoverTank.turret.Destroy()
+
+	if ( IsValid( hoverTank.interiorModel ) )
+		hoverTank.interiorModel.Destroy()
+
+	if ( IsValid( hoverTank.flightMover ) )
+		hoverTank.flightMover.Destroy()
+
+	DestroyArray( hoverTank.linkedEnts )
+
+}
+
+void function DestroyArray( array<entity> entities )
+{
+	foreach( ent in entities )
+	{
+		if( IsValid( ent ) )
+			ent.Destroy()
+	}
+}
+
+//	███╗   ██╗ █████╗ ██╗   ██╗██╗ ██████╗  █████╗ ████████╗██╗ ██████╗ ███╗   ██╗
+//	████╗  ██║██╔══██╗██║   ██║██║██╔════╝ ██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║
+//	██╔██╗ ██║███████║██║   ██║██║██║  ███╗███████║   ██║   ██║██║   ██║██╔██╗ ██║
+//	██║╚██╗██║██╔══██║╚██╗ ██╔╝██║██║   ██║██╔══██║   ██║   ██║██║   ██║██║╚██╗██║
+//	██║ ╚████║██║  ██║ ╚████╔╝ ██║╚██████╔╝██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║
+//	╚═╝  ╚═══╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+
+bool function HoverTankCanFlyPath( vector startPosition, entity node, string pathGroup = HOVER_TANK_PATHING_DEFAULT_GROUP )
+{
+	if ( !( pathGroup in file.waypoints ) )
+		return false
+
+	Assert( IsValid( node ) )
+	Assert( GetEditorClass( node ) == "info_hover_tank_node" || GetEditorClass( node ) == "info_hover_tank_crash", "Must pass a info_hover_tank_node entity to HoverTankFlyToNode" )
+	Waypoint endWaypoint = GetWaypointForNode( node )
+	Assert( endWaypoint.node == node )
+
+	if ( !( endWaypoint.groups.contains( pathGroup ) ) )
+		return false
+
+	// Use the closest waypoint to our current position as the start for pathing
+	Waypoint startWaypoint = GetClosestWaypoint( startPosition, pathGroup )
+	float d = Distance( startWaypoint.origin, startPosition )
+	if ( d > HOVER_TANK_PATH_START_NODE_TOLLERANCE )
+		return false
+
+	if ( !( startWaypoint.groups.contains( pathGroup ) ) )
+		return false
+
+	table<Waypoint,Waypoint> came_from = GenerateCameFromMap( startWaypoint, endWaypoint, pathGroup )
+
+	// Reconstruct path - To build the path, start at the end and follow the came_from map, which points to the previous node. When we reach start, we’re done.
+	Waypoint current = endWaypoint
+	array<vector> path
+	path.append( current.origin )
+	while ( true )
+	{
+		if ( !( current in came_from ) )
+		{
+			//PerfEnd( PerfIndexServer.HoverTankPathCalc )
+			return false
+		}
+
+		current = came_from[current]
+		if ( current == startWaypoint )
+		{
+			path.append( startPosition )
+			break
+		}
+		else
+		{
+			path.append( current.origin )
+		}
+	}
+
+	return true
+}
+
+FlyPathData function GetFlyPath( vector startPosition, Waypoint startWaypoint, Waypoint endWaypoint, string pathGroup, float goalYaw )
+{
+	Assert( pathGroup in file.waypoints )
+	Assert( startWaypoint.groups.contains( pathGroup ) )
+	Assert( endWaypoint.groups.contains( pathGroup ) )
+
+	table<Waypoint,Waypoint> came_from = GenerateCameFromMap( startWaypoint, endWaypoint, pathGroup )
+
+	// Reconstruct path - To build the path, start at the end and follow the came_from map, which points to the previous node. When we reach start, we’re done.
+	//PerfStart( PerfIndexServer.HoverTankPathCalc )
+	Waypoint current = endWaypoint
+	array<vector> path
+	path.append( current.origin )
+	while ( true )
+	{
+		Assert( current in came_from, "Hovertank cannot path from " + startPosition +  " to " + endWaypoint.origin + ". This happens if there is no valid path to the goal node" )
+		current = came_from[current]
+		if ( current == startWaypoint )
+		{
+			path.append( startPosition )
+			break
+		}
+		else
+		{
+			path.append( current.origin )
+		}
+	}
+	path.reverse()
+
+	FlyPathData flyPathData
+	flyPathData.path = path
+
+	#if USE_SMOOTHED_FLIGHT_PATH
+		flyPathData.smoothPath = CreateSmoothPath( path )
+	#else
+		flyPathData.smoothPath = path
+	#endif
+
+	#if LOOKAHEAD_USES_SMOOTH_PATH
+		flyPathData.lookaheadPath = clone flyPathData.smoothPath
+	#else
+		flyPathData.lookaheadPath = clone flyPathData.path
+	#endif
+
+	// Add an extra point at the end of the lookahead path so the lookahead will move towards the goal direction at the end to make smooth end goal rotation
+	flyPathData.lookaheadPath.append( flyPathData.lookaheadPath[flyPathData.lookaheadPath.len() - 1] + ( AnglesToForward( < 0, goalYaw, 0 > ) * HOVER_TANK_LOOKAHEAD_DIST ) )
+	//PerfEnd( PerfIndexServer.HoverTankPathCalc )
+
+	return flyPathData
+}
+
+table<Waypoint,Waypoint> function GenerateCameFromMap( Waypoint startWaypoint, Waypoint endWaypoint, string pathGroup )
+{
+	// A* using Dijkstra's algorithm for finding the shortest paths between nodes in a graph
+	//PerfStart( PerfIndexServer.HoverTankPathCalc )
+
+	PriorityQueue_Reset( pathGroup )
+	PriorityQueue_Put( startWaypoint, 0 )
+
+	table<Waypoint,Waypoint> came_from
+	came_from[ startWaypoint ] <- startWaypoint
+
+	table<Waypoint,float> cost_so_far
+	cost_so_far[ startWaypoint ] <- 0
+
+	while ( !PriorityQueue_Empty() )
+	{
+		Waypoint current = PriorityQueue_Get()
+
+		if ( current == endWaypoint )
+			break
+
+		Assert( pathGroup in current.connectingWaypoints )
+		foreach ( int i, Waypoint next in current.connectingWaypoints[pathGroup] )
+		{
+			float d = current.connectingWaypointDistances[pathGroup][i] // stored off Distance( current.origin, next.origin )
+			float new_cost = cost_so_far[current] + d
+			if ( !( next in came_from ) || new_cost < cost_so_far[next] )
+			{
+				if ( !( next in cost_so_far ) )
+					cost_so_far[next] <- new_cost
+				cost_so_far[next] = new_cost
+
+				float priority = new_cost
+				PriorityQueue_Put( next, priority )
+
+				came_from[ next ] <- current
+			}
+		}
+	}
+
+	//PerfEnd( PerfIndexServer.HoverTankPathCalc )
+
+	return came_from
+}
+
+void function PriorityQueue_Reset( string pathGroup )
+{
+	foreach ( Waypoint waypoint in file.waypoints[pathGroup] )
+		waypoint.priority = 0
+	file.priorityQueue.clear()
+}
+
+void function PriorityQueue_Put( Waypoint waypoint, float priority )
+{
+	waypoint.priority = priority
+	file.priorityQueue.append( waypoint )
+	file.priorityQueue.sort( SortLowestPriority )
+}
+
+Waypoint function PriorityQueue_Get()
+{
+	Waypoint p = file.priorityQueue[0]
+	file.priorityQueue.remove(0)
+	return p
+}
+
+bool function PriorityQueue_Empty()
+{
+	return ( file.priorityQueue.len() == 0 )
+}
+
+int function SortLowestPriority( Waypoint a, Waypoint b )
+{
+	if ( a.priority > b.priority )
+		return 1
+
+	if ( a.priority < b.priority )
+		return -1
+
+	return 0
+}
+
+array<vector> function CreateNormalPath( array<Waypoint> waypoints )
+{
+	Assert( waypoints.len() >= 2 )
+	array<vector> points
+	foreach ( Waypoint waypoint in waypoints )
+		points.append( waypoint.origin )
+	return points
+}
+
+#if USE_SMOOTHED_FLIGHT_PATH
+array<vector> function CreateSmoothPath( array<vector> points )
+{
+	Assert( points.len() >= 2 )
+
+	// Optimization - if there's only 2 points don't smooth them because we will fly a straight line
+	if ( points.len() == 2 )
+		return points
+
+	// Add duplicate start/end points to ensure the hermite interpolate starts/ends at the exact start and end point
+	points.insert( 0, points[0] )
+	points.append( points[points.len() - 1] )
+
+	array<vector> smoothedPoints
+
+	for ( int i = 0; i < points.len() - 3; i++ )
+	{
+		float d = Distance( points[i+1], points[i+2] )
+		int pointsPerSegment = int( ceil( d / HOVER_TANK_SMOOTH_PATHING_SEGMENT_LENGTH ) )
+		//printt( "generated", pointsPerSegment, "smoothed segments for line" )
+		for ( int k = 0 ; k < pointsPerSegment ; k++ )
+		{
+			float mu = (1.0 / pointsPerSegment) * k
+			vector pt = GetSmoothedPoint( points[i], points[i+1], points[i+2], points[i+3], mu, HOVER_TANK_SMOOTH_PATHING_TENSION )
+			smoothedPoints.append( pt )
+		}
+	}
+
+	return smoothedPoints
+}
 #endif
+
+Waypoint function GetClosestWaypoint( vector position, string pathGroup )
+{
+	Waypoint closest
+	float closestDist
+	float d
+	foreach( int i, Waypoint w in file.waypoints[pathGroup] )
+	{
+		d = Distance( w.origin, position )
+		if ( i == 0 || d < closestDist )
+		{
+			closest = w
+			closestDist = d
+		}
+	}
+	return closest
+}
+
+Waypoint function GetClosestCrashWaypoint( HoverTank hoverTank )
+{
+	Waypoint closest
+	float closestDist
+	float d
+	vector position = hoverTank.flightMover.GetOrigin()
+	string pathGroup = hoverTank.assignedPathGroup
+	foreach( int i, Waypoint w in file.crashWaypoints[pathGroup] )
+	{
+		d = Distance( w.origin, position )
+		if ( i == 0 || d < closestDist )
+		{
+			closest = w
+			closestDist = d
+		}
+	}
+	return closest
+}
+
+Waypoint function GetFarthestCrashWaypoint( HoverTank hoverTank )
+{
+	Waypoint farthest
+	float farthestDist
+	float d
+	vector position = hoverTank.flightMover.GetOrigin()
+	string pathGroup = hoverTank.assignedPathGroup
+	foreach( int i, Waypoint w in file.crashWaypoints[pathGroup] )
+	{
+		d = Distance( w.origin, position )
+		if ( i == 0 || d > farthestDist )
+		{
+			farthest = w
+			farthestDist = d
+		}
+	}
+	return farthest
+}
+
+void function ApplyAddativeMovementOnly( HoverTank hoverTank )
+{
+	Signal( hoverTank, "StopAddativeOnlyThread" )
+	EndSignal( hoverTank, "StopAddativeOnlyThread" )
+	EndSignal( hoverTank, "OnDestroy" )
+	EndSignal( hoverTank.flightMover, "OnDestroy" )
+
+	while( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankThink )
+
+		if ( hoverTank.playingScritpedAnim )
+		{
+			hoverTank.flightMover.SetLocalOrigin( <0,0,0> )
+			hoverTank.flightMover.SetLocalAngles( <0,0,0> )
+		}
+		else
+		{
+			vector lastPos = hoverTank.flightMover.GetOrigin() - < 0, 0, hoverTank.addativeBobAmount_last >
+			hoverTank.flightMover.NonPhysicsMoveTo( lastPos + < 0, 0, hoverTank.addativeBobAmount >, HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0, 0.0, 0.0 )
+
+			vector lastAng = hoverTank.flightMover.GetAngles() - hoverTank.addativeRotationAmount_last
+			hoverTank.flightMover.NonPhysicsRotateTo( ClampAngles( lastAng + hoverTank.addativeRotationAmount ), HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0, 0.0, 0.0 )
+		}
+		PerfEnd( PerfIndexServer.HoverTankThink )
+
+		wait HOVER_TANK_FLY_FRAME_UPDATE_TIME
+	}
+}
+
+void function HoverTankFlyPath( HoverTank hoverTank, FlyPathData flyPathData )
+{
+	Signal( hoverTank, "HoverTankStopFlyingPath" )
+	EndSignal( hoverTank, "HoverTankStopFlyingPath" )
+	EndSignal( hoverTank, "OnDestroy" )
+	Signal( hoverTank, "StopAddativeOnlyThread" )
+
+	OnThreadEnd(
+		function() : ( hoverTank )
+		{
+			if ( IsValid( hoverTank ) )
+			{
+				hoverTank.flyingPath = false
+				Signal( hoverTank, "PathFinished" )
+				thread ApplyAddativeMovementOnly( hoverTank )
+			}
+		}
+	)
+
+	float pathLength = GetPathLength( flyPathData.smoothPath )
+	float distToMoveThisFrame
+	float distanceAlongPath
+	float distanceRemainingOnPath
+	float approxDurationRemainingOnPath
+	float goalDistanceAlongPath
+	float lookaheadDistanceAlongPath
+	vector lookaheadPosition
+	float currentYaw
+	float yawDiff
+	float goalYawDuration
+	float currentYawGoal
+	float maxYawThisFrame
+	float maxTiltThisFrame
+	vector goalPosition
+	vector goalAngles
+	bool rotatingToGoal
+	bool reverseTiltingToSlow
+	float tiltAmount
+	float currentTiltAmount
+	vector currentPosition
+	float moveSpeed
+	vector velocity
+	bool signalledGoal = false
+	array<vector> actualPathTaken
+
+	currentYawGoal = FlattenAngles( hoverTank.flightMover.GetAngles() ).y
+
+	float startTime = Time()
+	float elapsedTime
+
+	hoverTank.flyingPath = true
+	actualPathTaken.append( hoverTank.flightMover.GetOrigin() )
+
+	while ( true )
+	{
+		PerfStart( PerfIndexServer.HoverTankFlyPathCalc )
+
+		elapsedTime = Time() - startTime
+		currentPosition = hoverTank.flightMover.GetOrigin() - < 0, 0, hoverTank.addativeBobAmount_last >
+
+		distanceAlongPath = GetDistanceAlongPath( flyPathData.smoothPath, currentPosition )
+		//printt( "SMOOTH PATH POINTS:", flyPathData.smoothPath.len() )
+		distanceRemainingOnPath = pathLength - distanceAlongPath
+		approxDurationRemainingOnPath = distanceRemainingOnPath / GetFlySpeed(hoverTank)
+		lookaheadDistanceAlongPath = goalDistanceAlongPath + HOVER_TANK_LOOKAHEAD_DIST // yaw to look at the lookahead point further down the path
+
+		lookaheadPosition = GetPointAtDistanceAlongPath( flyPathData.lookaheadPath, lookaheadDistanceAlongPath )
+
+		// if ( DEBUG_PATHING )
+			// DebugDrawSphere( lookaheadPosition, 32.0, COLOR_RED, true, 0.1 )
+
+		float accelDecelModifier = 1.0
+
+		//#########################
+		// 		 POSITION
+		//#########################
+
+		if ( goalDistanceAlongPath < pathLength )
+		{
+			// Figure out how many units to move forward this frame and calculate the point on the spline that many units ahead
+			distToMoveThisFrame = GetFlySpeedForFrame(hoverTank)
+			if ( elapsedTime < HOVER_TANK_ACCEL_DURATION )
+				accelDecelModifier = Tween_QuadEaseIn( elapsedTime / HOVER_TANK_ACCEL_DURATION )
+			else if ( distanceRemainingOnPath < HOVER_TANK_DECEL_DISTANCE )
+				accelDecelModifier = max( 0.05, Tween_QuadEaseOut( distanceRemainingOnPath / HOVER_TANK_DECEL_DISTANCE ) )
+			distToMoveThisFrame *= accelDecelModifier
+
+			goalDistanceAlongPath = min( distanceAlongPath + distToMoveThisFrame, pathLength )
+
+			#if FLIGHT_MOVEMENT_LOCKED_TO_PATH
+				goalPosition = GetPointAtDistanceAlongPath( flyPathData.smoothPath, goalDistanceAlongPath )
+			#else
+				goalPosition = currentPosition + ( Normalize( lookaheadPosition - currentPosition ) * distToMoveThisFrame )
+			#endif
+
+			if ( HOVER_TANK_TILT_TOWARDS_LOOKAHEAD )
+				velocity = lookaheadPosition - hoverTank.flightMover.GetOrigin()
+			else
+				velocity = goalPosition - hoverTank.flightMover.GetOrigin()
+
+			moveSpeed = distToMoveThisFrame
+			//printt( "moveSpeed:", moveSpeed )
+		}
+
+		//#########################
+		// 			YAW
+		//#########################
+
+		if ( HOVER_TANK_YAW_DURING_FLIGHT_ENABLED )
+		{
+			currentYaw = FlattenAngles( hoverTank.flightMover.GetAngles() ).y
+			currentYawGoal = FlattenAngles( VectorToAngles( lookaheadPosition - goalPosition ) ).y
+			yawDiff = AngleDiff( currentYaw, currentYawGoal )
+
+			// Ease in/out of yaw movements
+			float yawDamper = 1.0
+			if ( elapsedTime < HOVER_TANK_ACCEL_DURATION )
+				yawDamper = Tween_QuadEaseIn( elapsedTime / HOVER_TANK_ACCEL_DURATION )
+			else
+				yawDamper = GraphCapped( fabs( yawDiff ), 0, 45, 0.05, 1.0 )
+
+			// Limit yaw amount by yaw rate
+			maxYawThisFrame = GetMaxYawForFrame( hoverTank ) * yawDamper
+			if ( fabs( yawDiff ) > maxYawThisFrame )
+			{
+				if ( yawDiff < 0 )
+					currentYawGoal = currentYaw - maxYawThisFrame
+				else if ( yawDiff > 0 )
+					currentYawGoal = currentYaw + maxYawThisFrame
+			}
+		}
+		goalAngles = <0,currentYawGoal,0>
+
+		//#########################
+		// 			BANK
+		//#########################
+
+		// ToDo: needs to respect max bank rate and smooth
+		/*
+		//const float HOVER_TANK_MAX_FLIGHT_BANK = 12.0
+		//const float HOVER_TANK_MAX_FLIGHT_TURN_ANGLE_BANK = 20.0
+		if ( HOVER_TANK_BANK_DURING_FLIGHT_ENABLED )
+		{
+			if ( moveSpeed > 0 && !IsVelocityVertical( velocity ) )
+			{
+				vector vec_forward = Normalize( goalPosition - mover.GetOrigin() )
+				vector vec_to_lookahead = Normalize( lookaheadPosition - mover.GetOrigin() )
+				vector left = Normalize( CrossProduct( Normalize( vec_forward ), <0,0,1> ) )
+				float leftDot = DotProduct( left, vec_to_lookahead )
+				float turnAngle = acos( DotProduct( vec_forward, vec_to_lookahead ) ) * 180 / PI
+				if ( leftDot > 0 )
+					turnAngle *= -1
+				float bankAmount = GraphCapped( turnAngle, -HOVER_TANK_MAX_FLIGHT_TURN_ANGLE_BANK, HOVER_TANK_MAX_FLIGHT_TURN_ANGLE_BANK, -HOVER_TANK_MAX_FLIGHT_BANK, HOVER_TANK_MAX_FLIGHT_BANK )
+
+				goalAngles = RotateAnglesAboutAxis( goalAngles, vec_forward, bankAmount )
+			}
+		}
+		*/
+		//#########################
+		// 			PITCH
+		//#########################
+
+		if ( HOVER_TANK_TILT_DURING_FLIGHT_ENABLED )
+		{
+			if ( moveSpeed > 0 && !IsVelocityVertical( velocity ) )
+			{
+				vector tiltAxis = Normalize( CrossProduct( Normalize( velocity ), <0,0,1> ) )
+				maxTiltThisFrame = GetMaxTiltForFrame(hoverTank)
+				if ( DEBUG_PATHING )
+					DebugDrawLine( hoverTank.flightMover.GetOrigin(), hoverTank.flightMover.GetOrigin() + tiltAxis * 500, <125, 100, 150>, true, HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0 )
+				float frac = GraphCapped( moveSpeed, 0.0, GetFlySpeedForFrame(hoverTank), 0.0, 1.0 )
+				tiltAmount = GetMaxTiltAmount(hoverTank) * frac
+
+				// Determine if we should be reverse tilting to slow down, or forward tilting to move
+				float timeToReverseTilt = ( fabs( tiltAmount * 2.0 ) / GetTiltRate(hoverTank) ) * 2.0
+				if ( reverseTiltingToSlow || approxDurationRemainingOnPath < timeToReverseTilt )
+				{
+					reverseTiltingToSlow = true
+					tiltAmount *= -2.0
+				}
+
+				float tiltDiff = currentTiltAmount - tiltAmount
+				if ( fabs(tiltDiff) > maxTiltThisFrame )
+				{
+					if ( tiltDiff < 0 )
+						tiltAmount = currentTiltAmount + maxTiltThisFrame
+					else if ( tiltDiff > 0 )
+						tiltAmount = currentTiltAmount - maxTiltThisFrame
+				}
+
+				// Apply tilt
+				goalAngles = RotateAnglesAboutAxis( goalAngles, tiltAxis, tiltAmount )
+				currentTiltAmount = tiltAmount
+			}
+		}
+		goalAngles -= hoverTank.addativeRotationAmount_last
+
+		// Move/rotate the mover this frame
+		hoverTank.flightMover.NonPhysicsMoveTo( goalPosition + < 0, 0, hoverTank.addativeBobAmount >, HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0, 0.0, 0.0 )
+		hoverTank.flightMover.NonPhysicsRotateTo( ClampAngles( goalAngles + hoverTank.addativeRotationAmount ), HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0, 0.0, 0.0 )
+
+		PerfEnd( PerfIndexServer.HoverTankFlyPathCalc )
+
+		if ( DEBUG_PATHING )
+		{
+			// Draw smooth path as ORANGE
+			foreach ( int i, vector p in flyPathData.smoothPath )
+			{
+				if ( i > 0 )
+					DebugDrawLine( flyPathData.smoothPath[i-1], p, COLOR_ORANGE, true, HOVER_TANK_FLY_FRAME_UPDATE_TIME )
+			}
+
+			// Draw goal waypoint in YELLOW
+			DebugDrawRotatedBox( flyPathData.smoothPath[flyPathData.smoothPath.len()-1], < -1100, -1100, -250 >, < 1100, 1100, 250 >, < 0, flyPathData.goalYaw, 0 >, COLOR_YELLOW, true, HOVER_TANK_FLY_FRAME_UPDATE_TIME )
+
+			// Draw waypoint path in GREEN
+			float arrowSize = 128.0
+			for ( int i = 0; i < flyPathData.path.len() - 1; i++ )
+			{
+				vector dir = flyPathData.path[i+1] - flyPathData.path[i]
+				float d = dir.Length()
+				DebugDrawArrow( flyPathData.path[i], flyPathData.path[i] + (Normalize(dir) * (d - arrowSize)), arrowSize, GREEN[0], GREEN[1], GREEN[2], true, HOVER_TANK_FLY_FRAME_UPDATE_TIME )
+			}
+
+			// Draw actual path taken in BLUE
+			foreach ( int i, vector p in actualPathTaken )
+			{
+				if ( i > 0 )
+					DebugDrawLine( actualPathTaken[i-1], p, COLOR_BLUE, true, HOVER_TANK_FLY_FRAME_UPDATE_TIME )
+			}
+		}
+
+		wait HOVER_TANK_FLY_FRAME_UPDATE_TIME
+
+		actualPathTaken.append( hoverTank.flightMover.GetOrigin() )
+
+		// We reached the end of the path
+		if ( goalDistanceAlongPath >= pathLength && fabs(AngleDiff( currentYawGoal, flyPathData.goalYaw )) < 1.0 )
+			break
+
+		if ( !signalledGoal && (pathLength - goalDistanceAlongPath <= 500) )
+			Signal( hoverTank, "GoalReached" )
+	}
+}
+
+void function DebugDrawEntity( entity ent, float radius = 32.0 )
+{
+	EndSignal( ent, "OnDestroy" )
+	while( true )
+	{
+		// DebugDrawSphere( ent.GetOrigin(), radius, COLOR_RED, true, 0.15 )
+		wait 0.1
+	}
+}
+
+float function GetBobAmount( HoverTank hoverTank )
+{
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_ADDATIVE_MAX_BOB_AMOUNT : HOVER_TANK_NORMAL_ADDATIVE_MAX_BOB_AMOUNT
+}
+
+float function GetBobRate( HoverTank hoverTank )
+{
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_ADDATIVE_MAX_BOB_RATE : HOVER_TANK_NORMAL_ADDATIVE_MAX_BOB_RATE
+}
+
+vector function GetSwayAmounts( HoverTank hoverTank )
+{
+	if ( hoverTank.playerRiding )
+		return <HOVER_TANK_PLAYER_ADDATIVE_PITCH_AMOUNT, HOVER_TANK_PLAYER_ADDATIVE_YAW_AMOUNT, HOVER_TANK_PLAYER_ADDATIVE_ROLL_AMOUNT>
+	return <HOVER_TANK_NORMAL_ADDATIVE_PITCH_AMOUNT, HOVER_TANK_NORMAL_ADDATIVE_YAW_AMOUNT, HOVER_TANK_NORMAL_ADDATIVE_ROLL_AMOUNT>
+}
+
+vector function GetSwayRates( HoverTank hoverTank )
+{
+	if ( hoverTank.playerRiding )
+		return <HOVER_TANK_PLAYER_ADDATIVE_PITCH_RATE, HOVER_TANK_PLAYER_ADDATIVE_YAW_RATE, HOVER_TANK_PLAYER_ADDATIVE_ROLL_RATE>
+	return <HOVER_TANK_NORMAL_ADDATIVE_PITCH_RATE, HOVER_TANK_NORMAL_ADDATIVE_YAW_RATE, HOVER_TANK_NORMAL_ADDATIVE_ROLL_RATE>
+}
+
+float function GetFlySpeed( HoverTank hoverTank )
+{
+	if ( hoverTank.customFlySpeed > 0.0 )
+		return hoverTank.customFlySpeed
+
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_FLY_SPEED : HOVER_TANK_NORMAL_FLY_SPEED
+}
+
+void function HoverTankSetCustomFlySpeed( HoverTank hoverTank, float flySpeed, float blendTime = 0.0 )
+{
+	Assert( flySpeed > 0.0 )
+
+	Signal( hoverTank, "NewCustomSpeed" )
+
+	if ( blendTime > 0.0 )
+		thread HoverTankSetCustomFlySpeedOverTime( hoverTank, flySpeed, blendTime )
+	else
+		hoverTank.customFlySpeed = flySpeed
+}
+
+void function HoverTankSetCustomFlySpeedOverTime( HoverTank hoverTank, float flySpeed, float blendTime )
+{
+	EndSignal( hoverTank, "NewCustomSpeed" )
+	EndSignal( hoverTank, "OnDestroy" )
+
+	float startSpeed = GetFlySpeed( hoverTank )
+	float endSpeed = flySpeed
+
+	float delta = endSpeed - startSpeed
+
+	float startTime = Time()
+	float endTime = startTime + blendTime
+
+	while( Time() < endTime )
+	{
+		float frac = 1.0 - ( ( endTime - Time() ) / blendTime )
+		hoverTank.customFlySpeed = startSpeed + ( delta * frac )
+		WaitFrame()
+	}
+
+	hoverTank.customFlySpeed = flySpeed
+}
+
+void function HoverTankClearCustomFlySpeed( HoverTank hoverTank, float blendTime = 0.0 )
+{
+	Signal( hoverTank, "NewCustomSpeed" )
+
+	if ( blendTime > 0.0 )
+		thread HoverTankClearCustomFlySpeedOverTime( hoverTank, blendTime )
+	else
+		hoverTank.customFlySpeed = 0.0
+}
+
+void function HoverTankClearCustomFlySpeedOverTime( HoverTank hoverTank, float blendTime )
+{
+	EndSignal( hoverTank, "NewCustomSpeed" )
+	EndSignal( hoverTank, "OnDestroy" )
+
+	float flySpeed = hoverTank.playerRiding ? HOVER_TANK_PLAYER_FLY_SPEED : HOVER_TANK_NORMAL_FLY_SPEED
+
+	waitthread HoverTankSetCustomFlySpeedOverTime( hoverTank, flySpeed, blendTime )
+	hoverTank.customFlySpeed = 0.0
+}
+
+float function GetFlySpeedForFrame( HoverTank hoverTank )
+{
+	// mult units per second by 2 because we are moving the mover over 2 frames, but updating every 1 frame so we will only actually move half the distance. It does this to create smoother movement
+	return GetFlySpeed( hoverTank ) * HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0
+}
+
+float function GetYawRate( HoverTank hoverTank )
+{
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_YAW_RATE : HOVER_TANK_NORMAL_YAW_RATE
+}
+
+float function GetMaxYawForFrame( HoverTank hoverTank )
+{
+	return GetYawRate( hoverTank ) * HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0
+}
+
+float function GetTiltRate( HoverTank hoverTank )
+{
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_TILT_RATE : HOVER_TANK_NORMAL_TILT_RATE
+}
+
+float function GetMaxTiltForFrame( HoverTank hoverTank )
+{
+	return GetTiltRate( hoverTank ) * HOVER_TANK_FLY_FRAME_UPDATE_TIME * 2.0
+}
+
+float function GetMaxTiltAmount( HoverTank hoverTank )
+{
+	return hoverTank.playerRiding ? HOVER_TANK_PLAYER_MAX_FLIGHT_TILT : HOVER_TANK_NORMAL_MAX_FLIGHT_TILT
+}
+
+array<HoverTank> function GetAllHoverTanks()
+{
+	return file.allHoverTanks
+}

@@ -96,7 +96,7 @@
 		"fontHeight"			"25"
 		"zpos"					"5"
 		"textAlignment"			"north-west"
-		"labelText"				"This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more."
+		"labelText"				"#FS_ABOUT_R5R"
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"200 200 200 255"

@@ -1,21 +1,27 @@
 //custom
+global const float METERS_TO_INCHES = 39.3701
+global const float INCHES_TO_METERS = 0.0254
+global const float KILOMETERS_TO_INCHES = 39370.1
+
 global string SDK_VERSION = "v2.4"
 global string FLOWSTATE_VERSION = "v4.5"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
 global const int BOOSTZONE_ALIVE_TIME = 15
 
-global const SCRIPT_GAME_VERSION__RELEASE = false
+global const SCRIPT_GAME_VERSION__RELEASE = true
 
 //r5r.dev
-global const bool TRACKER 				= false
-global const bool HAS_TRACKER_DLL 		= false
-global const vector NULL_VEC 			= <0,0,0>
-global const MULTIPLAYER_DEBUG_PRINTS 	= false
-global const NOTIFY_RATELIMIT_FAILED	= false
+global const bool TRACKER 					= false
+global const bool HAS_TRACKER_DLL 			= false
+global const bool MULTIPLAYER_DEBUG_PRINTS 	= false
+global const bool NOTIFY_RATELIMIT_FAILED	= false
+global const bool MKOS						= false
+global const bool ENTITYVAR_DEPRECATED		= true
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
 global const float FLT_MAX = 3.40282e+38
+global const float FLT_EPSILON = 1.0e-6
 
 global const void IN_SET = null
 global typedef IntSet table<int, void>
@@ -44,6 +50,21 @@ global const string SNIPER_AMMO = "sniper"
 #if UI
 global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
 #endif
+
+global const float DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH = 16
+
+global struct DeployableCollisionParams
+{
+vector	pos
+vector	normal
+entity	hitEnt
+int		hitBox
+bool	isCritical
+int		deployableFlags	// eDeployableFlags.*
+bool 	highDetailTrace
+bool	ignoreHullSize
+float	traceLength = DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH
+}
 
 global enum eEliteTutorialState
 {
@@ -124,6 +145,7 @@ global const TEAM_DEATHMATCH				= "tdm"
 global const SURVIVAL						= "survival"
 global const FREELANCE						= "freelance"
 global const CUSTOM_CTF						= "custom_ctf"
+
 //Gamemodes made by @CafeFPS <3
 global const fs_dm							= "fs_dm"
 global const fs_aimtrainer					= "fs_aimtrainer"
@@ -131,6 +153,11 @@ global const fs_prophunt					= "fs_prophunt"
 global const fs_duckhunt					= "fs_duckhunt"
 global const fs_infected					= "fs_infected"
 global const fs_snd							= "fs_snd"
+global const fs_apexkart					= "fs_apexkart"
+
+//Respawn modes
+global const WINTEREXPRESS					= "winterexpress"
+
 //global const flowstate_pkknockback		= "flowstate_pkknockback"
 
 //////////////////////////////
@@ -180,6 +207,8 @@ global const MID_SPEC_PLAYER_CUTOFF  		= 8 // treat the server as high-end when 
 global const MID_SPEC_MAX_AI_COUNT   		= 9 // max number of AI per side when playing on less then high-end machines (durango)
 
 global const vector ZERO_VECTOR 			= <0,0,0>
+
+global const bool MODEL_VIEWER_ENABLED = false
 
 // If modified, keep these functions updated:
 // 		SetPersistentPilotLoadout()
@@ -859,12 +888,14 @@ global enum PerfIndexShared
 
 global const HOTDROP_IMPACT_FX_TABLE = "droppod_impact"
 
-global const int PICKUP_FLAG_ALT 					= 0x00001
-global const int PICKUP_FLAG_AUTO 					= 0x00002
-global const int PICKUP_FLAG_FROM_MENU 				= 0x00004
-global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY 	= 0x00008
-global const int PICKUP_FLAG_ATTACH_STOWED_ONLY 	= 0x00010
-global const int PICKUP_FLAG_LONG 					= 0x00020
+global const int PICKUP_FLAG_ALT = (1 << 0)
+global const int PICKUP_FLAG_AUTO = (1 << 1)
+global const int PICKUP_FLAG_FROM_MENU = (1 << 2)
+global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY = (1 << 3)
+global const int PICKUP_FLAG_ATTACH_STOWED_ONLY = (1 << 4)
+global const int PICKUP_FLAG_LONG = (1 << 5)
+global const int PICKUP_FLAG_DONT_SWITCH_WEAPONS = (1 << 6)
+global const int PICKUP_FLAG_DONT_COUNT_TOWARD_BLACK_MARKET_QUOTA = (1 << 8)
 
 // cinematic event flags; server controlled cinematics should set/clear these when active
 //global const CE_FLAG___						= 0x0001
@@ -910,6 +941,7 @@ global const OFFHAND_COUNT			= 6
 
 global const OFFHAND_ORDNANCE		= OFFHAND_RIGHT
 global const OFFHAND_SPECIAL		= OFFHAND_LEFT
+global const int SLING_WEAPON_SLOT = -1 //WEAPON_INVENTORY_SLOT_PRIMARY_4
 
 global const SHIELD_REGEN_TICK_TIME 					= 0.1
 global const TITAN_DOOMED_REGEN_DELAY					= 0.5
@@ -2409,6 +2441,11 @@ global struct BurnDamageStack
 	BurnDamageSettings &burnSettings
 }
 
+global const float MAP_KILL_VOLUME_OFFSET_TROPIC_ISLAND = -2048.0
+global const float MAP_KILL_VOLUME_OFFSET_OLYMPUS = -28320.0
+global const float MAP_KILL_VOLUME_OFFSET_CANYONLANDS = -2048.0
+global const float MAP_KILL_VOLUME_OFFSET_DESERTLANDS = -22290.0
+global const float MAP_KILL_VOLUME_OFFSET_DIVIDED_MOON = -2400.0
 global int PLAYER_STRYDER_CHAR_DATA_ARRAY_VERSION = 0 // be careful changing this
 
 global enum ePlayerStryderCharDataArraySlots
@@ -2456,6 +2493,7 @@ Assert( ePlayerStryderCharDataArraySlots.COUNT == 32 )
 // ===============================================================================
 // references to variables that are defined in the game code should be at the end
 // ===============================================================================
+global const int TEAM_TICK = 110
 global const TEAM_BOTH = 4 // used to be (TEAM_NPC == 4)
 global const int PROP_IS_VALID_FOR_TURRET_PLACEMENT = SPF_CUSTOM_SCRIPT_3
 

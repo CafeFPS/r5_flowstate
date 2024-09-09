@@ -4,6 +4,7 @@ global function Bleedout_StartPlayerBleedout
 global function Bleedout_AddCallback_OnPlayerStartBleedout
 global function Bleedout_AddCallback_OnPlayerGiveFirstAid
 global function Bleedout_ShouldAIMissBleedingPlayer
+global function IsPlayerSelfHealing
 
 global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
@@ -12,6 +13,8 @@ global function Bleedout_GetBleedoutDamageInfo
 global function Bleedout_CheckForTeamBleedout
 global function Bleedout_AreThereAlivingMates
 global function PlayerDiesFromBleedout
+
+global function Bleedout_GetCreditedKiller
 
 global table<string, string> EliminatedPlayers = {}
 
@@ -137,8 +140,13 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	
 	//if the player is already bleeding don't restart bleeding logic.
 	if ( file.isBleeding[ player ] )
-		return
-
+		return 
+		
+	// #if DEVELOPER
+		// Warning( "-------------------start BLEEDOUT-----------------------" )
+		// Warning( "For player: " + string( player ) )
+	// #endif 
+		
 	player.Signal( "BleedOut_StopBleeding" )
 	player.Signal( "BleedOut_OnStartDying" )
 
@@ -273,10 +281,8 @@ void function PlayerDying( entity player )
 	}
 
 	entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	if( ref != "" )
-		incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) )
-
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	if( IsValid( incapShield ) )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 
 	OnThreadEnd(
 	function() : ( player, ids, forceHolster, bleedoutWp, oldWeapon )
@@ -878,4 +884,12 @@ ScriptDamageInfoClone function Bleedout_GetBleedoutDamageInfo( entity victim )
 {
 	ScriptDamageInfoClone damageInfo
 	return damageInfo
+}
+
+entity function Bleedout_GetCreditedKiller( entity victim )
+{
+	if( victim in file.lastAttacker )
+		return file.lastAttacker[ victim ]
+	
+	return GetEnt( "worldspawn" )
 }

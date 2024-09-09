@@ -98,7 +98,7 @@ void function SonarGrenadeThink( entity projectile )
 	vector pulseOrigin = projectile.GetOrigin()
 	array<entity> ents = []
 
-	entity trigger = CreateTriggerRadiusMultiple( pulseOrigin, SONAR_GRENADE_RADIUS, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
+	entity trigger = CreateTriggerRadiusMultiple_Deprecated( pulseOrigin, SONAR_GRENADE_RADIUS, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
 	SetTeam( trigger, team )
 	trigger.SetOwner( projectile.GetOwner() )
 
@@ -131,10 +131,10 @@ void function SonarGrenadeThink( entity projectile )
 		}
 	)
 
-	AddCallback_ScriptTriggerEnter( trigger, OnSonarTriggerEnter )
-	AddCallback_ScriptTriggerLeave( trigger, OnSonarTriggerLeave )
+	AddCallback_ScriptTriggerEnter_Deprecated( trigger, OnSonarTriggerEnter )
+	AddCallback_ScriptTriggerLeave_Deprecated( trigger, OnSonarTriggerLeave )
 
-	ScriptTriggerSetEnabled( trigger, true )
+	ScriptTriggerSetEnabled_Deprecated( trigger, true )
 
 	if ( IsValid( weaponOwner ) && weaponOwner.IsPlayer() )
 	{

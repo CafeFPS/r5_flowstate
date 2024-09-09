@@ -1,12 +1,6 @@
-global function CodeCallback_PreMapInit
 global function ClientCodeCallback_MapInit
 
 const JUMP_PAD_LAUNCH_SOUND_1P = "Geyser_LaunchPlayer_1p"
-
-void function CodeCallback_PreMapInit()
-{
-	Desertlands_PreMapInit_Common()
-}
 
 void function ClientCodeCallback_MapInit()
 {

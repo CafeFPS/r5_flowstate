@@ -1,5 +1,23 @@
 global function ShWarpGates_Init
 
+#if SERVER
+global function AddCallback_OnEnterWarpGate
+global function RemoveCallback_OnEnterWarpGate
+global function AddCallback_OnExitWarpGate
+global function RemoveCallback_OnExitWarpGate
+global function AddCallback_CanPlayerUseCustomExitPointForWarpGate
+global function RemoveCallback_CanPlayerUseCustomExitPointForWarpGate
+global function SetWarpDataCustomExitPoint
+global function CodeCallback_GetWarpEntrances
+
+#if DEVELOPER
+global function DEV_Warpgate_PrintsOn
+global function DEV_Print_WarpFXPoints
+global function DEV_Show_TrigWarpGates
+global function DEV_PrintEnts
+#endif
+#endif // SERVER
+
 #if CLIENT
 global function ServerCallback_StartWarpGateExitSequence
 global function ServerCallback_FlashScreenForPlayer
@@ -7,844 +25,1401 @@ global function ServerCallback_PlayPhaseGateSoundSuite
 
 const FX_1P_GATE_ENTER = $"P_wrth_tt_portal_screen_flash"
 
-const string PHASE_GATE_ENTER_1P 	= "PhaseGate_Enter_1p"
-const string PHASE_GATE_TRAVEL_1P 	= "PhaseGate_Travel_1p"
-const string PHASE_GATE_EXIT_1P 	= "PhaseGate_Exit_1p"
+const string PHASE_GATE_ENTER_1P = "Olympus_Phaserunner_Enter_1p"
+const string PHASE_GATE_TRAVEL_1P = "Olympus_Phaserunner_Travel_1p"
+const string PHASE_GATE_EXIT_1P = "Olympus_Phaserunner_Exit_1p"
 #endif
 
 #if SERVER
-//
-//
-//
+//---------------------
+// LevelEd - Script Names
+//---------------------
+const string WARP_TRIGGER_NAME = "warp_trigger"
+const string WARP_TRIGGER_KV_CINEMATIC_TUNNEL = "use_cinematic_tunnel"
+const string WARP_PATH_NODE_NAME = "warp_node"
+const string WARP_GATE_FX_TIMER_NAME = "warp_gate_fx_timer"
+const string WARP_GATE_EXIT_HINT_NAME = "warp_exit_hint"
+const string WARP_GATE_FLAG_ACTIVATE_KV = "gate_activate_flag"
+const string WARP_AMP_ENTITY_NAME = "warp_amp_target"
+const string CINEMATIC_WARP_TUNNEL_NODE_NAME = "cinematic_warp_tunnel_node"
+
+//---------------------
+// Warp gate travel
+//---------------------
+const float WARP_DEBOUNCE = 0.25
+const int NUM_WARP_PATH_BEZIER_SEGMENTS = 20
+// The number of segments given to bezier func includes start and end. It discards the end, otherwise there'd be dupe nodes. (end of A and start of B would be same node). SO it's really n-1 nodes.
+const int PATH_IDX_TO_BEZIER_IDX = NUM_WARP_PATH_BEZIER_SEGMENTS - 1
+global const FX_PLAYER_ENTER_WARP_GATE = $"P_wrth_tt_phase"
+
+// Audio
+const float TRACE_DIST_IS_AIRBORNE = 1500
+const float MIN_IS_AIRBORNE_DIST = 1500
+
+const string PHASE_GATE_ENTER_3P = "Olympus_Phaserunner_Enter_3p"
+const string PHASE_GATE_TRAVEL_3P = "Olympus_Phaserunner_Travel_3p"
+global const string PHASE_GATE_EXIT_3P = "Olympus_Phaserunner_Exit_3p"
+
+global const float PHASE_REPOSITION_TIME = 2.0//1.5		// Extending by 0.5s to account for the higher exit position
+global const float PHASE_EXIT_VELOCITY = 140
+
+               
+const FX_PORTAL_EXIT_WARNING = $"P_oly_portal_warn"
+const FX_PORTAL_EXIT_WARNING_RIFT = $"P_oly_portal_broke_warn"
+const float PORTAL_EXIT_WARNING_TIME = 3.0
+const string SFX_PORTAL_EXIT_WARNING = "Olympus_Phaserunner_Warning"
+const string SFX_PORTAL_EXIT_WARNING_RIFT = "Olympus_Phaserunner_Warning_Rift"
+      
+
+//---------------------
+// Update times
+//---------------------
+const float SCRIPT_FRAME_TIME = 0.1
+const float MOVER_UPDATE_TIME = 0.099 // Haggerty hack
+
+enum eWarpGateStates
+{
+	OPENING,
+	ACTIVE,
+	CLOSING,
+	INACTIVE,
+
+	_count
+}
+
+struct AngleOverrideData
+{
+	array<int>    keyframeBezierPathIndexes
+	array<int>    keyframeWarpPathIndexes
+	array<vector> angleKeyframes
+	array<float>  magnitudeKeyframes
+	array<float>  keyframeDistances
+	int           idx_keyActual = 1
+	int           debug_uniqueId
+}
+
+struct WarpTunnelNodeData
+{
+	vector endPos_extended
+	float  warpTime_extended
+	float  warpTime
+	bool   angleOverride
+	vector angles
+}
+
+struct WarpGateData
+{
+	// One of these for each direction (so 2 total)
+	array< array< array< WarpTunnelNodeData > > > smoothWarpPathDataList            // Used when travelling path
+	array< array< array< AngleOverrideData > > >  allAngleOverrides
+	array< array< array< int > > >                screenFlashIndexes
+
+	array< entity >   teleportTrigs
+	array< entity >   warpExitHints
+	array< float >    warpTimes
+	array< float >    totalWarpTime
+	array< int >      totalNumWarpNodes
+
+	bool  instantTravel = false
+	bool  useFixedTravelTime = false
+	float fixedTravelTime = 1.0
+	float warpTravelSpeed = 1500.0
+	bool  shouldTeleportToFirstNode = false
+	bool  oneWay
+
+	bool   startActive = true
+	float  activeTime = -1.0
+	float  timeActivated = 0.0
+	string activateFlag = ""
+	int    warpGateState = eWarpGateStates.INACTIVE
 
+	table<entity, float> debouncingPlayers
+	array<entity>        objectsInWarp
 
+	Point& customExitPoint
+}
 
+struct
+{
+	bool warpGatesEnabled
 
+	table<entity, WarpGateData> warpTrigToWarpData
 
+	array<bool functionref( entity, entity )> canPlayerUseCustomExitPointCallbacks
+	array<void functionref( entity, entity )> enterWarpGateCallbacks
+	array<void functionref( entity, entity )> exitWarpGateCallbacks
 
+	#if DEVELOPER
+	array< entity > triggerWarpGates
+	#endif
 
-
-
-//
-//
-//
-
-
-//
-
-
-
-//
-
-
-
-
-
-
-
-//
-//
-//
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	bool devPrintsOn = true
+} file
 #endif // SERVER
 
 void function ShWarpGates_Init()
 {
 
 	#if CLIENT
-	PrecacheParticleSystem( FX_1P_GATE_ENTER )
+		PrecacheParticleSystem( FX_1P_GATE_ENTER )
+
+		// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.PHASE_GATE, MINIMAP_OBJECT_RUI, MinimapPackage_PhaseGate )
 	#endif
 
 	#if SERVER
+		AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_warp_gate", InitWarpGateData )
+		PrecacheParticleSystem( FX_PLAYER_ENTER_WARP_GATE )
 
-
+		               
+			PrecacheParticleSystem( FX_PORTAL_EXIT_WARNING )
+			PrecacheParticleSystem( FX_PORTAL_EXIT_WARNING_RIFT )
+        
 	#endif // SERVER
 
 	Remote_RegisterClientFunction( "ServerCallback_StartWarpGateExitSequence", "float", 0.0, 100.0, 8 )
 	Remote_RegisterClientFunction( "ServerCallback_FlashScreenForPlayer" )
 	Remote_RegisterClientFunction( "ServerCallback_PlayPhaseGateSoundSuite" )
+
+	RegisterSignal( "WarpGates_PlayerExitPortal" )
 }
 
 #if SERVER
-//
-//
-//
-//
-//
-//
-//
-
-//
-
-
-
-
-
-
-//
-//
-//
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-//
-//
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-//
-//
-//
-//
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-//
-//
-//
-//
-//
-//
-//
-
-
-
-//
-//
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-//
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-//
-//
-//
-//
-//
-//
-
-//
-
-
-
-
-
-
-
-//
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-//
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-//
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Create and populate a WarpGateData struct for the warp gate in 6 steps:
+//   Step 1: Set KVs
+//   Step 2: Populate data from linked ents
+//   Step 3: Check KVs for illegal / incorrect values
+//   Step 4: Convert the LevelEd entity path blockout to bezier
+//   Step 5: Get an array of script mover intervals which will allow for smooth motion over the bezier path.
+//   Step 6: Get angle override warp path indexes. Save off for use later.
+
+void function InitWarpGateData( entity warpTrig )
+{
+	if ( HasWarpTriggerBeenInitialized( warpTrig ) )
+		return
+
+	#if DEVELOPER
+	file.triggerWarpGates.append( warpTrig )
+	if( file.devPrintsOn )
+	{
+		printt( "******************" )
+		printt( "******************" )
+		printt( format( "***** %s(): warpTrig: %s", FUNC_NAME(), string( warpTrig ))  )
+		printt( format( "***** %s(): warpTrig classname: %s", FUNC_NAME(), warpTrig.GetClassName() ))
+		printt( format( "***** %s(): warpTrig editor classname: %s", FUNC_NAME(), GetEditorClass( warpTrig ) ))
+	}
+	#endif
+
+	//---------------------
+	// Step 1: Set KVs
+	//---------------------
+	WarpGateData data
+	data.teleportTrigs.append( warpTrig )
+	file.warpTrigToWarpData[ warpTrig ] <- data
+
+	data.useFixedTravelTime = warpTrig.kv.use_fixed_travel_time == "1"
+	data.fixedTravelTime = float( warpTrig.kv.fixed_travel_time )
+	data.instantTravel = warpTrig.kv.instant_travel == "1"
+	data.startActive = bool( warpTrig.kv.start_active )
+	data.activeTime = float( warpTrig.kv.active_time )
+	data.shouldTeleportToFirstNode = WarpTriggerShouldTeleportToFirstNode( warpTrig )
+
+	// LevelEd bug can cause this to not exist
+	if ( warpTrig.HasKey( "activate_flag" ) )
+		data.activateFlag = string( warpTrig.kv.activate_flag )
+	data.warpTravelSpeed = float( warpTrig.kv.warp_travel_speed )
+
+	if ( data.activateFlag != "" )
+	{
+		FlagInit( data.activateFlag )
+
+		if ( warpTrig.kv.start_active )
+			FlagSet( data.activateFlag )
+	}
+
+	if ( warpTrig.kv.start_active )
+	{
+		data.warpGateState = eWarpGateStates.ACTIVE
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//---------------------
+	// Step 2: Populate data from linked ents, don't construct chain yet
+	//---------------------
+
+	// Get first warp node and end trig
+	array<entity> warpPathChain_startingNodes = [ null, null ]
+	data.warpExitHints = [ null, null ]
+	int numWarpChains
+	foreach ( ent in warpTrig.GetLinkEntArray() )
+	{
+		if ( GetEditorClass( ent ) == "trigger_warp_gate" )
+		{
+			#if DEVELOPER
+				if( file.devPrintsOn )
+				{
+					printt( format( " ************************************** trigger_warp_gate: %s \n", string( warpTrig ))  )
+					printt( format( " - trigger_warp_gate Origin    : %s \n", string( warpTrig.GetOrigin())))
+					printt( format( " - trigger_warp_gate Children count    : %s \n", string( warpTrig.GetLinkEntArray().len())))
+				}
+			#endif
+
+			if ( file.warpGatesEnabled != true )
+			{
+				file.warpGatesEnabled = true
+			}
+
+			data.teleportTrigs.append( ent )
+			file.warpTrigToWarpData[ ent ] <- data
+
+			foreach ( entity linkedEnt in ent.GetLinkEntArray() )
+			{
+				#if DEVELOPER
+					if( file.devPrintsOn )
+					{
+						vector childWorldOrigin = <0,0,0>//CalcLocalToWorldOrigin_Entity( linkedEnt, linkedEnt.GetOrigin() )
+						printt( format( "    --- trigger_warp_gate child: %s: \n ", string( linkedEnt ))  )
+						printt( format( "       - trigger_warp_gate child GetScriptName(): %s\n", linkedEnt.GetScriptName()))
+						printt( format( "       - trigger_warp_gate child Origin()		       : %s\n", string( linkedEnt.GetOrigin() )))
+						printt( format( "       - trigger_warp_gate child World Origin()       : %s\n", string( childWorldOrigin )))
+					}
+				#endif
+
+				if ( IsInfoWarpNode( linkedEnt ) )
+				{
+					if ( linkedEnt.GetLinkEntArray().len() == 0 )
+						data.warpExitHints[ 1 ] = linkedEnt
+					else
+					{
+						warpPathChain_startingNodes[ 1 ] = linkedEnt
+						numWarpChains++
+					}
+				}
+			}
+		}
+		// Use insert here to make sure these come first
+		else if ( IsInfoWarpNode( ent ) )
+		{
+			// Has a linked ent? It's part of the warp chain. No? Warp exit hint
+			if ( ent.GetLinkEntArray().len() > 0 )
+			{
+				warpPathChain_startingNodes[ 0 ] = ent
+				numWarpChains++
+			}
+			else
+				data.warpExitHints[ 0 ] = ent
+		}
+	}
+
+	// Check for one way
+	if ( numWarpChains < 2 )
+	{
+		data.oneWay = true
+		int oneWayEntranceIndex = warpPathChain_startingNodes[ 0 ] == null ? 1 : 0
+		if ( oneWayEntranceIndex > 0 )
+		{
+			data.teleportTrigs.reverse()
+			data.warpExitHints.reverse()
+			warpPathChain_startingNodes.reverse()
+		}
+	}
+
+	foreach ( entity trigger in data.teleportTrigs )
+	{
+		trigger.SetEnterCallback( OnEnterWarpTrigger )
+		trigger.SetLeaveCallback( OnLeaveWarpTrigger )
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//---------------------
+	// Step 3: Check KVs for illegal / incorrect values
+	//---------------------
+	if ( !data.oneWay )
+	{
+		entity pairedTrig = data.teleportTrigs[ 1 ]
+
+		if ( data.useFixedTravelTime != (pairedTrig.kv.use_fixed_travel_time == "1") )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: use_fixed_travel_time" )
+
+		if ( data.fixedTravelTime != float( pairedTrig.kv.fixed_travel_time ) )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: fixed_travel_time" )
+
+		if ( data.instantTravel != (pairedTrig.kv.instant_travel == "1") )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: instant_travel" )
+
+		if ( data.startActive != (pairedTrig.kv.start_active == "1") )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: start_active" )
+
+		if ( data.activeTime != float ( pairedTrig.kv.active_time ) )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: active_time" )
+
+		if ( data.warpTravelSpeed != float( pairedTrig.kv.warp_travel_speed ) )
+			Warning( "!!! WARNIING !!! Warp trigger pair " + warpTrig + " have different values for property: warp_travel_speed" )
+
+		// This check should just be: data.activateFlag != ( pairedTrig.kv.activate_flag ), but a LevelEd bug requires it gets defensive in case the key doesn't compile
+		if ( (!(pairedTrig.HasKey( "activate_flag" )) && data.activateFlag != "") || ((pairedTrig.HasKey( "activate_flag" )) && data.activateFlag != (pairedTrig.kv.activate_flag)) )
+			Warning( "!!! WARNING !!! Warp trigger pair " + warpTrig + " do not share the same activate flag!!!" )
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//---------------------
+	// Step 4: Process the chain of warp nodes
+	//	a) Get warp node entity chain, for both travel directions. This chain is split into subchains if a cinematic node is used.  Stored in warpPathChains_nodesOnly
+	//	b) Append triggers to the complete chain, if needed, get the full "all entities" chain. Stored in warpPathChains_allEntities
+	//	c) Convert the chain into positions only (preserve subchains). Stored in warpPath_vectorPath
+	//	d) Get a smooth version of the position-only chain via bezier function. Preserve subchains. Stored in warpPaths_bezierPath
+	// 	e) Compose warp path data. Sample the bezier path for positions that the script mover should use.
+	//		Script mover end points overlap to allow for smooth motion over the path. Get angle override and screen flash warp path indexes. Save off for use later.
+	//
+	//---------------------
+	// Leveled entity chain diagram:
+	// TRIGGER . > . > . warp_node chain . > . > . TRIGGER
+	// Note that inclusion of the triggers at the start/end is optional.
+	//
+	// WHY DID YOU DO A 3D ARRAY??? (valid to wtf)
+	// myArray[ direction index: warp direction, there's A -> B and A <- B ][ subchain index: which sub-chain am I in? In case it's split from a cinematic node ][ node index: actual nodes in the chain ]
+	array< array< array< entity > > > warpPathChains_nodesOnly
+	array< array< array< vector > > > warpPathChains_bezierPath
+	array< array< array< AngleOverrideData > > > warpPathChains_angleOverrides
+	array< array< array< int > > > warpPathChains_screenFlashIndexes
+
+	// TODO: SUPPORT 1-WAY PORTALS
+
+	// If one-way, only populate the correct index with data.
+	//int iter_start, iter_end
+	int iter_end = data.oneWay ? 1 : 2
+	//if ( data.oneWay )
+	//{
+	//	iter_start = data.oneWayEntranceIndex
+	//	iter_end = data.oneWayEntranceIndex + 1
+	//}
+
+	for ( int i = 0; i < iter_end/*2*/; i++ )
+	{
+		array< array< entity > > warpPathChain_allEntities
+		array< array< vector > > warpPathChain_vectorPath
+		int idx_curTrig   = i
+		int idx_otherTrig = 1 - idx_curTrig
+
+		warpPathChains_nodesOnly.append( GetWarpPathChainsFromStartNode( warpPathChain_startingNodes[ idx_curTrig ] ) )
+
+		// Compose the complete chain (made of sub-chains) of all entities. Including triggers as nodes at the start and end (if desired)
+		int numSubChains = warpPathChains_nodesOnly[ idx_curTrig ].len()
+		warpPathChains_bezierPath.append( [] )
+
+		for ( int idx_subChain; idx_subChain < numSubChains; idx_subChain++ )
+		{
+			// Cloned so that the insert() calls below don't modify the warpPathChains_nodesOnly array, which is later used for node deletion
+			warpPathChain_allEntities.append( clone warpPathChains_nodesOnly[ idx_curTrig ][ idx_subChain ] )
+
+			// Add start trigger to start
+			if ( idx_subChain == 0 && !WarpTriggerShouldTeleportToFirstNode( data.teleportTrigs[ idx_curTrig ] ) )
+			{
+				warpPathChain_allEntities[ 0 ].insert( 0, data.teleportTrigs[ idx_curTrig ] )
+			}
+
+			// Add end trigger to end of last subchain
+			if ( idx_subChain == (numSubChains - 1) && !WarpTriggerShouldTeleportToFirstNode( data.teleportTrigs[ idx_otherTrig ] ) )
+			{
+				warpPathChain_allEntities[ idx_subChain ].append( data.teleportTrigs[ idx_otherTrig ] )
+			}
+
+
+			int numNodesInSubChain = warpPathChain_allEntities[ idx_subChain ].len()
+			warpPathChain_vectorPath.append( [] )
+			for ( int idx_nodes = 0; idx_nodes < numNodesInSubChain; idx_nodes++ )
+			{
+				entity node         = warpPathChain_allEntities[ idx_subChain][ idx_nodes ]
+				vector targetOrigin = node.GetOrigin()
+
+				warpPathChain_vectorPath[ idx_subChain ].append( targetOrigin )
+			}
+
+			Assert( warpPathChain_vectorPath[ idx_subChain ].len() > 1, "Each warp path subchain requires at least 2 nodes! Current length: " + warpPathChain_vectorPath[ idx_subChain ].len() + " Singleton node origin: " + warpPathChain_vectorPath[ idx_subChain ][ 0 ] )
+
+			if ( IsEntChainSuitableForBezier( warpPathChain_allEntities[ idx_subChain ] ) )
+			{
+				warpPathChains_bezierPath[ idx_curTrig ].append( GetBezierOfPath( warpPathChain_vectorPath[ idx_subChain ], NUM_WARP_PATH_BEZIER_SEGMENTS, 0.0 ) )
+			}
+			else
+			{
+				warpPathChains_bezierPath[ idx_curTrig ].append( warpPathChain_vectorPath[ idx_subChain ] )
+			}
+		}
+
+		warpPathChains_angleOverrides.append( [] )
+		warpPathChains_screenFlashIndexes.append( [] )
+
+		// Save positions of angle overrides and screen flashes in corresponding arrays
+		PopulateWarpPathChainDataArrays( warpPathChain_allEntities, warpPathChains_angleOverrides[ idx_curTrig ], warpPathChains_screenFlashIndexes[ idx_curTrig ] )
+		// Generate warp path by picking bezier positions. Positions are picked by stepping forward using mover's speed. Stored in WarpTunnelNodeData form.
+		// Angle override and screen flash indexes are updated to match the generated warp path.
+		PopulateWarpPathDataForTravelDirection( data, warpPathChains_bezierPath[ idx_curTrig ], warpPathChains_angleOverrides[ idx_curTrig ], warpPathChains_screenFlashIndexes[ idx_curTrig ] )
+	}
+
+	// Destroy nodes after, both paths may share the same node chain.
+	foreach ( array< array< entity > > entChain in warpPathChains_nodesOnly )
+		foreach ( array <entity> entSubChain in entChain )
+			foreach ( entity ent in entSubChain )
+				if ( IsValid( ent ) )
+					ent.Destroy()
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//---------------------
+	// Step 6: Make pingable
+	//---------------------
+	if ( file.warpGatesEnabled )
+		GeneratePingVolumeForWarpGateEntrances( data )
+
+	thread WarpGateStateMachine( data )
+}
+
+void function GeneratePingVolumeForWarpGateEntrances( WarpGateData data )
+{
+	for ( int i; i < data.teleportTrigs.len(); i++ )
+	{
+		entity warpTrig     = data.teleportTrigs[ i ]
+		entity traceBlocker = CreateTraceBlockerVolume( warpTrig.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, "pr_pingvol" )
+
+		traceBlocker.SetBox( warpTrig.GetBoundingMins(), warpTrig.GetBoundingMaxs() )
+	}
+}
+
+array< array<entity> > function GetWarpPathChainsFromStartNode( entity startNode )
+{
+	array<entity> warpPathChain               = GetEntityChainOfType( startNode )
+	array< array<entity> > splitWarpPathChain = []
+	int idx_curChain                          = 0
+	int numTotalNodes                         = warpPathChain.len()
+	splitWarpPathChain.append( [] )
+	bool expectingSecondCinematicNode = false
+	for ( int i; i < numTotalNodes; i++ )
+	{
+		entity node = warpPathChain[ i ]
+		splitWarpPathChain[ idx_curChain ].append( node )
+		if ( WarpNodeIsCinematicPathNode( node ) && i != (numTotalNodes - 1) )
+		{
+			if ( !expectingSecondCinematicNode )
+			{
+				idx_curChain++
+				splitWarpPathChain.append( [] )
+			}
+
+			// Turn on when first one is hit -- the second is there for the other direction
+			expectingSecondCinematicNode = !expectingSecondCinematicNode
+		}
+	}
+
+	return splitWarpPathChain
+}
+
+void function PopulateWarpPathChainDataArrays( array< array< entity > > completeEntChain, array< array< AngleOverrideData > > completeOverrideDataArray, array< array< int > > completeScreenFlashIdxArray )
+{
+	int numSubChains = completeEntChain.len()
+	for ( int idx_subChain; idx_subChain < numSubChains; idx_subChain++ )
+	{
+		completeOverrideDataArray.append( [] )
+		completeScreenFlashIdxArray.append( [] )
+
+		PopulateWarpPathSubChainDataArrays( completeEntChain[ idx_subChain ], completeOverrideDataArray[ idx_subChain ], completeScreenFlashIdxArray[ idx_subChain ] )
+	}
+}
+
+void function PopulateWarpPathSubChainDataArrays( array< entity > entChain, array< AngleOverrideData > overrideDataArray, array< int > screenFlashIdxArray )
+{
+	int numEnts = entChain.len()
+	Assert( numEnts > 1, "Attempted to get angle override data for chain, but chain length is 1!" )
+
+	int indexConvert = IsEntChainSuitableForBezier( entChain ) ? PATH_IDX_TO_BEZIER_IDX : 1
+
+	for ( int i; i < numEnts; i++ )
+	{
+		float debug_randRadius       = RandomFloatRange( 16, 128 )
+		entity node                  = entChain[ i ]
+		bool shouldGenerateEndNode   = (i == numEnts - 1) && WarpNodeHasAngleOverride( entChain[ i - 1 ] )
+		bool shouldGenerateStartNode = (i == 0) && WarpNodeHasAngleOverride( entChain[ 1 ] )
+		if ( WarpNodeHasAngleOverride( node ) || WarpNodeShouldSnapToAngles( node ) || shouldGenerateEndNode || shouldGenerateStartNode )
+		{
+			vector angles = node.GetAngles()
+			AngleOverrideData angleOverrideData
+
+			if ( shouldGenerateEndNode )
+				angles = entChain[ i - 1 ].GetAngles()
+			else if ( shouldGenerateStartNode )
+				angles = entChain[ 1 ].GetAngles()
+
+			// Snap to angles
+			if ( WarpNodeShouldSnapToAngles( node ) )
+			{
+				angleOverrideData.idx_keyActual = 0
+				AddAngleOverrideKeyframeToData( angleOverrideData, i * indexConvert, angles, 1.0 )
+			}
+			// Interpolate to angles
+			else
+			{
+				if ( i > 0 )
+					AddAngleOverrideKeyframeToData( angleOverrideData, (i - 1) * indexConvert, angles, 0.0 )
+				// If there's no start node, the first index is the level-ed placed one
+				else
+					angleOverrideData.idx_keyActual = 0
+
+				AddAngleOverrideKeyframeToData( angleOverrideData, i * indexConvert, angles, 1.0 )
+				angleOverrideData.debug_uniqueId = RandomInt( 1000000 )
+
+				if ( i < (numEnts - 1) )
+				{
+					AddAngleOverrideKeyframeToData( angleOverrideData, (i + 1) * indexConvert, angles, 0.0 )
+				}
+			}
+
+			overrideDataArray.append( angleOverrideData )
+		}
+
+		if ( WarpNodeHasScreenFlash( node ) )
+		{
+			screenFlashIdxArray.append( i * indexConvert )
+		}
+	}
+}
+
+bool function IsEntChainSuitableForBezier( array<entity> entChain )
+{
+	if ( entChain.len() > 2 )
+		return true
+	return false
+}
+
+void function AddAngleOverrideKeyframeToData( AngleOverrideData data, int idx, vector angles, float magnitude )
+{
+	data.keyframeBezierPathIndexes.append( idx )
+	data.angleKeyframes.append( angles )
+	data.magnitudeKeyframes.append( magnitude )
+}
+
+void function PopulateWarpPathDataForTravelDirection( WarpGateData data, array< array< vector > > warpPath_subChain, array< array< AngleOverrideData > > angleOverrides, array< array< int > > screenFlashIdxArray )
+{
+	// Add blank entries to arrays that will be populated
+	data.totalWarpTime.append( 0 )
+	data.totalNumWarpNodes.append( 0 )
+	data.smoothWarpPathDataList.append( [] )
+	data.allAngleOverrides.append( [] )
+	data.screenFlashIndexes.append( [] )
+
+	// For each sub chain, populate the relevant data.
+	int numSubChains = warpPath_subChain.len()
+	for ( int idx_subChain; idx_subChain < numSubChains; idx_subChain++ )
+	{
+		data.smoothWarpPathDataList.top().append( [] )
+		data.allAngleOverrides.top().append( [] )
+		data.screenFlashIndexes.top().append( [] )
+
+		PopulateWarpPathSubChainData( data.warpTravelSpeed,
+			data.smoothWarpPathDataList.top()[ idx_subChain ],
+			data.allAngleOverrides.top()[ idx_subChain ],
+			data.screenFlashIndexes.top()[ idx_subChain ],
+			data.totalWarpTime,
+			data.totalNumWarpNodes,
+			warpPath_subChain[ idx_subChain ],
+			angleOverrides[ idx_subChain ],
+			screenFlashIdxArray[ idx_subChain ] )
+	}
+}
+
+void function PopulateWarpPathSubChainData( float warpTravelSpeed,
+array< WarpTunnelNodeData > smoothWarpPathDataList,
+array< AngleOverrideData > allAngleOverrides,
+array< int > screenFlashIndexes,
+array< float > totalWarpTime,
+array< int > totalNumWarpNodes,
+array< vector > warpPath_subChain,
+array< AngleOverrideData > angleOverrides_subChain,
+array< int > screenFlashIdxArray_subChain )
+{
+	// Commenting for sanity since this gets weird. The buffer from the previous segment overlaps the start of the current segment.
+	float scriptMoverUpdateTime          = MOVER_UPDATE_TIME
+	float scriptMoverUpdateTime_extended = MOVER_UPDATE_TIME + SCRIPT_FRAME_TIME
+
+	float subChainTotalDist               = GetPathDistance_VectorArray( warpPath_subChain, false )        // Total distance of the warp path
+	float moverIntervalDist               = warpTravelSpeed * scriptMoverUpdateTime                // Distance covered by a frame of warp gate travel. Nodes are spaced this far apart.
+	float moverIntervalDist_extended      = warpTravelSpeed * scriptMoverUpdateTime_extended            // The above distance, incorporating a buffer to prevent hitches
+	int numScriptMoverIntervalsInSubChain = int( ceil( subChainTotalDist / moverIntervalDist ) )            // The number of warp gate travel frames. Round up to include remainder
+	float moverIntervalFrac_extended      = moverIntervalDist_extended / subChainTotalDist                    // The fraction (within 0 - 1) that the buffered warp distance is of the total track dist
+	float moverIntervalFrac               = moverIntervalDist / subChainTotalDist                        // The above, sans buffer
+
+	// Create new entries for this warp path. Indexes line up with trigger / other trigger concept
+	//smoothWarpPathDataList.append( [] )
+	int appendIdx = totalWarpTime.len() - 1
+	float curFrac = 0.0
+	for ( int i; i < numScriptMoverIntervalsInSubChain; i++ )
+	{
+		float endPosFrac_extended = min( curFrac + moverIntervalFrac_extended, 1.0 )
+		float segmentFracRatio    = (endPosFrac_extended - curFrac) / moverIntervalFrac_extended        // Adjusts for if the last segment isn't full size
+		vector endPos_extended    = GetPointOnPathForFraction_VectorArray( warpPath_subChain, endPosFrac_extended )
+		float fracDist_extended   = moverIntervalDist_extended * segmentFracRatio
+		float fracTime_extended   = scriptMoverUpdateTime_extended * segmentFracRatio
+
+		// The mover will be assigned to move for this amount of time, but will be interrupted early.
+		WarpTunnelNodeData newPathNodeData
+		newPathNodeData.endPos_extended = endPos_extended
+		newPathNodeData.warpTime_extended = fracTime_extended
+		newPathNodeData.warpTime = min( fracTime_extended, scriptMoverUpdateTime )
+
+		smoothWarpPathDataList.append( newPathNodeData )
+		totalWarpTime[ appendIdx ] += newPathNodeData.warpTime
+		totalNumWarpNodes[ appendIdx ]++
+		curFrac += moverIntervalFrac
+	}
+
+	// Generate angle override positions that match up with the warp path nodes
+	int numAngleOverrides = angleOverrides_subChain.len()
+	for ( int i; i < numAngleOverrides; i++ )
+	{
+		angleOverrides_subChain[ i ].keyframeDistances.extend( GetPathDistancesFromIdxArray_VectorArray( warpPath_subChain, angleOverrides_subChain[ i ].keyframeBezierPathIndexes, false ) )
+		int numKeyframeBezierPathIndexes = angleOverrides_subChain[ i ].keyframeBezierPathIndexes.len()
+
+		for ( int j; j < numKeyframeBezierPathIndexes; j++ )
+		{
+			angleOverrides_subChain[ i ].keyframeWarpPathIndexes.append( GetWarpPathIdxFromDistance( moverIntervalDist, subChainTotalDist, angleOverrides_subChain[ i ].keyframeDistances[ j ] ) ) //warpPathIdx )
+		}
+	}
+
+	allAngleOverrides.extend( angleOverrides_subChain )
+
+	int numScreenFlashes = screenFlashIdxArray_subChain.len()
+	if ( numScreenFlashes > 0 )
+	{
+		array< float > screenFlashDistances = GetPathDistancesFromIdxArray_VectorArray( warpPath_subChain, screenFlashIdxArray_subChain, false )
+		for ( int i; i < numScreenFlashes; i++ )
+		{
+			screenFlashIndexes.append( GetWarpPathIdxFromDistance( moverIntervalDist, subChainTotalDist, screenFlashDistances[ i ] ) )
+			vector debugPos = GetPointOnPathForFraction_VectorArray( warpPath_subChain, screenFlashDistances[ i ] / subChainTotalDist )
+		}
+	}
+}
+
+int function GetWarpPathIdxFromDistance( float fracDist, float pathDist, float dist )
+{
+	float frac = dist / pathDist
+	return int( dist / fracDist )
+}
+
+
+void function OnEnterWarpTrigger( entity trigger, entity ent )
+{
+	thread OnEnterWarpTrigger_Thread( trigger, ent )
+}
+
+
+void function OnEnterWarpTrigger_Thread( entity trigger, entity ent )
+{
+	if ( !ent.IsPlayer() )
+		return
+
+	//if (ent.Player_IsSkywardLaunching())
+		//return
+
+	ent.e.isInWarpTrigger = true
+
+	//todo: (MY) create geo solution to keep vehicles from getting near warp gates
+
+	//kick out of portal placement if entering another portal
+	if ( StatusEffect_GetSeverity( ent, eStatusEffect.placing_phase_tunnel ) > 0 )
+		PhaseTunnel_CancelPlacement( ent )
+
+	// Stops player from getting stuck in the rift if the enter it while in a trident and then exit the trident
+	while ( ent.GetParent() != null && ent.GetParent().GetClassName() == "player_vehicle" )
+	{
+		if ( !ent.e.isInWarpTrigger )
+			return
+
+		WaitFrame()
+	}
+
+	if ( !PhaseTunnel_ShouldPhaseEnt( ent ) )
+		return
+
+	if ( ent.IsPhaseShifted() )
+		return
+
+	WarpGateData data = file.warpTrigToWarpData[ trigger ]
+
+	// Based on how they're initialized, the entrance trigger of a one-way will always be index 0
+	if ( data.oneWay && (trigger == data.teleportTrigs[ 1 ]) )
+		return
+
+	bool canTeleport = data.warpGateState == eWarpGateStates.ACTIVE
+
+	bool entDebouncing = false
+	if ( (ent in data.debouncingPlayers) )
+		entDebouncing = Time() - data.debouncingPlayers[ ent ] < WARP_DEBOUNCE
+
+	bool entCurrentlyWarping = data.objectsInWarp.contains( ent )
+
+	if ( !canTeleport || entDebouncing || entCurrentlyWarping )
+		return
+
+	data.objectsInWarp.append( ent )
+
+	//if ( GetPlayerIsEmoting( ent ) )
+		//Emote_StopEmoteNow( ent )
+
+	//StopBattleChatterLinesForPlayer( ent )
+
+	thread MovePlayerThroughWarpGate( trigger, ent )
+}
+
+void function OnLeaveWarpTrigger( entity trigger, entity ent )
+{
+	if ( !ent.IsPlayer() )
+		return
+
+	ent.e.isInWarpTrigger = false
+}
+
+
+void function MovePlayerThroughWarpGate( entity trigger, entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+	// EndSignal( player, "DeathTotem_PreRecallPlayer" )
+
+	#if DEVELOPER
+	if( file.devPrintsOn )
+	{	printt( "******************* ----- WARP GATE!!! ----- *******************" )
+		printt( format( " ***** %s(): %s Going Through Warp Gate via Trigger %s", FUNC_NAME(), string( player ), string( trigger )))
+	}
+	#endif
+
+	foreach ( void functionref( entity, entity ) cb in file.enterWarpGateCallbacks )
+		cb( trigger, player )
+
+	//EndPlayerSkyDive( player )
+	Signal( player, "PlayerSkyDive" )
+	PhaseTunnelTravelState travelState
+	travelState.holsterWeapons = true
+	travelState.shiftStyle = 0
+	travelState.controlRestoreDelay = 0.5
+	thread PhaseTunnel_PrepareToMoveEntAlongTunnel( player, travelState )
+
+	//TODO: Meg: in a future refactor, let's move away from using this
+	string mapName = GetMapName()
+	bool isOlympus = mapName.find( "mp_rr_olympus" ) == -1 ? false : true
+
+	EmitSoundAtPosition( TEAM_ANY, player.GetOrigin(), PHASE_GATE_ENTER_3P, player )
+
+	// Get all targets and end trigger
+	WarpGateData data = file.warpTrigToWarpData[ trigger ]
+	int idx_startTrig = data.teleportTrigs.find( trigger )
+	int idx_endTrig   = 1 - idx_startTrig
+
+	bool shouldUseCustomExistPoint = ShouldUseCustomExitPoint( trigger, player )
+	vector warpExitPos             = shouldUseCustomExistPoint ? data.customExitPoint.origin : data.warpExitHints[ idx_endTrig ].GetOrigin()
+	vector exitFaceAngles          = shouldUseCustomExistPoint ? data.customExitPoint.angles : data.warpExitHints[ idx_endTrig ].GetAngles()
+
+	float totalWarpTime = data.totalWarpTime[ idx_startTrig ]
+	if ( data.useFixedTravelTime )
+		totalWarpTime = data.fixedTravelTime
+
+	entity mover = CreateExpensiveScriptMover( player.GetCenter(), player.GetAngles() )
+	player.SetParent( mover )
+
+	// Play FX here instead of sh_phase_shift since it'll get a better spawn point here.
+	int fxId     = GetParticleSystemIndex( FX_PLAYER_ENTER_WARP_GATE )
+	int attachId = player.LookupAttachment( "CHESTFOCUS" )
+	entity fx    = StartParticleEffectInWorld_ReturnEntity( fxId, player.GetAttachmentOrigin( attachId ), player.GetAttachmentAngles( attachId ) )
+	fx.RemoveFromAllRealms()
+	fx.AddToOtherEntitysRealms( player )
+
+	player.HidePlayer()
+	//player.SetForcedMaxFovOn()
+
+	StatusEffect_AddEndless( player, eStatusEffect.phase_gate_tracking, 0.5 )
+
+	// OBSERVER LIVE LOGS
+	//LiveAPI_SendOnePlayerEvent( eLiveAPI_EventTypes.warpGateUsed, player )
+
+	OnThreadEnd(
+		function() : ( player, mover, fx, travelState, data, trigger, isOlympus )
+		{
+			if ( IsValid( player ) )
+			{
+				#if DEVELOPER
+				if( file.devPrintsOn )
+				{
+					printt( format( " ***** %s(): %s Warp Gate via Trigger %s Ended.", FUNC_NAME(), string( player ), string( trigger )))
+				}
+				#endif
+
+				if ( isOlympus )
+					travelState.holsterRemoveDelay = PHASE_REPOSITION_TIME + SCRIPT_FRAME_TIME
+
+				PhaseTunnel_RevertEntStateAfterMovingAlongTunnel( player, travelState )
+
+				if ( IsValid( player.GetParent() ) )
+					player.ClearParent()
+
+				//player.SetForcedMaxFovOff()
+				player.UnhidePlayer()
+
+				StatusEffect_StopAllOfType( player, eStatusEffect.phase_gate_tracking )
+				DisableDemigod( player )
+
+				// Defensive Fix for R5DEV-515474
+				//TODO (caobrien): More elegant solution for preventing this exploit, possibly disabling phase runner when both sides are outside of the ring?
+
+				//if ( isOlympus && ( DeathField_PointDistanceFromFrontier( player.GetOrigin(), player.DeathFieldIndex() ) <= 0 ))
+				//{
+				//	if ( player.IsPhaseShifted() )
+				//		CancelPhaseShift ( player )
+				//}
+
+				data.debouncingPlayers[ player ] <- Time()
+				data.objectsInWarp.fastremovebyvalue( player )
+
+				foreach ( void functionref( entity, entity ) cb in file.exitWarpGateCallbacks )
+					cb( trigger, player )
+			}
+
+			if ( IsValid( mover ) )
+			{
+				// Defensive fix for destroying mover with children attached (Live bug)
+				foreach ( entity child in GetChildren( mover ) )
+				{
+					if ( IsValid( child ) )
+						child.ClearParent()
+				}
+				mover.Destroy()
+			}
+
+			if ( IsValid( fx ) )
+				fx.Destroy()
+		}
+	)
+
+	// TODO: COMMENTED OUT TO PREVENT COMPILE SRE
+	array< array < WarpTunnelNodeData > > warpTunnelData = clone data.smoothWarpPathDataList[ idx_startTrig ]
+
+	               
+		if ( isOlympus )
+			thread PortalWarningThread( totalWarpTime, warpExitPos, exitFaceAngles, player, data.teleportTrigs[ idx_endTrig ] )
+       
+
+	if ( data.instantTravel && player.IsPlayer() )
+	{
+		ScreenFade( player, 180, 210, 215, 255, 1.25, 1.5, FFADE_IN )
+		mover.SetOrigin( warpExitPos )
+	}
+	else
+	{
+		if ( data.shouldTeleportToFirstNode && player.IsPlayer() )
+			mover.SetOrigin( GetFirstWarpTunnelNode( warpTunnelData ).endPos_extended )
+
+		#if DEVELOPER
+			if( file.devPrintsOn )
+			{
+				printt( format( " ***** %s(): %s Warp Gate via Trigger %s... Doing Phase Shift Effect.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+			}
+		#endif
+
+		PhaseShift( player, SCRIPT_FRAME_TIME, totalWarpTime + SCRIPT_FRAME_TIME, eShiftStyle.Gate )
+		EnableDemigod( player )
+	}
+
+	if ( !data.instantTravel )
+	{
+
+		#if DEVELOPER
+			if( file.devPrintsOn )
+			{
+				printt( format( " ***** %s(): %s Warp Gate via Trigger %s Traversing Nodes.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+			}
+		#endif
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayPhaseGateSoundSuite" )
+		EmitSoundOnEntityExceptToPlayer( mover, player, PHASE_GATE_TRAVEL_3P )
+
+		// Warp from node to node
+		int numWarpNodes = data.totalNumWarpNodes[ idx_startTrig ]
+
+		{
+			int idx_node           = 0
+			int idx_chain          = 0
+			int numSubChains       = warpTunnelData.len()
+			int numNodesInSubChain = warpTunnelData[ idx_chain ].len()
+
+			bool startedExitSequence = false
+			while ( true )
+			{
+				float warpTime_extended = warpTunnelData[ idx_chain][ idx_node ].warpTime_extended
+
+				mover.NonPhysicsMoveTo( warpTunnelData[ idx_chain ][ idx_node ].endPos_extended, warpTime_extended, 0, 0 )
+				// TODO: COMMENTED OUT TO PREVENT COMPILE SRE
+				if ( data.screenFlashIndexes[ idx_startTrig ][ idx_chain ].contains( idx_node ) )
+				{
+					Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+
+					// If it's a flash node that's not first or last
+					if ( !AreWarpTunnelIndecesFirstNode( idx_chain, idx_node ) && !AreWarpTunnelIndecesLastNode( idx_chain, idx_node, warpTunnelData ) )
+					{
+						EmitSoundOnEntityOnlyToPlayer( mover, player, "PhaseGate_Flash_1p" )
+					}
+				}
+
+				vector targetLookAngle = WarpGate_GetNextAngleToLookAt( mover, idx_node, warpTunnelData[ idx_chain ], data.allAngleOverrides[ idx_startTrig ][ idx_chain ] )
+
+				// Set facing angle at the start of warp tunnel
+				if ( AreWarpTunnelIndecesFirstNode( idx_chain, idx_node ) )
+					mover.SetAngles( targetLookAngle )
+				else
+					mover.NonPhysicsRotateTo( targetLookAngle, warpTime_extended, 0, 0 )
+
+				float remainingWarpTime = GetEstimatedRemainingTimeInWarpTunnel( idx_chain, idx_node, warpTunnelData )
+
+				#if DEVELOPER
+					if( file.devPrintsOn )
+					{
+						printt( format( " ***** %s(): %s Warp Gate via Trigger %s remainingWarpTime = %s", FUNC_NAME(), string( player ), trigger.GetTargetName(), string( remainingWarpTime ) ))
+					}
+				#endif
+
+				if ( remainingWarpTime < 4.0 && !startedExitSequence )
+				{
+					#if DEVELOPER
+						if( file.devPrintsOn )
+						{
+							printt( format( " ***** %s(): %s Warp Gate via Trigger %s doing Exit Sequence.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+						}
+					#endif
+
+					Remote_CallFunction_NonReplay( player, "ServerCallback_StartWarpGateExitSequence", remainingWarpTime )
+					startedExitSequence = true
+				}
+
+				#if DEVELOPER
+					if( file.devPrintsOn )
+					{
+						printt( format( " ***** %s(): %s Warp Gate via Trigger %s waiting warp time = %s", FUNC_NAME(), string( player ), trigger.GetTargetName(), string( warpTunnelData[ idx_chain][ idx_node ].warpTime ) ))
+					}
+				#endif
+				wait warpTunnelData[ idx_chain][ idx_node ].warpTime
+
+				idx_node++
+				if ( idx_node == numNodesInSubChain )
+				{
+					idx_chain++
+					if ( idx_chain == numSubChains )
+					{
+						break
+					}
+
+					// Teleport mover to first node in chain, set angles.
+					// NOTE: The end pos used is the EXTENDED end pos. This mayyy cause issues (since the extended pos is an overshot version of the end pos) in situations with VERY LITTLE margin for error.
+					mover.SetOrigin( warpTunnelData[ idx_chain ][ 0 ].endPos_extended )
+					targetLookAngle = WarpGate_GetNextAngleToLookAt( mover, 0, warpTunnelData[ idx_chain ], data.allAngleOverrides[ idx_startTrig ][ idx_chain ] )
+					mover.SetAngles( targetLookAngle )
+
+					// We set node to 1 here since the mover's already teleported to node 0. It's an assert if a chain has length one
+					idx_node = 1
+					numNodesInSubChain = warpTunnelData[ idx_chain ].len()
+				}
+			}
+		}
+	}
+
+	#if DEVELOPER
+		if( file.devPrintsOn )
+		{
+			printt( format( " ***** %s(): %s reached last node via Trigger %s.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+		}
+	#endif
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+	EmitSoundAtPosition( TEAM_ANY, warpExitPos, PHASE_GATE_EXIT_3P, player )
+
+	player.Signal( "WarpGates_PlayerExitPortal" )
+
+	#if DEVELOPER
+		if( file.devPrintsOn )
+		{
+			printt( format( " ***** %s(): %s Signaled WarpGates_PlayerExitPortal through Trigger %s.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+		}
+	#endif
+
+	player.ClearParent()
+	mover.Destroy()
+
+	// If the player leaves a warp gate, and is at/above this altitude, play the airborne exit stinger
+	TraceResults airborneResult = TraceLine( player.GetOrigin(), player.GetOrigin() + <0, 0, -TRACE_DIST_IS_AIRBORNE>, [ player ], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+	if ( airborneResult.fraction * TRACE_DIST_IS_AIRBORNE >= MIN_IS_AIRBORNE_DIST )
+	{
+		EmitSoundAtPosition( TEAM_ANY, player.GetOrigin(), "PhaseGate_Exit_Sky_3P", player )
+	}
+
+
+	WaitFrame()
+
+	vector endPos         = warpExitPos
+	vector centerToOrigin = player.GetCenter() - player.GetOrigin()
+	endPos -= centerToOrigin
+
+	bool success = PutPlayerInSafeSpot( player, null, null, endPos, endPos )
+	Assert ( success, "Wraith portal couldn't find safe spot to put player in! Bug to Davis!" )
+	player.SetAngles( exitFaceAngles )
+
+	// Reposition time in phase
+	if ( isOlympus )
+	{
+		#if DEVELOPER
+			if( file.devPrintsOn )
+			{
+				printt( format( " ***** %s(): %s Repositioning time in Phase for Olympus after Trigger %s.", FUNC_NAME(), string( player ), trigger.GetTargetName()))
+			}
+		#endif
+		player.Signal( "ForceStopPhaseShift" )
+		wait SCRIPT_FRAME_TIME
+		PhaseShift( player, 0, PHASE_REPOSITION_TIME, eShiftStyle.Balance )
+		player.SetVelocity( player.GetForwardVector() * PHASE_EXIT_VELOCITY )
+	}
+}
+
+WarpTunnelNodeData function GetFirstWarpTunnelNode( array< array< WarpTunnelNodeData > > fullWarpTunnelChain )
+{
+	return fullWarpTunnelChain[ 0 ][ 0 ]
+}
+
+bool function AreWarpTunnelIndecesFirstNode( int idx_chain, int idx_node )
+{
+	return idx_chain == 0 && idx_node == 0
+}
+
+bool function AreWarpTunnelIndecesLastNode( int idx_chain, int idx_node, array< array< WarpTunnelNodeData > > fullWarpTunnelChain )
+{
+	int numSubChains           = fullWarpTunnelChain.len()
+	int numNodesInLastSubChain = fullWarpTunnelChain[ numSubChains - 1 ].len()
+	return idx_chain == numSubChains && idx_node == numNodesInLastSubChain
+}
+
+//int function GetNumRemainingWarpNodesFromIndeces( int idx_chain, int idx_node, array< array< WarpTunnelNodeData > > fullWarpTunnelChain )
+float function GetEstimatedRemainingTimeInWarpTunnel( int idx_chain, int idx_node, array< array< WarpTunnelNodeData > > fullWarpTunnelChain )
+{
+	int numSubChains  = fullWarpTunnelChain.len()
+	int idx_chainIter = idx_chain
+	float remainingTime
+	for ( ; idx_chainIter < numSubChains; idx_chainIter++ )
+	{
+		int numNodesInSubChain = fullWarpTunnelChain[ idx_chain ].len()
+		int idx_nodeIter       = idx_chainIter == idx_chain ? idx_node + 1 : 0
+
+		for ( ; idx_nodeIter < numNodesInSubChain; idx_nodeIter++ )
+		{
+			remainingTime += fullWarpTunnelChain[ idx_chain ][ idx_node ].warpTime
+		}
+	}
+
+	return remainingTime
+}
+
+const int WARP_PATH_NUM_LOOKAHEAD_NODES = 5
+vector function WarpGate_GetNextAngleToLookAt( entity mover, int idx_start, array< WarpTunnelNodeData > pathNodeDataArray, array< AngleOverrideData > allAngleOverrides )
+{
+	vector angleOverrideAdjustment
+	vector pathNodeLookaheadAdjustment
+	float pathNodeOriginLookaheadInfluence = 1.0
+	vector currentMoverAngles              = mover.GetAngles()
+
+	int numAngleOverrides        = allAngleOverrides.len()
+	bool insideAngleOverrideZone = false
+	for ( int i; i < numAngleOverrides; i++ )
+	{
+		AngleOverrideData overrideData = allAngleOverrides[ i ]
+		int keyActualIdx               = overrideData.keyframeWarpPathIndexes[ overrideData.idx_keyActual ]
+		int keyStartIdx                = overrideData.keyframeWarpPathIndexes[ 0 ]
+		int keyEndIdx                  = overrideData.keyframeWarpPathIndexes.top()
+
+		// Entering
+		if ( IsEnteringAngleOverride( idx_start, overrideData ) )
+		{
+			insideAngleOverrideZone = true
+			vector curOverrideTargetFaceAngle = overrideData.angleKeyframes[ overrideData.idx_keyActual ]
+			int numNodesToKeyActual           = keyActualIdx - idx_start
+			int totalAngleOverrideKeyframes   = keyActualIdx
+
+			float totalAngleDiff = AngleDiff( currentMoverAngles.y, curOverrideTargetFaceAngle.y )
+			float angleSegment   = totalAngleDiff / float( numNodesToKeyActual )
+			float pitchSegment   = AngleDiff( currentMoverAngles.x, curOverrideTargetFaceAngle.x ) / float( numNodesToKeyActual )
+			angleOverrideAdjustment = < pitchSegment, angleSegment, 0 >
+			pathNodeOriginLookaheadInfluence = 0.0
+		}
+		// On the keyframe
+		else if ( idx_start == keyActualIdx )
+		{
+			vector curOverrideTargetFaceAngle = overrideData.angleKeyframes[ overrideData.idx_keyActual ]
+			float yawDiff                     = AngleDiff( currentMoverAngles.y, curOverrideTargetFaceAngle.y )
+			float pitchDiff                   = AngleDiff( currentMoverAngles.x, curOverrideTargetFaceAngle.x )
+			angleOverrideAdjustment = < pitchDiff, yawDiff, 0.0 >
+			pathNodeOriginLookaheadInfluence = 0.0
+			break
+		}
+		// Leaving
+		else if ( idx_start > keyActualIdx && idx_start <= keyEndIdx && keyEndIdx != keyActualIdx )
+		{
+			// No upcoming override = lerp back to path node lookahead
+			bool upcomingOverride = false
+			if ( i < (numAngleOverrides - 1) )
+			{
+				AngleOverrideData nextAngleOverride = allAngleOverrides[ i + 1 ]
+				// Is it entering a new override, OR is the next mover position on an angle override key actual
+				upcomingOverride = IsEnteringAngleOverride( idx_start, nextAngleOverride ) || (idx_start) == nextAngleOverride.keyframeWarpPathIndexes[ nextAngleOverride.idx_keyActual ]
+			}
+
+			if ( !upcomingOverride )
+			{
+				int numNodesToKeyEnd          = keyEndIdx - idx_start
+				int numNodesKeyActualToKeyEnd = keyEndIdx - keyActualIdx
+				pathNodeOriginLookaheadInfluence = (float(numNodesKeyActualToKeyEnd) - float(numNodesToKeyEnd)) / float(numNodesKeyActualToKeyEnd)
+			}
+		}
+	}
+	angleOverrideAdjustment *= 1 - pathNodeOriginLookaheadInfluence
+
+	// Calculate path node lookahead if it will be used
+	if ( pathNodeOriginLookaheadInfluence > 0 )
+	{
+		vector pathNodeOriginLookahead
+		int lookAhead   = WARP_PATH_NUM_LOOKAHEAD_NODES
+		int total       = 0
+		int idx_current = idx_start
+		int numNodes    = pathNodeDataArray.len()
+
+		while ( idx_current < numNodes && lookAhead > 0 )
+		{
+			pathNodeOriginLookahead += pathNodeDataArray[idx_current].endPos_extended
+
+			lookAhead--
+			total++
+			idx_current++
+		}
+
+		// Handles final node
+		if ( total > 0 )
+			pathNodeOriginLookahead = pathNodeOriginLookahead / total
+		else
+			pathNodeOriginLookahead = pathNodeDataArray[idx_current].endPos_extended
+
+		vector pathNodeLookaheadAnglesRaw = VectorToAngles( pathNodeOriginLookahead - mover.GetOrigin() )
+		float pnlLookaheadYaw             = AngleDiff( currentMoverAngles.y, pathNodeLookaheadAnglesRaw.y )
+		float pnlLookaheadPitch           = AngleDiff( currentMoverAngles.x, pathNodeLookaheadAnglesRaw.x )
+		pathNodeLookaheadAdjustment = < pnlLookaheadPitch, pnlLookaheadYaw, 0 > * pathNodeOriginLookaheadInfluence
+	}
+
+	// Zero out the roll axis. NonPhysicsRotateTo() will use roll to get there. Maybe ask for a code feature?
+	vector result = currentMoverAngles + angleOverrideAdjustment + pathNodeLookaheadAdjustment
+	result.z = 0.0
+
+	return result
+}
+
+               
+void function PortalWarningThread( float travelTime, vector exitPos, vector exitAngles, entity player, entity exitEntity )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "WarpGates_PlayerExitPortal" )
+
+//#if DEVELOPER
+//	if ( file.devPrintsOn )
+//	{
+//		printt( format( "******************* Warp Warning function %s():", FUNC_NAME()))
+//		printt( format( "- Warp: arg travelTime: %s", string( travelTime)))
+//		printt( format( "- Warp: arg exitPos: %s", string( exitPos )))
+//		printt( format( "- Warp: arg exitAngles: %s", string( exitAngles )))
+//		printt( format( "- Warp: arg player: %s", string( player )))
+//		printt( format( "- Warp: arg exitEntity: %s", string( exitEntity )))
+//	}
+//#endif
+
+	float waitTime = travelTime - PORTAL_EXIT_WARNING_TIME
+	if ( waitTime < 0 )
+		waitTime = 0
+
+	wait waitTime
+
+	float pitch = exitAngles.x
+	float yaw   = exitAngles.y
+	float roll  = exitAngles.z
+
+	vector directionVector = AnglesToForward( exitAngles )
+	vector spawnVector     = exitPos + (Normalize( directionVector ) * 0)
+	vector spawnAngles     = exitAngles + <90, 0, -90>
+
+	int fxId              = GetParticleSystemIndex( FX_PORTAL_EXIT_WARNING )
+	string sfxId          = SFX_PORTAL_EXIT_WARNING
+	//check if exit is warp rift
+	entity warpExitTarget = GetEntByScriptName( "warp_node_rift_exit" )
+	vector warpExitPos    = warpExitTarget.GetOrigin()
+
+	if ( Distance( exitPos, warpExitPos ) < 500 )
+	{
+		// Exiting to free-fall out to the Rift.
+		fxId = GetParticleSystemIndex( FX_PORTAL_EXIT_WARNING_RIFT )
+		sfxId = SFX_PORTAL_EXIT_WARNING_RIFT
+		spawnAngles = <84.8235, 12.9779, 7.25972> + <0, 95, 0>
+		spawnVector = <9569.1, 20038.5, -566.2>
+	}
+	else if ( exitEntity != null )
+	{
+		printf( format( "WARP GATES: %s(): Exit Entity %s specified. Looking for FX script_ref...", FUNC_NAME(), string( exitEntity )) )
+		entity positionEnt = FindExitFXScriptRef( exitEntity )
+
+		if ( positionEnt != null )
+		{
+			printf( format( "WARP GATES: %s(): position ent %s found, setting FX location and angles.", FUNC_NAME(), string( positionEnt )) )
+			spawnVector = positionEnt.GetOrigin()
+			spawnAngles = positionEnt.GetAngles() + <90, 0, -90>
+		}
+		else
+		{
+			printt( format( "WARP GATES: %s(): exitEntity %s does not appear to have a fx child script_ref. Using defaults FX location and angles.", FUNC_NAME(), exitEntity.GetTargetName()) )
+		}
+	}
+
+	entity fx = StartParticleEffectInWorld_ReturnEntity( fxId, spawnVector, spawnAngles )
+	EmitSoundOnEntity( fx, sfxId )
+
+	wait PORTAL_EXIT_WARNING_TIME
+
+	OnThreadEnd(
+		function() : ( player, fx )
+		{
+			if ( IsValid( fx ) )
+				fx.Destroy()
+		}
+	)
+}
+
+entity function FindExitFXScriptRef( entity exitEntity )
+{
+	array<entity> positionEnts = exitEntity.GetLinkEntArray()
+	foreach ( ent in positionEnts )
+	{
+		if ( ent.GetScriptName() == "oly_pr_warn_fx_ref" )
+			return ent
+	}
+
+	return null
+}
+
+      
+
+bool function IsEnteringAngleOverride( int index, AngleOverrideData data )
+{
+	// Is the index between the start of the angle override and the point of override? AND sanity check that the angle override start (idx 0) isn't the point of override. (This can be true if it's at the start of the path)
+	return index >= data.keyframeWarpPathIndexes[ 0 ] && index < data.keyframeWarpPathIndexes[ data.idx_keyActual ] && data.keyframeWarpPathIndexes[ 0 ] != data.keyframeWarpPathIndexes[ data.idx_keyActual ]
+}
+
+float function GetWarpTime( vector start, vector end, float warpTravelSpeed )
+{
+	float warpDist = Length( start - end )
+	float warpTime = warpDist / warpTravelSpeed
+	return warpTime
+}
+
+void function SetWarpGateActive( WarpGateData data )
+{
+	data.warpGateState = eWarpGateStates.ACTIVE
+	data.timeActivated = Time()
+
+	if ( data.activateFlag != "" )
+		FlagSet( data.activateFlag )
+}
+
+void function SetWarpGateInactive( WarpGateData data )
+{
+	data.warpGateState = eWarpGateStates.INACTIVE
+
+	if ( data.activateFlag != "" )
+		FlagClear( data.activateFlag )
+}
+
+void function WarpGateStateMachine( WarpGateData data )
+{
+	int prevState = data.warpGateState
+
+	while ( true )
+	{
+		WaitFrame()
+		switch( data.warpGateState )
+		{
+			case eWarpGateStates.ACTIVE:
+				// Wait forever if active time is -1
+				if ( data.activeTime < 0 )
+					continue
+
+				float elapsedTime = Time() - data.timeActivated
+
+				if ( elapsedTime > data.activeTime )
+				{
+					prevState = data.warpGateState
+					SetWarpGateInactive( data )
+				}
+
+				break
+
+			case eWarpGateStates.INACTIVE:
+				if ( prevState != eWarpGateStates.INACTIVE )
+				{
+					FlagWait( data.activateFlag )
+					prevState = data.warpGateState
+					SetWarpGateActive( data )
+				}
+				break
+		}
+	}
+}
+
+bool function HasWarpTriggerBeenInitialized( entity trigger )
+{
+	if ( trigger in file.warpTrigToWarpData )
+		return true
+
+	foreach ( WarpGateData data in file.warpTrigToWarpData )
+	{
+		if ( (!data.oneWay) && (trigger == data.teleportTrigs[ 1 ]) )
+			return true
+	}
+
+	return false
+}
+
+bool function IsInfoWarpNode( entity entToCheck )
+{
+	return TryGetEditorClass_ElseGetEntityClass( entToCheck ) == "info_warp_gate_path_node"
+}
+
+bool function WarpNodeShouldSnapToAngles( entity warpNode )
+{
+	return warpNode.HasKey( "snap_to_facing_angles" ) && (int( warpNode.GetValueForKey( "snap_to_facing_angles" ) ) == 1)
+}
+
+bool function WarpNodeHasAngleOverride( entity warpNode )
+{
+	return warpNode.HasKey( "facing_angles_override" ) && (int( warpNode.GetValueForKey( "facing_angles_override" ) ) == 1)
+}
+
+bool function WarpNodeHasScreenFlash( entity warpNode )
+{
+	return warpNode.HasKey( "screen_flash_on_node" ) && (int ( warpNode.GetValueForKey( "screen_flash_on_node" ) )  == 1)
+}
+
+bool function WarpTriggerShouldTeleportToFirstNode( entity warpTrigger )
+{
+	return warpTrigger.HasKey( "should_teleport_to_first_node" ) && (int ( warpTrigger.GetValueForKey( "should_teleport_to_first_node" ) )  == 1)
+}
+
+bool function WarpNodeIsCinematicPathNode( entity warpNode )
+{
+	return warpNode.HasKey( "cinematic_path_node" ) && (int( warpNode.GetValueForKey( "cinematic_path_node" ) ) == 1)
+}
 
 #endif // SERVER
 
@@ -859,7 +1434,7 @@ void function WarpGateExitSequence_Thread( float duration )
 {
 	const float END_AMPLITUDE = 1.5
 	float startTime = Time()
-	while ( ( startTime + duration ) > Time() )
+	while ( (startTime + duration) > Time() )
 	{
 		float amplitude = GraphCapped( Time() - startTime, 0, duration, 0, END_AMPLITUDE )
 		ClientScreenShake( amplitude, 1, 1.0, < 0, 0, 0 > )
@@ -869,17 +1444,21 @@ void function WarpGateExitSequence_Thread( float duration )
 
 void function ServerCallback_FlashScreenForPlayer()
 {
-	entity player = GetLocalViewPlayer()
-	//
+	entity player  = GetLocalViewPlayer()
+	// Play warp tunnel entry FX
 	entity cockpit = player.GetCockpit()
-	int fxHandle = StartParticleEffectOnEntity( cockpit, GetParticleSystemIndex( FX_1P_GATE_ENTER ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	int fxHandle   = StartParticleEffectOnEntity( cockpit, GetParticleSystemIndex( FX_1P_GATE_ENTER ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	EffectSetIsWithCockpit( fxHandle, true )
 }
 
 void function ServerCallback_PlayPhaseGateSoundSuite()
 {
 	entity player = GetLocalViewPlayer()
-	entity mover = player.GetParent()
+	entity mover  = player.GetParent()
+
+	if ( !IsValid( mover ) )
+		return
+
 	EmitSoundOnEntity( player, PHASE_GATE_ENTER_1P )
 	EmitSoundOnEntity( mover, PHASE_GATE_TRAVEL_1P )
 
@@ -905,12 +1484,12 @@ void function StopPhaseSoundsOnPlayer_Thread( entity player, entity mover )
 	EndSignal( player, "OnDestroy" )
 	EndSignal( player, "OnDeath" )
 
-	
+
 	WaitFrame()
 
-	//
+	// Wait for warmup plus a little grace period
 	float startWaitTime = Time()
-	while ( ( Time() - startWaitTime ) < WAIT_ENTER_PHASE_TIMEOUT )
+	while ( (Time() - startWaitTime) < WAIT_ENTER_PHASE_TIMEOUT )
 	{
 		if ( player.IsPhaseShifted() )
 			break
@@ -925,7 +1504,7 @@ void function StopPhaseSoundsOnPlayer_Thread( entity player, entity mover )
 		{
 			break
 		}
-		//
+		// Not sure why this check is needed, taken from sh_phase_shift. Some case where this occurs?
 		else if ( player != localViewPlayer )
 		{
 			break
@@ -938,7 +1517,183 @@ void function StopPhaseSoundsOnPlayer_Thread( entity player, entity mover )
 		WaitFrame()
 	}
 
-	//
+	// Goes to OnThreadEnd
 }
 
 #endif // CLIENT
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//  ##     ## ######## #### ##
+//  ##     ##    ##     ##  ##
+//  ##     ##    ##     ##  ##
+//  ##     ##    ##     ##  ##
+//  ##     ##    ##     ##  ##
+//  ##     ##    ##     ##  ##
+//   #######     ##    #### ########
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+void function AddCallback_OnEnterWarpGate( void functionref( entity, entity ) cb )
+{
+	Assert( !file.enterWarpGateCallbacks.contains( cb ) )
+	file.enterWarpGateCallbacks.append( cb )
+}
+#endif
+
+
+#if SERVER
+void function RemoveCallback_OnEnterWarpGate( void functionref( entity, entity ) cb )
+{
+	Assert( file.enterWarpGateCallbacks.contains( cb ) )
+	file.enterWarpGateCallbacks.removebyvalue( cb )
+}
+#endif
+
+
+#if SERVER
+void function AddCallback_OnExitWarpGate( void functionref( entity, entity ) cb )
+{
+	Assert( !file.exitWarpGateCallbacks.contains( cb ) )
+	file.exitWarpGateCallbacks.append( cb )
+}
+#endif
+
+
+#if SERVER
+void function RemoveCallback_OnExitWarpGate( void functionref( entity, entity ) cb )
+{
+	Assert( file.exitWarpGateCallbacks.contains( cb ) )
+	file.exitWarpGateCallbacks.removebyvalue( cb )
+}
+#endif
+
+
+#if SERVER
+void function SetWarpDataCustomExitPoint( entity trigger, Point customExitPoint )
+{
+	WarpGateData data = file.warpTrigToWarpData[ trigger ]
+	data.customExitPoint = customExitPoint
+}
+#endif
+
+
+#if SERVER
+void function AddCallback_CanPlayerUseCustomExitPointForWarpGate( bool functionref( entity, entity ) cb )
+{
+	Assert( !file.canPlayerUseCustomExitPointCallbacks.contains( cb ) )
+	file.canPlayerUseCustomExitPointCallbacks.append( cb )
+}
+#endif
+
+
+#if SERVER
+void function RemoveCallback_CanPlayerUseCustomExitPointForWarpGate( bool functionref( entity, entity ) cb )
+{
+	Assert( file.canPlayerUseCustomExitPointCallbacks.contains( cb ) )
+	file.canPlayerUseCustomExitPointCallbacks.removebyvalue( cb )
+}
+#endif
+
+
+#if SERVER
+bool function ShouldUseCustomExitPoint( entity trigger, entity player )
+{
+	foreach ( bool functionref( entity, entity ) callbackFunc in file.canPlayerUseCustomExitPointCallbacks )
+	{
+		if ( callbackFunc( trigger, player ) )
+			return true
+	}
+
+	return false
+}
+#endif
+#if CLIENT
+void function MinimapPackage_PhaseGate( entity ent, var rui )
+{
+	// #if MINIMAP_DEBUG
+		// printt( "Adding 'rui/pilot_loadout/tactical/pilot_tactical_phase_shift' icon to minimap" )
+	// #endif
+	RuiSetImage( rui, "defaultIcon", $"rui/pilot_loadout/tactical/pilot_tactical_phase_shift" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/pilot_loadout/tactical/pilot_tactical_phase_shift" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+#endif
+
+#if SERVER
+array< int > function CodeCallback_GetWarpEntrances()
+{
+	array< int > ret
+
+	foreach ( entry in file.warpTrigToWarpData )
+	{
+		foreach ( teleportTrig in entry.teleportTrigs )
+		{
+			ret.append( teleportTrig.GetEntIndex() )
+		}
+	}
+
+	return ret
+}
+#endif
+
+#if SERVER && DEVELOPER
+void function DEV_Print_WarpFXPoints()
+{
+	array< entity > ents = GetEntArrayByScriptName( "oly_pr_warn_fx_ref" )
+	DEV_PrintEnts( ents, "WarpFXPoints" )
+}
+
+void function DEV_Show_TrigWarpGates()
+{
+	// output trigger_warp_gates processed by the Spawn Callback function:
+	DEV_PrintEnts( file.triggerWarpGates, "Trig_WarpGates processed by InitWarpGateData()" )
+	//foreach( trigWarpGate in file.triggerWarpGates )
+	//{
+	//	printt( "trigger_warp_gate recognized by spawn callback function: " + trigWarpGate )
+	//}
+
+	// trig multiples existing in-game
+	array< entity > allTrigMultiples = GetEntArrayByClass_Expensive( "trigger_multiple" )
+	foreach( trigMultiple in allTrigMultiples )
+	{
+		if(( GetEditorClass( trigMultiple ) == "trigger_warp_gate") && trigMultiple.HasKey( "targetname" ))
+		{
+			printt( format( " +++++ trigger_warp_gate %s exists", trigMultiple.GetValueForKey( "targetname" ) ))
+			thread PortalWarningThread( 0, <0, 0, 0>, <0,0,0>, GP(), trigMultiple )
+		}
+	}
+}
+
+void function DEV_PrintEnts( array<entity> ents, string prefix ="" )
+{
+	printt( "*******************" )
+	printt( format( "********** %s found: %s", prefix, string( ents.len() )))
+	foreach( ent in ents )
+	{
+		vector entWorldOrigin = <0,0,0>//CalcLocalToWorldOrigin_Entity( ent, ent.GetOrigin() )
+		string entString = string( ent  )
+		printt( format( "   ********** %s entity: %s", prefix, entString ))
+		if( ent.HasKey( "targetname" ) )
+			printt( format( "   - %s targetname: %s", entString , ent.GetValueForKey( "targetname")))
+		printt( format( "   - %s Origin			: %s", entString , string (ent.GetOrigin())))
+		printt( format( "   - %s World Origin	: %s", entString,  string( entWorldOrigin )))
+		DebugDrawSphere( entWorldOrigin, 50.0, 255, 255, 255, true, 30  )
+	}
+	printt( "*******************" )
+}
+
+void function DEV_Warpgate_PrintsOn( bool IsOn = true  )
+{
+	file.devPrintsOn = IsOn
+}
+#endif

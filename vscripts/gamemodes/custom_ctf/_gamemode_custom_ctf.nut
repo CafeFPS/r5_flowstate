@@ -14,7 +14,7 @@ global function ResetMILITIAFlag
 global function FS_StartIntroScreen
 
 bool debugging = false
-const float FS_HALOMOD_VOTETEAM_TIME = 5
+const float FS_HALOMOD_VOTETEAM_TIME = 10
 
 enum eCTFState
 {
@@ -355,27 +355,27 @@ void function VotingPhase()
 
 	//Open Vote for Team Menu ( Halo Mod Only )
 	
-	// if( Flowstate_IsHaloMode() && !debugging )
-	// {
-		// file.VoteTeamEnabled = true
-		// // SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
-		// SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
+	if( Flowstate_IsHaloMode() && !debugging )
+	{
+		file.VoteTeamEnabled = true
+		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
+		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
 
-		// foreach( player in GetPlayerArray() )
-		// {
-			// Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			// Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
-			// SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
-			// Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
-		// }
+		foreach( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
+			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
+		}
 		
-		// // WaitForever()
-		// while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
-			// WaitFrame()
+		// WaitForever()
+		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
+			WaitFrame()
 
-		// file.VoteTeamEnabled = false
-		// SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
-	// } else
+		file.VoteTeamEnabled = false
+		SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
+	} else
 	{
 		foreach( player in GetPlayerArray() )
 		{
@@ -432,8 +432,6 @@ void function VotingPhase()
 		int teamMemberIndex = playerTeam.len() - 1
 		player.SetTeamMemberIndex( teamMemberIndex )
 	}
-	if( Flowstate_IsHaloMode()  )
-		wait 0.5
 }
 
 // purpose: handle the start of a new round for players and props
@@ -582,21 +580,21 @@ void function StartRound()
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
 	
-	// if( !debugging && Flowstate_IsHaloMode() )
-	// {
-		// SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-		// SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+	if( !debugging && Flowstate_IsHaloMode() )
+	{
+		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+		SetGlobalNetTime( "FSIntro_EndTime", Time() + 7 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 2 )
 
-		// while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
-			// WaitFrame()
+		while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+			WaitFrame()
 
-		// foreach(player in GetPlayerArray())
-		// {
-			// Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
-		// }
-	// }
+		foreach(player in GetPlayerArray())
+		{
+			Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+		}
+	}
 	
-	// wait 1
+	wait 1.5
 	// set
 	SetGameState(eGameState.Playing)
 	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 3 )
@@ -614,9 +612,12 @@ void function StartRound()
 			return
 		
 		if( MapName() == eMaps.mp_flowstate )
-			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 		else
-			Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+			//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+			
 
 		player.MakeVisible()
 		player.UnforceStand()
@@ -718,6 +719,11 @@ void function StartRound()
 			else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 				TeamWon = TEAM_MILITIA
 
+			if( Flowstate_IsHaloMode() )
+			{
+				CTF.mappicked = ( CTF.mappicked + 1 ) % file.locationSettings.len()
+			}
+			
 			file.winnerTeam = TeamWon
 
 			if( TeamWon == 69 )
@@ -1848,7 +1854,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{
 				if( !Flowstate_IsHaloMode() )
 				{
-					Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
+					//Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
+					Remote_CallFunction_ByRef( victim, "ServerCallback_CTF_HideCustomUI" )
 
 					wait 4 // so we dont go straight to respawn menu
 
@@ -1901,7 +1908,8 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	if( player.IsObserver() )
 	{
 		player.StopObserverMode()
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 	}
 
 	if( !IsAlive( player ) || forceGive )

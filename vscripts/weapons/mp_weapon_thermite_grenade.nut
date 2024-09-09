@@ -451,11 +451,11 @@ void function FireSegment_DamageThink( entity effect, entity owner, entity infli
 
 	float topDelta = burnSettings.burnDamageHeight
 	float bottomDelta = 0
-	entity trig = CreateTriggerCylinderMultiple( effect.GetOrigin(), burnSettings.burnDamageRadius, topDelta, bottomDelta, [], TRIG_FLAG_NONE )
+	entity trig = CreateTriggerCylinderMultiple_Deprecated( effect.GetOrigin(), burnSettings.burnDamageRadius, topDelta, bottomDelta, [], TRIG_FLAG_NONE )
 	trig.RemoveFromAllRealms()
 	trig.AddToOtherEntitysRealms( owner )
 	AddToTrackedEnts( owner, trig )
-	ScriptTriggerSetEnabled( trig, true )
+	ScriptTriggerSetEnabled_Deprecated( trig, true )
 
 	effect.EndSignal( "OnDestroy" )
 	trig.EndSignal( "OnDestroy" )
@@ -473,7 +473,7 @@ void function FireSegment_DamageThink( entity effect, entity owner, entity infli
 
 	while ( 1 )
 	{
-		array<entity> touchingEnts = GetAllEntitiesInTrigger( trig )
+		array<entity> touchingEnts = GetAllEntitiesInTrigger_Deprecated( trig )
 		ArrayRemoveDead( touchingEnts )
 
 		foreach ( ent in touchingEnts )

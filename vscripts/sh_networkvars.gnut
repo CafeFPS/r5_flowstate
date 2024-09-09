@@ -24,6 +24,8 @@ global function GetNetworkVar
 global function RegisterServerVarChangeCallback
 global function RegisterEntityVarChangeCallback
 
+global typedef entityVarChangedCallbackType void functionref( var, var, var, var )
+
 #if SERVER
 global function ServerVarChangedCallbacks
 #endif
@@ -260,7 +262,7 @@ void function RegisterServerVarChangeCallback( string varName, void functionref(
 	file._serverVarChangeCallbacks[varName].append( callbackFunc )
 }
 
-void function RegisterEntityVarChangeCallback( string className, string varName, callbackFunc )
+void function RegisterEntityVarChangeCallback( string className, string varName, entityVarChangedCallbackType callbackFunc )
 {
 	if ( !(className in _entityClassVarChangeCallbacks) )
 		_entityClassVarChangeCallbacks[className] <- {}

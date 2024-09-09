@@ -11,6 +11,7 @@ global function AddSpawnCallback_ScriptName
 global function GetLeveledAISettings
 global function GetSpawnAISettings
 global function GetDefaultAISetting
+global function RunSpawnCallbacks
 
 void function CodeCallback_PreSpawn( entity npc )
 {
@@ -278,7 +279,7 @@ void function CodeCallback_OnSpawned( entity ent )
 		if ( !ent._entityVars )
 			InitEntityVars( ent )
 
-		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" )
+		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" ) //I hope this is handled already.. ~mkos
 	}
 
 	if( ent.kv.teamnumber == null )
@@ -293,7 +294,9 @@ void function CodeCallback_OnSpawned( entity ent )
 		return
 	}
 		
+	
 	int teamNum = int( expect string( ent.kv.teamnumber ) )
+	
 	if ( teamNum != 0 && !ent.IsPlayer() )
 		SetTeam( ent, teamNum )
 
@@ -333,7 +336,6 @@ void function CodeCallback_OnSpawned( entity ent )
 	*/
 
 	RegisterForDamageDeathCallbacks( ent )
-
 	RunMySpawnFunctions( ent )
 }
 
@@ -392,7 +394,7 @@ function RunSpawnCallbacks( entity self )
 
 	foreach ( spawnCallbackFuncArray funcArray in svGlobal.spawnCallbackFuncs )
 	{
-		if ( funcArray.entityClassname == classname )
+		if ( funcArray.entityClassname == classname )//seriously? no getter function with hash table?? ~mkos
 		{
 			foreach ( func in funcArray.callbackArray )
 			{
@@ -488,6 +490,7 @@ void function RunScriptNoteworthyCallbacks( entity ent )
 		}
 
 		break // ??? break?
+		//This is ridiculous, iterate an array of callback funcs but break when you find the first one? ~mkos
 	}
 }
 

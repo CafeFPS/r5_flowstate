@@ -9,6 +9,9 @@ global function SonarShared_Init
 #if SERVER
 global function SonarStart
 global function SonarEnd
+global function SonarEnd_EndHighlight
+global function LockOnWarningStart
+global function LockOnWarningEnd
 global function IncrementSonarPerTeam
 global function DecrementSonarPerTeam
 global function OnSonarTriggerLeaveInternal
@@ -16,6 +19,10 @@ global function AddSonarStartCallback
 global function AddSonarDetectionForPropScript
 global function RemoveSonarDetectionForPropScript
 global function GetSonarRegisteredPropScripts
+global function AddSonarDetectionForPropScriptWithProxy
+global function RemoveSonarDetectionForPropScriptWithProxy
+global function GetSonarRegisteredPropScriptFromProxy
+
 #endif
 
 #if CLIENT
@@ -25,15 +32,23 @@ global function ServerCallback_SonarPulseConeFromPosition
 #endif
 
 const asset FX_SONAR_TARGET = $"P_ar_target_sonar"
+const asset FX_CAMERA_TARGET = $"P_ar_target_drone"
+const asset FX_DRONE_TARGET = $"P_ar_foa_lockon"
+const asset FX_HEAL_TARGET = $"P_ar_target_ally"
 
 struct
 {
 	#if SERVER
-		table< entity, array<int> > entitySonarHandles
-		table< entity, array<entity> > entitySonarFXs
-		table< int, int > teamSonarCount
+		table< entity, array<int> >                              entitySonarHandles
+		table< entity, int >                                     entityLockonHandles
+		table< entity, array<entity> >                           entitySonarFXs
+		table< int, table< entity, int > >                       teamSonarCount
+		table< int, table< entity, int > >                       teamSonarDiamondsCount
 		array< void functionref( entity, vector, int, entity ) > sonarStartCallbacks = []
-		int sonarRegisteredPropScriptsArrayID
+		array< string >                                          disabledRefs
+		int                                                      sonarRegisteredPropScriptsArrayID
+		table<entity, entity>                                    sonarProxyToSonarPropScriptTable
+
 	#endif //Server
 
 
@@ -53,14 +68,19 @@ void function SonarShared_Init()
 	//PrecacheParticleSystem( $"P_ar_holopulse_CP" )
 	PrecacheParticleSystem( $"P_holo_screespace" )
 	PrecacheParticleSystem( FX_SONAR_TARGET )
+	PrecacheParticleSystem( FX_CAMERA_TARGET )
+	PrecacheParticleSystem( FX_DRONE_TARGET )
+               
+                                          
+       
 
 	#if SERVER
 		file.sonarRegisteredPropScriptsArrayID = CreateScriptManagedEntArray()
 	#endif //SERVER
 
 	#if CLIENT
-		//StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_detected, EntitySonarDetectedEnabled )
-		//StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_detected, EntitySonarDetectedDisabled )
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_detected, EntitySonarStatusEnabled )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_detected, EntitySonarStatusDisabled )
 
 		StatusEffect_RegisterEnabledCallback( eStatusEffect.lockon_detected, EntitySonarDetectedEnabled )
 		StatusEffect_RegisterDisabledCallback( eStatusEffect.lockon_detected, EntitySonarDetectedDisabled )
@@ -80,17 +100,40 @@ void function AddSonarStartCallback( void functionref( entity, vector, int, enti
 
 void function AddSonarDetectionForPropScript( entity propScript )
 {
+	propScript.Highlight_Enable()
 	AddToScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, propScript )
+	AddNeurolinkDetectionForPropScript( propScript )
 }
 
 void function RemoveSonarDetectionForPropScript( entity propScript )
 {
 	RemoveFromScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, propScript )
+	RemoveNeurolinkDetectionForPropScript( propScript )
 }
 
-array<entity> function GetSonarRegisteredPropScripts()
+void function AddSonarDetectionForPropScriptWithProxy( entity propScript, entity proxy )
 {
-	array<entity> entities = GetScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID )
+	AddToScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, proxy )
+	file.sonarProxyToSonarPropScriptTable[ proxy ] <- propScript
+}
+
+void function RemoveSonarDetectionForPropScriptWithProxy( entity propScript, entity proxy )
+{
+	RemoveFromScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, propScript )
+	delete file.sonarProxyToSonarPropScriptTable[ proxy ]
+}
+
+entity function GetSonarRegisteredPropScriptFromProxy( entity proxy )
+{
+	if ( proxy in file.sonarProxyToSonarPropScriptTable )
+		return file.sonarProxyToSonarPropScriptTable[ proxy  ]
+
+	return null
+}
+
+array<entity> function GetSonarRegisteredPropScripts( vector origin, float radius )
+{
+	array<entity> entities = GetScriptManagedEntArrayWithinCenter( file.sonarRegisteredPropScriptsArrayID, TEAM_ANY, origin, radius )
 	return entities
 }
 
@@ -100,18 +143,66 @@ void function OnSonarTriggerLeaveInternal( entity trigger, entity ent )
 		return
 
 	ent.e.sonarTriggers.fastremovebyvalue( trigger )
-	SonarEnd( ent, trigger.GetTeam() )
+	SonarEnd( ent, trigger.GetTeam(), trigger.GetOwner() )
+}
+
+void function LockOnWarningStart( entity ent )
+{
+	ent.e.lockOnCount++
+
+	if ( ent.e.lockOnCount == 1 )
+	{
+		int statusEffect = eStatusEffect.lockon_detected
+		int statusEffectHandle = StatusEffect_AddEndless( ent, statusEffect, 1.0 )
+
+		if ( ent in file.entityLockonHandles )
+			file.entityLockonHandles[ ent ] = statusEffectHandle
+		else
+			file.entityLockonHandles[ ent ] <- statusEffectHandle
+	}
+}
+
+void function LockOnWarningEnd( entity ent )
+{
+	if ( !IsValid( ent ) )
+		return
+
+	ent.e.lockOnCount--
+
+	if ( ent.e.lockOnCount < 1 )
+	{
+		Assert( ent in file.entityLockonHandles )
+		int statusEffectHandle = file.entityLockonHandles[ ent ]
+		StatusEffect_Stop( ent, statusEffectHandle )
+	}
+}
+bool function ShouldSonarGiveAssistCredit( entity victimEnt, entity sonarOwner )
+{
+	if ( !victimEnt.IsPlayer() )
+		return false
+
+	if ( !sonarOwner.IsPlayer() )
+		return false
+
+	if ( IsFriendlyTeam( victimEnt.GetTeam(), sonarOwner.GetTeam() ) )
+		return false
+
+	if ( ( victimEnt.GetTeam() == sonarOwner.GetTeam() ) && IsTeamRabid( sonarOwner.GetTeam() ) )
+		return false
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( sonarOwner, Loadout_CharacterClass() )
+	string characterRef = ItemFlavor_GetHumanReadableRef( character )
+	string disabledRefs = GetCurrentPlaylistVarString( "disable_sonar_assist", " " )
+	file.disabledRefs.extend( split( disabledRefs, WHITESPACE_CHARACTERS ) )
+
+	return !file.disabledRefs.contains( characterRef )
 }
 
 void function SonarStart( entity ent, vector position, int sonarTeam, entity sonarOwner )
 {
-	if ( !("inSonarTriggerCount" in ent.s) )
-		ent.s.inSonarTriggerCount <- 0
-
-	ent.s.inSonarTriggerCount++
-
-	bool isVisible = true
-	bool blocksSonar = false//
+	IncrementScanDiamondsPerTeam( sonarTeam, ent )
+	IncrementSonarPerTeam( sonarTeam, ent )
+	ent.e.inSonarTriggerCount++
 
 	if ( !(ent in file.entitySonarHandles) )
 		file.entitySonarHandles[ent] <- []
@@ -121,84 +212,87 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 
 	ent.HighlightEnableForTeam( sonarTeam )
 
-	table signalData = { owner = sonarOwner, pos = position }
-	Signal( ent, "SonarPing", signalData )
-
-	if ( ent.s.inSonarTriggerCount == 1 )
+	if( file.teamSonarDiamondsCount[sonarTeam][ent] == 1 )
 	{
+		bool entHasLockVFX =  ent.IsPlayer() || ent.IsNPC()  || ent.IsPlayerDecoy()
+	   // DISABLED dklein: Subtle intentional detail that decoys don't create the lock confirmation box
 
+		if ( entHasLockVFX )
+		{
+			UpdatePlayerHighlightsSettings( ent )
+			ent.SetCloakFlicker( 0.5, -1 )
+
+			int fxid
+			if ( IsValid( sonarOwner ) && PlayerHasPassive( sonarOwner, ePassives.PAS_CRYPTO ) )
+				fxid = GetParticleSystemIndex( FX_CAMERA_TARGET )
+			else
+				fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
+
+			entity fx
+
+			fx = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, ent.LookupAttachment( "CHESTFOCUS" ) )
+			// fx.SetLOSBlockScan( true )
+
+			SetTeam( fx, sonarTeam )
+			fx.SetOwner( sonarOwner )
+			fx.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_OWNER
+			Assert( !file.entitySonarFXs[ent].contains( fx ) )
+			file.entitySonarFXs[ent].append( fx )
+		}
+	}
+
+	if ( ent.e.inSonarTriggerCount == 1 )
+	{
 		//Run callbacks for sonar pulse start
 		foreach ( callback in file.sonarStartCallbacks )
 		{
 			callback( ent, position, sonarTeam, sonarOwner )
 		}
 
-		if (  isVisible && !blocksSonar )
+		int statusEffect       = eStatusEffect.sonar_detected
+		int statusEffectHandle
+
+		statusEffectHandle = StatusEffect_AddEndless( ent, statusEffect, 1.0 )
+
+		//Fix for R5DEV-315341.  Since Seer's tac scan is so long, I added logic to turn sonar off/on as someone goes in/out of phase  (previously with it on, the lock VFX would show through phase).
+		//The issue is that Seer can hit a Wraith, she goes into phase, Seer dies while shes in phase and when she comes out we go to turn sonar back on again and now the sonarOwner is invalid causing ShouldSonarGiveAssistCredit to fail.
+		//Still want sonar to turn back on for the rest of his team if they're around so adding this guard here.
+		if ( IsValid( sonarOwner ) )
 		{
-			if ( !ent.IsPlayer() )
-			{
-				if ( StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier ) > 0 )
-					Highlight_SetSonarHighlightWithParam0( ent, "bloodhound_sonar", <1,0,0> )
-				else
-					Highlight_SetSonarHighlightWithParam1( ent, "bloodhound_sonar", position )
-
-				Highlight_SetSonarHighlightOrigin( ent, position )
-
-				if( ent.GetClassName() == "npc_dummie" )
-				{
-					int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
-					entity fx = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, ent.LookupAttachment( "CHESTFOCUS" ) )
-					SetTeam( fx, sonarTeam )
-					fx.SetOwner( sonarOwner )
-					fx.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_OWNER
-					Assert( !file.entitySonarFXs[ent].contains( fx ) )
-					file.entitySonarFXs[ent].append( fx )
-				}
-			}
-			else
-			{
-				UpdatePlayerHighlightsSettings( ent )
-				ent.SetCloakFlicker( 0.5, -1 )
-				Highlight_SetSonarHighlightOrigin( ent, position )
-
-				{
-					int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
-					entity fx = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, ent.LookupAttachment( "CHESTFOCUS" ) )
-					SetTeam( fx, sonarTeam )
-					fx.SetOwner( sonarOwner )
-					fx.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_OWNER
-					Assert( !file.entitySonarFXs[ent].contains( fx ) )
-					file.entitySonarFXs[ent].append( fx )
-				}
-			}
-
-			
+			if ( ShouldSonarGiveAssistCredit( ent, sonarOwner ) )
+				AddAssistingPlayerToVictim( sonarOwner, ent, 9999.0 ) //HACK, crappy way of marking as an endless status effect.
 		}
 
-		if ( isVisible )
-		{
-			int statusEffect = blocksSonar ? eStatusEffect.sonar_blocked : eStatusEffect.sonar_detected
-			int statusEffectHandle = StatusEffect_AddEndless( ent, statusEffect, 1.0 )
-			Assert( !file.entitySonarHandles[ent].contains( statusEffectHandle ) )
-			file.entitySonarHandles[ent].append( statusEffectHandle )
-		}
+		Assert( !file.entitySonarHandles[ent].contains( statusEffectHandle ) )
+		file.entitySonarHandles[ent].append( statusEffectHandle )
 	}
 }
 
-void function SonarEnd( entity ent, int team, bool isCryptDrone = false )
+void function SonarEnd_EndHighlight( entity ent, int team, entity sonarOwner )
 {
 	if ( !IsValid( ent ) )
 		return
 
-	ent.s.inSonarTriggerCount--
+	Assert( ent.e.inSonarTriggerCount > 0, "Trying to End sonar when count is already 0.")
+	DecrementSonarPerTeam( team, ent )
+	ent.e.inSonarTriggerCount--
 
-	if ( (ent.s.inSonarTriggerCount < file.teamSonarCount[team]) || (ent.s.inSonarTriggerCount <= 0) || (file.teamSonarCount[team] <= 0) )
-		ent.HighlightDisableForTeam( team )
+	if ( team in file.teamSonarCount )
+	{
+		if ( ent in file.teamSonarCount[team] )
+		{
+			if( IsValid( ent ) )
+			{
+				if ( (ent.e.inSonarTriggerCount < file.teamSonarCount[team][ent]) || (ent.e.inSonarTriggerCount <= 0) || (file.teamSonarCount[team][ent] <= 0) )
+					ent.HighlightDisableForTeam( team )
+			}
+		}
+	}
 
-	if ( ent.s.inSonarTriggerCount < 1 )
+	if ( ent.e.inSonarTriggerCount < 1 )
 	{
 		Assert( ent in file.entitySonarHandles )
-		if ( file.entitySonarHandles[ent].len() )
+		if ( file.entitySonarHandles[ent].len() > 0 )
 		{
 			int statusEffectHandle = file.entitySonarHandles[ent][0]
 			StatusEffect_Stop( ent, statusEffectHandle )
@@ -206,67 +300,93 @@ void function SonarEnd( entity ent, int team, bool isCryptDrone = false )
 		}
 		ent.HighlightSetTeamBitField( 0 )
 
-		if ( ent.IsPlayer() )
+		if ( ent.IsPlayer() || ent.IsNPC() )
 			ent.SetCloakFlicker( 0, 0 )
-		
-		if( !isCryptDrone )
-			thread Flowstate_DestroyChestfocusParticleDelayed( ent )
-		else
-		{
-			entity fx
-			
-			if ( file.entitySonarFXs[ent].len() )
-				fx = file.entitySonarFXs[ent][0]
-
-			if( IsValid( ent ) && IsValid( fx ) ) 
-				file.entitySonarFXs[ent].fastremovebyvalue( fx )
-					
-			if( IsValid( fx ) )
-				fx.Destroy()
-		}
 	}
 }
 
-void function Flowstate_DestroyChestfocusParticleDelayed( entity ent )
+void function SonarEnd( entity ent, int team, entity sonarOwner, bool endHighlight = true )
 {
-	EndSignal( ent, "OnDeath" )
-	EndSignal( ent, "OnDestroy" )
-	
-	entity fx
-	
-	if ( file.entitySonarFXs[ent].len() )
-		fx = file.entitySonarFXs[ent][0]
-		
-	OnThreadEnd(
-		function() : ( ent, fx )
-		{
-			if( IsValid( ent ) && IsValid( fx ) ) 
-				file.entitySonarFXs[ent].fastremovebyvalue( fx )
-			
-			if( IsValid( fx ) )
-				fx.Destroy()
-		}
-	)
-	
-	wait GetAreaSonarScanDuration() - AREA_SONAR_SCAN_HIGHLIGHT_DURATION
-}
+	if ( !IsValid( ent ) )
+		return
 
-void function IncrementSonarPerTeam( int team )
-{
-	if ( !(team in file.teamSonarCount) )
-		file.teamSonarCount[team] <- 0
-	file.teamSonarCount[team]++
-}
-
-void function DecrementSonarPerTeam( int team )
-{
-	if ( team in file.teamSonarCount )
+	if( endHighlight )
 	{
-		file.teamSonarCount[team]--
-
-		if ( file.teamSonarCount[team] <= 0 )
-			file.teamSonarCount[team] = 0
+		SonarEnd_EndHighlight( ent, team, sonarOwner )
 	}
+	DecrementScanDiamondsPerTeam( team, ent )
+
+	if( team in file.teamSonarDiamondsCount && ent in file.teamSonarDiamondsCount[team] && file.teamSonarDiamondsCount[team][ent] == 0 )
+	{
+		entity toDelete = null
+
+		foreach ( fx in file.entitySonarFXs[ent] )
+		{
+			if ( !IsValid( fx ) )
+				continue
+			if ( fx.GetTeam() == team )
+			{
+				toDelete = fx
+				break
+			}
+		}
+
+		if ( toDelete != null )
+		{
+			toDelete.Destroy()
+			file.entitySonarFXs[ent].fastremovebyvalue( toDelete )
+		}
+
+		if ( IsValid( sonarOwner ) )
+		{
+			if ( ShouldSonarGiveAssistCredit( ent, sonarOwner ) )
+				ChangeAssistingPlayerCreditTimeForVictim( sonarOwner, ent )
+		}
+	}
+}
+
+void function IncrementScanCountTable( int team, entity ent, table< int, table< entity, int > > scanTable )
+{
+	if ( !(team in scanTable) )
+		scanTable[team] <- {}
+	if ( !(ent in scanTable[team]) )
+		scanTable[team][ent] <- 0
+
+	scanTable[team][ent]++
+}
+
+void function DecrementScanCountTable( int team, entity ent, table< int, table< entity, int > > scanTable )
+{
+	if ( team in scanTable )
+	{
+		if ( ent in scanTable[team] )
+		{
+			scanTable[team][ent]--
+
+			if ( scanTable[team][ent] <= 0 )
+				scanTable[team][ent] = 0
+		}
+	}
+}
+
+void function IncrementSonarPerTeam( int team, entity ent )
+{
+	IncrementScanCountTable( team, ent, file.teamSonarCount )
+}
+
+void function DecrementSonarPerTeam( int team, entity ent )
+{
+	DecrementScanCountTable( team, ent, file.teamSonarCount )
+}
+
+void function IncrementScanDiamondsPerTeam( int team, entity ent )
+{
+	IncrementScanCountTable( team, ent, file.teamSonarDiamondsCount )
+}
+
+void function DecrementScanDiamondsPerTeam( int team, entity ent )
+{
+	DecrementScanCountTable( team, ent, file.teamSonarDiamondsCount )
 }
 #endif //SERVER
 
@@ -355,6 +475,18 @@ void function SonarPulseConeTrail( entity player, vector dir, float duration, fl
 }
 #endif //PULSETRAIL
 
+void function EntitySonarStatusEnabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	ManageHighlightEntity( ent )
+
+	EntitySonarDetectedEnabled( ent, statusEffect, actuallyChanged )
+}
+
+void function EntitySonarStatusDisabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	ManageHighlightEntity( ent )
+	EntitySonarDetectedDisabled( ent, statusEffect, actuallyChanged )
+}
 void function EntitySonarDetectedEnabled( entity ent, int statusEffect, bool actuallyChanged )
 {
 	if ( ent == GetLocalViewPlayer() )

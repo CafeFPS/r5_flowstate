@@ -197,6 +197,7 @@ void function EntitiesDidLoad()
 
 void function Gamemode_ShadowSquad_RegisterNetworking()
 {
+	SpamWarning( 10, "This is being registered!!!!!!!!!" )
 	// if ( !IsFallLTM() )
 	// {
 		// Remote_RegisterClientFunction( "ServerCallback_ShadowClientEffectsEnable", "entity", "bool"  )
@@ -469,8 +470,9 @@ void function LegendIsDied( entity player, entity enemy )
 		thread ShadowKilled( player )
 
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
-	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
-
+	//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+	Remote_CallFunction_ByRef( player, "ServerCallback_ShowDeathScreen" )
+	
 	EmitSoundOnEntityOnlyToPlayer( player, player, "Music_LTM_31_RespawnAndDrop" )
 
 	wait 5.0

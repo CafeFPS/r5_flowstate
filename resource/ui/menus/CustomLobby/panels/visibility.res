@@ -53,7 +53,7 @@
 	"PanelTopText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Visibility"
+		"labelText"				"#FS_VISIBILITY"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"

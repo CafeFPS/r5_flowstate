@@ -132,6 +132,11 @@ WeaponData
         survival_tier_03
         {
         }
+       
+	    passive_revive_incap_shield_mod
+        {
+            "charge_require_input"							"0"
+        }
     }
 
 	active_crosshair_count				"1"

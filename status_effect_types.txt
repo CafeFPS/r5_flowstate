@@ -3,6 +3,10 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
+	crypto_beacon_scan
+	immune_to_abilities
+	phase_gate_tracking
+	turretlockon_detected
 	titan_sword_fuel
 	titan_sword_dash
 	titan_sword_super
@@ -37,23 +41,7 @@
     phase_dash
     passive_cloak
 
-                
-              
-      
-
-                
-                      
-      
-
-               
-                            
-      
-
 	smokescreen
-
-                
-                      
-      
 
 	marked_for_death
 	revenge_view_visuals
@@ -88,69 +76,24 @@
 	placing_phase_tunnel
 	placing_caustic_barrel
 
-               
-                   
-                                 
-      
-
-                      
-                       
-      
-
-                         
-                          
-      
-
 	camera_view
 	crypto_has_camera
 	crypto_camera_is_recalling
 	crypto_camera_is_emp
 	crypto_emp_warning
 
-                      
-                         
-      
-
-             
-                       
-      
-
-             
-                    
-              
-              
-      
-
-                
-                          
-                   
-         
-      
-
-            
-               
-      
-
 	script_helper
-
 	pass_through_amps_weapon
-
 	simple_timer
-
 	minimap_jammed
 	tethered
 	battery_carried
 	cockpitColor
 	damageAmpFXOnly
 	disable_wall_run_and_double_jump
-
 	lockon_detected_titan
 	damage_received_multiplier
-
 	bombardment_uses_extended_height
-
-
-
 
 	drone_healing
 
@@ -162,8 +105,6 @@
 	target_health
 	trophy_tactical_charge
 	trophy_shield_repair
-
 	bubble_bunker
-
 /////////////////////////////
 //}

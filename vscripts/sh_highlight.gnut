@@ -13,6 +13,8 @@ global function ClearSurvivalPropHighlight
 global function Highlight_SetFriendlyHighlight
 global function Highlight_SetEnemyHighlight
 global function Highlight_SetOwnedHighlight
+global function Highlight_SetSpecialHighlight
+
 global function Highlight_SetDeathRecapHighlight
 global function Highlight_SetCausticThreatHighlight
 global function Highlight_SetFlyerDeathboxHighlight
@@ -98,8 +100,8 @@ const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_WEAPON_PICKUP = 110
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_PULSE = 120 // outline_custom_color_pulse // set parm1.x to pulse rate
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OBEY_Z = 121 // outline_default_custom_obey_z
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OCCLUDED_NOSCANLINES = 129
-const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_NOZ_NOSCANLINES = 169 //outline_custom_color_noz_noscanlines
-const HIGHLIGHT_OUTLINE_SONAR = 103 // outline_sonar
+global const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_NOZ_NOSCANLINES = 169 //outline_custom_color_noz_noscanlines
+global const HIGHLIGHT_OUTLINE_SONAR = 103 // outline_sonar
 global const HIGHLIGHT_OUTLINE_INTERACT_BUTTON = 105 // outline_interact_button
 global const HIGHLIGHT_FILL_INTERACT_BUTTON = 103 // inside_interact_button
 global const HIGHLIGHT_OUTLINE_OBJECTIVE = 125 // outline_objective
@@ -130,14 +132,14 @@ global const HIGHLIGHT_FILL_MENU_MODEL_REVEAL = 75 // inside_menu_model_reveal
 global const MAP_SCAN_FADE_DISTANCE = 16000 //Really just an arbitrarily large number
 
 //BloodHound
-const HIGHLIGHT_FILL_BLOODHOUND = 12 //bloodhound_sonar
-const HIGHLIGHT_FILL_BLOODHOUND_CLONE = 13 //
+global const HIGHLIGHT_FILL_BLOODHOUND = 12 //bloodhound_sonar
+global const HIGHLIGHT_FILL_BLOODHOUND_CLONE = 13 //
 global const HIGHLIGHT_COLOR_BLOODHOUND = <1, 0.25, 0>
 
 
 //Caustic
-const HIGHLIGHT_FILL_CAUSTIC_THREAT = 133
-const HIGHLIGHT_FILL_CAUSTIC_CANISTER = 134
+global const HIGHLIGHT_FILL_CAUSTIC_THREAT = 133
+global const HIGHLIGHT_FILL_CAUSTIC_CANISTER = 134
 global const HIGHLIGHT_COLOR_CAUSTIC = <0.79, 1.0, 0.0>
 global const HIGHLIGHT_FILL_CRYPTO = 133//
 
@@ -663,7 +665,7 @@ void function Highlight_Init()
 	HighlightContext_SetADSFade( highlight, false )
 	HighlightContext_SetFarFadeDistance( highlight, 7000.0 )
 	HighlightContext_SetNearFadeDistance( highlight, 256.0 )
-		
+	
 	highlight = RegisterHighlight( "crypto_camera_friendly" )
 	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CRYPTO_DRONE ) //
 	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_CRYPTO_DRONE ) //
@@ -699,9 +701,15 @@ void function Highlight_Init()
 	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS )
 	HighlightContext_SetADSFade( highlight, false )
 
-	//
-	//
-	//
+	highlight = RegisterHighlight( "smoke_highlight_blockscan" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OCCLUDED_NOSCANLINES )
+	HighlightContext_SetParam( highlight, 0, <.55, .55, .55> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetParam( highlight, 1, <0.0, 0, 0> )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetAfterPostProcess( highlight, true )
+	HighlightContext_SetFarFadeDistance( highlight, CAUSTIC_GAS_THREAT_DIST )
 
 	Highlight_EndRegisteringHighlights()
 
@@ -1012,6 +1020,11 @@ void function Highlight_SetOwnedHighlight( entity ent, string assetName )
 	__SetEntityContextHighlight( ent, HIGHLIGHT_CONTEXT_OWNED, highlight )
 }
 
+void function Highlight_SetSpecialHighlight( entity ent, string assetName )
+{
+	HighlightContext highlight = GetHighlight( assetName )
+	__SetEntityContextHighlight( ent, HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT, highlight )
+}
 
 void function Highlight_SetSonarHighlight( entity ent, string assetName )
 {
@@ -1219,6 +1232,9 @@ void function ClientCodeCallback_HighlightServerContextChanged( entity ent )
 
 bool function ClHighlight_HasHighlightContext( entity ent )
 {
+	if( !IsValid( ent ) )
+		return false
+
 	for ( int contextId = 0; contextId < HIGHLIGHT_MAX_CONTEXTS; contextId++ )
 	{
 		if ( ent.Highlight_GetInsideFunction( contextId ) > 0 )
@@ -1281,7 +1297,7 @@ void function OnSettingsUpdated()
 
 void function ManageHighlightEntity( entity ent )
 {
-	if ( !ClHighlight_HasHighlightContext( ent ) )
+	if ( !IsValid( ent ) || !ClHighlight_HasHighlightContext( ent ) )
 		return
 
 	// kill replay...
@@ -1844,6 +1860,12 @@ int function GetHighlightContextForEnt( entity viewPlayer, entity ent )
 {
 	int viewTeam = viewPlayer.GetTeam()
 	int entTeam  = ent.GetTeam()
+
+	if ( BangSmoke_IsPlayerHighlighted( viewPlayer, ent ) )
+	{
+		// printt( "player is highlighted in smoke! Cafe", viewPlayer, ent )
+		return HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT
+	}
 
 	if ( ent.GetBossPlayer() == viewPlayer )
 	{

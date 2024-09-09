@@ -47,11 +47,28 @@
         navUp					SwchGamepadCustomEnabled
         navDown					SldGamepadCustomDeadzoneOut
         conCommand				"gamepad_custom_deadzone_in"
-        minValue				0.0
-        maxValue				0.5
+		minValue				0.000000
+        maxValue				0.500000
         stepSize				0.025
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomDeadzoneIn
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_deadzone_in"
+        syncedConVar            "gamepad_custom_deadzone_in"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				0.500000
+        stepSize				0.025
+		
+        pin_to_sibling			SldGamepadCustomDeadzoneIn
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomDeadzoneOut
@@ -64,11 +81,28 @@
         navUp					SldGamepadCustomDeadzoneIn
         navDown					SldGamepadCustomCurve
         conCommand				"gamepad_custom_deadzone_out"
-        minValue				0.01
-        maxValue				0.3
+		minValue				0.010000
+        maxValue				0.300000
         stepSize				0.01
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomDeadzoneOut
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_deadzone_out"
+        syncedConVar            "gamepad_custom_deadzone_out"
+        showConVarAsFloat		1
+		minValue				0.010000
+        maxValue				0.300000
+        stepSize				0.025
+		
+        pin_to_sibling			SldGamepadCustomDeadzoneOut
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomCurve
@@ -81,11 +115,28 @@
         navUp					SldGamepadCustomDeadzoneOut
         navDown					SwchGamepadCustomAssist
         conCommand				"gamepad_custom_curve"
-        minValue				0.0
-        maxValue				30.0
+        minValue				0.000000
+        maxValue				30.000000
         stepSize				1.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomCurve
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_curve"
+        syncedConVar            "gamepad_custom_curve"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				30.000000
+        stepSize				1.0
+		
+        pin_to_sibling			SldGamepadCustomCurve
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
 //		SwchGamepadCustomAssist
@@ -141,11 +192,28 @@
         navUp					SwchGamepadCustomAssist
         navDown					SldGamepadCustomHipPitch
         conCommand				"gamepad_custom_hip_yaw"
-        minValue				0.0
-        maxValue				500.0
+        minValue				0.000000
+        maxValue				500.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipYaw
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_yaw"
+        syncedConVar            "gamepad_custom_hip_yaw"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				500.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomHipYaw
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomHipPitch
@@ -158,11 +226,28 @@
         navUp					SldGamepadCustomHipYaw
         navDown					SldGamepadCustomHipTurnYaw
         conCommand				"gamepad_custom_hip_pitch"
-        minValue				0.0
-        maxValue				500.0
+        minValue				0.000000
+        maxValue				500.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipPitch
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_pitch"
+        syncedConVar            "gamepad_custom_hip_pitch"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				500.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomHipPitch
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomHipTurnYaw
@@ -175,10 +260,27 @@
         navUp					SldGamepadCustomHipPitch
         navDown					SldGamepadCustomHipTurnPitch
         conCommand				"gamepad_custom_hip_turn_yaw"
-        minValue				0.0
-        maxValue				250.0
+        minValue				0.000000
+        maxValue				250.000000
         stepSize				10.0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipTurnYaw
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_turn_yaw"
+        syncedConVar            "gamepad_custom_hip_turn_yaw"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				250.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomHipTurnYaw
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomHipTurnPitch
@@ -191,11 +293,28 @@
         navUp					SldGamepadCustomHipTurnYaw
         navDown					SldGamepadCustomHipTurnTime
         conCommand				"gamepad_custom_hip_turn_pitch"
-        minValue				0.0
-        maxValue				250.0
+        minValue				0.000000
+        maxValue				250.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipTurnPitch
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_turn_pitch"
+        syncedConVar            "gamepad_custom_hip_turn_pitch"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				250.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomHipTurnPitch
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomHipTurnTime
@@ -208,11 +327,28 @@
         navUp					SldGamepadCustomHipTurnPitch
         navDown					SldGamepadCustomHipTurnDelay
         conCommand				"gamepad_custom_hip_turn_time"
-        minValue				0.0
-        maxValue				1.0
+        minValue				0.000000
+        maxValue				1.000000
         stepSize				0.05
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipTurnTime
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_turn_time"
+        syncedConVar            "gamepad_custom_hip_turn_time"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				1.000000
+        stepSize				0.05
+		
+        pin_to_sibling			SldGamepadCustomHipTurnTime
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomHipTurnDelay
@@ -225,11 +361,28 @@
         navUp					SldGamepadCustomHipTurnTime
         navDown					SldGamepadCustomADSYaw
         conCommand				"gamepad_custom_hip_turn_delay"
-        minValue				0.0
-        maxValue				1.0
+        minValue				0.000000
+        maxValue				1.000000
         stepSize				0.05
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomHipTurnDelay
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_hip_turn_delay"
+        syncedConVar            "gamepad_custom_hip_turn_delay"
+        showConVarAsFloat		1
+		minValue				0.000000
+        maxValue				1.000000
+        stepSize				0.05
+		
+        pin_to_sibling			SldGamepadCustomHipTurnDelay
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     ///////////////////////////
@@ -247,11 +400,28 @@
         navUp					SldGamepadCustomHipTurnDelay
         navDown					SldGamepadCustomADSPitch
         conCommand				"gamepad_custom_ads_yaw"
-        minValue				0.0
-        maxValue				500.0
+        minValue				0.000000
+        maxValue				500.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSYaw
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_yaw"
+        syncedConVar            "gamepad_custom_ads_yaw"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				500.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomADSYaw
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomADSPitch
@@ -264,11 +434,28 @@
         navUp					SldGamepadCustomADSYaw
         navDown					SldGamepadCustomADSTurnYaw
         conCommand				"gamepad_custom_ads_pitch"
-        minValue				0.0
-        maxValue				500.0
+        minValue				0.000000
+        maxValue				500.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSPitch
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_pitch"
+        syncedConVar            "gamepad_custom_ads_pitch"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				500.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomADSPitch
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomADSTurnYaw
@@ -281,11 +468,28 @@
         navUp					SldGamepadCustomADSPitch
         navDown					SldGamepadCustomADSTurnPitch
         conCommand				"gamepad_custom_ads_turn_yaw"
-        minValue				0.0
-        maxValue				250.0
+        minValue				0.000000
+        maxValue				250.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSTurnYaw
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_turn_yaw"
+        syncedConVar            "gamepad_custom_ads_turn_yaw"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				250.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomADSTurnYaw
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomADSTurnPitch
@@ -298,11 +502,28 @@
         navUp					SldGamepadCustomADSTurnYaw
         navDown					SldGamepadCustomADSTurnTime
         conCommand				"gamepad_custom_ads_turn_pitch"
-        minValue				0.0
-        maxValue				250.0
+        minValue				0.000000
+        maxValue				250.000000
         stepSize				10.0
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSTurnPitch
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_turn_pitch"
+        syncedConVar            "gamepad_custom_ads_turn_pitch"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				250.000000
+        stepSize				10.0
+		
+        pin_to_sibling			SldGamepadCustomADSTurnPitch
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomADSTurnTime
@@ -315,11 +536,28 @@
         navUp					SldGamepadCustomADSTurnPitch
         navDown					SldGamepadCustomADSTurnDelay
         conCommand				"gamepad_custom_ads_turn_time"
-        minValue				0.0
-        maxValue				1.0
+        minValue				0.000000
+        maxValue				1.000000
         stepSize				0.05
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSTurnTime
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_turn_time"
+        syncedConVar            "gamepad_custom_ads_turn_time"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				1.000000
+        stepSize				0.05
+		
+        pin_to_sibling			SldGamepadCustomADSTurnTime
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
     SldGamepadCustomADSTurnDelay
@@ -331,11 +569,28 @@
         pin_to_sibling_corner	BOTTOM_LEFT
         navUp					SldGamepadCustomADSTurnTime
         conCommand				"gamepad_custom_ads_turn_delay"
-        minValue				0.0
-        maxValue				1.0
+        minValue				0.000000
+        maxValue				1.000000
         stepSize				0.05
         inverseFill             0
         showLabel               0
+    }
+	
+	TextGamepadCustomADSTurnDelay
+    {
+        ControlName				TextEntry
+        InheritProperties       SliderControlTextEntrySmall
+		
+		ConVar					"gamepad_custom_ads_turn_delay"
+        syncedConVar            "gamepad_custom_ads_turn_delay"
+        showConVarAsFloat		1
+        minValue				0.000000
+        maxValue				1.000000
+        stepSize				0.05
+		
+        pin_to_sibling			SldGamepadCustomADSTurnDelay
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
     }
 
 	PanelBottom

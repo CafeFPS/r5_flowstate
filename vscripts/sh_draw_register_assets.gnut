@@ -1,15 +1,17 @@
 //WorldDraw Registration of server/client assets 							//mkos
 //Todo: Assign desired assets in a timely manner based on streamed rpaks success
 
-global function WorldDrawImg_RegisterAllAssets
+global function WorldDrawAsset_RegisterAllAssets
 
 #if CLIENT
 	global function ClientCodeCallback_PakRequestFinished //todo: move?
 	global function ServerCallback_ShouldWaitForRpak
+	global function VideoExists
 #endif
 
 #if SERVER 
-	global function WorldDrawImg_TransmitDesiredAssets
+	global function WorldDrawAsset_GetInvalid
+	global function WorldDrawAsset_TransmitDesiredAssets
 #endif 
 
 const MAX_WAIT_FOR_RPAK_TRANSFER = 5
@@ -17,54 +19,132 @@ const RPAK_MP_TEMP_PATH = ""
 
 struct
 {
-	array<string> assets = 
-	[
-		"rui/flowstate_custom/mkos/1v1banner"
-	]
+	//these must match on server/client ( until a transfer sdk implemention this is static )
+	array<string> assets
+	
+	#if SERVER
+		array<int> invalidAssets
+	#endif
 	
 	#if CLIENT
 		bool bShouldWaitForRpak = false
 		string someRpakName = ""
 		array<string> someBuiltAssetArrayFromServerClientMightNotHave = []
-	#endif 
+		array<int> invalidVideoAssets
+		bool videoValidationComplete = false
+	#endif
 
 } file
 
-void function WorldDrawImg_RegisterAllAssets()
+void function WorldDrawAsset_RegisterAllAssets()
 {
-	#if CLIENT 
-		if( file.bShouldWaitForRpak )
+	#if SERVER || CLIENT 
+		try 
 		{
-			WorldDrawImg_SetupRequestedAssets( file.someRpakName, file.someBuiltAssetArrayFromServerClientMightNotHave )
-			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
-		}
-	#endif
-	
-	foreach( assetImg in file.assets )
-	{	
-		#if CLIENT		
-			if( !RuiImageExists( assetImg ) )
-				continue
-		#endif
-		
-		asset img
-		
-		try
-		{
-			img = CastStringToAsset( assetImg )
+			#if CLIENT 
+				while( !IsConnected() )
+					WaitFrame()
+			#endif 
+			
+			string assetList = GetCurrentPlaylistVarString( "banner_assets", "" )
+			
+			if( !empty( assetList ) )
+			{
+				array<string> assets = StringToArray( assetList )	
+				file.assets = assets
+			}
 		}
 		catch( e )
 		{
-			#if DEVELOPER
-				Warning( "Error: " + e )
-			#endif 
-			
-			continue
+			Warning( "Warning: Assets improperly configured in playlists from server." )
+		}
+	#endif 
+
+	#if SERVER 
+		AddClientCommandCallback( "assetIntegrityCheck", ClientCommand_AssetIntegrityCheck )
+	#endif
+	
+	#if CLIENT 
+		if( file.bShouldWaitForRpak )
+		{
+			WorldDrawAsset_SetupRequestedAssets( file.someRpakName, file.someBuiltAssetArrayFromServerClientMightNotHave )
+			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
 		}
 		
-		WorldDrawImg_RegisterRemoteAsset( img )
+		array<int> invalidAssets = []
+		array<int> videoAssetsToCheck = []
+	#endif
+	
+	int iter = -1
+	foreach( potentialVarAsset in file.assets )
+	{	
+		++iter
+		int assetType = -1
+		
+		//chain ifelse for more types.
+		if( potentialVarAsset.find( ".bik" ) != -1 )
+			assetType = eAssetType.VIDEO
+		else 
+			assetType = eAssetType.IMAGE
+		
+		#if CLIENT		
+			switch( assetType )
+			{
+				case eAssetType.IMAGE:
+				
+					if( !RuiImageExists( potentialVarAsset ) )
+						invalidAssets.append( iter )
+				break 
+				
+				case eAssetType.VIDEO:
+					
+					videoAssetsToCheck.append( iter ) 
+				break 
+			}		
+		#endif
+		
+		asset varAsset
+		varAsset = CastStringToAsset( potentialVarAsset )
+		
+		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
 	}
+	
+	#if CLIENT 
+		thread
+		(
+			void function() : ( invalidAssets, videoAssetsToCheck )
+			{					
+				FlagWait( "EntitiesDidLoad" )
+				
+				entity player = GetLocalClientPlayer()
+				if( !IsValid( player ) )
+					return
+				
+				CheckVideoAssets_expensive( player, videoAssetsToCheck ) //was: waitthread
+				invalidAssets.extend( file.invalidVideoAssets )
+				
+				string cmd
+				foreach( inv in invalidAssets )
+					cmd += " " + string( inv )
+				
+				if( !IsValid( player ) ) //waited for thread, recheck.
+					return
+					
+				//this client command is responsible for letting the server know 
+				// what assets are not available on the client. IMPORTANT.
+				player.ClientCommand( "assetIntegrityCheck" + cmd )
+				file.videoValidationComplete = true
+			}
+		)()
+	#endif
 }
+
+#if SERVER 
+	array<int> function WorldDrawAsset_GetInvalid()
+	{
+		return file.invalidAssets
+	}
+#endif 
 
 #if CLIENT
 	void function ClientCodeCallback_PakRequestFinished( table preferablyTableOfSomedata ) //todo: move
@@ -78,7 +158,7 @@ void function WorldDrawImg_RegisterAllAssets()
 		file.bShouldWaitForRpak = setting
 	}
 	
-	void function WorldDrawImg_SetupRequestedAssets( string rpakName, array<string> assetList )
+	void function WorldDrawAsset_SetupRequestedAssets( string rpakName, array<string> assetList )
 	{
 		thread
 		(
@@ -129,13 +209,65 @@ void function WorldDrawImg_RegisterAllAssets()
 					player.Signal( "RemoteAssetsLoaded" )
 				} 
 			}
-		)()
+		)()		
+	}
+	
+	//There really is no other way to validate if a video exists on the client. Sorry.
+	void function CheckVideoAssets_expensive( entity player, array<int> videoAssetIds )
+	{
+		if( !IsValid( player ) ) //check again, was threaded off.
+			return
+			
+		EndSignal( player, "OnDestroy" )
+		int channel = ReserveVideoChannel()
 		
+		foreach( assetId in videoAssetIds )
+		{
+			asset video = WorldDrawAsset_GetAssetByID( assetId )
+			StartVideoOnChannel( channel, video, false, 0.0 )
+			PauseVideoOnChannel( channel )
+			
+			WaitFrames(3)
+			
+			// please don't remove this debug comment. Thanks ~mkos.
+			
+			// int frames
+			// while( !VideoChannelHasVideoAssigned( channel ) )
+			// {
+				// ++frames
+				// printw( "current frame=", frames )
+				// WaitFrame()
+			// }
+			
+			// printw( "Total frames needed to detect video =", frames )
+			// DEV_SetBreakPoint()
+			
+			if( !VideoChannelHasVideoAssigned( channel ) )
+			{	
+				#if DEVELOPER
+					printw( "Video asset:", string( video ), "is not valid! id = ", assetId )
+				#endif 
+				
+				file.invalidVideoAssets.append( assetId )
+			}
+			
+			StopVideoOnChannel( channel )
+		}
+		
+		ReleaseVideoChannel( channel )
+	}
+	
+	bool function VideoExists( int assetId )
+	{
+		if( !file.videoValidationComplete )
+			mAssert( false, "Tried to check if video exists before validator has ran." )
+			
+		return !file.invalidVideoAssets.contains( assetId )
 	}
 #endif
 
 #if SERVER	
-	void function WorldDrawImg_TransmitDesiredAssets()
+	void function WorldDrawAsset_TransmitDesiredAssets()
 	{
 		// Append desired assets to server list, omitting duplicates
 		// Fire RemoteCall to notify client it should load rpaks if using
@@ -144,5 +276,35 @@ void function WorldDrawImg_RegisterAllAssets()
 		// The client will not have these always, so :
 		// Implement call and checks to transfer rpak containing assets via code
 		// Transmit an array of asset image string refs desired to be loaded into WorldDraw framework
+	}
+	
+	bool function ClientCommand_AssetIntegrityCheck( entity player, array<string> args )
+	{
+		if( !IsValid( player ) )
+			return false
+			
+		string signal = "BannersValidated"
+		
+		if( args.len() < 1 )
+		{
+			player.p.bannersValidated = true
+			player.Signal( signal )
+			return true
+		}
+			
+		array<int> invalidAssets
+		foreach( arg in args )
+		{
+			if( !IsNumeric( arg, 0, 99999 ) )
+				continue
+			
+			invalidAssets.append( int( arg ) )
+		}
+		
+		player.p.invalidAssets.extend( invalidAssets )
+		player.p.bannersValidated = true
+		
+		player.Signal( signal )
+		return true
 	}
 #endif

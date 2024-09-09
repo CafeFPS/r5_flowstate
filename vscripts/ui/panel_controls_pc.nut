@@ -14,8 +14,9 @@ struct
 
 	table<var, string> buttonTitles
 	table<var, string> buttonDescriptions
+	table <string, table<string, var > > textEntryFields
+	
 	var detailsPanel
-
 	var keyBindMessage
 	int messageUpdateID = -1
 
@@ -54,6 +55,7 @@ void function InitControlsPCPanel( var panel )
 	//file.itemDescriptionBox = Hud_GetChild( panel, "LblMenuItemDescription" )
 
 	SetupSettingsSlider( Hud_GetChild( file.keyBindingPanel, "SldMouseSensitivity" ), "#MOUSE_SENSITIVITY", "#MOUSE_KEYBOARD_MENU_SENSITIVITY_DESC", $"rui/menu/settings/settings_pc" )
+	SetupTextField( "mouse_sensitivity", "TextEntryMouseSensitivity" )
 
 	var button = SetupSettingsButton( Hud_GetChild( file.keyBindingPanel, "BtnLookSensitivityMenu" ), "#MENU_MOUSE_SENSITIVITY_ZOOM", "#MOUSE_KEYBOARD_MENU_SENSITIVITY_ZOOM_DESC", $"rui/menu/settings/settings_pc" )
 	AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdvancedLookMenuPC" ) ) )
@@ -81,6 +83,8 @@ void function OnControlsPCPanel_Show( var panel )
 	ScrollPanel_SetActive( panel, true )
 	Hud_Show( file.keyBindingPanel )
 	KeyBindings_FillInCurrent( file.keyBindingPanel )
+	
+	LoadPrecision()
 }
 
 void function OnControlsPCPanel_Hide( var panel )
@@ -117,6 +121,33 @@ void function OnConfirmDialogResult( int result )
 	}
 }
 
+void function SetupTextField( string convarName, string textField )
+{
+	if( empty( convarName ) || empty( textField ) )
+		mAssert( false, "Missing entry in " + FUNC_NAME() + "() called in " + FUNC_NAME(2) + "()" )	
+	
+	if( !( textField in file.textEntryFields ) )
+		file.textEntryFields[ textField ] <- {}
+		
+	if( convarName in file.textEntryFields[ textField ] )
+		mAssert( false, "file.textEntryFields already contains \"" + convarName + "\"" )
+		
+	file.textEntryFields[ textField ][ convarName ] <- Hud_GetChild( file.keyBindingPanel, textField )
+}
+
+void function LoadPrecision()
+{
+	foreach( string textField, table<string,var> conVarTbl in file.textEntryFields )
+	{
+		foreach( string convarName, var element in conVarTbl )
+		{
+			//Warning( "" + GetConVarFloat( convarName ) )
+			string value = truncate( string( GetConVarFloat( convarName ) ), 10 )
+			//printw( "setting element for convar", convarName, "to:", value )
+			Hud_SetText( element, value )
+		}
+	}
+}
 
 void function RestoreMouseKeyboardDefaults()
 {

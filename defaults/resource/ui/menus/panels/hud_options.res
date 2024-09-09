@@ -220,7 +220,7 @@
         InheritProperties		SwitchButton
         style					DialogListButton
         navUp					SwitchPilotDamageIndicators
-        navDown					SwitchStreamerMode
+        navDown					SwitchShowHealthbars
         ConVar					"player_setting_damage_closes_deathbox_menu"
         
 		list
@@ -234,12 +234,32 @@
         pin_to_sibling_corner	BOTTOM_LEFT
         childGroupAlways        MultiChoiceButtonAlways
 	}
+	SwitchShowHealthbars
+	{
+        ControlName				RuiButton
+        InheritProperties		SwitchButton
+        style					DialogListButton
+        navUp					SwitchDamageClosesMenu
+        navDown					SwitchStreamerMode
+        ConVar					"enable_healthbar"
+        
+		list
+        {
+            "#SETTING_OFF"	0
+            "#SETTING_ON"	1
+        }
+
+        pin_to_sibling			SwitchDamageClosesMenu
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+        childGroupAlways        MultiChoiceButtonAlways
+	}
     SwitchStreamerMode
     {
         ControlName				RuiButton
         InheritProperties		SwitchButton
         style					DialogListButton
-        navUp					SwitchDamageClosesMenu
+        navUp					SwitchPilotDamageIndicators
         navDown					SwitchAnalytics
         ConVar					"hud_setting_streamerMode"
         visible                 1
@@ -250,7 +270,7 @@
             "#SETTING_ALL"	    2
         }
 
-        pin_to_sibling			SwitchDamageClosesMenu
+        pin_to_sibling			SwitchShowHealthbars
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         childGroupAlways        MultiChoiceButtonAlways
@@ -404,7 +424,8 @@
         InheritProperties       SwitchButton
         style                   DialogListButton
         navUp                   SwchAccessibility
-        navDown                 SwitchChatMessages
+        navDown                 SwitchChatMessages 	[!$GAMECONSOLE]
+		navDown                 SwitchShowMotd 		[$GAMECONSOLE]
 
         pin_to_sibling          SwchAccessibility
         pin_corner_to_sibling   TOP_LEFT
@@ -434,6 +455,7 @@
         InheritProperties		SwitchButton
         style					DialogListButton
         navUp					SwchChatSpeechToText
+		navDown					SwitchShowMotd
         ConVar					"hudchat_play_text_to_speech"
         list
         {
@@ -445,6 +467,29 @@
         visible                 0 [!$ENGLISH]
 
         pin_to_sibling			SwchChatSpeechToText
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+        childGroupAlways        ChoiceButtonAlways
+    }
+	
+	SwitchShowMotd
+    {
+        ControlName				RuiButton
+        InheritProperties		SwitchButton
+        style					DialogListButton
+        navUp					SwitchChatMessages [!$GAMECONSOLE]
+		navUp					SwchChatSpeechToText [$GAMECONSOLE]
+        ConVar					"show_motd_on_server_first_join"
+        list
+        {
+            "#SETTING_OFF"	0
+            "#SETTING_ON"	1
+        }
+
+        visible                 1
+
+        pin_to_sibling			SwitchChatMessages [!$GAMECONSOLE]
+		pin_to_sibling			SwchChatSpeechToText [$GAMECONSOLE]
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         childGroupAlways        ChoiceButtonAlways
@@ -461,8 +506,7 @@
 		visible					1
 		enabled 				0
 
-        pin_to_sibling			SwchChatSpeechToText [$GAMECONSOLE]
-        pin_to_sibling			SwitchChatMessages [!$GAMECONSOLE]
+        pin_to_sibling			SwitchShowMotd
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	TOP_LEFT
 	}

@@ -90,6 +90,7 @@ global function StartUpdatingArmorSwapLastTime
 
 global function SetWeaponSlot
 global function CoolCameraOnMenu
+global function ActuallyPutDefaultSettings
 string DesiredSlot = "p"
 
 struct{
@@ -187,6 +188,8 @@ void function WeaponSelectorClose()
 
 void function AimTrainer_OnEntitiesDidLoad()
 {
+	ActuallyPutDefaultSettings()
+	
 	//Disables Sun Flare
 	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
 	foreach ( fxEnt in fxEnts )
@@ -206,6 +209,7 @@ void function ServerCallback_SetDefaultMenuSettings()
 void function ActuallyPutDefaultSettings()
 {
 	entity player = GetLocalClientPlayer()
+	EndSignal( player, "OnDestroy" )
 	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
 	SetConVarInt( "hud_setting_minimapRotate", 1 )
 	SetConVarInt( "hud_setting_accessibleChat", 1 )
@@ -342,7 +346,7 @@ void function ServerCallback_LiveStatsUIAccuracyViaTotalShots(int pellets)
 	ChallengesClientStruct.totalShots += (1*pellets)
 	float accuracy = float(ChallengesClientStruct.ShotsHits)/float(ChallengesClientStruct.totalShots)
 	
-	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy, 1, 2)
+	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesAccuracyValue"), final.tostring())
 }
 void function ServerCallback_LiveStatsUIAccuracyViaShotsHits()
@@ -350,7 +354,7 @@ void function ServerCallback_LiveStatsUIAccuracyViaShotsHits()
 	ChallengesClientStruct.ShotsHits++
 	float accuracy = float(ChallengesClientStruct.ShotsHits)/float(ChallengesClientStruct.totalShots)
 	
-	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy, 1, 2)
+	string final = ChallengesClientStruct.ShotsHits.tostring() + "/" +  ChallengesClientStruct.totalShots.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(accuracy * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesAccuracyValue"), final.tostring())
 }
 
@@ -359,7 +363,7 @@ void function ServerCallback_LiveStatsUIDamageViaWeaponAttack(int damage, float 
 	ChallengesClientStruct.damagePossible += int(damagePossible)
 	float damageRatio = float(ChallengesClientStruct.damageDone)/float(ChallengesClientStruct.damagePossible)
 	
-	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio, 1, 2)
+	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesDamageValue"), final.tostring())
 }
 
@@ -368,7 +372,7 @@ void function ServerCallback_LiveStatsUIDamageViaDummieDamaged(int damage)
 	ChallengesClientStruct.damageDone += damage
 	float damageRatio = float(ChallengesClientStruct.damageDone)/float(ChallengesClientStruct.damagePossible)
 	
-	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio, 1, 2)
+	string final = ChallengesClientStruct.damageDone.tostring() + "/" +  ChallengesClientStruct.damagePossible.tostring() + " | " + ClientLocalizeAndShortenNumber_Float(damageRatio * 100, 3, 2) + "%"
 	Hud_SetText( HudElement( "ChallengesDamageValue"), final.tostring())
 }
 

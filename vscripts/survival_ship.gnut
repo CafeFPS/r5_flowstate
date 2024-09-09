@@ -1,19 +1,29 @@
 global function SurvivalShip_Init
-global function Survival_IsPlayerEligibleForJumpmaster
-global function Survival_HasPlayerJumpedOutOfPlane
+
 global function Survival_CreatePlane
-global function Survival_GeneratePlaneFlightPath
-global function Survival_DropPlayerFromPlane_UseCallback
-global function Survival_DropPlayerFromPlane
-global function SURVIVAL_GetPlaneHeight
+global function GetPlayersJumpingWithJumpmaster
+
 global function SURVIVAL_GetAirburstHeight
-global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
-global function SURVIVAL_SetMapCenter
+
 global function SURVIVAL_SetMapDelta
 global function GiveBasicSurvivalItems
+
+//updated
+global function SetPlayerPlaneViewMode
+global function ClearPlayerPlaneViewMode
+global function Survival_PutPlayersInPlane
+global function Survival_PutPlayerInPlane
+global function KickEveryoneOutOfPlane
+global function SetJumpmaster
+
+global function Survival_AddCallback_OnPlayerLaunchedFromPlane
+global function Survival_AddCallback_OnPlayerPutInPlane
+
 #if DEVELOPER
-global function GetDropshipClearance
+global function PlaneTestForPlayer
+global function PlaneTest
+global function PlaneTest_threaded_simulated
 #endif
 
 const float MAX_DELTA = 5200.0
@@ -25,62 +35,289 @@ struct {
     float maxDelta = MAX_DELTA
 
 	table<entity, bool> eligibleForJumpmasterTable = {}
+
+	//updated
+	bool staticJumpPoint = false
+	array< void functionref(entity) > Callbacks_OnPlayerLaunchedFromPlane
+	array< void functionref(entity) > Callbacks_OnPlayerPutInPlane
 } file
 
 void function SurvivalShip_Init()
 {
-	AddClientCommandCallback( "Sur_MakeEligibleForJumpMaster", ClientCommand_MakeEligibleForJumpMaster )
+	RegisterSignal( "DevPlaneTest" )
+	RegisterSignal( "NoLongerJumpMaster" )
+	RegisterSignal( "ClearedPlayerPlaneViewMode" )
 
+	AddClientCommandCallback( "Sur_MakeEligibleForJumpMaster", ClientCommand_MakeEligibleForJumpMaster )
 	AddClientCommandCallback( "Sur_RelinquishJumpMaster", ClientCommand_RelinquishJumpMaster )
 	AddClientCommandCallback( "Sur_RemoveFromSquad", ClientCommand_RemoveFromSquad )
 	AddClientCommandCallback( "Sur_ReturnToSquad", ClientCommand_ReturnToSquad )
 }
 
+const int JUMPMASTER_ORDER_WAS_PREV_JUMPMASTER = 2
+const int JUMPMASTER_ORDER_FULLY_ELIGIBLE = 1
+const int JUMPMASTER_ORDER_BOT = 4
+
 bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<string> args )
 {
-	file.eligibleForJumpmasterTable[player] <- true
+	if ( !IsValid( player ) )
+		return true
 
+	if ( player.p.jumpMasterOrder != 3 ) // Already marked as eligible if it is not equal to the default value
+		return true
+
+	printt( player, "eligible for jump master" )
+
+	if ( player.p.IsBot )
+	{
+		player.p.jumpMasterOrder = JUMPMASTER_ORDER_BOT
+		return true
+	}
+
+	// if ( bool( player.GetPersistentVar( "lastGameWasJumpMaster" ) ) )
+	// {
+		// player.p.jumpMasterOrder = JUMPMASTER_ORDER_WAS_PREV_JUMPMASTER
+	// }
+	// else
+	// {
+		player.p.jumpMasterOrder = JUMPMASTER_ORDER_FULLY_ELIGIBLE
+	// }
 	return true
 }
 
-bool function Survival_IsPlayerEligibleForJumpmaster( entity player )
+void function SetPlayerPlaneViewMode( entity player )
 {
-	if ( !( player in file.eligibleForJumpmasterTable ) )
-		return false
+	printt( "SetPlayerPlaneViewMode", player )
 
-	return file.eligibleForJumpmasterTable[player]
+	bool updateCamera = player.GetPlayerNetBool( "playerInPlane" ) == false
+
+	player.SetPlayerNetBool( "playerInPlane", true )
+
+	player.Minimap_Hide( player.GetTeam(), null )
+	// file.planeForcedStance[ player ] <- player.PushForcedStance( FORCE_STANCE_STAND )
+	player.HidePlayer()
+	player.NotSolid()
+	player.ForceStand()
+
+	if( player.IsPlayer() )
+	{
+		AddButtonPressedPlayerInputCallback( player, IN_USE, Input_JumpFromPlane )
+		AddButtonPressedPlayerInputCallback( player, IN_USE_AND_RELOAD, Input_JumpFromPlane )
+		AddButtonPressedPlayerInputCallback( player, IN_ATTACK, Input_JumpFromPlane )
+	}
+
+	player.SetHealth( player.GetMaxHealth() ) //Fix for Octane's self-damage in the training area.
+	ResetPlayerInventory( player )
+
+	player.RemoveFromAllRealms()
+	player.AddToAllRealms()
+	// PutPlayerInDefaultRealms( player )
+
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
+	// SetPlayerCanGroundEmote( player, false )
+
+	thread DisableInventoryForBlackTransition( player )
+
+	// Hide name above friendly heads
+	// Todo: fix the code function so we don't have to use player setting mod
+	// GivePlayerSettingsMods( player, [ "disable_targetinfo" ] )
+
+	TurnOffAimassistForPlaneView( player )
+
+	if ( updateCamera )
+	{
+		PlayerSkydiveThirdPersonEnable( player )
+		player.SetTrackEntityMinPitch( 0 ) // don't allow looking up at the drop ship
+		SetPlayerStartingViewAnglesForPlane( player )
+	}
+
+	// Trigger callback funcs for the player being put in the plane
+	foreach ( callbackFunc in file.Callbacks_OnPlayerPutInPlane )
+	{
+		callbackFunc( player )
+	}
 }
 
-entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
+void function TurnOffAimassistForPlaneView( entity player )
 {
-	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
-	
-	if ( availableSquadMembers.len() == 1 )
-		return null
+	thread function() : (player)
+	{
+		player.SetAimAssistAllowed( false )
 
-	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
+		OnThreadEnd( function() : (player)
+		{
+			if ( IsValid( player ) )
+				player.SetAimAssistAllowed( true )
+		} )
 
-	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
-
-	entity selectedMember = availableSquadMembers.getrandom()
-
-	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
-
-	return selectedMember
+		player.EndSignal( "ClearedPlayerPlaneViewMode" )
+		player.EndSignal( "OnDeath" )
+		wait 45.0	// to be paranoid
+	}()
 }
 
-void function SURVIVAL_SetMapCenter( vector center )
+void function SetPlayerStartingViewAnglesForPlane( entity player )
 {
-	file.mapCenter = center
+	entity plane = Sur_GetPlaneEnt()
+
+	if ( !IsValid( plane ) )
+		return
+
+	vector angles = plane.GetAngles()
+	player.SnapEyeAngles( <30, angles.y, 0> )
+	player.SnapFeetToEyes()
+}
+
+void function DisableInventoryForBlackTransition( entity player )
+{
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnDestroy" )
+	Survival_SetInventoryEnabled( player, false )
+	wait 1.5
+	Survival_SetInventoryEnabled( player, true )
+}
+
+void function ClearPlayerPlaneViewMode( entity player )
+{
+	printt( "ClearPlayerPlaneViewMode", player )
+
+	player.SetPlayerNetBool( "playerInPlane", false )
+
+	player.Minimap_AlwaysShow( player.GetTeam(), null )
+	// if( player in file.planeForcedStance )
+	// {
+		// int handle = file.planeForcedStance[ player ]
+		// player.RemoveForcedStance( handle )
+		// delete file.planeForcedStance[ player ]
+	// }
+	player.UnhidePlayer()
+	player.Solid()
+
+	player.RemoveFromAllRealms()
+	player.AddToAllRealms()
+	// PutPlayerInDefaultRealms( player )
+
+	if( player.IsPlayer() )
+	{
+		RemoveButtonPressedPlayerInputCallback( player, IN_USE, Input_JumpFromPlane )
+		RemoveButtonPressedPlayerInputCallback( player, IN_USE_AND_RELOAD, Input_JumpFromPlane )
+		RemoveButtonPressedPlayerInputCallback( player, IN_ATTACK, Input_JumpFromPlane )
+	}
+
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+
+	// Show name above friendly heads
+	// TakePlayerSettingsMods( player, [ "disable_targetinfo" ] )
+
+	Signal( player, "ClearedPlayerPlaneViewMode" )
+
+	GiveLoadoutRelatedWeapons( player ) //Cafe was here
+}
+
+array<entity> function GetPlayersJumpingWithJumpmaster( entity jumpMaster )
+{
+	array<entity> jumpingPlayers
+
+	Assert( jumpMaster.GetPlayerNetBool( "playerInPlane" ) )
+
+	if ( !jumpMaster.GetPlayerNetBool( "isJumpingWithSquad" ) )
+	{
+		jumpingPlayers.append( jumpMaster )
+		return jumpingPlayers
+	}
+
+	Assert( jumpMaster.GetPlayerNetBool( "isJumpmaster" ) )
+
+	array<entity> teammates = GetPlayerArrayOfTeam_Alive( jumpMaster.GetTeam() )
+	Assert( teammates.len() > 0 )
+
+	foreach( entity player in teammates )
+	{
+		if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+			continue
+
+		if ( !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+			continue
+
+		jumpingPlayers.append( player )
+	}
+
+	Assert( jumpingPlayers.len() > 0 ) // should at least have the jumpMaster in this array
+	Assert( jumpingPlayers.contains( jumpMaster ) )
+
+	jumpingPlayers.fastremovebyvalue( jumpMaster )
+	jumpingPlayers.insert( 0, jumpMaster )
+
+	return jumpingPlayers
+}
+
+void function Input_JumpFromPlane( entity player )
+{
+	JumpFromPlane( player )
+}
+
+void function JumpFromPlane( entity player, bool forcedOut = false )
+{
+	if ( !Flag( "PlaneDoorOpen" ) )
+		return
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return
+	if ( (!player.GetPlayerNetBool( "isJumpmaster" ) && player.GetPlayerNetBool( "isJumpingWithSquad" )) && !forcedOut )
+		return
+
+	Assert( fabs( player.GetOrigin().x ) < 1<<16 && fabs( player.GetOrigin().y ) < 1<<16, "Player is jumping way outside regular bounds." )
+
+	// Fix for some cases where skydive boundary volumes are too close to the playable space, and users are able to jump from the plane while inside the virtual wall. We fixed the volumes in the bsp but this is a fallback
+	if ( !forcedOut && IsPointInsideSkydiveBoundary( player.GetOrigin() ) )
+		return
+
+	Survival_SetPlayerHasJumpedOutOfPlane( player )
+
+	if ( forcedOut )
+		printt( "Player", player, "kicked from plane" )
+	else
+		printt( "Player", player, "jumping from plane" )
+
+	vector driverViewVector = AnglesToForward( player.CameraAngles() )
+	Signal( player, "NoLongerJumpMaster" )
+	// // StatsHook_UnlockJumpmasterAchievement( player )
+
+	if ( forcedOut )
+	{
+		entity plane = Sur_GetPlaneEnt()
+
+		vector viewAngles = !file.staticJumpPoint ? plane.GetAngles() + <45,180,0> : plane.GetAngles()
+		driverViewVector = AnglesToForward( viewAngles )
+		player.SnapEyeAngles( viewAngles )
+		
+		GiveBasicSurvivalItems( player ) //Cafe was here	
+		if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
+		{
+			thread PlayerSkyDive( player, driverViewVector, [], player )
+			return
+		}
+	}
+
+	array<entity> jumpingPlayers = GetPlayersJumpingWithJumpmaster( player )
+
+	foreach ( callbackFunc in file.Callbacks_OnPlayerLaunchedFromPlane )
+	{
+		foreach( guy in jumpingPlayers )
+			callbackFunc( guy )
+	}
+
+	foreach ( jumpingPlayer in jumpingPlayers )
+	{
+		thread PlayerSkyDive( jumpingPlayer, driverViewVector, jumpingPlayers, player )
+		GiveBasicSurvivalItems( player ) //Cafe was here	
+	}
 }
 
 void function SURVIVAL_SetMapDelta( float maxDelta )
 {
     file.maxDelta = maxDelta
 }
-
-// script gp()[0].SetOrigin(<gp()[0].GetOrigin().x,gp()[0].GetOrigin().y,SURVIVAL_GetPlaneHeight()>)
-// script printt(GetDropshipClearance(gp()[0].GetOrigin()))
 
 entity function Survival_CreatePlane( vector origin, vector angles )
 {
@@ -93,167 +330,6 @@ entity function Survival_CreatePlane( vector origin, vector angles )
 	script_mover.SetAngles( angles )
 	DispatchSpawn( script_mover )	
 	return script_mover
-}
-
-float function GetDropshipClearance( vector origin )
-{
-	vector endOrigin = origin - < 0, 0, 50000 >
-	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-	vector endPos = traceResult.endPos
-	float zDelta = ( origin.z - endPos.z )
-
-	return zDelta
-}
-
-vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
-{
-	vector result = start
-	float startClearance = GetDropshipClearance( start )
-
-	while ( GetDropshipClearance( result ) - startClearance < file.maxDelta )
-    {
-		printt( "Dropship clearence ", GetDropshipClearance( result ), startClearance, GetDropshipClearance( result ) - startClearance, file.maxDelta )
-		result += forward * multiplier
-        if(result.x > REALBIG_CIRCLE_END_RADIUS || result.x < -REALBIG_CIRCLE_END_RADIUS || result.y > REALBIG_CIRCLE_END_RADIUS || result.y < -REALBIG_CIRCLE_END_RADIUS)
-            break
-    }    
-
-	return result
-}
-// Why does this work?
-array<vector> function Survival_GeneratePlaneFlightPath() //Modified by @CafeFPS
-{
-	const float CENTER_DEVIATION = 2.0
-	const float POINT_FINDER_MULTIPLIER = 200
-
-	// Get a random point from map center within specified deviation
-	vector dropshipCenterPoint = GetRandomCenter( file.mapCenter, 0.0, CENTER_DEVIATION )
-	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight()
-
-	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
-	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
-
-	vector startPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward*45000 ) //TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
-	vector endPos = ClampToWorldspace( dropshipCenterPoint - dropshipMovingForward*45000 ) // TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
-	
-	// #if DEVELOPER
-	// DebugDrawSphere( startPos, 128, 255, 255, 255, true, 999.0 )
-	// DebugDrawSphere( endPos, 128, 255, 0, 255, true, 999.0 )
-	// startPos = TraceInBoundPoint( startPos, AnglesToForward( VectorToAngles( startPos - endPos ) ), 5000 )
-	// #endif
-
-    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
-	float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-	float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
-    
-    float velocity = Distance2D(endPos, startPos)/ (DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME)
-	if ( CoinFlip() )
-	{
-		vector temp = startPos
-		startPos = endPos
-		endPos = temp
-	}
-    dropshipMovingAngle = VectorToAngles( endPos - startPos )
-    dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
-
-    startPos = <startPos.x + (-dropshipMovingForward.x * velocity * DROP_WAIT_TIME), startPos.y + (-dropshipMovingForward.y * velocity * DROP_WAIT_TIME), startPos.z>
-    endPos = <endPos.x + (dropshipMovingForward.x * velocity * DROP_TIMEOUT_TIME), endPos.y + (dropshipMovingForward.y * velocity * DROP_TIMEOUT_TIME), endPos.z>
-
-	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
-	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
-	// printt( "Survival_GeneratePlaneFlightPath: dropshipMovingAngle", dropshipMovingAngle )
-	// printt( "Survival_GeneratePlaneFlightPath: dropship distance", Distance2D(endPos, startPos) )
-
-	// #if DEVELOPER
-	// DebugDrawSphere( startPos, 512, 0, 255, 255, true, 999.0 )
-	// DebugDrawSphere( endPos, 512, 255, 0, 255, true, 999.0 )
-	// DebugDrawLine( startPos, endPos, 255, 0, 0, true, 999.0 )
-	// #endif
-
-	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
-}
-
-void function Survival_DropPlayerFromPlane_UseCallback( entity player )
-{
-	Survival_DropPlayerFromPlane( player )
-}
-
-bool function Survival_DropPlayerFromPlane( entity player )
-{
-	if( !IsValid( player ) )
-		return false
-	
-	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
-	{
-		RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-		return false
-	}
-
-	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) ) //Shouldn't happen, but just in case.
-		return false
-	
-	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
-	{
-		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
-		
-		array<entity> squad = [ player ]
-		
-		foreach ( squadPlayer in GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
-		{
-			if ( IsValid( squadPlayer ) && squadPlayer != player )
-			{
-				if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
-				{
-					squad.fastremovebyvalue( squadPlayer )
-				}
-				else
-					squad.append( squadPlayer )
-			}
-		}
-		
-		foreach ( squadPlayer in squad )
-		{
-			CommonPlayerDropLines( squadPlayer )
-			thread PlayerSkyDive( squadPlayer, player.GetViewVector(), squad, player )
-			
-			if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
-				Message( squadPlayer, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
-		}
-	} else if ( !player.GetPlayerNetBool( "isJumpmaster" ) && !player.GetPlayerNetBool( "isJumpingWithSquad" ) ) //Dropping solo
-	{
-		CommonPlayerDropLines( player )
-		thread PlayerSkyDive( player, player.GetViewVector(), [player], player )
-		
-		if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
-			Message( player, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
-	}
-	return true
-}
-
-void function CommonPlayerDropLines(entity player)
-{
-	player.ClearParent()
-	RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-	player.SetAngles( player.CameraAngles() )
-	player.UnforceCrouch()
-	
-	ResetPlayerInventory( player )
-	DecideRespawnPlayer( player )
-	
-	player.Show()
-	player.Solid()
-	player.SetPlayerNetBool( "playerInPlane", false )
-	player.SetPlayerNetBool( "freefallIsFromPlane", true )
-	// if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
-		// player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
-	
-	if( Playlist() == ePlaylists.fs_scenarios )
-	{
-		thread FS_Scenarios_GiveWeaponsToGroup( [player] )
-		return
-	}
-
-	GiveBasicSurvivalItems( player )
 }
 
 void function GiveBasicSurvivalItems( entity player )
@@ -286,24 +362,9 @@ void function GiveBasicSurvivalItems( entity player )
 	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
 }
 
-bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
-{
-	return !player.GetPlayerNetBool( "playerInPlane" )
-}
-
-float function SURVIVAL_GetPlaneHeight()
-{
-	return file.planeHeight
-}
-
 float function SURVIVAL_GetAirburstHeight()
 {
 	return file.airburstHeight
-}
-
-void function SURVIVAL_SetPlaneHeight( float height )
-{
-	file.planeHeight = height
 }
 
 void function SURVIVAL_SetAirburstHeight( float height )
@@ -314,22 +375,69 @@ void function SURVIVAL_SetAirburstHeight( float height )
 bool function ClientCommand_RelinquishJumpMaster( entity player, array<string> args )
 {
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
-		return true // Can't relinquish when it's not/past time
+		return true
+
+	bool mustBeAlive = true
 
 	if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
-		return true // Can't relinquish what you don't have
+		return true
 
-	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
-		return true // Can't relinquish from yourself to yourself
-	
-	entity ornull newJumpmaster = ChangeJumpmasterInSquad( player )
-	
-	if ( newJumpmaster != null )
+	// Make sure we have someone else who can become jumpmaster
+	if ( GetNumPlayersJumpingWithSquad( player.GetTeam(), mustBeAlive ) < 2 )
+		return true
+
+	array<entity> teammates = mustBeAlive ? GetPlayerArrayOfTeam_Alive( player.GetTeam() ) : GetPlayerArrayOfTeam( player.GetTeam() )
+
+	// Don't do the change jumpmaster behavior if all teammates are disconnected
+	bool hasConnectedTeammates = false
+	foreach ( entity teammate in teammates )
 	{
-		expect entity( newJumpmaster )
+		if ( teammate == player )
+			continue
 
-		MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RelinquishedJumpmaster, null, player, newJumpmaster.GetEncodedEHandle() )
+		if ( IsValid( teammate ) && teammate.hasConnected )
+		{
+			hasConnectedTeammates = true
+			break
+		}
 	}
+
+	if ( !hasConnectedTeammates )
+	{
+		return true
+	}
+
+	player.TrackPlayerRelinquished()
+
+	// Update the relinquishing players eligible time to be last in line
+	int highestOrder = -1
+	foreach( entity teammate in teammates )
+	{
+		if ( !teammate.GetPlayerNetBool( "playerInPlane" ) )
+			continue
+
+		if ( teammate.p.jumpMasterOrder > highestOrder )
+		{
+			highestOrder = teammate.p.jumpMasterOrder
+		}
+	}
+
+	Assert( highestOrder >= -1 )
+	player.p.jumpMasterOrder = highestOrder + 1
+
+	// Assign new jumpmaster
+	entity newJumpmaster = GetNextJumpmaster( player.GetTeam(), mustBeAlive )
+
+	if( !IsValid( newJumpmaster ) )
+		return true
+
+	printt( player, "relinquished jumpmaster to ", newJumpmaster )
+
+	SetJumpmaster( player.GetTeam(), newJumpmaster, mustBeAlive )
+
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RelinquishedJumpmaster, null, player, newJumpmaster.GetEncodedEHandle() )
+
+	PlayBattleChatterLineToPlayer( "bc_imJumpmaster", player, newJumpmaster )
 	
 	return true
 }
@@ -337,15 +445,13 @@ bool function ClientCommand_RelinquishJumpMaster( entity player, array<string> a
 bool function ClientCommand_RemoveFromSquad( entity player, array<string> args )
 {
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
-		return true // Can't remove when it's not/past time
-
-	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
-		return true // Can't remove yourself from yourself
+		return true
 
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
-		ChangeJumpmasterInSquad( player )
+		return true
 
 	player.SetPlayerNetBool( "isJumpingWithSquad", false )
+
 	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_DroppingSolo, null, player )
 
 	return true
@@ -354,10 +460,323 @@ bool function ClientCommand_RemoveFromSquad( entity player, array<string> args )
 bool function ClientCommand_ReturnToSquad( entity player, array<string> args )
 {
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
-		return true // Can't return when it's not/past time
+		return true
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		return true
 
 	player.SetPlayerNetBool( "isJumpingWithSquad", true )
-	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RejoinedSquad, null, player )
+	//Remote_CallFunction_NonReplay( player, "ServerCallback_ClearHints" )
 
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RejoinedSquad, null, player )
 	return true
 }
+
+void function Survival_PutPlayersInPlane( array<int> inputTeams = [] )
+{
+	array<int> teams = inputTeams.len() > 0 ? inputTeams : GetAllValidPlayerTeams()
+	FillSkyWithClouds()
+
+	foreach ( int team in teams )
+	{
+		array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
+		if ( teammates.len() == 0 )
+			continue
+
+		foreach( entity player in teammates )
+		{
+			Survival_PutPlayerInPlane( player )
+		}
+
+		entity jumpMaster = GetNextJumpmaster( team )
+		SetJumpmaster( team, jumpMaster )
+
+		// if ( IsValid( jumpMaster ) )
+		// {
+			// jumpMaster.SetPersistentVar( "lastGameWasJumpMaster", true )
+		// }
+	}
+}
+
+void function Survival_PutPlayerInPlane( entity player )
+{
+	entity plane = Sur_GetPlaneEnt()
+
+	Assert( IsValid( plane ) )
+
+	vector offset = < -140, 0, -560 >
+	vector origin = plane.GetOrigin() + ( plane.GetForwardVector() * offset.x ) + ( plane.GetRightVector() * offset.y ) + ( plane.GetUpVector() * offset.z )
+	player.SetOrigin( origin )
+	player.SetAngles( plane.GetAngles() )
+	if ( !player.IsNoclipping() )
+		player.SetParent( plane, "", true )
+
+	player.p.skydiveDecoysFired = 0  //Resetting mirage's decoy count so we can keep using it with PlaneTest()
+
+	// player.SetPersistentVar( "lastGameWasJumpMaster", false )
+	player.SetPlayerNetBool( "isJumpmaster", false )
+	GradeFlagsClear( player, eTargetGrade.JUMPMASTER )
+	
+	if( GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() > 1 )
+		player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	else
+		player.SetPlayerNetBool( "isJumpingWithSquad", false )
+
+	player.ClearInvulnerable()
+
+	thread SetPlayerPlaneViewMode( player )
+
+	int team = player.GetTeam()
+	entity jumpMasterPlayer = GetJumpmasterForTeam( team )
+	if ( !IsValid( jumpMasterPlayer ) || !jumpMasterPlayer.hasConnected ) // no jumpmaster and connected
+		SetJumpmaster( team, player )
+}
+
+void function KickEveryoneOutOfPlane( entity plane )
+{
+	array< entity > playerArray = GetPlayerArray()
+	playerArray.sort(SortJumpmastersToTop) //Array sorts jumpmasters first because if they aren't first some people get randomly launched solo when forced out of dropship
+
+	// Anyone still attached to the plane is kicked out
+	foreach( entity player in  playerArray)
+	{
+		if ( !IsValid( player ) )
+			continue
+		if ( player.GetParent() != plane )
+			continue
+
+		JumpFromPlane( player, !file.staticJumpPoint )
+	}
+}
+
+entity function GetNextJumpmaster( int team, bool mustBeAlive = true )
+{
+	entity jumpMaster
+
+	array<entity> teammates = mustBeAlive? GetPlayerArrayOfTeam_Alive( team ) : GetPlayerArrayOfTeam( team )
+	if ( teammates.len() == 0 )
+		return jumpMaster
+
+	array<entity> potentialJumpmasters
+	foreach( entity player in teammates )
+	{
+		if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+			continue
+
+		if ( !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+			continue
+
+		if( !player.hasConnected ) // do not give jumpmaster to someone disconnected
+			continue
+
+		potentialJumpmasters.append( player )
+	}
+
+	if ( potentialJumpmasters.len() == 0 )
+		return jumpMaster
+
+	potentialJumpmasters.randomize()
+
+	bool hasActivePlayers = false
+	bool hasLeveledPlayers = false
+
+	int lowestOrder = 99999
+	foreach( entity player in potentialJumpmasters )
+	{
+		if ( player.p.jumpMasterOrder < lowestOrder )
+		{
+			jumpMaster = player
+			lowestOrder = player.p.jumpMasterOrder
+		}
+	}
+
+	if ( IsValid( jumpMaster ) )
+	{
+		// try to make the jumpmaster a player before making it a bot
+		if ( jumpMaster.p.IsBot )
+		{
+			foreach( entity player in potentialJumpmasters )
+			{
+				if ( player == jumpMaster )
+					continue
+
+				if ( player.p.jumpMasterOrder == lowestOrder && !player.p.IsBot )
+				{
+					jumpMaster = player
+					break
+				}
+			}
+		}
+
+		return jumpMaster
+	}
+
+	return potentialJumpmasters.getrandom()
+}
+
+void function SetJumpmaster( int team, entity player, bool mustBeAlive = true )
+{
+	if ( !IsValid( player ) )
+		return
+
+	Assert( player.GetTeam() == team )
+
+	// Make sure nobody else on the team is jumpmaster anymore
+	array<entity> teammates = mustBeAlive ? GetPlayerArrayOfTeam_Alive( team ) : GetPlayerArrayOfTeam( team )
+	foreach( entity teammate in teammates )
+	{
+		if ( teammate == player )
+			continue
+		teammate.SetPlayerNetBool( "isJumpmaster", false )
+		GradeFlagsClear( teammate, eTargetGrade.JUMPMASTER )
+		Signal( teammate, "NoLongerJumpMaster" )
+	}
+
+	player.SetPlayerNetBool( "isJumpmaster", true )
+	GradeFlagsSet( player, eTargetGrade.JUMPMASTER )
+	#if DEVELOPER
+	printt("SET JUMPMASTER", player )
+	#endif
+
+	thread JumpMasterDeathRelinquish( player )
+}
+
+void function JumpMasterDeathRelinquish( entity player )
+{
+	int team = player.GetTeam()
+
+	Signal( player, "NoLongerJumpMaster" )
+	EndSignal( player, "NoLongerJumpMaster" )
+
+	// printt( "| JumpMasterDeathRelinquish STARTED FOR", player )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			// printt( "| JumpMasterDeathRelinquish ENDED FOR", player )
+		}
+	)
+
+	WaitSignal( player, "OnDeath", "OnDestroy" )
+	WaitFrame()
+
+	// Assign new jumpmaster
+	entity newJumpmaster = GetNextJumpmaster( team )
+
+	// printt( "| JumpMasterDeathRelinquish ASSIGNING NEW JUMPMASTER:", newJumpmaster )
+
+	if ( !IsValid( newJumpmaster ) )
+		return
+
+	SetJumpmaster( team, newJumpmaster )
+
+	MessageToTeam( team, eEventNotifications.SURVIVAL_NewJumpmaster, null, newJumpmaster )
+}
+
+
+int function SortJumpmastersToTop(entity a, entity b)
+{
+
+	if ( ( !IsValid(a) || !a.GetPlayerNetBool("isJumpmaster") ) && ( IsValid( b ) && b.GetPlayerNetBool("isJumpmaster") ) )
+		return 1
+
+	if ( ( IsValid(a) && a.GetPlayerNetBool("isJumpmaster") ) && ( !IsValid( b ) || !b.GetPlayerNetBool("isJumpmaster") ) )
+		return -1
+
+	return 0
+}
+
+void function Survival_AddCallback_OnPlayerLaunchedFromPlane( void functionref(entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerLaunchedFromPlane.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Survival_AddCallback_OnPlayerLaunchedFromPlane" )
+	file.Callbacks_OnPlayerLaunchedFromPlane.append( callbackFunc )
+}
+
+// Add a callback funtion that triggers when the player is put into the plane
+void function Survival_AddCallback_OnPlayerPutInPlane( void functionref( entity ) func )
+{
+	Assert( !file.Callbacks_OnPlayerPutInPlane.contains( func ) )
+	file.Callbacks_OnPlayerPutInPlane.append( func )
+}
+
+#if DEVELOPER
+void function PlaneTestForPlayer( entity player )
+{
+	thread PlaneTestForPlayer_threaded( player)
+}
+
+void function PlaneTestForPlayer_threaded( entity player )
+{
+	Signal( svGlobal.levelEnt, "DevPlaneTest" )
+	WaitFrame()
+
+	SetPlayerIntroDropSettings( player )
+
+	FlagClear( "PlaneStartMoving" )
+	FlagClear( "PlaneDoorOpen" )
+	FlagClear( "PlaneAtLaunchPoint" )
+
+	player.ClearParent()
+	ClearPlayerPlaneViewMode( player )
+	player.p.survivalLandedOnGround = false
+
+	thread Survival_RunPlaneLogic_Thread( Survival_GenerateSingleRandomPlanePath, Survival_RunSinglePlanePath_Thread, true )
+	Survival_PutPlayerInPlane( player )
+
+	FlagSet( "PlaneStartMoving" )
+}
+
+void function PlaneTest()
+{
+	thread PlaneTest_threaded()
+}
+
+void function PlaneTest_threaded()
+{
+	Signal( svGlobal.levelEnt, "DevPlaneTest" )
+	WaitFrame()
+
+	foreach( entity player in GetPlayerArray() )
+		SetPlayerIntroDropSettings( player )
+
+	FlagClear( "PlaneStartMoving" )
+	FlagClear( "PlaneDoorOpen" )
+	FlagClear( "PlaneAtLaunchPoint" )
+
+	foreach( entity player in GetPlayerArray() )
+	{
+		player.ClearParent()
+		ClearPlayerPlaneViewMode( player )
+		player.p.survivalLandedOnGround = false
+	}
+
+	thread Survival_RunPlaneLogic_Thread( Survival_GenerateSingleRandomPlanePath, Survival_RunSinglePlanePath_Thread, true )
+	Survival_PutPlayersInPlane()
+
+	FlagSet( "PlaneStartMoving" )
+}
+
+void function PlaneTest_threaded_simulated()
+{
+	Signal( svGlobal.levelEnt, "DevPlaneTest" )
+	WaitFrame()
+
+	foreach( entity player in GetPlayerArray() )
+		SetPlayerIntroDropSettings( player )
+
+	FlagClear( "PlaneStartMoving" )
+	FlagClear( "PlaneDoorOpen" )
+	FlagClear( "PlaneAtLaunchPoint" )
+
+	foreach( entity player in GetPlayerArray() )
+	{
+		player.ClearParent()
+		ClearPlayerPlaneViewMode( player )
+		player.p.survivalLandedOnGround = false
+	}
+
+	Survival_PutPlayersInPlane()
+
+	FlagSet( "PlaneStartMoving" )
+}
+#endif //DEVELOPER

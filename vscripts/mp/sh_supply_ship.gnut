@@ -3,9 +3,9 @@ global function SupplyShip_Init
 global function GetAllSupplyShips
 global function SupplyShip_OpenDoors
 
-
-
-
+#if DEVELOPER
+global function TestSupplyShip
+#endif
 
 #endif
 
@@ -14,13 +14,29 @@ const string SUPPLY_SHIP_PANEL_SCRIPTNAME    = "supply_ship_panel"
 const float SUPPLY_SHIP_PANEL_ACTIVATE_TIME  = 6.0
 
 #if SERVER
-
+global struct SupplyShip
+{
+	entity interior
+	entity mover
+	entity frontDoor
+	entity backDoor
+	array<entity> lootDoors
+	bool frontDoorOpened = false
+	bool backDoorOpened = false
+	bool frontDoorOpening = false
+	bool backDoorOpening = false
+	bool lootDoorsOpen = false
+	array<entity> ziplineNodes
+	array<entity> panels
+	array<entity> bins
+}
 #endif
 
 struct
 {
 	#if SERVER
-	
+	array<SupplyShip> allShips
+	table<entity,SupplyShip> panelToShips
 	#endif
 } file
 
@@ -30,27 +46,285 @@ void function SupplyShip_Init()
 	RegisterSignal( "DoorsOpen" )
 	PrecacheModel( MODEL_SHIP_PANEL )
 #if SERVER
-
-
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	AddSpawnCallback_ScriptName( SUPPLY_SHIP_PANEL_SCRIPTNAME, OnShipPanelSpawn )
 #elseif CLIENT
 	AddCreateCallback( "prop_dynamic", OnShipPanelSpawn )
 #endif
 }
 
 #if SERVER
-
+void function EntitiesDidLoad()
+{
+	array<entity> movers = GetEntArrayByScriptName( "_supply_ship_mover" )
+	foreach ( mover in movers )
+		InitSupplyShip( mover )
+}
 
 array<SupplyShip> function GetAllSupplyShips()
 {
-	array<SupplyShip> temp
-	return temp
+	return file.allShips
+}
+
+void function InitSupplyShip( entity baseMover )
+{
+	SupplyShip ship
+	ship.mover = baseMover
+
+	array<entity> links = baseMover.GetLinkEntArray()
+
+	foreach ( ent in links )
+	{
+		ent.SetParent( baseMover )
+
+		switch ( ent.GetScriptName() )
+		{
+			case "_supply_ship_door_front":
+				ship.frontDoor = ent
+				array<entity> doorLinks = ent.GetLinkEntArray()
+				foreach ( e in doorLinks )
+				{
+					e.SetParent( ent )
+					if ( e.GetScriptName() == "_supply_ship_zipline_nodes" )
+						ship.ziplineNodes.append( e )
+				}
+				ent.NonPhysicsSetRotateModeLocal( true )
+				break
+			case "_supply_ship_door_back":
+				ship.backDoor = ent
+				array<entity> doorLinks = ent.GetLinkEntArray()
+				foreach ( e in doorLinks )
+				{
+					e.SetParent( ent )
+					if ( e.GetScriptName() == "_supply_ship_zipline_nodes" )
+						ship.ziplineNodes.append( e )
+				}
+				ent.NonPhysicsSetRotateModeLocal( true )
+				break
+			case "_supply_ship_interior":
+				ship.interior = ent
+				break
+			case "_supply_ship_zipline_nodes":
+				ship.ziplineNodes.append( ent )
+				break
+
+			case "_hover_tank_volume":
+				//ent.SetEnterCallback( EntityEnterHoverTankVolume )
+				//ent.SetLeaveCallback( EntityLeaveHoverTankVolume )
+				ent.ConnectOutput( "OnStartTouch", EntityEnterHoverTankVolume )
+				ent.ConnectOutput( "OnEndTouch", EntityLeaveHoverTankVolume )
+				break
+
+			case "_supply_ship_door_loot":
+				ship.lootDoors.append( ent )
+				array<entity> doorLinks = ent.GetLinkEntArray()
+				foreach ( e in doorLinks )
+				{
+					if ( e.GetNetworkedClassName() == "func_brush" )
+					{
+						e.SetParent( ent )
+					}
+					else if ( e.GetNetworkedClassName() == "script_mover_lightweight" )
+					{
+						ent.e.firstOwner = e
+						e.SetParent( ship.mover )
+						e.NonPhysicsSetMoveModeLocal( true )
+					}
+				}
+				ent.NonPhysicsSetMoveModeLocal( true )
+		}
+	}
+
+	AddSupplyBins( ship )
+
+	file.allShips.append( ship )
 }
 
 void function SupplyShip_OpenDoors( SupplyShip ship )
 {
-	
+	thread SupplyShip_OpenFrontDoor( ship )
+	thread SupplyShip_OpenBackDoor( ship )
+
+	wait 12.0
+	Signal( ship, "DoorsOpen" )
 }
 
+void function SupplyShip_OpenFrontDoor( SupplyShip ship )
+{
+	if ( ship.frontDoorOpening )
+		return
+
+	ship.frontDoorOpening = true
+
+	ship.frontDoor.NonPhysicsRotateTo( <5,0,0>, 1, 1, 0 )
+	wait 1.0
+	ship.frontDoor.NonPhysicsRotateTo( <45,0,0>, 8, 2, 2 )
+	wait 0.0
+
+	ship.frontDoorOpened = true
+}
+
+void function SupplyShip_OpenBackDoor( SupplyShip ship )
+{
+	if ( ship.backDoorOpening )
+		return
+
+	ship.backDoorOpening = true
+
+	ship.backDoor.NonPhysicsRotateTo( <5,180,0>, 2, 2, 0 )
+	wait 1.0
+	ship.backDoor.NonPhysicsRotateTo( <105,180,0>, 12, 4, 4 )
+	wait 12.0
+
+	ship.backDoorOpened = true
+}
+
+#if DEVELOPER
+void function TestSupplyShip()
+{
+	SupplyShip ship = GetAllSupplyShips()[0]
+	GP().SetOrigin( ship.mover.GetOrigin() )
+
+	//foreach ( bin in ship.bins )
+	//{
+	//	bin.Destroy()
+	//}
+	//ship.bins.clear()
+	//
+	//foreach ( panel in ship.panels )
+	//{
+	//	delete file.panelToShips[ panel ]
+	//	panel.Destroy()
+	//}
+	//ship.panels.clear()
+	//
+	//AddSupplyBins( ship )
+}
+#endif
+
+void function AddSupplyBins( SupplyShip ship )
+{
+	float sideOffset = 350.0
+	float frontOffset = 180.0
+	float baseXOffset = 0
+	float baseYOffset = 0
+
+	array<vector> binDirections = [
+	< 1, 1, 180 >,
+	< 1, -1, 180 >,
+	< -1, 1, 0 >,
+	< -1, -1, 0 >,
+	]
+
+	entity mover = ship.mover
+	vector fwd = AnglesToForward( ship.mover.GetAngles() )
+	vector rgt = AnglesToRight( ship.mover.GetAngles() )
+	vector up = AnglesToUp( ship.mover.GetAngles() )
+
+	array<string> jackpotItems = SURVIVAL_GetMultipleWeightedItemsFromGroup( "SupplyShip_Bin_GoodStuff", binDirections.len()-1 )
+	jackpotItems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "crate_jackpot_items", 1 ) )
+	int i = 0
+
+	foreach ( direction in binDirections )
+	{
+		array<string> loots = []
+
+		loots.append( jackpotItems[i++] )
+		loots.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "medic_super_side", 1 ) )
+		loots.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_SupplyShip_Random", 2 ) )
+		loots.randomize()
+
+		vector origin = mover.GetOrigin() + fwd*(baseXOffset + direction.x*frontOffset) + rgt*(baseYOffset + direction.y*sideOffset)
+		vector angles = AnglesCompose( mover.GetAngles(), <0, direction.z, 0> )
+		entity bin = CreateCustomLootBin( origin, angles, loots, true )
+
+		ship.bins.append( bin )
+	}
+
+	{
+		entity panel = CreatePropDynamic_NoDispatchSpawn( MODEL_SHIP_PANEL, mover.GetOrigin() + (rgt * 200.0) + (fwd*150.0), AnglesCompose( mover.GetAngles() , <0,180,0> ), SOLID_VPHYSICS )
+		panel.SetParent( mover )
+		panel.SetScriptName( SUPPLY_SHIP_PANEL_SCRIPTNAME )
+		DispatchSpawn( panel )
+		ship.panels.append( panel )
+		file.panelToShips[ panel ] <- ship
+	}
+
+	{
+		entity panel = CreatePropDynamic_NoDispatchSpawn( MODEL_SHIP_PANEL, mover.GetOrigin() - (rgt * 200.0) - (fwd*150.0), AnglesCompose( mover.GetAngles() , <0,0,0> ), SOLID_VPHYSICS )
+		panel.SetParent( mover )
+		panel.SetScriptName( SUPPLY_SHIP_PANEL_SCRIPTNAME )
+		DispatchSpawn( panel )
+		ship.panels.append( panel )
+		file.panelToShips[ panel ] <- ship
+	}
+}
+
+void function OnShipPanelUseSuccess( entity panel, entity player, ExtendedUseSettings settings )
+{
+	SupplyShip ornull ship = GetSupplyShipFromPanel( panel )
+	if ( ship == null )
+		return
+
+	expect SupplyShip( ship )
+
+	foreach ( p in ship.panels )
+	{
+		p.UnsetUsable()
+		p.SetSkin( 1 )
+	}
+
+	SupplyShip_OpenLootDoors( ship )
+	SupplyShip_OpenDoors( ship )
+}
+
+SupplyShip ornull function GetSupplyShipFromPanel( entity panel )
+{
+	if ( panel in file.panelToShips )
+	{
+		return file.panelToShips[panel]
+	}
+
+	return null
+}
+
+void function EntityEnterHoverTankVolume( entity trigger, entity ent, entity caller, var value )
+{
+	if ( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+	printt( "HoverTank: Player Entered Volume", ent )
+	//DisableEntityOutOfBounds( ent )
+}
+
+void function EntityLeaveHoverTankVolume( entity trigger, entity ent, entity caller, var value )
+{
+	if ( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+	printt( "HoverTank: Player Left Volume", ent )
+	//EnableEntityOutOfBounds( ent )
+}
+
+void function SupplyShip_OpenLootDoors( SupplyShip ship )
+{
+	if ( ship.lootDoorsOpen )
+		return
+
+	ship.lootDoorsOpen = true
+
+	foreach ( doorMover in ship.lootDoors )
+	{
+		thread _OpenLootDoors( ship, doorMover )
+	}
+}
+
+void function _OpenLootDoors( SupplyShip ship, entity doorMover )
+{
+	entity moveTarget = doorMover.e.firstOwner
+	doorMover.NonPhysicsMoveTo( moveTarget.GetLocalOrigin(), 10, 0, 0.5 )
+	wait 10
+	doorMover.SetLocalOrigin( moveTarget.GetLocalOrigin() )
+	doorMover.SetParent( moveTarget, "", false )
+}
 #endif
 
 void function OnShipPanelSpawn( entity panel )
@@ -59,7 +333,12 @@ void function OnShipPanelSpawn( entity panel )
 		return
 
 	#if SERVER
-
+	panel.AllowMantle()
+	panel.SetForceVisibleInPhaseShift( true )
+	panel.SetUsable()
+	panel.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	panel.SetUsablePriority( USABLE_PRIORITY_LOW )
+	panel.SetUsePrompts( "#SUPPLY_SHIP_HINT", "#SUPPLY_SHIP_HINT" )
 	#elseif CLIENT
 	AddEntityCallback_GetUseEntOverrideText( panel, ExtendedUseTextOverride )
 	#endif
@@ -86,7 +365,10 @@ void function ShipPanelUseThink( entity ent, entity playerUser )
 		settings.icon            = $""
 		settings.hint            = "#PROMPT_ACTIVATE"
 	#elseif SERVER
-
+		settings.successFunc = OnShipPanelUseSuccess
+		settings.holsterWeapon = true
+		settings.movementDisable = true
+		//settings.holsterViewModelOnly = true
 	#endif
 
 	settings.duration = SUPPLY_SHIP_PANEL_ACTIVATE_TIME

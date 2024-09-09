@@ -16,16 +16,11 @@ global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_GetAmountOfTeams
 global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
-global function FS_Scenarios_GetDropshipEnabled
+global function FS_Scenarios_GetDropshipEnabled //?
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
 global function FS_Scenarios_HandleGroupIsFinished
-
-#if TRACKER //demo only
-global function TrackerStats_ScenariosKills
-global function TrackerStats_ScenariosDeaths
-#endif
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -58,6 +53,7 @@ global struct scenariosGroupStruct
 	float endTime
 	bool showedEndMsg = false
 	bool isReady = false
+	bool isValid = false
 
 	// realm based ground loot system
 	array<entity> groundLoot
@@ -103,9 +99,11 @@ struct {
 
 	array<entity> aliveDropships
 	array<entity> aliveDeathboxes
+	array<entity> aliveItemDrops
 } file
 
-struct {
+struct
+{
 	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = -1
 	int fs_scenarios_teamAmount = -1
@@ -131,6 +129,8 @@ struct {
 	float fs_scenarios_characterselect_time_per_player = 3.5
 	bool fs_scenarios_characterselect_enabled = true
 	float fs_scenarios_ringclosing_maxtime = 120
+	
+	int waitingRoomRadius = 600
 } settings
 
 array< bool > teamSlots
@@ -172,15 +172,18 @@ void function Init_FS_Scenarios()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
+	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
 
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+	AddSpawnCallback( "prop_survival", FS_Scenarios_StoreAliveDrops )
 
 	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
+	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
 
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
@@ -214,54 +217,30 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 
 	if( settings.fs_scenarios_show_death_recap_onkilled )
 	{
-		int attackerEHandle = -1
-		int victimEHandle = -1
-
-		if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
-		{
-			attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-			victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
-			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
-
-			if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
-			{
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
-				ResetDeathRecapBlock(victim)
-			}
-
-			if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
-			{
-				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-				ResetDeathRecapBlock(attacker)		
-			}
-
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
-		} 
-		else if( !attacker.IsPlayer() )
-		{
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
-		}
+		// fix var. Cafe
 	}
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+	
+	if( !group.isValid ) //Do not calculate stats for players not in a round
+		return
+	
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
 	float elapsedTime = Time() - group.startTime
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
-
+	
 	if ( victim.GetTeam() != attacker.GetTeam() && attacker.IsPlayer() )
 	{
-		// todo fix bleedout signaling
-		// if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
-		// {
-			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
-		// } else if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
-		// {
-			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
-		// } else
-		// {
-			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
-		// }
+		if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
+		{
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
+		} 
+		else if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
+		{
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+		}
+		
+		FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
 	}
 
 	FS_Scenarios_HandleGroupIsFinished( victim, damageInfo )
@@ -309,13 +288,15 @@ void function FS_Scenarios_OnPlayerConnected( entity player )
 
 	ValidateDataTable( player, "datatable/flowstate_scenarios_score_system.rpak" )
 
-	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
+	AddEntityCallback_OnPostDamaged( player, FS_Scenarios_OnPlayerDamaged ) //changed to post damage ~mkos
 }
 
 void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 {
 	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
 		return
+		
+	
 	
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
 	
@@ -323,9 +304,9 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution || sourceId == eDamageSourceId.damagedef_despawn )
 		return
 	
-	if( settings.fs_scenarios_show_death_recap_onkilled )
-		Flowstate_HandleDeathRecapData(victim, damageInfo)
-	
+	// if( settings.fs_scenarios_show_death_recap_onkilled )
+		//fix var
+
 	float damage = DamageInfo_GetDamage( damageInfo )
 
 	int currentHealth = victim.GetHealth()
@@ -350,7 +331,7 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 	}
 	
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
-	{	
+	{
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
@@ -368,18 +349,22 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 		// Supposed to be bleeding
 		Bleedout_StartPlayerBleedout( victim, attacker )
 
+		// not sure if this is needed anymore ~mkos
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))
         {
             attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
+		
+		// no need to cancel damage since this function is now a post damaged callback ~mkos
+		
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
 		// There might be a better way to do this, but this works well enough
-		DamageInfo_SetDamage( damageInfo, 1 )
+		//DamageInfo_SetDamage( damageInfo, 1 )
 
 		// Delete any shield health remaining
-		victim.SetShieldHealth( 0 )
+		//victim.SetShieldHealth( 0 ) //this is redundant, bleedout logic handles this. ~mkos
 	}
 }
 
@@ -393,7 +378,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
-	if( IsValid( group ) && !group.IsFinished )
+	if( IsValid( group ) && group.isValid && !group.IsFinished )
 		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
 
 	FS_Scenarios_HandleGroupIsFinished( player, null )
@@ -421,152 +406,6 @@ array<vector> function FS_Scenarios_GeneratePlaneFlightPathForGroup( scenariosGr
 	vector endPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward* settings.fs_scenarios_default_radius )
 
 	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
-}
-
-void function FS_Scenarios_StartDropshipMovement( scenariosGroupStruct group )
-{
-	if( !IsValid( group ) )
-		return
-
-	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
-
-	vector Center = group.calculatedRingCenter
-	int realm = group.slotIndex
-
-	array<vector> foundFlightPath = FS_Scenarios_GeneratePlaneFlightPathForGroup( group )
-
-	vector shipStart = foundFlightPath[0]
-	vector shipEnd = foundFlightPath[1]
-	vector shipAngles = foundFlightPath[2]
-	vector shipPathCenter = foundFlightPath[3]
-
-	// entity centerEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", shipPathCenter, shipAngles )
-	// centerEnt.Minimap_AlwaysShow( 0, null )
-	// SetTargetName( centerEnt, "pathCenterEnt" )
-	// DispatchSpawn( centerEnt )
-
-	// entity minimapPlaneEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", dropship.GetOrigin(), dropship.GetAngles() )
-	// minimapPlaneEnt.NotSolid()
-	// minimapPlaneEnt.SetParent( dropship )
-	// minimapPlaneEnt.Minimap_AlwaysShow( 0, null )
-	// SetTargetName( minimapPlaneEnt, "planeEnt" )
-	// DispatchSpawn( minimapPlaneEnt )
-
-	entity dropship = Survival_CreatePlane( shipStart, shipAngles )
-
-	FS_Scenarios_StoreAliveDropship( dropship )
-
-	dropship.RemoveFromAllRealms()
-	dropship.AddToRealm( realm )
-
-	EndSignal( dropship, "OnDestroy" )
-
-	array<entity> players
-	players.extend( group.team1Players )
-	players.extend( group.team2Players )
-	players.extend( group.team3Players )
-
-	OnThreadEnd(
-		function() : ( players, dropship )
-		{
-			foreach ( player in players )
-			{
-				if ( player.GetPlayerNetBool( "playerInPlane" ) )
-					Survival_DropPlayerFromPlane_UseCallback( player )
-			}
-
-			// centerEnt.Destroy()
-			// minimapPlaneEnt.Destroy()
-			// minimapPlaneEnt.ClearParent()
-			try{
-				ClearChildren( dropship, true )
-				dropship.Destroy()
-			}
-			catch( e420 )
-			{
-				printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
-			}
-		}
-	)
-
-	foreach ( team in GetTeamsForPlayers( players ) )
-	{
-		array<entity> teamMembers = GetPlayerArrayOfTeam( team )
-
-		bool foundJumpmaster = false
-		entity ornull jumpMaster = null
-
-		for ( int idx = teamMembers.len() - 1; idx == 0; idx-- )
-		{
-			entity teamMember = teamMembers[idx]
-
-			if ( Survival_IsPlayerEligibleForJumpmaster( teamMember ) )
-			{
-				foundJumpmaster = true
-				jumpMaster = teamMember
-
-				break
-			}
-		}
-
-		if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
-			jumpMaster = teamMembers.getrandom()
-
-		if ( jumpMaster != null )
-		{
-			expect entity( jumpMaster )
-
-			jumpMaster.SetPlayerNetBool( "isJumpmaster", true )
-		}
-	}
-
-	foreach ( player in players )
-		FS_Scenarios_RespawnPlayerInDropship( player, dropship )
-
-	float DROP_TOTAL_TIME = 20 // GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 20.0 )
-
-	dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME, 0.0, 0.0 )
-
-	foreach ( player in players )
-		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-	wait DROP_TOTAL_TIME
-}
-
-void function FS_Scenarios_RespawnPlayerInDropship( entity player, entity dropship )
-{
-	const float POS_OFFSET = -525.0 // Offset from dropship's origin
-
-	vector dropshipPlayerOrigin = dropship.GetOrigin()
-	dropshipPlayerOrigin.z += POS_OFFSET
-
-	DecideRespawnPlayer( player, false )
-
-	player.SetParent( dropship )
-
-	player.SetOrigin( dropshipPlayerOrigin )
-	player.SetAngles( dropship.GetAngles() )
-
-	player.UnfreezeControlsOnServer()
-
-	player.ForceCrouch()
-	player.Hide()
-	player.NotSolid()
-	
-	player.SetPlayerNetBool( "isJumpingWithSquad", true )
-	player.SetPlayerNetBool( "playerInPlane", true )
-
-	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
-
-	AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	bool isAlone = playerTeam.len() <= 1
-
-	if ( isAlone )
-		player.SetPlayerNetBool( "isJumpmaster", true )
-
-	// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 }
 
 void function FS_Scenarios_SaveBigDoorData( entity door )
@@ -784,14 +623,46 @@ void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
 	#endif
 }
 
+void function FS_Scenarios_StoreAliveDrops( entity prop )
+{
+	if( !IsValid( prop ) )
+		return
+
+	file.aliveItemDrops.append( prop )
+	
+	#if DEVELOPER
+		printt( "added prop to alive aliveItemDrops array", prop )
+	#endif
+}
+
+void function FS_Scenarios_CleanupDrops()
+{
+	int maxIter = file.aliveItemDrops.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
+	{
+		if( !IsValid( file.aliveItemDrops[ i ] ) )
+			file.aliveItemDrops.remove( i )
+	}
+}
+
 void function FS_Scenarios_CleanupDeathboxes()
 {
-	foreach( i, deathbox in file.aliveDeathboxes )
+	// foreach( i, deathbox in file.aliveDeathboxes )
+	// {
+		// if( !IsValid( deathbox ) )
+		// {
+			// file.aliveDeathboxes.removebyvalue( deathbox )
+		// }
+	// }
+	
+	// don't remove multiple items from an array while iterating sequentially ~mkos
+	int maxIter = file.aliveDeathboxes.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if( !IsValid( deathbox ) )
-		{
-			file.aliveDeathboxes.removebyvalue( deathbox )
-		}
+		if( !IsValid( file.aliveDeathboxes[ i ] ) )
+			file.aliveDeathboxes.remove( i )
 	}
 }
 
@@ -799,17 +670,45 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 {
 	int count = 0
 	foreach( deathbox in file.aliveDeathboxes )
-		if( IsValid( deathbox ) && realm == -1 || IsValid( deathbox ) && deathbox.IsInRealm( realm )  )
+	{
+		if( IsValid( deathbox ) )
 		{
-			if( IsValid( deathbox.GetParent() ) )
-				deathbox.GetParent().Destroy() // Destroy physics
+			if( realm == -1 || deathbox.IsInRealm( realm )  )
+			{
+				if( IsValid( deathbox.GetParent() ) )
+					deathbox.GetParent().Destroy() // Destroy physics
 
-			deathbox.Destroy()
-			
-			count++
+				deathbox.Destroy()
+				
+				count++
+			}
 		}
+	}
 	#if DEVELOPER
 		printt( "removed", count, "deathboxes for realm", realm )
+	#endif
+}
+
+void function FS_Scenarios_DestroyAllAliveDroppedLootForRealm( int realm = -1 )
+{
+	int count = 0
+	foreach( drop in file.aliveItemDrops )
+	{
+		if( IsValid( drop ) )
+		{
+			if( realm == -1 || drop.IsInRealm( realm )  )
+			{
+				if( IsValid( drop.GetParent() ) )
+					drop.GetParent().Destroy() // Destroy physics
+
+				drop.Destroy()
+				
+				count++
+			}
+		}
+	}
+	#if DEVELOPER
+		printt( "removed", count, "itemdrops for realm", realm )
 	#endif
 }
 
@@ -827,12 +726,21 @@ void function FS_Scenarios_StoreAliveDropship( entity dropship )
 
 void function FS_Scenarios_CleanupDropships()
 {
-	foreach( i, dropship in file.aliveDropships )
+	// foreach( i, dropship in file.aliveDropships )
+	// {
+		// if( !IsValid( dropship ) )
+		// {
+			// file.aliveDropships.removebyvalue( dropship )
+		// }
+	// }
+	
+	// don't remove multiple items from an array while iterating sequentially ~mkos
+	int maxIter = file.aliveDropships.len() - 1
+	
+	for( int i = maxIter; i >= 0; i-- )
 	{
-		if( !IsValid( dropship ) )
-		{
-			file.aliveDropships.removebyvalue( dropship )
-		}
+		if( !IsValid( file.aliveDropships[ i ] ) )
+			file.aliveDropships.remove( i )
 	}
 }
 
@@ -1119,7 +1027,7 @@ bool function FS_Scenarios_GetInventoryEmptyEnabled()
 	return settings.fs_scenarios_inventory_empty
 }
 
-bool function FS_Scenarios_GetDropshipEnabled()
+bool function FS_Scenarios_GetDropshipEnabled() // ?
 {
 	return settings.fs_scenarios_dropshipenabled
 }
@@ -1240,13 +1148,13 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 			}
 			
 			if( settings.fs_scenarios_teamAmount > 2 )
-				foreach( player in newGroup.team3Players )
-				{
-					if( !IsValid( player ) )
-						continue
+			foreach( player in newGroup.team3Players )
+			{
+				if( !IsValid( player ) )
+					continue
 
-					SetTeam( player, newGroup.team3Index )
-				}
+				SetTeam( player, newGroup.team3Index )
+			}
 		}
 		else 
 		{	
@@ -1305,7 +1213,8 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
 {
 	scenariosGroupStruct group;	
-	if(!IsValid (player) )
+	
+	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
 			sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
@@ -1320,6 +1229,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 		{	
 			if( IsValid( file.scenariosPlayerToGroupMap[player.p.handle] ) )
 			{
+				
 				return file.scenariosPlayerToGroupMap[ player.p.handle ]
 			}
 		}
@@ -1330,6 +1240,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 			sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
+	
 	return group;
 }
 
@@ -1348,7 +1259,8 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
         player.MakeVisible()
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
@@ -1411,12 +1323,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 	)
 
-	while(true)
+	for( ; ; )
 	{
 		wait 0.1
 
 		FS_Scenarios_CleanupDropships()
 		FS_Scenarios_CleanupDeathboxes()
+		FS_Scenarios_CleanupDrops()
 
 		// Recién conectados
 		foreach ( player in GetPlayerArray() )
@@ -1424,7 +1337,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( !IsValid( player ) ) 
 				continue
 
-			// New player connected
+			// New player connected //this should really just be a callback...?
 			if( player.p.isConnected && !isPlayerInWaitingList( player) && !isPlayerInRestingList( player ) && !FS_Scenarios_IsPlayerIn3v3Mode( player ) )
 			{
 				soloModePlayerToWaitingList(player)
@@ -1449,9 +1362,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				player.SetShieldHealth( player.GetShieldHealthMax() )
 			}
 
-			float t_radius = 600;
-
-			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
+			if( Distance( player.GetOrigin(), waitingRoomLocation.origin ) > settings.waitingRoomRadius ) //waiting player should be in waiting room,not battle area
 			{
 				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
 				HolsterAndDisableWeapons( player )
@@ -1491,7 +1402,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				foreach( player in players )
 				{
-					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) 
+						continue
 					
 					//Se murió, a la sala de espera
 					if( !IsAlive( player ) )
@@ -1504,18 +1416,18 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( settings.fs_scenarios_show_death_recap_onkilled )
 						{
 							player.p.InDeathRecap = true
-							Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+							Remote_CallFunction_ByRef( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+							//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 						} else
 							player.p.InDeathRecap = false
+							
+						ScenariosPersistence_SendStandingsToClient( player )
 
 						#if DEVELOPER
 							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
 						#endif
 						continue
 					}
-					
-					// removed this, as it interferes with core mechanics ~mkos 
-					//player.p.lastDamageTime = Time() //avoid player regen health
 
 					if ( player.IsPhaseShifted() )
 						continue
@@ -1540,6 +1452,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				group.IsFinished = true
 				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
+				FS_Scenarios_SendRecapData( group )
+
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -1549,6 +1463,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					FS_Scenarios_DestroyLootbinsForGroup( group )
 				}
 
+				FS_Scenarios_DestroyAllAliveDroppedLootForRealm( group.slotIndex )
 				FS_Scenarios_DestroyAllAliveDeathboxesForRealm( group.slotIndex )
 				ClearActiveProjectilesForRealm( group.slotIndex )
 
@@ -1640,6 +1555,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			
 			if( !IsValid( player ) )
 				continue
+				
+			if( IsBotEnt( player ) ) //temporary messagebot bullcrap hack ( all of these need removed )
+				continue
 
 			if( Time() < eachPlayerStruct.waitingTime )
 				continue
@@ -1703,12 +1621,14 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 			continue
 		}
+		else
+			newGroup.isValid = true
 
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
 
-		printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
 		#if DEVELOPER
+			printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
 			DebugDrawSphere( newGroup.calculatedRingCenter, 30, 255,0,0, true, 300 )
 		#endif
 
@@ -1717,6 +1637,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		#if DEVELOPER
 			printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
 		#endif
+		
+		//Scenarios_CleanupMiscProperties( [ newGroup.team1Players, newGroup.team2Players, newGroup.team3Players ] )
 
 		// Setup HUD
 		foreach( player in newGroup.team1Players )
@@ -1793,8 +1715,14 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						return
 
-					Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 					Flowstate_AssignUniqueCharacterForPlayer( player, true )
+					if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+					{
+						array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+						CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+					}
 				}
 
 			if( settings.fs_scenarios_ground_loot )
@@ -1819,13 +1747,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				if( !IsValid( player ) )
 					return
-
-				// player.p.notify = false
-				// player.p.destroynotify = true
-				//TODO: use new notify system if using in your mode; these entity struct vars were removed
 				
-				FS_SetRealmForPlayer( player, newGroup.slotIndex )
-				
+				FS_SetRealmForPlayer( player, newGroup.slotIndex )			
 				
 				int amountPlayersPerTeam
 
@@ -1879,132 +1802,178 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					} else
 						circledPos = result.endPos
 
-					player.SetOrigin( circledPos )
+					// player.SetOrigin( circledPos )
+					ClearLastAttacker( player )
+					player.SnapToAbsOrigin( circledPos )
+					player.SnapEyeAngles( location.angles )
+					player.SnapFeetToEyes()
 					j++
 				}
 				oldSpawnSlot = spawnSlot
-				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 			}
 
-			if( settings.fs_scenarios_dropshipenabled )
-			{
-				thread FS_Scenarios_StartDropshipMovement( newGroup )
-			} else
-			{
-				thread FS_Scenarios_GiveWeaponsToGroup( players )
+			thread FS_Scenarios_GiveWeaponsToGroup( players )
 
-				thread function () : ( newGroup, players )
-				{
-					EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
+			thread function () : ( newGroup, players )
+			{
+				EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-					OnThreadEnd(
-						function() : ( newGroup, players  )
+				OnThreadEnd
+				(
+					function() : ( newGroup, players  )
+					{
+						foreach( entity player in players )
 						{
-							foreach( player in players )
+							if( !IsValid( player ) )
+								continue
+
+							player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
+
+							if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
 							{
-								if( !IsValid( player ) )
-									continue
-
-								if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
-								{
-									entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-									int ammoType = weapon.GetWeaponAmmoPoolType()
-									player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
-									
-									if( weapon.UsesClipsForAmmo() )
-										weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
-									
-									player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
-								}
-
-								player.MovementEnable()
-								player.UnforceStand()
-								DeployAndEnableWeapons( player )
-								player.Server_TurnOffhandWeaponsDisabledOff()
-								player.ClearMeleeDisabled()
-								player.UnlockWeaponChange()
-								player.ClearFirstDeployForAllWeapons()
-								// player.UnfreezeControlsOnServer()
-								ClearInvincible(player)
-								Highlight_ClearEnemyHighlight( player )
-
-								if( !newGroup.IsFinished )
-									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
+								entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+								int ammoType = weapon.GetWeaponAmmoPoolType()
+								player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
 								
-								if( settings.fs_scenarios_characterselect_enabled )
-								{
-									player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
-									player.SetPlayerNetBool( "hasLockedInCharacter", true )
-								}
+								if( weapon.UsesClipsForAmmo() )
+									weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+								
+								player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+							}
+
+							player.MovementEnable()
+							player.UnforceStand()
+							DeployAndEnableWeapons( player )
+							player.ClearMeleeDisabled()
+							player.UnlockWeaponChange()
+							player.ClearFirstDeployForAllWeapons()
+							// player.UnfreezeControlsOnServer()
+							ClearInvincible(player)
+							Highlight_ClearEnemyHighlight( player )
+
+							if( !newGroup.IsFinished )
+							{
+								//this is just a test to see how spawn metadata would be used for a game mode ~mkos
+								string spawnName = newGroup.groupLocStruct.name
+								string ids = newGroup.groupLocStruct.ids
+								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
+							}
+							
+							if( settings.fs_scenarios_characterselect_enabled )
+							{
+								player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
+								player.SetPlayerNetBool( "hasLockedInCharacter", true )
+							}
+							
+							//Setup starting shields
+							PlayerRestoreHP_1v1(player, 100, Equipment_GetDefaultShieldHP() )
+						}
+					}
+				)
+
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					player.ForceStand()
+					player.Server_TurnOffhandWeaponsDisabledOn()
+					player.SetMeleeDisabled()
+					player.LockWeaponChange()
+					// player.FreezeControlsOnServer()
+					player.MovementDisable()
+					
+					entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+					
+					if( IsValid( weapon ) )
+					{
+						int ammoType = weapon.GetWeaponAmmoPoolType()
+						player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
+						player.AmmoPool_SetCount( ammoType, 0 )
+						
+						if( weapon.UsesClipsForAmmo() )
+							weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
+						
+						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+					}
+
+					foreach ( newWeapon in player.GetMainWeapons() )
+					{
+						//Cafe was here
+						ItemFlavor ornull weaponSkinOrNull = null
+						array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+						ItemFlavor ornull weaponCharmOrNull 
+						int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+
+						if( newWeapon.e.charmItemFlavorGUID != -1 )
+							chosenCharm = newWeapon.e.charmItemFlavorGUID
+							
+						if( newWeapon.e.skinItemFlavorGUID != -1 )
+						{
+							weaponSkinOrNull = GetItemFlavorByGUID( newWeapon.e.skinItemFlavorGUID )
+						} else if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+						{
+							ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( newWeapon.GetWeaponClassName() )
+							
+							if( weaponFlavor != null )
+							{
+								array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+								if( weaponLegendaryIndexMap.len() > 1 )
+									weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
 							}
 						}
-					)
 
-					foreach( player in players )
-					{
-						if( !IsValid( player ) )
-							continue
+						if ( GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) )
+							weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
 
-						player.ForceStand()
-						player.Server_TurnOffhandWeaponsDisabledOn()
-						player.SetMeleeDisabled()
-						player.LockWeaponChange()
-						// player.FreezeControlsOnServer()
-						player.MovementDisable()
-						
-						entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-						
-						if( IsValid( weapon ) )
-						{
-							int ammoType = weapon.GetWeaponAmmoPoolType()
-							player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
-							player.AmmoPool_SetCount( ammoType, 0 )
-							
-							if( weapon.UsesClipsForAmmo() )
-								weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
-							
-							weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
-							weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
-						}
-						
-						MakeInvincible(player)
+						WeaponCosmetics_Apply( newWeapon, weaponSkinOrNull, weaponCharmOrNull )
 					}
 					
+					MakeInvincible(player)
+				}
+
+				UpdatePlayerCounts()
+				
+				if( settings.fs_scenarios_characterselect_enabled )
+				{
+					#if DEVELOPER 
+						printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+					#endif 
+					
+					waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
+				}
+
+				float startTime = Time() + settings.fs_scenarios_game_start_time_delay
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Highlight_ClearEnemyHighlight( player )
+					Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+
 					if( settings.fs_scenarios_characterselect_enabled )
-					{
-						#if DEVELOPER 
-							printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
-						#endif 
-						
-						waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
-					}
+						player.SetPlayerNetBool( "characterSelectionReady", false )
 
-					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
-					foreach( player in players )
-					{
-						if( !IsValid( player ) )
-							continue
+					RemoveCinematicFlag( player, CE_FLAG_INTRO )
+					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards", false )
+					player.SetShieldHealth( 0 )
+					player.SetShieldHealthMax( 0 )
+					Inventory_SetPlayerEquipment(player, "", "armor")
+				}
 
-						Highlight_ClearEnemyHighlight( player )
-						Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+				wait settings.fs_scenarios_game_start_time_delay
+				
+				Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
-						if( settings.fs_scenarios_characterselect_enabled )
-							player.SetPlayerNetBool( "characterSelectionReady", false )
-
-						RemoveCinematicFlag( player, CE_FLAG_INTRO )
-						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
-						Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-					}
-
-					wait settings.fs_scenarios_game_start_time_delay
-
-					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
-
-					newGroup.startTime = Time()
-					newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
-					newGroup.isReady = true
-				}()
-			}
+				newGroup.startTime = Time()
+				newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
+				newGroup.isReady = true
+			}()
 		}()
 	}//while(true)
 
@@ -2089,10 +2058,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 
 	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
 	{
-		int droppableItems = GetAllDroppableItems( player ).len()
-
-		if ( droppableItems > 0 )
-			CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
+		thread SURVIVAL_Death_DropLoot( player, damageInfo )
 	}
 } 
 
@@ -2188,7 +2154,14 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
 			{
 				if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+				{
 					Flowstate_AssignUniqueCharacterForPlayer(player, false)
+					if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+					{
+						array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+						CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+					}
+				}
 			}
 		}
 
@@ -2208,7 +2181,8 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		ArrayRemoveInvalid( players )
 		foreach( entity player in players )
 		{
-			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+			Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+			//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
 	}
 	
@@ -2352,7 +2326,8 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 				player.SetSpecReplayDelay( 0 )
 				player.SetObserverTarget( null )
 				player.StopObserverMode()
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 				player.MakeVisible()
 				player.ClearInvulnerable()
 				player.SetTakeDamageType( DAMAGE_YES )
@@ -2391,21 +2366,6 @@ vector function OriginToGround_Inverse( vector origin )
 	return traceResult.endPos
 }
 
-//////////////////// STATS /////////////////
-#if TRACKER 
-
-//(for demo)
-var function TrackerStats_ScenariosKills( string uid )
-{
-	return Tracker_StatsMetricsByUID(uid).kills
-}
-
-var function TrackerStats_ScenariosDeaths( string uid )
-{
-	return Tracker_StatsMetricsByUID(uid).deaths
-}
-#endif 
-
 #if DEVELOPER
 	void function Cafe_KillAllPlayers()
 	{
@@ -2441,6 +2401,7 @@ LocPairData function CustomSpawns()
 	array<LocPair> spawns
 	switch( MapName() )
 	{
+		//Leave for debugging
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 			spawns = 
 			[ 
@@ -2545,10 +2506,63 @@ LocPairData function CustomSpawns()
 			break
 	}
 	
+	//this was just for testing of meta data and can be removed ~mkos
 	array<table> metaData
 	
 	foreach( spawn in spawns )
 		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
-
-	return CreateLocPairObject( spawns, true, null, null, metaData )
+	
+	vector mapCenter = SURVIVAL_GetMapCenter()
+	
+	Scenarios_SetWaitingRoomRadius( 1650 )
+	SpawnFlowstateLobbyProps( mapCenter + <0,0,50000> )
+	
+	LocPair waitingRoom = NewLocPair( mapCenter + <0,0,50072>, < 0, 90, 0 > )
+	
+	return SpawnSystem_CreateLocPairObject( spawns, true, waitingRoom, null, metaData )
 }
+
+
+void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
+{
+	foreach( Team1Player in group.team1Players )
+	{
+		if( !IsValid( Team1Player ) )
+			continue 
+			
+		ScenariosPersistence_SendStandingsToClient( Team1Player )
+	}
+	
+	foreach( Team2Player in group.team2Players )
+	{
+		if( !IsValid( Team2Player ) )
+			continue 
+			
+		ScenariosPersistence_SendStandingsToClient( Team2Player )
+	}
+	
+	foreach( Team3Player in group.team3Players )
+	{
+		if( !IsValid( Team3Player ) )
+			continue
+			
+		ScenariosPersistence_SendStandingsToClient( Team3Player )
+	}
+}
+
+void function Scenarios_SetWaitingRoomRadius( int radius )
+{
+	settings.waitingRoomRadius = radius
+}
+
+// void function Scenarios_CleanupMiscProperties( array< array<entity> > allPlayersInRound )
+// {
+	// foreach( array<entity> playerArrays in allPlayersInRound )
+	// {
+		// foreach( player in playerArrays )
+		// {
+			// ClearLastAttacker( player )
+			// ...
+		// }
+	// }
+// }

@@ -7,8 +7,10 @@ global function OnWeaponActivate_cindershot
 global function OnWeaponDeactivate_cindershot
 global function OnWeaponPrimaryAttack_cindershot
 global function OnProjectileCollision_cindershot
+global function OnProjectileCollision_gasluncher
 global function OnWeaponStartZoomIn_cindershot
 global function OnWeaponStartZoomOut_cindershot
+global function OnProjectileCollision_bangsLauncher
 
 struct{
 entity weapon	
@@ -18,6 +20,8 @@ function MpWeaponGuidedMissile_Init()
 {
 	#if SERVER
 	PrecacheParticleSystem($"P_impact_exp_emp_med_default")
+	PrecacheParticleSystem($"mdl/weapons/grenades/w_bangalore_canister_gas_projectile.rmdl")
+	PrecacheParticleSystem($"P_smokescreen_FD")
 	RegisterSignal( "StopGuidedLaser" )
 	#endif
 }
@@ -56,6 +60,7 @@ var function OnWeaponPrimaryAttack_cindershot( entity weapon, WeaponPrimaryAttac
 		entity missile = weapon.FireWeaponMissile( fireMissileParams )
 		if ( missile )
 		{
+			EmitSoundOnEntity(missile, "Bangalore_Ultimate_Whoosh")
 			if( "guidedMissileTarget" in weapon.s && IsValid( weapon.s.guidedMissileTarget ) )
 			{
 				missile.SetMissileTarget( weapon.s.guidedMissileTarget, Vector( 0, 0, 0 ) )
@@ -81,6 +86,45 @@ var function OnWeaponPrimaryAttack_cindershot( entity weapon, WeaponPrimaryAttac
 	}
 }
 
+void function OnProjectileCollision_gasluncher( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	#if SERVER
+	entity owner = gp()[0]
+	EmitSoundOnEntity(owner, "diag_mp_caustic_bc_skydiveLaugh_1p")
+	// if ( !IsValid( owner ) )
+		// return
+	
+	// if(hitEnt.IsPlayer() || hitEnt.IsNPC()) return
+	
+		// entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"mdl/weapons/grenades/w_bangalore_canister_gas_projectile.rmdl" ), projectile.GetOrigin(), <0,0,0> )
+		// entity fx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_smokescreen_FD" ), projectile.GetOrigin(), <0,0,0> )
+		// EmitSoundAtPosition( TEAM_UNASSIGNED, projectile.GetOrigin(), "bangalore_smoke_grenade_explosion_3p", projectile )
+		
+		// printt("Collission! Don't do fxs if first bounce. - Count: " + projectile.proj.projectileBounceCount)
+			// int bounceCount = projectile.GetProjectileWeaponSettingInt( eWeaponVar.projectile_ricochet_max_count )
+			
+			// if (file.weapon.HasMod( "dontdoeffectonimpact" ) && projectile.proj.projectileBounceCount > 0) 
+			// {
+				// //entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_impact_exp_emp_med_default" ), projectile.GetOrigin(), <0,0,0> )
+				// EmitSoundOnEntity(file.weapon, "default_energy_bulletimpact_3p_vs_3p")
+			// }
+			
+			// if ( projectile.proj.projectileBounceCount >= bounceCount ) return
+			// projectile.proj.projectileBounceCount++
+			
+	vector origin = projectile.GetOrigin()
+	entity mover = CreateScriptMover( origin )
+	mover.SetOwner( owner )
+	if(owner)
+	{
+		mover.RemoveFromAllRealms()
+		mover.AddToOtherEntitysRealms( owner )
+	}
+
+			
+	thread CreateGasCloudLarge( mover, 20.0, <0,0,16> )
+	#endif
+}
 void function OnProjectileCollision_cindershot( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
 {
 	#if SERVER
@@ -91,6 +135,29 @@ void function OnProjectileCollision_cindershot( entity projectile, vector pos, v
 			if (file.weapon.HasMod( "dontdoeffectonimpact" ) && projectile.proj.projectileBounceCount > 0) 
 				entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_impact_exp_emp_med_default" ), projectile.GetOrigin(), <0,0,0> )
 		
+			if ( projectile.proj.projectileBounceCount >= bounceCount ) return
+			projectile.proj.projectileBounceCount++
+	#endif
+}
+
+void function OnProjectileCollision_bangsLauncher( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	#if SERVER
+	// if(hitEnt.IsPlayer() || hitEnt.IsNPC()) return
+	
+		entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"mdl/weapons/grenades/w_bangalore_canister_gas_projectile.rmdl" ), projectile.GetOrigin(), <0,0,0> )
+		entity fx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_smokescreen_FD" ), projectile.GetOrigin(), <0,0,0> )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, projectile.GetOrigin(), "bangalore_smoke_grenade_explosion_3p", projectile )
+		
+		printt("Collission! Don't do fxs if first bounce. - Count: " + projectile.proj.projectileBounceCount)
+			int bounceCount = projectile.GetProjectileWeaponSettingInt( eWeaponVar.projectile_ricochet_max_count )
+			
+			if (file.weapon.HasMod( "dontdoeffectonimpact" ) && projectile.proj.projectileBounceCount > 0) 
+			{
+				//entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_impact_exp_emp_med_default" ), projectile.GetOrigin(), <0,0,0> )
+				EmitSoundOnEntity(file.weapon, "default_energy_bulletimpact_3p_vs_3p")
+			}
+			
 			if ( projectile.proj.projectileBounceCount >= bounceCount ) return
 			projectile.proj.projectileBounceCount++
 	#endif
@@ -129,7 +196,7 @@ function CalculatePath( entity weapon, entity weaponOwner)
 		
 		if(IsValid(info_target)) info_target.SetOrigin( result.endPos )
 			
-		wait 0.0000000001
+		WaitFrame()
 	}
 	#endif
 }

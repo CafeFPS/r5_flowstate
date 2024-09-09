@@ -112,7 +112,7 @@ resource/ui/menus/confirm_dialog.menu
 			tall					80
 			visible					1
 			fontHeight				80
-			labelText				"Connecting To Server"
+			labelText				"#FS_CONNECTING_TO_SERVER"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -143,7 +143,7 @@ resource/ui/menus/confirm_dialog.menu
 		BtnKeepSettings
 		{
 			ControlName				Label
-			labelText				"Yes"
+			labelText				"#FS_YES"
 			textAlignment	west
 			classname ServerName
 			wide 586
@@ -181,7 +181,7 @@ resource/ui/menus/confirm_dialog.menu
 		BtnRevertSettings
 		{
 			ControlName				Label
-			labelText				"Cancel"
+			labelText				"#FS_CANCEL"
 			textAlignment	west
 			classname ServerName
 			wide 586

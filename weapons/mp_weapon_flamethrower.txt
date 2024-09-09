@@ -1,0 +1,169 @@
+//By @CafeFPS
+"WeaponData"
+{
+	// General
+	"printname"                                 	"FLAME THROWER"
+	"shortprintname"                            	"FLAME THROWER"
+	"description"                               	"FLAME THROWER"
+	"longdesc"                                  	"FLAME THROWER"
+	"weapon_type_flags"								"WPT_PRIMARY"
+	
+	// UI - HUD
+	"menu_icon"										"rui/weapon_icons/r5/weapon_triple_take"
+	"hud_icon"										""
+
+	// Models
+	"viewmodel"                                    "mdl/Weapons/doubletake/ptpov_doubletake_legendary_02.rmdl"
+	"playermodel"                                  "mdl/Weapons/doubletake/w_doubletake_legendary_02.rmdl"
+
+	// Script - Callbacks
+	"OnWeaponPrimaryAttack"                         "OnWeaponPrimaryAttack_weapon_FlameThrower"
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_FlameThrower"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_FlameThrower"
+	"OnProjectileCollision"                         "OnProjectileCollision_weapon_FlameThrower"
+
+	// Behavior - Firing
+	//
+	"fire_rate"                                    "50"
+	"is_semi_auto"								   "0"
+	"impulse_force"                                "1000"
+
+	// Behavior - ADS (tied to animation)
+	"ads_fov_zoomfrac_start"                "0.2"
+    "ads_fov_zoomfrac_end"                  "0.9"
+    "viewmodel_offset_zoom_frac_start"      "0.2"
+    "viewmodel_offset_zoom_frac_end"        "0.9"
+
+	// Damage
+	//
+	"damage_near_value"                            "21"
+	"damage_far_value"                             "21"
+	"damage_very_far_value"                        "21"
+	"damage_near_value_titanarmor"                 "21"
+	"damage_far_value_titanarmor"                  "21"
+	"damage_very_far_value_titanarmor"             "21"
+
+	"damage_rodeo"                                 "80"
+	"critical_hit_damage_scale"                    "2.0"
+	"damage_headshot_scale"						   "1.75"
+	"damage_leg_scale"                             "0.9"
+
+	// Damage - Behavior
+	"damage_flags"                                 "DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+
+	// Viewmodel
+	"viewmodel_offset_ads"                         "0 -3.0 0"
+	"viewmodel_shake_forward"                      "0.5"
+	"viewmodel_shake_up"                           "0.1"
+	"viewmodel_shake_right"                        "0.0"
+
+	// Projectile
+
+	"projectile_launch_speed" 						"1000"
+	"projectiles_per_shot" 							"1"
+	"blast_pattern"									""
+	"projectile_drag_coefficient"                   "0"
+
+    "bolt_gravity_enabled"							"0"
+    "projectile_gravity_scale"						"1.4"
+    "bolt_zero_distance"                            "1968.5" // 50m
+
+	"bolt_hitsize"									"0.0"
+	"projectile_lifetime" 							"0.5"
+	"projectile_inherit_owner_velocity_scale"      	"0.0"
+	"projectile_do_predict_impact_effects"         	"1"
+	"projectile_adjust_to_gun_barrel" 				"1"
+
+
+	// energy weapons have less drop
+	"projectile_drag_coefficient" 					"0.0"
+
+	"bolt_hitsize"									"0.0"
+
+	// Ammo
+	//
+
+	"ammo_pool_type"                               "special"
+	"ammo_clip_size"                               "500"
+	"ammo_stockpile_max"                           "500"
+	"ammo_default_total"                           "500"
+	"ammo_per_shot"                                "1"
+	"ammo_min_to_fire"                             "1"
+	"ammo_clip_random_loss_on_npc_drop_chunksize"  "1"
+	"ammo_no_remove_from_stockpile"                "1"
+	"reload_enabled"                               "1"
+	"allow_empty_click"                            "1"
+	"empty_reload_only"                            "0"
+
+    "low_ammo_fraction"              "0.1"
+
+	"reload_time"                                  "2.6"
+	"reload_time_late1"                            "1.32"
+	"reloadempty_time"                             "3.4"
+	"reloadempty_time_late1"                       "2.26"
+	"reloadempty_time_late2"                       "1.26"
+
+	"deployfirst_time"                             "1.5"
+
+	// Viewkick Spring
+	//
+	"viewkick_spring"                              ""
+
+	// Spread
+	//
+	// Sound - Firing
+	//
+	"fire_sound_1_npc"                             ""
+	"fire_sound_1_player_1p"                       ""
+	"fire_sound_2_player_1p"                       ""
+	"fire_sound_1_player_3p"                       ""
+	"fire_sound_2_player_3p"                       ""
+	
+	// Depth of Field
+	"dof_nearDepthStart"                       "0.0"
+	"dof_nearDepthEnd"                         "0.0"
+	"dof_zoom_nearDepthStart"                  "0.0"
+	"dof_zoom_nearDepthEnd"                    "0.0"
+
+
+	// FX - Impacts
+	"impact_effect_table"                          "none"
+
+	// FX - Projectile
+	"projectile_trail_effect_0"                    "P_fire_jet_med_nomdl"
+
+	// FX
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+
+	// Bodygroups
+	"bodygroup1_name"	""
+	"bodygroup1_set"	"1"
+
+	// Custom Float 0 - using this to control when the small ammo counter should be visible or not
+	// more specifically, to turn it off when the sniper optics are equipped and going into ADS
+	"custom_float_0"								"1"
+
+	// Custom int for hopup rui optic selection
+	"custom_int_0"							"0"
+
+	// ----- end custom flame wall settings
+	// Ammo
+	"ammo_suck_behavior"                       "primary_weapons"
+
+	// Behavior - Animation
+	//setting to "0" so it's tunable in Bakery
+	"sprintcycle_time"								"0"
+	"sprint_fractional_anims"                  "0"
+	
+	// FX - Projectile
+	"projectilemodel"                          "mdl/dev/empty_model.rmdl"
+
+	"Mods"
+	{
+		
+	}
+
+}
+

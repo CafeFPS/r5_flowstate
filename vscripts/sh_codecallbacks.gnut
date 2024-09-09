@@ -693,6 +693,8 @@ void function ServerCallback_PlayerChangedTeams( entity player, int oldTeam, int
 		return // todo(dw)
 
 	ShEHI_OnPlayerChangedTeam( player, oldTeam, newTeam )
+	
+	Signal( player, "ChangedTeam" )
 
 	foreach( void functionref(entity, int, int) callbackFunc in s_callbacksOnPlayerChangedTeam )
 		callbackFunc( player, oldTeam, newTeam )

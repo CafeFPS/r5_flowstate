@@ -77,12 +77,14 @@ function BaseGametype_Init()
 	RegisterSignal( "Stop_OnEndTouch_EntityBackInBounds" )
 
 	RegisterSignal( "OnRespawnSelect" )
+	RegisterSignal( "StopPostDeathLogic" )
+	RegisterSignal( "HaltPlayerCharacterThread" )
 
 	AddCallback_EntitiesDidLoad( BaseGametypeEntitiesDidLoad )
 
 	BaseGametype_Init_MPSP()
 
-	AddCallback_OnTitanBecomesPilot( OnTitanBecomesPilot_OutOfBoundsCheck )
+	//AddCallback_OnTitanBecomesPilot( OnTitanBecomesPilot_OutOfBoundsCheck ) //disabled for r5r
 	AddDeathCallback( "player", PlayerOrNPCKilled )
 }
 
@@ -208,6 +210,7 @@ function AddFlinch( entity attackedEnt, damageInfo )
 {
 	if( NON_FLINCH_MODES_BITMASK & ( 1 << Playlist() ) || NON_FLINCH_DAMAGE_BITMASK & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
 	{
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_NO_FLINCH )
 		return
 	}
 
@@ -565,7 +568,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	}
 }
 
-function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 )
+function PlayerDamageFeedback( entity ent, damageInfo, float shieldDmg = 0 )
 {
 	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
 		return
@@ -579,16 +582,12 @@ function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 
 	if ( IsMaxRangeShot( damageInfo ) )
 		customDamageType = customDamageType | DF_MAX_RANGE
 	
-	float damage
+	float damage = DamageInfo_GetDamage( damageInfo )
 	
-	if( permanentDmg > 0.0 )
-	{
-		damage = permanentDmg
-	}
-	else 
-	{
-		damage = DamageInfo_GetDamage( damageInfo )
-	}
+	if( shieldDmg > 0 )
+		damage = shieldDmg
+		
+	//Warning("notifying damage of: " + string( damage ) )
 	
 	attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 }
@@ -1093,7 +1092,7 @@ function DoRespawnPlayer( entity player, entity spawnPoint )
 		return
 
 	player.p.lastSpawnPoint = spawnPoint
-	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread
+	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread // Also sends OnRespawnPlayer first ~mkos
 }
 
 function SetupPilotSpawnOnRematch( entity player )
@@ -1371,26 +1370,16 @@ void function OnNPCKilled_SP( entity npc, var damageInfo )
 
 void function CodeCallback_OnEntityDestroyed( entity ent )
 {
-	// Must do ent.SetDoDestroyCallback( true ) to get this callback
-//	print( "OnEntityDestroyed " + ent.entindex() + "\n" )
-
-	if ( "onEntityDestroyedCallbacks" in ent.s )
+	foreach ( callbackFunc in ent.e.onEntityDestroyedCallbacks ) //Cafe was here
 	{
-		foreach ( callbackFunc in ent.s.onEntityDestroyedCallbacks )
-		{
-			callbackFunc( ent )
-		}
+		callbackFunc( ent )
 	}
 }
 
 function AddEntityDestroyedCallback( entity ent, void functionref( entity ) callbackFunc )
 {
-	//AssertParameters( callbackFunc, 1, "entity" )
-
-	if ( !( "onEntityDestroyedCallbacks" in ent.e ) )
-		ent.e.onEntityDestroyedCallbacks = []
-
-	ent.e.onEntityDestroyedCallbacks.append( callbackFunc )
+	if( !(ent.e.onEntityDestroyedCallbacks.contains( callbackFunc ) ) )
+		ent.e.onEntityDestroyedCallbacks.append( callbackFunc )
 
 	// set this or else the ent won't run CodeCallback_OnEntityDestroyed at all
 	ent.SetDoDestroyCallback( true )
@@ -1468,6 +1457,9 @@ function OnPlayerCloseClassMenu( entity player )
 //  playerconnected Reload
 void function CodeCallback_OnClientReloadConnectionCompleted( entity player )
 {
+	if( player.p.clientScriptInitialized )
+		return
+
 	FinishClientScriptInitialization( player )
 }
 
@@ -1627,17 +1619,29 @@ function OutOfBoundsSetup()
 
 void function OutOfBoundsDisable()
 {
+	if( Flowstate_DisableAllMapTriggers() )
+		return
+		
 	foreach( trigger in file.outOfBoundsTriggers )
 	{
-		#if MP
-			foreach ( ent, val in oob_triggerEntPairs[trigger] )
-				oob_triggerEntPairs[trigger][ent] = false
-			trigger.DisconnectOutput( "OnStartTouch", EntityEnterOutOfBoundsTrig )
-			trigger.DisconnectOutput( "OnEndTouch", EntityLeaveOutOfBoundsTrig )
-		#else
-			trigger.DisconnectOutput( "OnStartTouch", EntityOutOfBounds )
-			trigger.DisconnectOutput( "OnEndTouch", EntityBackInBounds )
-		#endif
+		try 
+		{
+			#if MP
+				foreach ( ent, val in oob_triggerEntPairs[trigger] )
+					oob_triggerEntPairs[trigger][ent] = false
+				trigger.DisconnectOutput( "OnStartTouch", EntityEnterOutOfBoundsTrig )
+				trigger.DisconnectOutput( "OnEndTouch", EntityLeaveOutOfBoundsTrig )
+			#else
+				trigger.DisconnectOutput( "OnStartTouch", EntityOutOfBounds )
+				trigger.DisconnectOutput( "OnEndTouch", EntityBackInBounds )
+			#endif
+		}
+		catch( e )
+		{
+			#if DEVELOPER 
+				Warning( "Track this down: " + e )
+			#endif 
+		}
 	}
 }
 
@@ -2058,21 +2062,6 @@ void function SetPlayerEliminated( entity player )
 	printt("PLAYER ELIMINATED ADDED TO TABLE. " + player.GetPlayerName() + " - " + player.GetPlatformUID())
 }
 
-void function SetPlayerIntroDropSettings( entity player )
-{
-
-}
-
-void function ClearPlayerIntroDropSettings( entity player )
-{
-
-}
-
-void function ClearPlayerPlaneViewMode( entity player )
-{
-	
-}
-
 void function ClearPlayerEliminated( entity player )
 {
 	if( !IsValid( player ) )
@@ -2286,4 +2275,21 @@ void function OnOOBTriggerEnter( entity trigger, entity ent )
 void function OnOOBTriggerLeave( entity trigger, entity ent )
 {
 	EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
+}
+
+//ranges may need tweaked during playtests ~mkos
+void function RingDamagePunch( entity ent, var damageInfo )
+{
+	if( !ent.IsPlayer() )
+		return
+		
+	vector origin = GetPlayerCrosshairOrigin( ent )
+	
+	float multiplier = DamageInfo_GetViewPunchMultiplier( damageInfo )
+	
+	float softAmount = RandomFloatRange( 0.5, 1.0 ) * multiplier
+	float hardAmount = RandomFloatRange( 1.0, 1.5 ) * multiplier
+	float randomBoost = RandomFloatRange( 0.5, 1.5 )
+	
+	ent.ViewPunch( origin, softAmount, hardAmount, randomBoost )
 }
