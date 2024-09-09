@@ -65,6 +65,7 @@ void function Gymmovementmap_precache() {
     PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_128_01.rmdl" )
     PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x128_02.rmdl" )
     PrecacheModel( $"mdl/slum_city/slumcity_girdering_256x16_dirty_d.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_staircase_96_double.rmdl" )
 }
 
 struct {
@@ -237,7 +238,7 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_128x352_03.rmdl", < 7933.558, -10738.88, 15470.65 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/ola/sewer_staircase_01.rmdl", < 1611.499, -10670.6, 16082.35 >, < 0, 0.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1573.444, -10675.02, 17032.06 >, < 0, -0.0253, 0 >, true, 50000, -1, 1 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/Weapons/octane_epipen/w_octane_epipen.rmdl", < -3676.819, -9941.918, 17512.14 >, < -39.4678, -152.2212, -78.9297 >, true, 50000, -1, 8.6978 ) )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/Weapons/octane_epipen/w_octane_epipen.rmdl", < -3676.819, -9941.918, 17512.14 >, < -39.4678, -152.2212, -78.9297 >, true, 50000, -1, 5 ) )
     MapEditor_CreateProp( $"mdl/playback/playback_bridge_panel_128x064_01.rmdl", < 11474.55, -9531.195, 14993.9 >, < 0, 0, -10.414 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 5761.093, -10845.38, 15720.35 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/desertlands_cafeteria_table_01.rmdl", < 11351.01, -3493.766, 15144.71 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
@@ -367,7 +368,7 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/beacon/modular_hose_yellow_32_01.rmdl", < -681.5537, -10665, 16579.6 >, < 0, -90.0166, 0 >, true, 50000, -1, 1 )
     InvisibleArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3408.001, -10564, 17703 >, < 89.972, 89.9998, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_128.rmdl", < -3055.519, -10152, 17836.57 >, < 0, 0.0639, 90 >, true, 50000, -1, 1 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/Weapons/octane_epipen/w_octane_epipen.rmdl", < 7726.998, -10742.39, 15524.08 >, < -30.0001, -89.9998, 119.9657 >, true, 50000, -1, 8.6978 ) )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/Weapons/octane_epipen/w_octane_epipen.rmdl", < 7726.998, -10742.39, 15524.08 >, < -30.0001, -89.9998, 119.9657 >, true, 50000, -1, 5 ) )
     MapEditor_CreateProp( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl", < 798.6592, -10671, 16438.29 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < -4366.945, -9254.45, 17520.22 >, < 0, 45.0831, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/indust_struct_gondola_platform_fence_01.rmdl", < -3056.272, -10153.15, 17467.22 >, < 0, -179.9997, 0 >, true, 50000, -1, 1 )
@@ -424,6 +425,7 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1442.591, -10550.16, 16960.44 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9417.719, -10737.38, 15631.15 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_corner_Lshape.rmdl", < 8267, -10550.04, 16461.38 >, < 0, 180, 180 >, true, 50000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/ola/sewer_staircase_96_double.rmdl", < -1195.599, -10675.59, 16661.4 >, < 0, 0, 0 >, true, 50000, -1, 1 )
 
     foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
     foreach ( entity ent in InvisibleArray ) ent.MakeInvisible()
@@ -965,12 +967,12 @@ void function Gymmovementmap_load() {
     }
     })
     DispatchSpawn( trigger_24 )
-    entity trigger_25 = MapEditor_CreateTrigger( < 2774.999, -10731.4, 16758 >, < 0, -179.9898, 0 >, 533.5, 900, false )
+    entity trigger_25 = MapEditor_CreateTrigger( < 3172.001, -10731.4, 16758 >, < 0, -179.9898, 0 >, 156.7, 900, false )
     trigger_25.SetEnterCallback( void function(entity trigger , entity ent)
     {
         if (IsValidPlayer(ent)) {
         file.cp_table[ent] <- < 3198.999, -10731.38, 15914 >
-        file.cp_angle[ent] <- < 0, -179.9898, 0 >
+        file.cp_angle[ent] <- < 0, -180, 0 >
         int gen = ent.GetPersistentVarAsInt("gen")
 
         if (gen != 0) {
@@ -1165,4 +1167,20 @@ void function Gymmovementmap_load() {
     }
     })
     DispatchSpawn( trigger_34 )
+    entity trigger_35 = MapEditor_CreateTrigger( < 2921, -11259, 16601 >, < 0, -179.9898, 0 >, 533.5, 1200, false )
+    trigger_35.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValidPlayer(ent)) {
+            ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+    })
+    DispatchSpawn( trigger_35 )
+    entity trigger_36 = MapEditor_CreateTrigger( < 2921.001, -10216.02, 16587 >, < 0, -179.9898, 0 >, 533.5, 1200, false )
+    trigger_36.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValidPlayer(ent)) {
+            ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+    })
+    DispatchSpawn( trigger_36 )
 }

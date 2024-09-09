@@ -1,5 +1,6 @@
 untyped
-globalize_all_functions
+global function mantlejumpmap_init
+global function mantlemap_reset_doors
 
 // Made by Loy and Treeree. 
 
@@ -1011,6 +1012,7 @@ if (user.GetPersistentVar("gen") == 0) {
     user.TakeOffhandWeapon(OFFHAND_TACTICAL)
     user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     user.SetPersistentVar( "gen", Time())
+    mantlemap_reset_doors()
     Message(user, "Timer Started!")
 } else {
     user.SetPersistentVar("gen", 0)
