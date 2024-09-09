@@ -2141,7 +2141,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 	asset bodyModel = GetGlobalSettingsAsset( setFile, "bodyModel" )
 	if( Flowstate_IsHaloMode() )
 	{
-		cs.model.SetModel( $"mdl/Humans/pilots/w_master_chief.rmdl" ) //todo get correct model from player ( dif color )
+		ccs.model.SetModel( $"mdl/Humans/pilots/w_master_chief.rmdl" ) //todo get correct model from player ( dif color )
 	} else
 	{
 		ccs.model.SetModel( bodyModel )
