@@ -31,7 +31,10 @@ global function GetFXRarityColorForTier // use this for in game loot
 global function GetFXRarityColorForUnlockable
 global function IsCustomAttachment
 global function IsCustomWeapon
+
+#if CLIENT || SERVER
 global function SURVIVAL_Loot_IsAmmoSpawningDisabled
+#endif
 
 global enum eLootTier
 {
