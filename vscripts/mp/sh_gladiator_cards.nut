@@ -1557,8 +1557,12 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 			characterOrNull = handle.overrideCharacter
 
 		LoadoutEntry characterSlot = Loadout_CharacterClass()
-		if ( characterOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, characterSlot ) )
+		if ( characterOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, characterSlot ) && !Flowstate_IsHaloMode() )
 			characterOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, characterSlot )
+		else if ( characterOrNull == null && havePlayer && Flowstate_IsHaloMode() )
+		{
+			characterOrNull = GetAllCharacters()[1] //master chief has bloodhound rrig
+		}
 
 		if ( characterOrNull != null )
 		{
@@ -1586,17 +1590,30 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 					}
 
 					LoadoutEntry stanceSlot = Loadout_GladiatorCardStance( character )
-					if ( stanceOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, stanceSlot ) )
+					if ( stanceOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, stanceSlot ) && !Flowstate_IsHaloMode() )
 						stanceOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, stanceSlot )
+					else if( stanceOrNull == null && havePlayer && Flowstate_IsHaloMode() )
+					{
+						array<string> fsStanceToUse = [ "SAID01299384641", "SAID00921909335", "SAID01817535639", "SAID00091072289", "SAID00982377873", "SAID00220291745", "SAID00831769300", "SAID01648826622", "SAID01649961270", "SAID01343995500", "SAID01318106859", "SAID01633864251", "SAID01730082082", "SAID01908244609" ] //todo(cafe) Change this with FS_GetAllStancesForCharacter()
+						int chosenStance = ConvertItemFlavorGUIDStringToGUID( fsStanceToUse.getrandom() )
+						stanceOrNull = GetItemFlavorByGUID( chosenStance )
+					}
 				}
 
 				if ( handle.overrideFrame != null )
 					frameOrNull = handle.overrideFrame
 
 				LoadoutEntry frameSlot = Loadout_GladiatorCardFrame( character )
-				if ( frameOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, frameSlot ) )
+				if ( frameOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, frameSlot ) && !Flowstate_IsHaloMode() )
 				{
 					frameOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, frameSlot )
+				}
+				else if ( frameOrNull == null && havePlayer && Flowstate_IsHaloMode() )
+				{
+					array<string> fsFrameToUse = [ "SAID00268385602", "SAID00635804049", "SAID02057058469", "SAID01701182052", "SAID00268385602", "SAID01855242336", "SAID00635804049" ] //todo(cafe) Change this with FS_GetAllFramesForCharacter()
+					// array<string> fsFrameToUse = [ "SAID01464077892", "SAID00975204679", "SAID00275370104", "SAID01667864698", "SAID02059064253" ] //legendaries. todo(cafe) Change this with FS_GetAllFramesForCharacter()
+					int chosenFrame = ConvertItemFlavorGUIDStringToGUID( fsFrameToUse.getrandom() )
+					frameOrNull = GetItemFlavorByGUID( chosenFrame )
 				}
 			}
 
@@ -2122,8 +2139,14 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 
 	asset setFile   = CharacterClass_GetSetFile( ccs.character )
 	asset bodyModel = GetGlobalSettingsAsset( setFile, "bodyModel" )
-	ccs.model.SetModel( bodyModel )
-	CharacterSkin_Apply( ccs.model, ccs.skin )
+	if( Flowstate_IsHaloMode() )
+	{
+		cs.model.SetModel( $"mdl/Humans/pilots/w_master_chief.rmdl" ) //todo get correct model from player ( dif color )
+	} else
+	{
+		ccs.model.SetModel( bodyModel )
+		CharacterSkin_Apply( ccs.model, ccs.skin )
+	}
 
 	ccs.lightingRig = CreateClientSidePropDynamic( modelPos, modelAng, SCENE_CAPTURE_LIGHTING_RIG_MODEL )
 	ccs.lightingRig.MakeSafeForUIScriptHack()
