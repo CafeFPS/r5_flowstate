@@ -185,6 +185,21 @@ void function Grenade_Init( entity grenade, entity weapon )
 void function Grenade_OnWeaponReady_Halo( entity weapon )
 {
 	entity weaponOwner = weapon.GetWeaponOwner()
+	var weaponName = weapon.GetWeaponClassName()	
+	string weaponNameString
+	
+	
+	if( weaponName != null )
+		weaponNameString = expect string( weaponName )
+	
+	if( !SURVIVAL_GetAllPlayerOrdnance( weaponOwner ).contains( weaponNameString ) )
+	{
+		#if CLIENT
+			SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
+		#endif
+		
+		return
+	}
 	
 	if( Time() < weaponOwner.p.haloGrenadeAttackTime + HALO_GRENADE_COOLDOWN )
 	{
@@ -196,7 +211,7 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	}
 	
 	weaponOwner.p.haloGrenadeAttackTime = Time()
-	weapon.OverrideNextAttackTime( 3.0 )
+	weapon.OverrideNextAttackTime( Time() + 3.0 )
 
 	WeaponPrimaryAttackParams attackParams
 
@@ -215,12 +230,7 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	float directionScale = 1.0
 	Grenade_OnWeaponToss_Halo( weapon, attackParams, directionScale )
 	
-	var weaponName = weapon.GetWeaponClassName()
-	
-	if( weaponName != null )
-	{
-		SURVIVAL_RemoveFromPlayerInventory( weaponOwner, expect string( weaponName ), 1 )
-	}
+	SURVIVAL_RemoveFromPlayerInventory( weaponOwner, weaponNameString, 1 )
 }
 
 int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
