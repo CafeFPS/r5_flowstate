@@ -2593,6 +2593,8 @@ void function soloModePlayerToWaitingList( entity player )
 
 		if( Bleedout_IsBleedingOut( player ) )
 			Signal( player, "BleedOut_OnRevive" )
+
+		Signal(player, "InterruptSyncedMelee")
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.
