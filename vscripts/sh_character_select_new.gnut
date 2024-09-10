@@ -2280,7 +2280,14 @@ void function OnLockStepPlayerIndexChanged( entity player, int oldValue, int new
 	if ( player == GetLocalClientPlayer() )
 	{
 		if ( fileLevel.countdownRui != null )
-			RuiSetInt( fileLevel.countdownRui, "yourPick", newValue + 1 )
+		{
+			try{
+				RuiSetInt( fileLevel.countdownRui, "yourPick", newValue + 1 )
+			} catch( e420 )
+			{
+				Warning( "[BUG THIS] UI character_select_name_plate_new doesn't expose argument yourPick as an int" )
+			}
+		}
 	}
 
 	// Update Button States

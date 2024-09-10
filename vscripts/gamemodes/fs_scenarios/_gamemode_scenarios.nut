@@ -61,6 +61,7 @@ global struct scenariosGroupStruct
 	array<entity> doors
 	
 	int trackedEntsArrayIndex
+	float lastTimeRingDamagedGroup = 0
 }
 
 struct doorsData
@@ -1362,6 +1363,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			
 			if( group.isReady && !group.IsFinished )
 			{
+				bool shouldRingDoDamageThisFrame = false
 				//Anuncio que la ronda individual está a punto de terminar
 				if( Time() > group.endTime - 30 && !group.showedEndMsg )
 				{
@@ -1373,6 +1375,12 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						LocalMsg( player, "#FS_Scenarios_30Remaining", "", eMsgUI.EVENT, 5 )
 					}
 					group.showedEndMsg = true
+				}
+
+				if( Time() - group.lastTimeRingDamagedGroup > settings.fs_scenarios_ring_damage_step_time )
+				{
+					shouldRingDoDamageThisFrame = true
+					group.lastTimeRingDamagedGroup = Time()
 				}
 
 				// No se pueden alejar mucho de la zona de juego
@@ -1410,11 +1418,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if ( player.IsPhaseShifted() )
 						continue
 
-					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > settings.fs_scenarios_ring_damage_step_time && !group.IsFinished )
+					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && shouldRingDoDamageThisFrame && !group.IsFinished )
 					{
 						Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 						player.TakeDamage( settings.fs_scenarios_ring_damage, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-						player.p.lastRingDamagedTime = Time()
 						FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_RING )
 						// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
 					}
@@ -1847,6 +1854,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							
 							//Setup starting shields
 							PlayerRestoreHP_1v1(player, 100, Equipment_GetDefaultShieldHP() )
+							
+							Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
+							Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 						}
 					}
 				)

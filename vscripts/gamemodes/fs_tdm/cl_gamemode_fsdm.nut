@@ -482,14 +482,11 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	thread Flowstate_ShowStartTimeUI( new )
 
 	if( Playlist() == ePlaylists.fs_scenarios )
-		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "ZONE WARS BY FLOWSTATE" )
+		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "FLOWSTATE ZONE WARS" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
-	if( Playlist() == ePlaylists.fs_scenarios )
-		return
-
 	#if DEVELOPER
 		printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
@@ -512,17 +509,20 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	entity player = GetLocalClientPlayer()
 	Signal( player, "FSDM_EndTimer")
 	EndSignal( player, "FSDM_EndTimer")
+
+	var text = HudElement( "FS_DMCountDown_Text" )
+	var frame = HudElement( "FS_DMCountDown_Frame" )
 	
 	OnThreadEnd(
-		function() : ()
+		function() : ( text, frame )
 		{
-			Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), false )
-			Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), false )
+			Hud_SetVisible( text, false )
+			Hud_SetVisible( frame, false )
 		}
 	)
 
-	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
-	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
+	Hud_SetVisible( text, true )
+	Hud_SetVisible( frame, true )
 
 	float startTime = Gamemode() == eGamemodes.WINTEREXPRESS ? Time() : GetGlobalNetTime( "flowstate_DMStartTime" )
 	
@@ -531,7 +531,11 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	switch( Playlist() )
 	{
 		case ePlaylists.fs_scenarios:
-		main = "Scenario End: "
+		main = "Stats shipping: "
+
+		UIPos basepos = REPLACEHud_GetBasePos( frame )	
+		UISize screenSize = GetScreenSize()
+		Hud_SetPos( frame, basepos.x - 5 * screenSize.width / 1920.0, basepos.y + 50 * screenSize.height / 1080.0 ) //text is parented to the frame so not need to change text pos
 		break
 	}
 
@@ -547,11 +551,11 @@ void function Flowstate_DMTimer_Thread( float endtime )
         int elapsedtime = int(endtime) - Time().tointeger()
 		
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
-		Hud_SetText( HudElement( "FS_DMCountDown_Text"), main + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
+		Hud_SetText( text, main + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
 
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !file.hideendtimeui )
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !file.hideendtimeui )
+		Hud_SetVisible( text, !file.hideendtimeui )
+		Hud_SetVisible( frame, !file.hideendtimeui )
 			
 		wait 1
 	}

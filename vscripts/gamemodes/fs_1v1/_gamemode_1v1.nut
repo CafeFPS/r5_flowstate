@@ -2578,6 +2578,11 @@ void function soloModePlayerToWaitingList( entity player )
 			player.SetShieldHealth( 0 )
 			player.SetShieldHealthMax( 0 )
 			Inventory_SetPlayerEquipment(player, "", "armor")
+			Inventory_SetPlayerEquipment(player, "", "backpack")
+			Inventory_SetPlayerEquipment(player, "", "incapshield")
+			Inventory_SetPlayerEquipment(player, "", "helmet")
+			if( IsAlive( player ) )
+				player.SetHealth( player.GetMaxHealth() )
 		}
 
 		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
@@ -4759,6 +4764,7 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		return
 		
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+	//WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
 	foreach( player in players )
 	{
@@ -4768,10 +4774,7 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		TakeAllWeapons(player)
 		Survival_SetInventoryEnabled( player, true )
 		SetPlayerInventory( player, [] ) //clear
-		
-		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
-		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-		
+
 		if( !FS_Scenarios_GetInventoryEmptyEnabled() )
 		{
 			EquipHostSetInventoryAttachments( player )
