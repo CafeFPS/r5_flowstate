@@ -76,6 +76,7 @@ global function GetChampionShowingState
 global function SetChampionShowingState
 global function WaitForChampionToFinish
 global const float SHORT_CHAMPION_CARD_TIME = 7.0
+global function FS_ResetMapLightning
 
 #if DEVELOPER
 	global function DEV_NextRound
@@ -3292,7 +3293,8 @@ void function SimpleChampionUI()
 	ResetAllPlayerStats()
 	ResetMapVotes()
 	file.winnerTeam = -1
-	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
+	if( !is3v3Mode() )
+		file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
 	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
@@ -4411,7 +4413,7 @@ void function CharSelect( entity player)
 	//Give master chief skin and assign a color
 	if( flowstateSettings.is_halo_gamemode )
 	{
-		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
+		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[1] )
 
 		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )

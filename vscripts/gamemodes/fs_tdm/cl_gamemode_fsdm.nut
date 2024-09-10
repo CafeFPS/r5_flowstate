@@ -260,6 +260,7 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		Flowstate_ForceRemoveAllObituaries()
 		FS_SetHideEndTimeUI( true )
+		Obituary_Print_Localized( "%$rui/bullet_point% Players Connected: " + GetPlayerArray().len(), GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		OpenCharacterSelectNewMenu()
 	}
@@ -1678,6 +1679,7 @@ void function DM_HintCatalog(int index, int eHandle)
 			break
 			
 			case ePlaylists.fs_scenarios:
+			Obituary_Print_Localized( "%$rui/bullet_point% Players Connected: " + GetPlayerArray().len(), GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			

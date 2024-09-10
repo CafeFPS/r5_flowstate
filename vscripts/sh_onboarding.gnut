@@ -557,7 +557,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 {
 	#if DEVELOPER
 		Warning( "DecideRespawnPlayer: " + string( player ) )
-		DumpStack()
+		// DumpStack()
 		mAssert( script_bRespawnInitComplete, "RespawnBehavior_Init() --- wasn't ready in DecideRespawnPlayer()" )
 	#endif
 	
@@ -649,9 +649,9 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 // clean up and move to main when completely debugged. Cafe
 bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserver = false )
 {
-	#if DEVELOPER
-	DumpStack()
-	#endif
+	// #if DEVELOPER
+	// DumpStack()
+	// #endif
 
 	Assert( IsValid( player ), player + " is invalid!!" )
 	Assert( !IsAlive( player ), player + " is already alive" )

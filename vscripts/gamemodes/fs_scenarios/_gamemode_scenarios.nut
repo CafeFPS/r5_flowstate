@@ -626,7 +626,7 @@ void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
 
 void function FS_Scenarios_StoreAliveDrops( entity prop )
 {
-	if( !IsValid( prop ) )
+	if( !IsValid( prop ) || prop.GetClassName() != "prop_survival" ) //Shouldn't happen but my debugging say the inverse so just in case. Cafe
 		return
 
 	file.aliveItemDrops.append( prop )
@@ -649,15 +649,6 @@ void function FS_Scenarios_CleanupDrops()
 
 void function FS_Scenarios_CleanupDeathboxes()
 {
-	// foreach( i, deathbox in file.aliveDeathboxes )
-	// {
-		// if( !IsValid( deathbox ) )
-		// {
-			// file.aliveDeathboxes.removebyvalue( deathbox )
-		// }
-	// }
-	
-	// don't remove multiple items from an array while iterating sequentially ~mkos
 	int maxIter = file.aliveDeathboxes.len() - 1
 	
 	for( int i = maxIter; i >= 0; i-- )
@@ -676,8 +667,8 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 		{
 			if( realm == -1 || deathbox.IsInRealm( realm )  )
 			{
-				if( IsValid( deathbox.GetParent() ) )
-					deathbox.GetParent().Destroy() // Destroy physics
+				if( IsValid( deathbox.GetParent() ) &&  deathbox.GetParent().GetClassName() == "prop_physics" )
+					deathbox.GetParent().Destroy() // Destroy physics. This is not always the physics. [Cafe]
 
 				deathbox.Destroy()
 				
@@ -695,13 +686,14 @@ void function FS_Scenarios_DestroyAllAliveDroppedLootForRealm( int realm = -1 )
 	int count = 0
 	foreach( drop in file.aliveItemDrops )
 	{
-		if( IsValid( drop ) )
+		if( IsValid( drop ) && drop.GetClassName() == "prop_survival" )
 		{
 			if( realm == -1 || drop.IsInRealm( realm )  )
 			{
-				if( IsValid( drop.GetParent() ) )
-					drop.GetParent().Destroy() // Destroy physics
-
+				printt( "FS_Scenarios_DestroyAllAliveDroppedLootForRealm", drop, drop.GetParent() )
+				if( IsValid( drop.GetParent() ) &&  drop.GetParent().GetClassName() == "prop_physics" )
+					drop.GetParent().Destroy() // Destroy physics. This is not always the physics. [Cafe]
+				
 				drop.Destroy()
 				
 				count++
@@ -727,15 +719,6 @@ void function FS_Scenarios_StoreAliveDropship( entity dropship )
 
 void function FS_Scenarios_CleanupDropships()
 {
-	// foreach( i, dropship in file.aliveDropships )
-	// {
-		// if( !IsValid( dropship ) )
-		// {
-			// file.aliveDropships.removebyvalue( dropship )
-		// }
-	// }
-	
-	// don't remove multiple items from an array while iterating sequentially ~mkos
 	int maxIter = file.aliveDropships.len() - 1
 	
 	for( int i = maxIter; i >= 0; i-- )
