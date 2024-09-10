@@ -1059,7 +1059,8 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		{
 			delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 		}
-		
+
+		player.p.scenariosTeamsMatched = 0
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
 		LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
@@ -1548,16 +1549,43 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		waitingPlayers.randomize()
 
+		waitingPlayers.sort( FS_SortPlayersByPriority )
+
+		int maxIter = waitingPlayers.len() - 1
+
 		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
-		foreach( player in waitingPlayers )
+		for( int i = maxIter; i >= 0; i-- )
 		{
+			entity player = waitingPlayers[i]
 			//Temp !FIXME
 			if( newGroup.team1Players.len() < settings.fs_scenarios_playersPerTeam )
+			{
 				newGroup.team1Players.append( player )
+				waitingPlayers.remove( i )
+			}
 			else if( newGroup.team2Players.len() < settings.fs_scenarios_playersPerTeam )
+			{
 				newGroup.team2Players.append( player )
+				waitingPlayers.remove( i )
+			}
 			else if( newGroup.team3Players.len() < settings.fs_scenarios_playersPerTeam && settings.fs_scenarios_teamAmount > 2 )
+			{
 				newGroup.team3Players.append( player )
+				waitingPlayers.remove( i )
+			} else
+				break //Stop iteration. Cafe
+		}
+
+		#if DEVELOPER
+			printt( "[Scenarios]", waitingPlayers.len(), " players didn't join to this match and will be still waiting. " )
+		#endif
+
+		foreach( player in waitingPlayers ) //players that didn't get into a match this frame
+		{
+			if( !IsValid( player ) )
+				continue
+
+			player.p.scenariosTeamsMatched++ //To give priority next game. Cafe
 		}
 
 		newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
@@ -1715,7 +1743,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				if( !IsValid( player ) )
 					return
-				
+
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )			
 				
 				int amountPlayersPerTeam
@@ -1949,6 +1977,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 	}//while(true)
 
 }//thread
+
+int function FS_SortPlayersByPriority( entity a, entity b )
+{
+	if ( a.p.scenariosTeamsMatched < b.p.scenariosTeamsMatched )
+		return 1
+	if ( a.p.scenariosTeamsMatched > b.p.scenariosTeamsMatched )
+		return -1
+
+	return 0
+}
 
 void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo )
 {

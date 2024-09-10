@@ -1084,7 +1084,6 @@ global struct ServerPlayerStruct
 	bool continueLoop = true
 	array<entity> dummyList
 	bool InDeathRecap
-	float lastRingDamagedTime
 	int lastAmmoPoolCount
 	entity lastDroppedLootEnt
 	entity myLastDeathbox
@@ -1115,6 +1114,8 @@ global struct ServerPlayerStruct
 	int assignedMasterChief = -1
 	array<string> weaponsToDropRefs
 	array<DropWeaponData> weaponsToDropData
+	
+	int scenariosTeamsMatched = 0
 }
 
 global struct ChallengeScore
