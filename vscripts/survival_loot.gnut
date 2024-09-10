@@ -5003,9 +5003,12 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 
 	// DO NOT PROCEED UNTIL THE SYNC MELEE IS DONE
 
-	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
-	if( is3v3Mode() && IsValid( group ) )
-		EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" ) //Cafe
+	if( is3v3Mode() )
+	{
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+		if( IsValid( group ) )
+			EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" ) //Cafe
+	}
 
 	if ( dropBox )
 	{
