@@ -690,7 +690,7 @@ void function FS_Scenarios_DestroyAllAliveDroppedLootForRealm( int realm = -1 )
 		{
 			if( realm == -1 || drop.IsInRealm( realm )  )
 			{
-				printt( "FS_Scenarios_DestroyAllAliveDroppedLootForRealm", drop, drop.GetParent() )
+				// printt( "FS_Scenarios_DestroyAllAliveDroppedLootForRealm", drop, drop.GetParent() )
 				if( IsValid( drop.GetParent() ) &&  drop.GetParent().GetClassName() == "prop_physics" )
 					drop.GetParent().Destroy() // Destroy physics. This is not always the physics. [Cafe]
 				

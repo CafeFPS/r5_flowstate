@@ -162,6 +162,12 @@ void function GamemodeSurvival_Init()
 		
 		AddClientCommandCallback("destroyEndScreen", ClientCommand_DestroyEndScreen)
 		AddClientCommandCallback("setLegendary", ClientCommand_SetLegendaryWeapon)
+		AddClientCommandCallback("giveGoodLoot", ClientCommand_GiveGoodLootToPlayers)
+		AddClientCommandCallback("enableGodMode", ClientCommand_EnableDemigod)
+		AddClientCommandCallback("disableGodMode", ClientCommand_EnableDemigod)
+		AddClientCommandCallback("becomeFade", ClientCommand_BecomeFade)
+		AddClientCommandCallback("becomeRhapsody", ClientCommand_BecomeRhapsody)
+		AddClientCommandCallback("spawnGreenWallIdk", ClientCommand_GreenWall) //requires custom material
 	#endif
 
 	FillSkyWithClouds()
@@ -176,6 +182,92 @@ void function GamemodeSurvival_Init()
 
 	if( GetCurrentPlaylistVarBool( "deathfield_starts_in_prematch", false ) )
 		thread SURVIVAL_RunArenaDeathField()
+}
+
+#if DEVELOPER
+bool function ClientCommand_GreenWall(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	entity shieldWallFX = CreatePropDynamic( $"mdl/fx/pilot_shield_wall_01.rmdl", player.GetOrigin() + <0,0,230> - player.GetForwardVector() * 2800, ClampAngles( <0,player.GetAngles().y,90> + <0,180,0> ) )
+	// shieldWallFX.SetModelScale( 50 )
+	shieldWallFX.kv.renderamt = 0
+	shieldWallFX.kv.rendercolor = "0, 255, 0"
+	shieldWallFX.kv.modelscale = 35
+	return true
+}
+
+bool function ClientCommand_BecomeRhapsody(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+	player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives( player )
+
+	player.GiveOffhandWeapon( "mp_weapon_rhapsody_ultimate", OFFHAND_ULTIMATE)
+	player.GiveOffhandWeapon( "mp_ability_rhapsody_tactical", OFFHAND_TACTICAL)
+	// GivePassive(player, ePassives.PAS_SLIPSTREAM)
+	return true
+}
+
+bool function ClientCommand_BecomeFade(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+	player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives( player )
+
+	player.GiveOffhandWeapon( "mp_ability_phase_chamber", OFFHAND_ULTIMATE)
+	player.GiveOffhandWeapon( "mp_ability_phase_rewind", OFFHAND_TACTICAL)
+	GivePassive(player, ePassives.PAS_SLIPSTREAM)
+	return true
+}
+
+bool function ClientCommand_EnableDemigod(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	EnableDemigod( player )
+	return true
+}
+
+bool function ClientCommand_GiveGoodLootToPlayers(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	foreach( int k, entity bot in GetPlayerArray() )
+	{
+		array<string> lootRefs = CreateLootForFlyerDeathBox( null, true )
+		ResetPlayerInventory( bot )
+		lootRefs.fastremovebyvalue( "blank" )
+		foreach( ref in lootRefs )
+		{
+			if ( ref == "" )
+				continue
+			
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+			if ( data.lootType == eLootType.MAINWEAPON )
+			{
+				player.GiveWeapon( ref, WEAPON_INVENTORY_SLOT_ANY, [] ) 
+			} else
+			{
+				SURVIVAL_AddToPlayerInventory( bot, ref)
+			}
+		}
+	}
+	
+	return false
 }
 
 bool function ClientCommand_SetLegendaryWeapon(entity player, array<string> args)
@@ -227,7 +319,7 @@ bool function ClientCommand_ForceRingMovement(entity player, array<string> args)
 	
 	thread function () : ( player )
 	{
-		FlagWait( "DeathCircleActive" )
+		FlagSet( "DeathCircleActive" )
 		svGlobal.levelEnt.Signal( "DeathField_ShrinkNow" )
 		FlagClear( "DeathFieldPaused" )
 	}()
@@ -284,6 +376,7 @@ bool function ClientCommand_deathbox(entity player, array<string> args)
 	CreateAimtrainerDeathbox( gp()[0], origin )
 	return true
 }
+#endif
 
 void function EntitiesDidLoad_Survival()
 {
@@ -2008,6 +2101,12 @@ void function ClearPlayerIntroDropSettings( entity player )
 
 	Survival_SetInventoryEnabled( player, true )
 
+	if( !(EHIToEncodedEHandle( player ) in file.playerData) )
+	{
+		SurvivalPlayerData data
+		file.playerData[EHIToEncodedEHandle( player )] <- data
+	}
+	
 	file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane = true
 	file.playerData[ EHIToEncodedEHandle( player ) ].landingOrigin       = player.GetOrigin()
 	file.playerData[ EHIToEncodedEHandle( player ) ].landingTime         = Time()

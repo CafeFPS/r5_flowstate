@@ -830,6 +830,8 @@ void function _OnPlayerConnected(entity player)
     if ( !IsValid( player ) ) 
 		return
 
+	Survival_OnClientConnected( player )
+
 	if( flowstateSettings.hackersVsPros )
 	{
 		AssignCharacter(player, characterslist.getrandom())

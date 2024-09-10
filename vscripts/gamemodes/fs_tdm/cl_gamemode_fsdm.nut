@@ -210,8 +210,8 @@ void function FS_Scenarios_OnClientScriptInit( entity player )
 {
 	FS_Scenarios_InitPlayersCards()
 	
-	#if DEVELOPER && MKOS
-		return //mkos: I need my debugs lol -.-
+	#if DEVELOPER 
+		return
 	#endif
 	
 	//I don't want these things in user screen even if they launch in debug
