@@ -868,6 +868,7 @@ void function OnGroundLootSpawned( entity ent )
 				}
 			}
 
+
 			if( itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
 			{
 				i--
@@ -5002,6 +5003,10 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 
 	// DO NOT PROCEED UNTIL THE SYNC MELEE IS DONE
 
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+	if( is3v3Mode() && IsValid( group ) )
+		EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" ) //Cafe
+
 	if ( dropBox )
 	{
 		entity otherAttacker
@@ -5052,9 +5057,9 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		{
 			vector spawnOrigin = savedOrigin
 
-			if ( isFallDeath || isCrushDeath || ShouldForceUseSafeSpotForDeathBoxForPlayer( player ) )
+			if ( isFallDeath || isCrushDeath || IsValid( player ) && ShouldForceUseSafeSpotForDeathBoxForPlayer( player ) )
 			{
-				if ( player.p.safeSpotForDeathBox != null )
+				if ( IsValid( player ) && player.p.safeSpotForDeathBox != null )
 				{
 					Point safeSpot = expect Point( player.p.safeSpotForDeathBox  )
 					spawnOrigin = safeSpot.origin
