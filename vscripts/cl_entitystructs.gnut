@@ -211,6 +211,9 @@ global struct ClientPlayerStruct
 	
 	//lightning gun 
 	bool lightningGunReady
+	
+	// halo grenade 
+	float haloGrenadeAttackTime
 }
 
 

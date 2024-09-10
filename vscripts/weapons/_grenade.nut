@@ -35,6 +35,7 @@ global function Grenade_Launch
 
 const EMP_MAGNETIC_FORCE = 1600
 const MAG_FLIGHT_SFX_LOOP = "Explo_MGL_MagneticAttract"
+const float HALO_GRENADE_COOLDOWN = 3.0
 
 //Proximity Mine Settings
 global const PROXIMITY_MINE_EXPLOSION_DELAY = 1.2
@@ -184,17 +185,42 @@ void function Grenade_Init( entity grenade, entity weapon )
 void function Grenade_OnWeaponReady_Halo( entity weapon )
 {
 	entity weaponOwner = weapon.GetWeaponOwner()
-	weapon.OverrideNextAttackTime( 0.0 )
+	
+	if( Time() < weaponOwner.p.haloGrenadeAttackTime + HALO_GRENADE_COOLDOWN )
+	{
+		#if CLIENT
+			SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
+		#endif
+
+		return
+	}
+	
+	weaponOwner.p.haloGrenadeAttackTime = Time()
+	weapon.OverrideNextAttackTime( 3.0 )
 
 	WeaponPrimaryAttackParams attackParams
 
 	attackParams.dir = weaponOwner.GetViewVector()
 	attackParams.pos = weaponOwner.UseableEyePosition( weaponOwner )
-	attackParams.firstTimePredicted = true
+	
+	bool bFirstTimePredicted = false
+	
+	#if CLIENT 
+		if( InPrediction() && IsFirstTimePredicted() )
+			bFirstTimePredicted = true
+	#endif
+	
+	attackParams.firstTimePredicted = bFirstTimePredicted
 
 	float directionScale = 1.0
-
 	Grenade_OnWeaponToss_Halo( weapon, attackParams, directionScale )
+	
+	var weaponName = weapon.GetWeaponClassName()
+	
+	if( weaponName != null )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( weaponOwner, expect string( weaponName ), 1 )
+	}
 }
 
 int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
@@ -233,8 +259,8 @@ int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams atta
 int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
 {
 	weapon.EmitWeaponSound_1p3p( GetGrenadeThrowSound_1p( weapon ), GetGrenadeThrowSound_3p( weapon ) )
-	bool projectilePredicted = PROJECTILE_PREDICTED
-	bool projectileLagCompensated = PROJECTILE_LAG_COMPENSATED
+	bool projectilePredicted = false //PROJECTILE_PREDICTED
+	bool projectileLagCompensated = false //PROJECTILE_LAG_COMPENSATED
 #if SERVER
 	if ( weapon.IsForceReleaseFromServer() )
 	{
@@ -258,9 +284,17 @@ int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams
 		// TryPlayWeaponBattleChatterLine( weaponOwner, weapon )
 	// #endif
 #endif
+	
+#if CLIENT
+	SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
+#endif
+	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+}
+
 
 #if CLIENT 
-
+void function SwitchToLastUsedWeapon( entity weaponOwner )
+{
 	if( IsValid( file.lastWeapon ) )
 	{
 		if( weaponOwner == file.lastWeapon.GetWeaponOwner() )
@@ -290,10 +324,8 @@ int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams
 			weaponOwner.ClientCommand( cmd )
 		}
 	}
-#endif 
-	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
-
+#endif 
 
 void function OnProjectileCollision_weapon_impulse_grenade( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
 {

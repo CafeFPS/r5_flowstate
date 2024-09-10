@@ -822,6 +822,7 @@ global struct ServerPlayerStruct
 	bool ClientCommandsEnabled 	= true
 	array<int> invalidAssets	= []
 	bool bannersValidated		= false
+	float haloGrenadeAttackTime = 0.0
 	table< table<int, int> > groupTypeToRuiID = {}
 	
 	//for adding specific spawn behavior on a player basis.
