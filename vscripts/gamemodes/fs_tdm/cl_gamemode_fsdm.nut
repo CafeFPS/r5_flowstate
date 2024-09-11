@@ -104,7 +104,6 @@ struct {
 	array<var> allyTeamCards
 	array<var> enemyTeamCards
 	array<var> enemyTeamCards2
-	bool buildingTeam = true
 	array<int> allyTeamHandles
 	array<int> enemyTeamHandles
 	array<int> enemyTeamHandles2
@@ -437,13 +436,6 @@ void function ForceShow1v1Scoreboard()
 
 void function Cl_OnResolutionChanged()
 {
-	if( GetCurrentPlaylistName() == "fs_scenarios" )
-	{
-		if( !file.buildingTeam )
-			FS_Scenarios_TogglePlayersCardsVisibility( true, false )
-		else
-			FS_Scenarios_TogglePlayersCardsVisibility( false, true )
-	}
 	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
 	{
 		Flowstate_ShowRoundEndTimeUI( -1 )
@@ -2068,15 +2060,10 @@ void function FS_Scenarios_InitPlayersCards()
 		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
 		Hud_SetVisible( button , false )
 	}
-
-	file.buildingTeam = true
 }
 
 void function FS_Scenarios_AddEnemyHandle( int handle )
 {
-	if( !file.buildingTeam )
-		return
-
 	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
 	
 	if( !IsValid( enemyPlayer ) )
@@ -2088,9 +2075,6 @@ void function FS_Scenarios_AddEnemyHandle( int handle )
 
 void function FS_Scenarios_AddEnemyHandle2( int handle )
 {
-	if( !file.buildingTeam )
-		return
-
 	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
 	
 	if( !IsValid( enemyPlayer ) )
@@ -2102,9 +2086,6 @@ void function FS_Scenarios_AddEnemyHandle2( int handle )
 
 void function FS_Scenarios_AddAllyHandle( int handle )
 {
-	if( !file.buildingTeam )
-		return
-
 	entity allyPlayer = GetEntityFromEncodedEHandle( handle )
 	
 	if( !IsValid( allyPlayer ) )
@@ -2116,9 +2097,13 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 
 void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 {
-	if( Playlist() != ePlaylists.winterexpress )
-		file.buildingTeam = false
+	#if DEVELOPER
+		printt("FS_Scenarios_SetupPlayersCards", onlyUpdate, file.enemyTeamHandles2.len(), file.enemyTeamHandles.len(), file.allyTeamHandles.len() )
+	#endif
 
+	Hud_SetVisible( file.vsBasicImage, false )
+	Hud_SetVisible( file.vsBasicImage2, false )
+	
 	foreach( int i, int handle in file.enemyTeamHandles2 )
 	{
 		if( i > file.enemyTeamCards2.len() )
@@ -2203,6 +2188,9 @@ void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 
 void function FS_Scenarios_TogglePlayersCardsVisibility( bool show, bool reset )
 {
+	#if DEVELOPER
+		printt("FS_Scenarios_TogglePlayersCardsVisibility", show, reset)
+	#endif
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 

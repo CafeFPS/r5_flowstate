@@ -3845,7 +3845,8 @@ void function SimpleChampionUI()
 	if( IsValid( file.ringBoundary ) )
 		file.ringBoundary.Destroy()
 	
-	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
+	if( !is3v3Mode() )
+		SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 
 	if( is1v1EnabledAndAllowed() )
 		waitthread ForceAllRoundsToFinish_solomode()
