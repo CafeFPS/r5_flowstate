@@ -1375,7 +1375,22 @@ void function CodeCallback_OnClientDisconnected( entity player, string reason )
 {
 	printt( "CodeCallback_OnClientDisconnected", player, reason )
 	player.Signal( "OnDisconnected" )
-	
-	foreach( cb in svGlobal.onClientDisconnectedCallbacks )
-		cb( player )
+
+	if ( !player.hasConnected || player.GetTeam() == TEAM_SPECTATOR )
+		return
+
+	player.p.isDisconnected = true    // need to be before the script callbacks so that we can know if a player is disconnecting
+
+	// Added via AddCallback_OnPreClientDisconnected
+	foreach ( callbackFunc in svGlobal.onPreClientDisconnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	// Added via AddCallback_OnClientDisconnected
+	foreach ( callbackFunc in svGlobal.onClientDisconnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
 }
