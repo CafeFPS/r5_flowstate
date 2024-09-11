@@ -910,13 +910,6 @@ void function OnGroundLootSpawned( entity ent )
 	LootTypeData lt = GetLootTypeData( lootType )
 	if ( lt.specialCaseSpawnFunction != null )
 	{
-		if( settings.lsm_mod9 && RandomInt(3) == 1)
-		{
-			int angleZ = 0
-			loot = SpawnGenericLoot( itemRef, newOrigin, <0, RandomFloatRange( 0, 360 ), angleZ>, itemData.countPerDrop )
-			return
-		}
-		
 		loot = lt.specialCaseSpawnFunction( itemRef, newOrigin, -1 ) //Fix realms if needed. Cafe
 		return
 	}
@@ -4836,6 +4829,9 @@ void function Delayed_TryReplaceOrdnance( entity player, entity offhandWeapon, b
 
 void function SURVIVAL_Death_DropLoot( entity player, var damageInfo )
 {
+	if( !IsValid( damageInfo ) || !IsValid( player ) )
+		return
+
 	entity attacker    = DamageInfo_GetAttacker( damageInfo )
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
