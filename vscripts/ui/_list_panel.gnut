@@ -689,12 +689,15 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 		if ( visibleIndices.contains( itemIndex ) )
 			continue
 
-		foreach ( ListElementData buttonData in data.usedElements )
+		int maxIter = data.usedElements.len() - 1
+		
+		for( int i = maxIter; i >= 0; i-- )
 		{
+			ListElementData buttonData = data.usedElements[i]
 			if ( buttonData.assignedIndex == itemIndex )
 			{
 				data.availableElements.append( buttonData )
-				data.usedElements.removebyvalue( buttonData )
+				data.usedElements.remove( i )
 				Hud_Hide( buttonData.button )
 			}
 		}
