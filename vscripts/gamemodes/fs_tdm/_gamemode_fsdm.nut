@@ -273,7 +273,7 @@ void function InitializePlaylistSettings()
 	flowstateSettings.RandomHaloGuns 						= GetCurrentPlaylistVarBool( "flowstateRandomHaloGuns", false )
 	flowstateSettings.DroppodsOnPlayerConnected 			= GetCurrentPlaylistVarBool( "flowstateDroppodsOnPlayerConnected", false )
 	flowstateSettings.EndlessFFAorTDM 						= GetCurrentPlaylistVarBool( "flowstateEndlessFFAorTDM", false )
-	flowstateSettings.endgame_delay 						= GetCurrentPlaylistVarInt( "endgame_delay", 8 )
+	flowstateSettings.endgame_delay 						= GetCurrentPlaylistVarInt( "endgame_delay", 6 )
 	flowstateSettings.enable_global_chat 					= GetCurrentPlaylistVarBool( "enable_global_chat", true)
 	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )					
 	flowstateSettings.give_random_custom_models_toall		= GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false )
@@ -3564,6 +3564,12 @@ void function SimpleChampionUI()
 
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	SetTdmStateToNextRound()
+	
+	if( is3v3Mode() )
+	{
+		FS_DM.scoreboardShowing = true
+		FS_Scenarios_ForceAllRoundsToFinish()
+	}
 
 	if( GetBestPlayer() != null )
 		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
@@ -3585,7 +3591,7 @@ void function SimpleChampionUI()
 		{
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
-		} 
+		}
 		else
 			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 		
@@ -3597,6 +3603,11 @@ void function SimpleChampionUI()
 		player.HolsterWeapon()
 		player.Server_TurnOffhandWeaponsDisabledOn()
 		
+		if( is3v3Mode() )
+		{
+			LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
+		}
+
 		if( flowstateSettings.enable_oddball_gamemode  )
 		{
 			AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
@@ -3604,7 +3615,7 @@ void function SimpleChampionUI()
 			if( file.winnerTeam >= -1 )
 			{
 				Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 0 )
-			} 
+			}
 			else if( file.winnerTeam < -1 )
 			{
 				Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 1 )
@@ -3639,7 +3650,9 @@ void function SimpleChampionUI()
 		FSDM_SetMatchPersistentVarsForPlayer( roundPlayer )
 
 	PIN_RoundEnd( file.currentRound ) //must be after champion determined.
-	wait (2)
+	// wait (2) // Not required wait since we're already waiting above flowstateSettings.endgame_delay
+	WaitEndFrame()
+
 	// end ship
 	
 	////////////////////////////////
@@ -3647,16 +3660,90 @@ void function SimpleChampionUI()
 	////////////////////////////////
 
 	if( SCOREBOARD_ENABLE )
+	{
 		thread SendScoreboardToClient()
-	
-	wait flowstateSettings.endgame_delay
+	}
+
+	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() && flowstateSettings.end_match_message )
+	{
+		string matchEndingTitle = flowstateSettings.custom_match_ending_title
+		string matchEndingMessage = flowstateSettings.custom_match_ending_message
+
+		foreach( player in GetPlayerArray() )
+			Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
+	}
+
+	////////////////////////////////
+	//////// 	SCOREBOARD 	////////
+	////////////////////////////////
+	if( SCOREBOARD_ENABLE )
+	{
+		wait flowstateSettings.endgame_delay //There should be another wait for the server to wait untill all clients have scoreboard info. This sucks so bad. Cafe
+
+		FS_DM.scoreboardShowing = true
+		
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			
+			if( flowstateSettings.is_halo_gamemode )
+				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+
+			entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			
+			if( IsValid( weapon ) && weapon.w.isInAdsCustom )
+				weapon.w.isInAdsCustom = false
+
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
+		}		
+
+		wait 6
+		
+		if( !VOTING_PHASE_ENABLE )
+		{
+			// Close the votemenu for each player
+			foreach( player in GetPlayerArray() )
+			{
+				if( !IsValid( player ) )
+					continue
+				
+				ScreenFadeToBlack( player, 0.5, 0.6 ) // a little extra so we stay black
+				// wait EMBARK_FADE_TIME
+				// ScreenFadeFromBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME )
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+			}
+
+			wait 0.7
+			
+			// foreach( player in GetPlayerArray() )
+			// {
+				// if( !IsValid( player ) )
+					// continue
+				
+				// ScreenFadeToBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME + 0.2 ) // a little extra so we stay black
+				// wait EMBARK_FADE_TIME
+				// ScreenFadeFromBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME )
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+			// }
+		}
+		
+		FS_DM.scoreboardShowing = false
+	} else
+		wait flowstateSettings.endgame_delay/2 //Just for visuals, this wait is not required at all
 
 	if( flowstateSettings.BattleLogEnable )
 		if( flowstateSettings.BattleLog_Linux )
 			thread Flowstate_SaveBattleLogToFile_Linux()
 		else
 			thread Flowstate_SaveBattleLogToFile()
-
+	
 	if( flowstateSettings.ChatLogEnable )
 		Flowstate_ServerSaveChat()
 
@@ -3718,22 +3805,11 @@ void function SimpleChampionUI()
 			if ( player.p.isSpectating )
 				endSpectate( player )
 		}
-		
-		string matchEndingTitle = flowstateSettings.custom_match_ending_title
-		string matchEndingMessage = flowstateSettings.custom_match_ending_message
-		
-		if( flowstateSettings.end_match_message )
-		{
-			foreach( player in GetPlayerArray() )
-				Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
 
-			wait 6
-		}
-		
 		if( FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym() )
 				MovementGymSaveTimesToFile()
 		
-		
+
 		////////////////////////////////
 		////		SIGNAL STATS	////
 		////////////////////////////////
@@ -3766,78 +3842,9 @@ void function SimpleChampionUI()
 		file.ringBoundary.Destroy()
 	
 	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
-	
-	if( is3v3Mode() )
-	{
-		FS_DM.scoreboardShowing = true
-		FS_Scenarios_ForceAllRoundsToFinish()
-	}
-	else if( is1v1EnabledAndAllowed() )
+
+	if( is1v1EnabledAndAllowed() )
 		waitthread ForceAllRoundsToFinish_solomode()
-	
-	
-	////////////////////////////////
-	//////// 	SCOREBOARD 	////////
-	////////////////////////////////
-	if( SCOREBOARD_ENABLE )
-	{
-		FS_DM.scoreboardShowing = true
-		
-		foreach( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) )
-				continue
-			
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			
-			if( flowstateSettings.is_halo_gamemode )
-				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
-
-			entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-			
-			if( IsValid( weapon ) && weapon.w.isInAdsCustom )
-				weapon.w.isInAdsCustom = false
-
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
-			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
-		}		
-
-		wait 6
-		
-		if( !VOTING_PHASE_ENABLE )
-		{
-			// Close the votemenu for each player
-			foreach( player in GetPlayerArray() )
-			{
-				if( !IsValid( player ) )
-					continue
-				
-				ScreenFadeToBlack( player, 0.5, 0.6 ) // a little extra so we stay black
-				// wait EMBARK_FADE_TIME
-				// ScreenFadeFromBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME )
-				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
-			}
-
-			wait 0.7
-			
-			// foreach( player in GetPlayerArray() )
-			// {
-				// if( !IsValid( player ) )
-					// continue
-				
-				// ScreenFadeToBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME + 0.2 ) // a little extra so we stay black
-				// wait EMBARK_FADE_TIME
-				// ScreenFadeFromBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME )
-				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
-			// }
-		}
-		
-		FS_DM.scoreboardShowing = false
-	}
-	
 	
 	////////////////////////////////////////////
 	// 		SET STATE FOR INTERNAL CHECKS 	  //
