@@ -3377,8 +3377,8 @@ void function SimpleChampionUI()
 	//////// 	TIMER BEGIN 	////
 	////////////////////////////////
 
-	float endTime = Time() + FlowState_RoundTime()
-	g_fCurrentRoundEndTime = endTime //set global for server
+	g_fCurrentRoundEndTime = Time() + FlowState_RoundTime() //set global for server
+	FS_Scenarios_SetStopMatchmaking( false )
 
 	if( flowstateSettings.EndlessFFAorTDM )
 	{
@@ -3395,10 +3395,10 @@ void function SimpleChampionUI()
 			isFinalRound = true
 		}
 		
-		SetGlobalNetTime( "flowstate_DMRoundEndTime", endTime )
+		SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
 		// SetGlobalNetInt( "currentDeathFieldStage", round )
-		// SetGlobalNetTime( "nextCircleStartTime", endTime )
-		// SetGlobalNetTime( "circleCloseTime", endTime + 8 )
+		// SetGlobalNetTime( "nextCircleStartTime", g_fCurrentRoundEndTime )
+		// SetGlobalNetTime( "circleCloseTime", g_fCurrentRoundEndTime + 8 )
 
 		// if( isFinalRound )
 			// AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
@@ -3431,7 +3431,7 @@ void function SimpleChampionUI()
 		//// 	CORE TIMER LOOP 	////
 		////////////////////////////////
 		
-		while( Time() <= endTime ) //Todo: Execute callbacks for gamemode and add via AddCallback_ShouldTimerEnd( int timeRemaining, bool functionref() condFunc )
+		while( Time() <= g_fCurrentRoundEndTime ) //Todo: Execute callbacks for gamemode and add via AddCallback_ShouldTimerEnd( int timeRemaining, bool functionref() condFunc )
 		{
 			if( flowstateSettings.hackersVsPros )
 			{
@@ -3484,13 +3484,13 @@ void function SimpleChampionUI()
 				}
 			}
 
-			if( Time() == endTime - 60 )
+			if( Time() == g_fCurrentRoundEndTime - 60 )
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 
-			if( Time() == endTime - 30 )
+			if( Time() == g_fCurrentRoundEndTime - 30 )
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 
-			if( Time() == endTime - 10 )
+			if( Time() == g_fCurrentRoundEndTime - 10 )
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 
 			wait 1
@@ -3498,7 +3498,7 @@ void function SimpleChampionUI()
 	}
 	else if ( !FlowState_Timer() )
 	{
-		while( Time() <= endTime )
+		while( Time() <= g_fCurrentRoundEndTime )
 		{
 			wait 1
 		}

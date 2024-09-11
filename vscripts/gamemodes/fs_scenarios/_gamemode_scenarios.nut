@@ -21,6 +21,7 @@ global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
 global function FS_Scenarios_HandleGroupIsFinished
+global function FS_Scenarios_SetStopMatchmaking
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -62,6 +63,7 @@ global struct scenariosGroupStruct
 	
 	int trackedEntsArrayIndex
 	float lastTimeRingDamagedGroup = 0
+	bool isLastGameFromRound
 }
 
 struct doorsData
@@ -101,6 +103,8 @@ struct {
 	array<entity> aliveDropships
 	array<entity> aliveDeathboxes
 	array<entity> aliveItemDrops
+	
+	bool scenariosStopMatchmaking = false
 } file
 
 struct
@@ -1504,8 +1508,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			HolsterAndDisableWeapons( restingPlayerEntity )
 		}
 
-		if( GetScoreboardShowingState() )
-				continue
+		//Condiciones que detienen la creación de juegos
+		if( GetScoreboardShowingState() || file.scenariosStopMatchmaking )
+			continue
 
 		// Hay suficientes jugadores para crear un equipo?
 		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
@@ -1540,6 +1545,22 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		// Hay suficientes jugadores para crear un equipo?
 		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 			continue	
+
+		float maxEndTime = settings.fs_scenarios_characterselect_enabled == true ? ( 7.0 + settings.fs_scenarios_characterselect_time_per_player*settings.fs_scenarios_playersPerTeam ) : 0.0
+		maxEndTime += Time() + settings.fs_scenarios_ringclosing_maxtime + 7
+
+		if( maxEndTime > g_fCurrentRoundEndTime )
+		{
+			//not enough time for another match. Cafe
+			g_fCurrentRoundEndTime = maxEndTime //Set the global flowstate end time to the max time this round could have and don't create new games
+			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
+			file.scenariosStopMatchmaking = true
+			newGroup.isLastGameFromRound = true
+
+			#if DEVELOPER
+			Warning("[Scenarios] Time was extended", maxEndTime )
+			#endif
+		}
 
 		Assert( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 
@@ -1586,6 +1607,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				continue
 
 			player.p.scenariosTeamsMatched++ //To give priority next game. Cafe
+			if( file.scenariosStopMatchmaking )
+				LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, maxEndTime - Time() )
 		}
 
 		newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
@@ -1854,7 +1877,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								//this is just a test to see how spawn metadata would be used for a game mode ~mkos
 								string spawnName = newGroup.groupLocStruct.name
 								string ids = newGroup.groupLocStruct.ids
-								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
+								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 ) //, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids ) //Why is this needed? Looks like useless debug info for the end user [Cafe]
 							}
 							
 							if( settings.fs_scenarios_characterselect_enabled )
@@ -2063,6 +2086,12 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 		}
 
 		group.IsFinished = true //tell solo thread this round has finished
+	
+		if( group.isLastGameFromRound )
+		{
+			g_fCurrentRoundEndTime = Time() //Set the global flowstate end time to end right now if this group was the last group from the round and everyone was waiting for them
+			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
+		}
 	}
 
 	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
@@ -2232,6 +2261,7 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 	float starttime = Time()
 	float endtime = Time() + settings.fs_scenarios_ringclosing_maxtime
+
 	float startradius = group.currentRingRadius
 	printt( "STARTED RING FOR GROUP", group.groupHandle, "Duration Closing", endtime - Time(), "Starting Radius", startradius )
 
@@ -2562,6 +2592,11 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 void function Scenarios_SetWaitingRoomRadius( int radius )
 {
 	settings.waitingRoomRadius = radius
+}
+
+void function FS_Scenarios_SetStopMatchmaking( bool set )
+{
+	file.scenariosStopMatchmaking = set
 }
 
 // void function Scenarios_CleanupMiscProperties( array< array<entity> > allPlayersInRound )
