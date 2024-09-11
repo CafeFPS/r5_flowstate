@@ -104,7 +104,7 @@ struct {
 	array<entity> aliveDeathboxes
 	array<entity> aliveItemDrops
 	
-	bool scenariosStopMatchmaking = false
+	bool scenariosStopMatchmaking = true
 } file
 
 struct

@@ -3378,7 +3378,11 @@ void function SimpleChampionUI()
 	////////////////////////////////
 
 	g_fCurrentRoundEndTime = Time() + FlowState_RoundTime() //set global for server
-	FS_Scenarios_SetStopMatchmaking( false )
+
+	if( !flowstateSettings.show_short_champion_screen && is3v3Mode() )
+	{
+		FS_Scenarios_SetStopMatchmaking( false )
+	}
 
 	if( flowstateSettings.EndlessFFAorTDM )
 	{
@@ -7052,6 +7056,9 @@ void function WaitForChampionToFinish()
 {
 	while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
 		WaitFrame()
+	
+	if( is3v3Mode() )
+		FS_Scenarios_SetStopMatchmaking( false )
 }
 
 void function Common_DissolveDropable( entity prop )
