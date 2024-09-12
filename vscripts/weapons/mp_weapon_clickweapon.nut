@@ -286,18 +286,50 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 						
 						if( !(player in file.beammover) || player in file.beammover && !IsValid( file.beammover[player] ) )
 							file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-						
+
 						moverForLaserEnt = file.beammover[ player ]
 						moverForLaserEnt.SetOrigin( origin )
+						
+						entity moverForHand
+						if( !(player in file.handmover) || player in file.handmover && !IsValid( file.handmover[player] ) )
+							file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
 
+						entity viewmodel = weapon.GetWeaponViewmodel()
+						
+						moverForHand = file.handmover[ player ]
+						
+						if( IsValid( viewmodel ) )
+						{
+							if( weapon.LookupViewModelAttachment( "CAFEWASHERE" ) > 0 )
+								moverForHand.SetParent( viewmodel, "CAFEWASHERE" ) //I'm insane
+						}
+						
+						if( player.IsThirdPersonShoulderModeOn() || !IsValid( viewmodel ) )
+						{
+							if( player.LookupAttachment( "R_HAND" ) > 0 )
+								moverForHand.SetParent( player, "R_HAND" )
+						}
+						
 						int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
-
+						
 						if( !EffectDoesExist( file.beamsFxs[ player ] ) )
 						{
-							file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( player, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, AnglesToRight( player.GetViewVector() ) * positionOffset + <0,0,40>, <0, 0, 0> )
+							file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( moverForHand, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
 							EffectSetDontKillForReplay( file.beamsFxs[ player ] )
 							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
 							EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
+							if( player.GetPlatformUID() == "1011657326453" ) //proto
+							{
+								thread function () : ( player )
+								{
+									EndSignal( player, "OnDestroy" )
+									while( player in file.beamsFxs && EffectDoesExist( file.beamsFxs[ player ] ) )
+									{
+										EffectSetControlPointVector( file.beamsFxs[ player ], 2, <RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 )> )
+										wait 0.1
+									}
+								}()
+							}
 						} 
 						else
 						{
@@ -503,7 +535,19 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 			file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
 			EffectSetDontKillForReplay( file.beamsFxs[ player ] )
 
-			if( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
+			if( player.GetPlatformUID() == "1011657326453" ) //proto
+			{
+				thread function () : ( player )
+				{
+					EndSignal( player, "OnDestroy" )
+					while( player in file.beamsFxs && EffectDoesExist( file.beamsFxs[ player ] ) )
+					{
+						EffectSetControlPointVector( file.beamsFxs[ player ], 2, <RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 )> )
+						wait 0.1
+					}
+				}()
+			} 
+			else if( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
 				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenEnemyColor )
 			else
 				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
