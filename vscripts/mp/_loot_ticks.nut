@@ -1,6 +1,7 @@
 global function LootTicks_Init
 global function SpawnLootTick
 global function SpawnLootTickAtCrosshair
+global function DEV_TpToRandomTick
 
 const asset LOOT_TICK_MODEL = $"mdl/robots/drone_frag/drone_frag_loot.rmdl"
 const asset FX_LOOT_TICK_DEATH = $"P_loot_tick_exp_CP"
@@ -10,6 +11,7 @@ const int MAX_LOOT_TICKS_TO_SPAWN = 12
 struct
 {
 	table<entity, array<string> > tickLootInside
+	array<entity> lootticks
 } file
 
 void function LootTicks_Init()
@@ -19,7 +21,7 @@ void function LootTicks_Init()
     PrecacheParticleSystem(FX_LOOT_TICK_IDLE)
 
     #if SERVER
-    if(GetCurrentPlaylistVarBool("loot_ticks_enabled", true) && Gamemode() == eGamemodes.SURVIVAL )
+    if(GetCurrentPlaylistVarBool("loot_ticks_enabled", true) && GameRules_GetGameMode() == SURVIVAL )
         AddCallback_EntitiesDidLoad( SpawnMultipleLootTicksForMap )
     #endif
 }
@@ -63,7 +65,7 @@ void function SpawnMultipleLootTicksForMap()
 	}
 }
 
-entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpool = ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
+entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpool = ["POI_Ultra","POI_Ultra","POI_Ultra","POI_Ultra"])//["loottick_static_01", "loottick_static_02", "loottick_static_03", "loottick_static_03"])
 {
     entity lootTick = CreateEntity( "npc_frag_drone" )
     {
@@ -107,7 +109,14 @@ entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpo
     thread PlayAnim( lootTick, "sd_closed_to_open" )
     thread LootTickParticleThink( lootTick )
 	thread LootTickSoundThink( lootTick )
+	file.lootticks.append( lootTick )
     return lootTick
+}
+
+void function DEV_TpToRandomTick()
+{
+	entity player = gp()[0]
+	player.SetOrigin( file.lootticks.getrandom().GetOrigin() )
 }
 
 void function LootTickSoundThink( entity tick )
@@ -211,8 +220,55 @@ void function SpawnLootTickLoot( entity tick, string ref )
 void function AddMultipleLootItemsToLootTick( entity tick, array<string> refs )
 {
 	int numRefs = refs.len()
-	for ( int i; i < numRefs; i++ )
-		AddLootToLootTick( tick, SURVIVAL_GetWeightedItemFromGroup(refs[ i ]) )
+	for ( int j; j < numRefs; j++ )
+	{
+		
+		for(int i = 0; i < 1; i++)
+		{
+			string itemRef = SURVIVAL_GetWeightedItemFromGroup( refs[ i ] )
+			
+			bool weaponalready = false
+			foreach( item in file.tickLootInside[ tick ] )
+			{
+				LootData lootData2 = SURVIVAL_Loot_GetLootDataByRef( item )
+				
+				if( lootData2.lootType == eLootType.MAINWEAPON )
+				{
+					weaponalready = true
+				}
+			}
+			LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+			
+			if( file.tickLootInside[ tick ].contains( itemRef ) )
+			{
+				i--
+				continue
+			}
+			if( ( lootData.lootType == eLootType.INCAPSHIELD || lootData.lootType == eLootType.BACKPACK || lootData.lootType == eLootType.HELMET ) && lootData.tier <= 2 || lootData.lootType == eLootType.ARMOR )
+			{
+				i--
+				continue
+			}
+			if( lootData.lootType == eLootType.MAINWEAPON && lootData.tier != 4 || lootData.lootType == eLootType.MAINWEAPON && weaponalready )
+			{
+				i--
+				continue
+			}			
+			if( lootData.attachmentType == eWeaponAttachmentType.HOPUP || lootData.lootType == eLootType.ATTACHMENT && lootData.tier <= 2 )
+			{
+				i--
+				continue
+			}
+			
+			if( itemRef == "health_pickup_combo_full" )
+			{
+				i--
+				continue
+			}
+			AddLootToLootTick( tick, itemRef )
+		}
+		
+	}
 }
 
 void function AddLootToLootTick( entity tick, string ref )
