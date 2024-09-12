@@ -31,7 +31,7 @@
 
 	// Behavior - Firing
 	//
-	"fire_rate"                                "4.0"
+	"fire_rate"                                "4.2"
 	"impulse_force"                            "750"
 	"is_semi_auto"				                "1"
 

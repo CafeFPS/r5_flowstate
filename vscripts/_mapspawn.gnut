@@ -538,6 +538,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	}
 	
 	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
+	FS_ResetMapLightning()
 }
 
 const array<string> InvalidModesForTrackScoreBoard = //const values

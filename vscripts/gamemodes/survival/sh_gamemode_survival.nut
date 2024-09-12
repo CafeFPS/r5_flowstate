@@ -225,8 +225,8 @@ bool function Survival_PlayerCanDrop( entity player )
 	//if ( !GamePlaying() )
 	//	return false
 
-	if ( player.ContextAction_IsActive() && !player.ContextAction_IsRodeo() )
-		return false
+	// if ( player.ContextAction_IsActive() && !player.ContextAction_IsRodeo() )
+		// return false
 
 	if ( Bleedout_IsBleedingOut( player ) )
 		return false

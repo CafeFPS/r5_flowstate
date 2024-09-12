@@ -33,6 +33,8 @@ WeaponData
     "OnCreateChargeEffect"                          "OnCreateChargeEffect_Consumable"
     "OnCreateMuzzleFlashEffect"                     "OnCreateMuzzleFlashEffect_Consumable"
 
+	offhand_allow_player_interact					1
+
 	// Models
 	"viewmodel"										"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"
 	"playermodel"									"mdl/Weapons/shield_battery/w_shield_battery.rmdl"
@@ -318,6 +320,8 @@ WeaponData
 
 			// Enalbe RUI
 			"ui1_enable"							"1"
+			
+			//"move_speed_modifier"                       "*1.2"
         }
 
         ultimate_battery_supercharged_fx

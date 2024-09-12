@@ -241,7 +241,7 @@
         style					DialogListButton
         navUp					SwitchDamageClosesMenu
         navDown					SwitchStreamerMode
-        ConVar					"enable_healthbar"
+        //ConVar					"enable_healthbar"
         
 		list
         {

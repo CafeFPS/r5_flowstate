@@ -450,7 +450,9 @@ void function OnWeaponActivate_Consumable( entity weapon )
 
 		if ( GetCurrentPlaylistVarBool( "survival_healthkits_limit_movement", true ) )
 		{
-			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
+			if( modName != "ultimate_battery" )
+				useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
+
 			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
 		}
 

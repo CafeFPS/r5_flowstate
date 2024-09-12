@@ -119,10 +119,35 @@ void function EntitiesDidLoad()
 			SpawnLootDrones( 12 )
 		}()
 	}
+	
+	FS_SetupMemorial()
 }
 #endif
 
 #if SERVER
+void function FS_SetupMemorial()
+{
+	vector origin = <-23564.7637, 36239.0664, -3189.44995>
+	
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 200 )
+	trigger.SetAboveHeight( 100 )
+	trigger.SetBelowHeight( 50 )
+	trigger.SetOrigin( origin )
+	trigger.SetEnterCallback(  FSMemorialEnter )
+
+	DispatchSpawn( trigger )
+}
+
+void function FSMemorialEnter( entity trigger , entity ent )
+{
+	if( !IsValid(ent) ) return
+	
+	printt( "memorial enter" )
+	Message( ent, "FLOWSTATE MEMORIAL", "Gracias por darme la vida, gracias por las enseñanzas.\n Gracias por darme las fuerzas para seguir adelante.\n Gracias por darme las fuerzas para desarrollar Flowstate.\n                  Por CafeFPS." )
+}
+
+
 void function Desertlands_SetTrainEnabled( bool enabled )
 {
 	file.isTrainEnabled = enabled
