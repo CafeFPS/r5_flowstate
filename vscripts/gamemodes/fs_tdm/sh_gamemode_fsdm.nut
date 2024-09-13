@@ -1237,243 +1237,243 @@ void function Sh_CustomTDM_Init()
 		)
 		}
 		
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Lava Fissure",
-                    [
-                        NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
-                        NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
-                        NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
-                        NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>),
-                        NewLocPair(<-27585, 9191, -3080>, <0, 89, 0>),
-                        NewLocPair(<-26469, 9825, -2810>, <0, 87, 0>),
-                        NewLocPair(<-27623, 10210, -3290>, <0, 87, 0>),
-                        NewLocPair(<-25717, 13034, -3047>, <0, -176, 0>),
-                        NewLocPair(<-26433, 13360, -3000>, <0, 68, 0>),
-                        NewLocPair(<-26463, 13766, -3080>, <0, -95, 0>),
-                        NewLocPair(<-28781, 13266, -3080>, <0, 80, 0>),
-                        NewLocPair(<-27535, 10922, -3280>, <0, -94, 0>),
-                        NewLocPair(<-29879, 9151, -2860>, <0, 0, 0>)
-                    ],
-                    <0, 0, 2500>,$"rui/flowstatelocations/lavafissure"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Lava Fissure",
+                    // [
+                        // NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
+                        // NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
+                        // NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
+                        // NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>),
+                        // NewLocPair(<-27585, 9191, -3080>, <0, 89, 0>),
+                        // NewLocPair(<-26469, 9825, -2810>, <0, 87, 0>),
+                        // NewLocPair(<-27623, 10210, -3290>, <0, 87, 0>),
+                        // NewLocPair(<-25717, 13034, -3047>, <0, -176, 0>),
+                        // NewLocPair(<-26433, 13360, -3000>, <0, 68, 0>),
+                        // NewLocPair(<-26463, 13766, -3080>, <0, -95, 0>),
+                        // NewLocPair(<-28781, 13266, -3080>, <0, 80, 0>),
+                        // NewLocPair(<-27535, 10922, -3280>, <0, -94, 0>),
+                        // NewLocPair(<-29879, 9151, -2860>, <0, 0, 0>)
+                    // ],
+                    // <0, 0, 2500>,$"rui/flowstatelocations/lavafissure"
+                // )
+            // )
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Space Elevator",
-                    [
-                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
-                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
-                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
-                        NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>),
-						NewLocPair(<-13348, 27630, -3535>, <3.01, 57.17, 0>),
-						NewLocPair(<-13772, 26473, -4000>, <0, 169, 0>),
-                        NewLocPair(<-12366, 26209, -4000>, <0, -90, 0>),
-                        NewLocPair(<-12063, 27640, -4000>, <0, -3, 0>),
-                        NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
-                        NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
-                        NewLocPair(<-12350, 26227, -3500>, <0, 148, 0>),
-                        NewLocPair(<-13765, 27654, -2850>, <0, -65, 0>),
-                        NewLocPair(<-12121, 26517, -2850>, <0, 124, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/spaceelevator"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Space Elevator",
+                    // [
+                        // NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
+                        // NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
+                        // NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
+                        // NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>),
+						// NewLocPair(<-13348, 27630, -3535>, <3.01, 57.17, 0>),
+						// NewLocPair(<-13772, 26473, -4000>, <0, 169, 0>),
+                        // NewLocPair(<-12366, 26209, -4000>, <0, -90, 0>),
+                        // NewLocPair(<-12063, 27640, -4000>, <0, -3, 0>),
+                        // NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
+                        // NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
+                        // NewLocPair(<-12350, 26227, -3500>, <0, 148, 0>),
+                        // NewLocPair(<-13765, 27654, -2850>, <0, -65, 0>),
+                        // NewLocPair(<-12121, 26517, -2850>, <0, 124, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/spaceelevator"
+                // )
+            // )
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Little Town",
-                    [
-                        NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
-                        NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
-                        NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/littletown"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Little Town",
+                    // [
+                        // NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
+                        // NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
+                        // NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/littletown"
+                // )
+            // )
 
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "TTV Building 2",
-                    [
-                        NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
-                        NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
-						NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
-                        NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/ttvbuilding2"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "TTV Building 2",
+                    // [
+                        // NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
+                        // NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
+						// NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
+                        // NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/ttvbuilding2"
+                // )
+            // )
 
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Little Town 2",
-                    [
-                        NewLocPair(<-27219, -24393, -4497>, <0, 87, 0>),
-                        NewLocPair(<-26483, -28042, -4209>, <0, 122, 0>),
-                        NewLocPair(<-25174, -26091, -4550>, <0, 177, 0>),
-						NewLocPair(<-29512, -25863, -4462>, <0, 3, 0>),
-						NewLocPair(<-28380, -28984, -4102>, <0, 54, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/littletown2"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Little Town 2",
+                    // [
+                        // NewLocPair(<-27219, -24393, -4497>, <0, 87, 0>),
+                        // NewLocPair(<-26483, -28042, -4209>, <0, 122, 0>),
+                        // NewLocPair(<-25174, -26091, -4550>, <0, 177, 0>),
+						// NewLocPair(<-29512, -25863, -4462>, <0, 3, 0>),
+						// NewLocPair(<-28380, -28984, -4102>, <0, 54, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/littletown2"
+                // )
+            // )
 
-	    Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Dome",
-                    [
-                        NewLocPair(<19351, -41456, -2192>, <0, 96, 0>),
-                        NewLocPair(<22925, -37060, -2169>, <0, -156, 0>),
-                        NewLocPair(<19772, -34549, -2232>, <0, -137, 0>),
-						NewLocPair(<17010, -37125, -2129>, <0, 81, 0>),
-						NewLocPair(<15223, -40222, -1998>, <0, 86, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/dome"
-                )
-            )
+	    // Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Dome",
+                    // [
+                        // NewLocPair(<19351, -41456, -2192>, <0, 96, 0>),
+                        // NewLocPair(<22925, -37060, -2169>, <0, -156, 0>),
+                        // NewLocPair(<19772, -34549, -2232>, <0, -137, 0>),
+						// NewLocPair(<17010, -37125, -2129>, <0, 81, 0>),
+						// NewLocPair(<15223, -40222, -1998>, <0, 86, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/dome"
+                // )
+            // )
 
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Refinery",
-                    [
-                        NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
-                        NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
-                        NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
-                        NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
-                        NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
-                        NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
-                        NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
-                        NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
-                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
-                        NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
-                        NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
-                        NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
-                        NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
-                        NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
-                        NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
-                        NewLocPair(<16715, 28017, -4650>, <0, -45, 0>)
-                    ],
-                    <0, 0, 6500>,$"rui/flowstatelocations/refinery"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Refinery",
+                    // [
+                        // NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
+                        // NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
+                        // NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
+                        // NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
+                        // NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
+                        // NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
+                        // NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
+                        // NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
+                        // NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
+                        // NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
+                        // NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
+                        // NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
+                        // NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
+                        // NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
+                        // NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
+                        // NewLocPair(<16715, 28017, -4650>, <0, -45, 0>)
+                    // ],
+                    // <0, 0, 6500>,$"rui/flowstatelocations/refinery"
+                // )
+            // )
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Factory",
-                    [
-                        NewLocPair(<495.42, -26649.92, -3038.36>, <10.60, 44.95, -0>),
-                        NewLocPair(<648.07, -26450.72, -3547.97>, <10.20, 57.48, -0>),
-                        NewLocPair(<1653.03, -22939.29, -3571.97>, <12.00, -1.80, -0>),
-                        NewLocPair(<1722.22, -20823.69, -3719.31>, <7.45, -0.78, -0>),
-                        NewLocPair(<2193.69, -25349.72, -3443.97>, <3.69, 15.20, -0>),
-                        NewLocPair(<2557.95, -25035.46, -2971.97>, <2.00, 31.20, -0>),
-                        NewLocPair(<2608.53, -21670.90, -3707.97>, <11.75, 89.78, -0>),
-                        NewLocPair(<2240.71, -23184.89, -3187.97>, <-5.40, -87.58, -0>),
-                        NewLocPair(<3507.99, -24980.33, -3571.97>, <-6.62, -36.62, -0>),
-                        NewLocPair(<3954.13, -18102.04, -3582.36>, <-8.11, -29.47, 0>),
-                        NewLocPair(<4450.69, -20891.45, -3507.85>, <11.16, -44.58, -0.00>),
-                        NewLocPair(<6090.35, -25075.12, -3563.97>, <2.47, -0.46, -0>),
-                        NewLocPair(<7415.33, -20497.42, -3631.94>, <8.72, 84.13, -0>),
-                        NewLocPair(<7422.97, -17985.25, -3507.97>, <8.41, -45.65, -0>),
-                        NewLocPair(<8240.16, -24245.68, -3547.97>, <8.23, 50.62, -0>),
-                        NewLocPair(<9259.17, -22461.68, -3283.97>, <9.92, -28.07, -0>),
-                        NewLocPair(<9534.27, -19869.87, -3331.97>, <3.73, -91.33, -0>),
-                        NewLocPair(<10111.38, -20003.82, -2752.97>, <18.04, 84.92, -0>),
-                        NewLocPair(<11252.87, -16981.14, -2752.97>, <17.64, -104.16, 0>),
-                        NewLocPair(<11720.60, -19655.80, -3331.97>, <1.44, -116.68, -0>),
-                        NewLocPair(<12233.26, -18075.12, -2581.72>, <4.60, -134.70, 0>),
-                    ],
-                    <0, 0, 3000>,$"rui/flowstatelocations/factory"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Factory",
+                    // [
+                        // NewLocPair(<495.42, -26649.92, -3038.36>, <10.60, 44.95, -0>),
+                        // NewLocPair(<648.07, -26450.72, -3547.97>, <10.20, 57.48, -0>),
+                        // NewLocPair(<1653.03, -22939.29, -3571.97>, <12.00, -1.80, -0>),
+                        // NewLocPair(<1722.22, -20823.69, -3719.31>, <7.45, -0.78, -0>),
+                        // NewLocPair(<2193.69, -25349.72, -3443.97>, <3.69, 15.20, -0>),
+                        // NewLocPair(<2557.95, -25035.46, -2971.97>, <2.00, 31.20, -0>),
+                        // NewLocPair(<2608.53, -21670.90, -3707.97>, <11.75, 89.78, -0>),
+                        // NewLocPair(<2240.71, -23184.89, -3187.97>, <-5.40, -87.58, -0>),
+                        // NewLocPair(<3507.99, -24980.33, -3571.97>, <-6.62, -36.62, -0>),
+                        // NewLocPair(<3954.13, -18102.04, -3582.36>, <-8.11, -29.47, 0>),
+                        // NewLocPair(<4450.69, -20891.45, -3507.85>, <11.16, -44.58, -0.00>),
+                        // NewLocPair(<6090.35, -25075.12, -3563.97>, <2.47, -0.46, -0>),
+                        // NewLocPair(<7415.33, -20497.42, -3631.94>, <8.72, 84.13, -0>),
+                        // NewLocPair(<7422.97, -17985.25, -3507.97>, <8.41, -45.65, -0>),
+                        // NewLocPair(<8240.16, -24245.68, -3547.97>, <8.23, 50.62, -0>),
+                        // NewLocPair(<9259.17, -22461.68, -3283.97>, <9.92, -28.07, -0>),
+                        // NewLocPair(<9534.27, -19869.87, -3331.97>, <3.73, -91.33, -0>),
+                        // NewLocPair(<10111.38, -20003.82, -2752.97>, <18.04, 84.92, -0>),
+                        // NewLocPair(<11252.87, -16981.14, -2752.97>, <17.64, -104.16, 0>),
+                        // NewLocPair(<11720.60, -19655.80, -3331.97>, <1.44, -116.68, -0>),
+                        // NewLocPair(<12233.26, -18075.12, -2581.72>, <4.60, -134.70, 0>),
+                    // ],
+                    // <0, 0, 3000>,$"rui/flowstatelocations/factory"
+                // )
+            // )
 
-        Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Lava City",
-                    [
-                        NewLocPair(<22663, -28134, -2706>, <0, 40, 0>),
-                        NewLocPair(<22844, -28222, -3030>, <0, 90, 0>),
-                        NewLocPair(<22687, -27605, -3434>, <0, -90, 0>),
-                        NewLocPair(<22610, -26999, -2949>, <0, 90, 0>),
-                        NewLocPair(<22607, -26018, -2749>, <0, -90, 0>),
-                        NewLocPair(<22925, -25792, -3500>, <0, -120, 0>),
-                        NewLocPair(<24235, -27378, -3305>, <0, -100, 0>),
-                        NewLocPair(<24345, -28872, -3433>, <0, -144, 0>),
-                        NewLocPair(<24446, -28628, -3252>, <13, 0, 0>),
-                        NewLocPair(<23931, -28043, -3265>, <0, 0, 0>),
-                        NewLocPair(<27399, -28588, -3721>, <0, 130, 0>),
-                        NewLocPair(<26610, -25784, -3400>, <0, -90, 0>),
-                        NewLocPair(<26757, -26639, -3673>, <-10, 90, 0>),
-                        NewLocPair(<26750, -26202, -3929>, <-10, -90, 0>)
-                    ],
-                    <0, 0, 3000>,$"rui/flowstatelocations/lavacity"
-                )
-            )
+        // Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Lava City",
+                    // [
+                        // NewLocPair(<22663, -28134, -2706>, <0, 40, 0>),
+                        // NewLocPair(<22844, -28222, -3030>, <0, 90, 0>),
+                        // NewLocPair(<22687, -27605, -3434>, <0, -90, 0>),
+                        // NewLocPair(<22610, -26999, -2949>, <0, 90, 0>),
+                        // NewLocPair(<22607, -26018, -2749>, <0, -90, 0>),
+                        // NewLocPair(<22925, -25792, -3500>, <0, -120, 0>),
+                        // NewLocPair(<24235, -27378, -3305>, <0, -100, 0>),
+                        // NewLocPair(<24345, -28872, -3433>, <0, -144, 0>),
+                        // NewLocPair(<24446, -28628, -3252>, <13, 0, 0>),
+                        // NewLocPair(<23931, -28043, -3265>, <0, 0, 0>),
+                        // NewLocPair(<27399, -28588, -3721>, <0, 130, 0>),
+                        // NewLocPair(<26610, -25784, -3400>, <0, -90, 0>),
+                        // NewLocPair(<26757, -26639, -3673>, <-10, 90, 0>),
+                        // NewLocPair(<26750, -26202, -3929>, <-10, -90, 0>)
+                    // ],
+                    // <0, 0, 3000>,$"rui/flowstatelocations/lavacity"
+                // )
+            // )
 			
-        Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Thermal Station",
-                    [
-                        NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
-						NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
-						NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
-                        NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>),
-                        NewLocPair(<-20938, -23039, -4252>, <0, 90, 0>),
-                        NewLocPair(<-19361, -23083, -4252>, <0, 100, 0>),
-                        NewLocPair(<-19264, -23395, -3850>, <0, 100, 0>),
-                        NewLocPair(<-16756, -20711, -3982>, <0, 180, 0>),
-                        NewLocPair(<-17066, -20746, -4233>, <0, 180, 0>),
-                        NewLocPair(<-17113, -19622, -4269>, <10, -170, 0>),
-                        NewLocPair(<-20092, -17684, -4252>, <0, -90, 0>),
-                        NewLocPair(<-23069, -20567, -4214>, <-11, 146, 0>),
-                        NewLocPair(<-20109, -20675, -4252>, <0, -90, 0>)
-                    ],
-                    <0, 0, 11000>,$"rui/flowstatelocations/thermalstation"
-                )
-            )
+        // Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Thermal Station",
+                    // [
+                        // NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
+						// NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
+						// NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
+                        // NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>),
+                        // NewLocPair(<-20938, -23039, -4252>, <0, 90, 0>),
+                        // NewLocPair(<-19361, -23083, -4252>, <0, 100, 0>),
+                        // NewLocPair(<-19264, -23395, -3850>, <0, 100, 0>),
+                        // NewLocPair(<-16756, -20711, -3982>, <0, 180, 0>),
+                        // NewLocPair(<-17066, -20746, -4233>, <0, 180, 0>),
+                        // NewLocPair(<-17113, -19622, -4269>, <10, -170, 0>),
+                        // NewLocPair(<-20092, -17684, -4252>, <0, -90, 0>),
+                        // NewLocPair(<-23069, -20567, -4214>, <-11, 146, 0>),
+                        // NewLocPair(<-20109, -20675, -4252>, <0, -90, 0>)
+                    // ],
+                    // <0, 0, 11000>,$"rui/flowstatelocations/thermalstation"
+                // )
+            // )
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Epicenter",
-                    [
-                        NewLocPair(<8712, 23164, -3944>, <0, -49, 0>),
-                        NewLocPair(<14000, 21690, -3969>, <0, -130, 0>),
-                        NewLocPair(<10377, 17994, -4236>, <0, -120, 0>),
-						NewLocPair(<13100, 18138, -4856>, <0, 120, 0>)
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Epicenter",
+                    // [
+                        // NewLocPair(<8712, 23164, -3944>, <0, -49, 0>),
+                        // NewLocPair(<14000, 21690, -3969>, <0, -130, 0>),
+                        // NewLocPair(<10377, 17994, -4236>, <0, -120, 0>),
+						// NewLocPair(<13100, 18138, -4856>, <0, 120, 0>)
 
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/epicenter"
-                )
-            )
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/epicenter"
+                // )
+            // )
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Overlook",
-                    [
-                        NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
-                        NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
-                        NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
-						NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/overlook"
-                )
-            )	
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Overlook",
+                    // [
+                        // NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
+                        // NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
+                        // NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
+						// NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/overlook"
+                // )
+            // )	
 			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Train yard",
-                    [
-                        NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
-                        NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
-                        NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
-						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>),
-						NewLocPair(<-14930,2065,-3140>, <0, 3, 0>)
-                    ],
-                    <0, 0, 2000>,$"rui/flowstatelocations/trainyard"
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Train yard",
+                    // [
+                        // NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
+                        // NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
+                        // NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
+						// NewLocPair(<-11412,3692,-3405>, <0, 3, 0>),
+						// NewLocPair(<-14930,2065,-3140>, <0, 3, 0>)
+                    // ],
+                    // <0, 0, 2000>,$"rui/flowstatelocations/trainyard"
+                // )
+            // )
 					
 			
 		// Shared_RegisterLocation(
@@ -1587,71 +1587,71 @@ void function Sh_CustomTDM_Init()
 			// )
 		// )
 
-        if(FlowState_EnableShipmentByAyeZee()){
-            vector shipmentstartingorg = <6779,9016,11687>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Shipment By AyeZee",
-				[
-					NewLocPair(< 6848.7000, -3415.7000, 99.9000 > + shipmentstartingorg, < 0, -135.0003, 0 >),
-                    NewLocPair(< 4750.8930, -5191.4390, 99.9000 > + shipmentstartingorg, < 0, 51.7723, 0 >),
-                    NewLocPair(< 4765.2000, -3380.5000, 99.9000 > + shipmentstartingorg, < 0, -47.3245, 0 >),
-                    NewLocPair(< 6886.6280, -5163.9330, 99.9000 > + shipmentstartingorg, < 0, 140.8409, 0 >),
-                    NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + shipmentstartingorg, < 0, -167.7632, 0 >),
-                    NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + shipmentstartingorg, < 0, 152.5185, 0 >),
-                    NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
-                    NewLocPair(< 5621, -5041, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
-                    NewLocPair(< 4763, -4508, 99.9000 > + shipmentstartingorg, < 0, -38.7503, 0 >),
-                    NewLocPair(< 4750.1250, -4088.1680, 99.9000 > + shipmentstartingorg, < 0, 40.1670, 0 >)
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
+        // if(FlowState_EnableShipmentByAyeZee()){
+            // vector shipmentstartingorg = <6779,9016,11687>
+            // Shared_RegisterLocation(
+			// NewLocationSettings(
+				// "Shipment By AyeZee",
+				// [
+					// NewLocPair(< 6848.7000, -3415.7000, 99.9000 > + shipmentstartingorg, < 0, -135.0003, 0 >),
+                    // NewLocPair(< 4750.8930, -5191.4390, 99.9000 > + shipmentstartingorg, < 0, 51.7723, 0 >),
+                    // NewLocPair(< 4765.2000, -3380.5000, 99.9000 > + shipmentstartingorg, < 0, -47.3245, 0 >),
+                    // NewLocPair(< 6886.6280, -5163.9330, 99.9000 > + shipmentstartingorg, < 0, 140.8409, 0 >),
+                    // NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + shipmentstartingorg, < 0, -167.7632, 0 >),
+                    // NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + shipmentstartingorg, < 0, 152.5185, 0 >),
+                    // NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
+                    // NewLocPair(< 5621, -5041, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
+                    // NewLocPair(< 4763, -4508, 99.9000 > + shipmentstartingorg, < 0, -38.7503, 0 >),
+                    // NewLocPair(< 4750.1250, -4088.1680, 99.9000 > + shipmentstartingorg, < 0, 40.1670, 0 >)
+				// ],
+				// <0, 0, 3000>
+			// )
+		// )
+        // }
 
-        if(FlowState_EnableKillhouseByAyeZee()){
-            vector killhousestartingorg = <-2961,-13240,-2810>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Killhouse By AyeZee",
-				[
-					NewLocPair(< 156.6777, -1466.7410, 9.4000 > + killhousestartingorg,< 0, 131.0375, 0 >),
-                    NewLocPair(< -1167.9380, -1466.3340, 9.4000 > + killhousestartingorg,< 0, 44.6976, 0 >),
-                    NewLocPair(< -1170.2510, -996.2968, 9.4000 > + killhousestartingorg,< 0, -0.5495, 0 >),
-                    NewLocPair(< 217.9963, -1035.2670, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
-                    NewLocPair(< 217.9963, -563, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
-                    NewLocPair(< 200.7263, 979.5248, 9.4000 > + killhousestartingorg,< 0, -147.1917, 0 >),
-                    NewLocPair(< -1162.3790, 980.8486, 9.4000 > + killhousestartingorg,< 0, -45.0161, 0 >),
-                    NewLocPair(< -1164.7130, 702.9291, 9.4000 > + killhousestartingorg,< 0, 2.9566, 0 >),
-                    NewLocPair(< 208.7000, 707.6936, 9.4000 > + killhousestartingorg,< 0, -147.0432, 0 >),
-                    NewLocPair(< -1171.6520, 7.8723, 9.4000 > + killhousestartingorg,< 0, 7.0074, 0 >),
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
+        // if(FlowState_EnableKillhouseByAyeZee()){
+            // vector killhousestartingorg = <-2961,-13240,-2810>
+            // Shared_RegisterLocation(
+			// NewLocationSettings(
+				// "Killhouse By AyeZee",
+				// [
+					// NewLocPair(< 156.6777, -1466.7410, 9.4000 > + killhousestartingorg,< 0, 131.0375, 0 >),
+                    // NewLocPair(< -1167.9380, -1466.3340, 9.4000 > + killhousestartingorg,< 0, 44.6976, 0 >),
+                    // NewLocPair(< -1170.2510, -996.2968, 9.4000 > + killhousestartingorg,< 0, -0.5495, 0 >),
+                    // NewLocPair(< 217.9963, -1035.2670, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
+                    // NewLocPair(< 217.9963, -563, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
+                    // NewLocPair(< 200.7263, 979.5248, 9.4000 > + killhousestartingorg,< 0, -147.1917, 0 >),
+                    // NewLocPair(< -1162.3790, 980.8486, 9.4000 > + killhousestartingorg,< 0, -45.0161, 0 >),
+                    // NewLocPair(< -1164.7130, 702.9291, 9.4000 > + killhousestartingorg,< 0, 2.9566, 0 >),
+                    // NewLocPair(< 208.7000, 707.6936, 9.4000 > + killhousestartingorg,< 0, -147.0432, 0 >),
+                    // NewLocPair(< -1171.6520, 7.8723, 9.4000 > + killhousestartingorg,< 0, 7.0074, 0 >),
+				// ],
+				// <0, 0, 3000>
+			// )
+		// )
+        // }
 
-        if(FlowState_EnableNuketownByAyeZee()){
-            vector nuketownstartingorg = <28524,23022,-3375>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Nuketown By AyeZee",
-				[
-					NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
-                    NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
-                    NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
-                    NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
-                    NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
-                    NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-                    NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-                    NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-                    NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-                    NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
+        // if(FlowState_EnableNuketownByAyeZee()){
+            // vector nuketownstartingorg = <28524,23022,-3375>
+            // Shared_RegisterLocation(
+			// NewLocationSettings(
+				// "Nuketown By AyeZee",
+				// [
+					// NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
+                    // NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
+                    // NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
+                    // NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
+                    // NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
+                    // NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+                    // NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+                    // NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+                    // NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+                    // NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
+				// ],
+				// <0, 0, 3000>
+			// )
+		// )
+        // }
 
 	///////////////////////////////////////////////////
 	//EXCLUSIVE SURF LOCATIONS FOR WORLD'S EDGE////////	

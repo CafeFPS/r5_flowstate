@@ -158,6 +158,9 @@ WeaponData
 			"is_semi_auto"									"1"
 			"fire_rate"   									"5"
 			"move_speed_modifier"                    		"1.4"
+
+			"fire_sound_1_player_1p"						"weapon_havoc_altfire_singleshot_1p_IntBase"
+			"fire_sound_1_player_3p"						"weapon_havoc_altfire_singleshot_3p_IntBase"
         }
 		
 	}
