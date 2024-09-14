@@ -2701,6 +2701,11 @@ bool function SURVIVAL_PlayerCanSwitchOrdnance( entity player )
 			&& !player.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponSettingBool( eWeaponVar.offhand_toss_activates_on_attack )
 			)
 		return false
+	
+	#if SERVER
+	if( Gamemode() == eGamemodes.WINTEREXPRESS )
+		return true
+	#endif
 
 	return PlayerInValidState( player )
 }
@@ -2712,6 +2717,7 @@ bool function PlayerInValidState( entity player )
 	if( Playlist() == ePlaylists.fs_haloMod_oddball && GetBallCarrier() == player || Playlist() == ePlaylists.fs_dm_oddball && GetBallCarrier() == player || Playlist() == ePlaylists.fs_haloMod_ctf && GetGlobalNetEnt( "milFlag" ) == player || Playlist() == ePlaylists.fs_haloMod_ctf && GetGlobalNetEnt( "imcFlag" ) == player )
 		return false
 	#endif
+
 	if ( !IsAlive( player ) )
 		return false
 

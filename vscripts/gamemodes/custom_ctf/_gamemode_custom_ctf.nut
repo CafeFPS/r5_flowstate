@@ -571,7 +571,7 @@ void function StartRound()
 			// foreach(item in loot)
 				// SURVIVAL_AddToPlayerInventory(player, item)
 
-		// SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+		// SURVIVAL_EquipOrdnanceFromInventory( player, "mp_weapon_frag_grenade" )
 
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 		
@@ -1933,7 +1933,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item)
 
-	SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+	SURVIVAL_EquipOrdnanceFromInventory( player, "mp_weapon_frag_grenade" )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 

@@ -1648,7 +1648,7 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			foreach(item in loot)
 				SURVIVAL_AddToPlayerInventory(player, item)
 
-		SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade_halomod" )
+		SURVIVAL_EquipOrdnanceFromInventory( player, "mp_weapon_frag_grenade_halomod" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	}
 

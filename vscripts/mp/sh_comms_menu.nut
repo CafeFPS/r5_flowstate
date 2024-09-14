@@ -1662,7 +1662,7 @@ void function HandleOrdnanceSelection( int ordnanceIndex )
 	if ( !OrdnanceWheelUseOnRelease() )
 		player.ClientCommand( "Sur_SwitchToOrdnance " + ordnanceIndex + " 1" )
 	else
-		player.ClientCommand( "Sur_SwitchToOrdnance " + ordnanceIndex )
+		player.ClientCommand( "Sur_SwitchToOrdnance " + ordnanceIndex + " 0" )
 }
 
 void function HandleEditorModeSelection( int editorIndex )

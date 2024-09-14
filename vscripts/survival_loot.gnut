@@ -42,8 +42,6 @@ global function LootZones_GetRefForOrigin
 global function CodeCallback_WeaponDropped
 global function CodeCallback_WeaponLoadoutPickup
 global function PlayerThrowLoot
-global function GetNextOrdnance
-global function SwitchPlayerToOrdnance
 global function CreateLootForFlyerDeathBox
 global function SURVIVAL_AutoEquipOrdnanceFromInventory
 global function SURVIVAL_EquipOrdnanceFromInventory
@@ -224,7 +222,6 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( "SwapSurvivalItem", ClientCommand_SwapSurvivalItem )
 
 	SetCallback_OnPlayerReload( OnWeaponReload )
-	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
 
 	FlagInit( "Survival_LootSpawned", false )
 	FlagInit( "Survival_LootZonesLoaded", false)
@@ -377,91 +374,6 @@ void function OnWeaponReload( entity player )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
 }
 
-string function GetNextOrdnance( entity player, string currentOrdnance = "" )
-{
-	array<string> allPlayerOrdnances = SURVIVAL_GetAllPlayerOrdnance( player )
-
-	if ( allPlayerOrdnances.len() == 0 )
-		return ""
-
-	int ornull currentOrdnancePos = 0
-	if ( currentOrdnance != "" )
-	{
-		currentOrdnancePos = allPlayerOrdnances.find( currentOrdnance )
-		if ( currentOrdnancePos == null )
-			currentOrdnancePos = 0
-	}
-
-	expect int( currentOrdnancePos )
-
-	int nextOrdnancePos = currentOrdnancePos + 1
-	if ( nextOrdnancePos >= allPlayerOrdnances.len() )
-		nextOrdnancePos = 0
-
-	return allPlayerOrdnances[nextOrdnancePos]
-}
-
-void function SwitchPlayerToOrdnance( entity player, string newOrdnance )
-{
-	// printt("Player switched to ordnance")
-	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
-	bool shouldSelect = false
-
-	if ( IsValid( heldOrdnance ) )
-	{
-		if ( heldOrdnance.GetWeaponClassName() == newOrdnance )
-			return // Already switched to it
-
-		shouldSelect = ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == heldOrdnance ) // Currently selected
-			|| ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == null ) // Nothing selected
-
-		player.TakeWeaponByEntNow( heldOrdnance )
-		heldOrdnance = null
-	}
-
-	player.GiveWeapon( newOrdnance, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
-	entity ordnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
-
-	AddRoundsToWeapon( player, ordnance, SURVIVAL_CountItemsInInventory( player, newOrdnance ) )
-
-	if ( shouldSelect )
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_ANTI_TITAN )
-}
-
-void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
-{
-	if ( !IsValid( player ) || !IsValid( weapon ) )
-		return
-
-	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
-
-	if ( data.lootType != eLootType.ORDNANCE )
-		return
-	
-	// printt("ClientCommand_Sur_OrdnanceControl")
-	SURVIVAL_RemoveFromPlayerInventory( player, data.ref, 1 )
-
-	if ( SURVIVAL_CountItemsInInventory( player, data.ref ) == 0 )
-	{
-		string nextOrdnance = GetNextOrdnance( player, data.ref )
-		if ( nextOrdnance != "" )
-			thread function () : ( player, weapon, nextOrdnance )
-			{
-				wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
-				if( !IsValid( player ) )
-					return
-				SwitchPlayerToOrdnance( player, nextOrdnance )
-			}()
-		else thread function () : ( player, weapon, nextOrdnance )
-			{
-				wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
-				if( !IsValid( player ) )
-					return
-				player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-			}()
-	}
-}
-
 bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> args )
 {
 	#if DEVELOPER
@@ -471,8 +383,13 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
-	if ( args.len() < 1 )
+	if ( args.len() != 2 )
 		return true
+
+	bool forceDontSwitch = false
+	bool forceDontSwitchTry = int( args[1] ) == 1
+	if ( forceDontSwitchTry )
+		forceDontSwitch = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) != player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
 		return true
@@ -480,7 +397,11 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 	int ordnanceIdx = int( args[0] )
 
 	if ( ordnanceIdx == -1 )
+	{
+		if ( SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+			SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
 		return true
+	}
 
 	LootData ordnanceLootData = SURVIVAL_Loot_GetLootDataByIndex( ordnanceIdx )
 
@@ -492,9 +413,8 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 	if ( ordnanceCount == 0 )
 		return true
 
-	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+	SURVIVAL_EquipOrdnanceFromInventory( player, ordnanceLootData.ref, forceDontSwitch )
 	player.Signal( "SwitchToOrdnance" )
-
 	return true
 }
 
@@ -524,8 +444,7 @@ bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args
 	if ( ordnanceCount == 0 )
 		return true
 
-	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
-
+	SURVIVAL_EquipOrdnanceFromInventory( player, ordnanceLootData.ref )
 	return true
 }
 
@@ -536,19 +455,39 @@ bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string>
 
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
 		return true
+	
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
-	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
-	string currentOrdnance = ""
-	if ( IsValid( heldOrdnance ) )
-		currentOrdnance = heldOrdnance.GetWeaponClassName()
+	if ( !IsValid( weapon ) )
+		return true
 
-	string nextOrdnance = GetNextOrdnance( player, currentOrdnance )
-	if ( nextOrdnance != "" )
+	if ( weapon.GetWeaponType() != WT_ANTITITAN )
+		return true
+
+	string currentOrdnance    = weapon.GetWeaponClassName()
+	array<string> allOrdnance = SURVIVAL_GetAllPlayerOrdnance( player )
+
+	if ( allOrdnance.len() <= 1 && allOrdnance.contains( weapon.GetWeaponClassName() ) )
+		return true
+
+	if ( allOrdnance.len() == 0 )
+		return true
+
+	int indexToUse = allOrdnance.contains( weapon.GetWeaponClassName() ) ? (allOrdnance.find( currentOrdnance ) + 1) % allOrdnance.len() : 0
+
+	if ( allOrdnance[indexToUse] == currentOrdnance )
+		return true
+
+	string weaponToEquip = allOrdnance[indexToUse]
+
+	if ( DoesWeaponClassTriggerMeleeAttack( weaponToEquip ) )
 	{
-		SwitchPlayerToOrdnance( player, nextOrdnance )
-		player.Signal( "SwapToNextOrdnance" )
+		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+		return true
 	}
 
+	SURVIVAL_EquipOrdnanceFromInventory( player, weaponToEquip )
+	Signal( player, "SwapToNextOrdnance" )
 	return true
 }
 
