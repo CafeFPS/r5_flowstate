@@ -138,32 +138,14 @@
         pin_corner_to_sibling	RIGHT
         pin_to_sibling_corner	RIGHT
     }
-
-//		SwchGamepadCustomAssist
-//		{
-//			ControlName				RuiButton
-//			InheritProperties		SwitchButton
-//			style					DialogListButton
-//			pin_to_sibling			SldGamepadCustomCurve
-//			pin_corner_to_sibling	TOP_LEFT
-//			pin_to_sibling_corner	BOTTOM_LEFT
-//			navUp					SldGamepadCustomCurve
-//			navDown					SldGamepadCustomHipYaw
-//			ConVar					"gamepad_custom_assist_on"
-//			list
-//			{
-//				"#SETTING_OFF"		0
-//				"#SETTING_ON"		1
-//			}
-//		}
-
+    
     SwchGamepadCustomAssist
     {
         ControlName				RuiButton
         InheritProperties		SwitchButton
         style					DialogListButton
         navUp					SldGamepadCustomCurve
-        navDown					SldGamepadCustomHipYaw
+        navDown					BtnLookSensitivityMenu
         ConVar					"gamepad_custom_assist_on"
         list
         {
@@ -177,6 +159,23 @@
         childGroupAlways        ChoiceButtonAlways
     }
 
+    //////////////////////////
+    // Per Optic Settings...
+    //////////////////////////
+
+    BtnLookSensitivityMenu
+    {
+        ControlName				RuiButton
+        InheritProperties		SettingBasicButton
+
+        pin_to_sibling			SwchGamepadCustomAssist
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+        ypos					32
+        navUp					SwchGamepadCustomAssist
+        navDown					SldGamepadCustomHipYaw
+    }
+
     ///////////////////////////
     // Hipfire
     ///////////////////////////
@@ -185,11 +184,11 @@
     {
         ControlName				SliderControl
         InheritProperties		SliderControl
-        pin_to_sibling			SwchGamepadCustomAssist
+        pin_to_sibling			BtnLookSensitivityMenu
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         ypos					32
-        navUp					SwchGamepadCustomAssist
+        navUp					BtnLookSensitivityMenu
         navDown					SldGamepadCustomHipPitch
         conCommand				"gamepad_custom_hip_yaw"
         minValue				0.000000

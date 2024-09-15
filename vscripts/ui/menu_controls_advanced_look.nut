@@ -51,11 +51,9 @@ void function InitAdvancedLookControlsPanel( var panel )
 	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneOut" ), "#GAMEPADCUSTOM_DEADZONE_OUT", "#GAMEPADCUSTOM_DEADZONE_OUT_DESC", "gamepad_custom_deadzone_out", "TextGamepadCustomDeadzoneOut" ) )
 	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomCurve" ), "#GAMEPADCUSTOM_CURVE", "#GAMEPADCUSTOM_CURVE_DESC", "gamepad_custom_curve", "TextGamepadCustomCurve" ) )
 
-	//TODO(dw): not implemented in res file, commenting for now ~mkos
-	
-	//var perScopeButton = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_PER_OPTIC_SETTINGS", "#MENU_PER_OPTIC_SETTINGS_DESC", $"" )
-	//AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
-	//file.enableItems.append( perScopeButton )
+	var perScopeButton = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_PER_OPTIC_SETTINGS", "#MENU_PER_OPTIC_SETTINGS_DESC", $"" )
+	AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
+	file.enableItems.append( perScopeButton )
 
 	// ( element, nameToken, descriptionToken, conVar, textElement ) ~mkos
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC",			"gamepad_custom_hip_yaw",			"TextGamepadCustomHipYaw" )

@@ -180,27 +180,12 @@
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         navUp					SwchSprintCameraSmoothing
-        navDown					SldAdaptiveRes
-        // list is populated by code
-        childGroupAlways        MultiChoiceButtonAlways
-    }
-	
-    SwchVSync // mat_vsync, mat_triplebuffered
-    {
-        ControlName				RuiButton
-        InheritProperties		SwitchButton
-        classname				"AdvancedVideoButtonClass"
-        style					DialogListButton
-        pin_to_sibling			ImgAdvVideoSubheaderBackground
-        pin_corner_to_sibling	TOP_LEFT
-        pin_to_sibling_corner	BOTTOM_LEFT
-        navUp					SwchSprintCameraSmoothing
-        navDown					SwchReflex//SldAdaptiveRes
+        navDown					SwchReflex
         // list is populated by code
         childGroupAlways        MultiChoiceButtonAlways
     }
 
-	SwchReflex
+    SwchReflex
 	{
 		ControlName				RuiButton
 		InheritProperties		SwitchButton
@@ -266,7 +251,7 @@
 		pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
     }
-	
+
     TextEntrySldFpsMax
     {
         ControlName				TextEntry
