@@ -1,4 +1,6 @@
-//Flowstate v4.5 playlist - Formatted for vscode / notepad++
+//Flowstate v4.5 playlist
+//By @CafeFPS and @ttvmkos
+//Playlist cleaned up by @darthelmo
 
 playlists
 {
@@ -11,28 +13,23 @@ playlists
 			vars
 			{
 				///////////////////////////////////////////////////////////////////////////////////
-				///////////////////////////////////////////////////////////////////////////////////
-				///////////////////////////////////////////////////////////////////////////////////
 				///////////////////////////	SECTION 1: DEFAULTS	///////////////////////////////////
 				//////////////	FOR MOST USE CASES, NO NEED TO CHANGE ANY OF THESE	///////////////
 				///////////////////////////////////////////////////////////////////////////////////
-				///////////////////////////////////////////////////////////////////////////////////
-				///////////////////////////////////////////////////////////////////////////////////
-
 
 				///////////////////////////////////////////////////////////////////////////////////
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
 
-				flowstate_giveskins_characters 					0
-				flowstate_giveskins_weapons						0
+				flowstate_giveskins_characters 					0 //Don't use this when hosting public servers
+				flowstate_giveskins_weapons						0 //Don't use this when hosting public servers
 				flowstate_givecharms_weapons 					1
 				flowstate_enable_health_bars 					1
 				flowstate_enable_editor_hud						0
 				flowstate_force_softened_locale					1		//Removes blood sprays and blood shot fx
 				sentinel_enable_charging						1
 				force_plane_to_spawn_without_players 			0
-				flyers_to_spawn 								100		//Retail value: 8
+				flyers_to_spawn 								8		//Retail value: 8
 				evil_flyers										0
 				
 				survival_plane_jump_duration					60.0
@@ -102,6 +99,9 @@ playlists
 				///////////////////////////////////////////////////////////////////////////////////
 				//////////Modded Weapons - JANU's Framework 		 			 		///////////
 				/////////////////////////////////////////////////////////////////////////////////// 
+				
+				//enable this for halo nades
+				//custom_grenade_list "mp_weapon_frag_grenade_halomod"
 				
 				//custom_grenade_list							"mp_weapon_decoy_grenade"
 				//custom_weapon_list							"mp_weapon_flamethrower mp_weapon_epg sp_weapon_arc_tool mp_weapon_wingman_n" //mp_weapon_smart_pistol mp_weapon_heatwave mp_weapon_guidedmissile"
@@ -374,7 +374,7 @@ playlists
 				// ADMINS for cc command (recommended to list in r5r.dev_config file if server has tracker dll)
 				// usage: "adminname-oid,anotheradmin-oid"
 				// example: "R5mkos-15423978654235"
-				admins_list										"R5mkos-1007946891142"
+				admins_list										""
 				
 				enable_motd 									1		// Enables message of the day for server
 				
@@ -753,7 +753,7 @@ playlists
 				winter_express_score_limit 						3
 				winter_express_round_limit 						30
 				winter_express_round_time 						180
-				winter_express_store_ultimate_charge 			0 //not implemented atm
+				winter_express_store_ultimate_charge 			0
 				winter_express_cap_unlock_delay 				7
 				winter_express_respawn_skydive_height 			10000
 				winter_express_overtime_limit 					15
@@ -959,7 +959,6 @@ playlists
 
 				//GENERAL SETTINGS PROPHUNT
 				Admins											"r5r_ColombiaFPS"
-				flowstateBubble 								"48, 107, 255" //ring color
 				flowstateResetKills 							1
 
 				flowstateKickHighPingPlayer						0
@@ -1191,7 +1190,6 @@ playlists
 				Admins											"r5r_CafeFPS"
 				respawn_delay 									5
 				flowstateRoundtime 								800
-				flowstateBubble 								"111, 66, 245" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
@@ -1320,7 +1318,6 @@ playlists
 				Admins											"r5r_CafeFPS"
 				respawn_delay 									5
 				flowstateRoundtime 								800
-				flowstateBubble 								"111, 66, 245" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
@@ -1484,7 +1481,6 @@ playlists
 				Admins											"r5r_CafeFPS"
 				respawn_delay 									5
 				flowstateRoundtime 								800
-				flowstateBubble 								"111, 66, 245" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
@@ -1623,7 +1619,7 @@ playlists
 				
 				flowstate_1v1mode								1
 				solo_mode 										1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
-				flowstateRoundtime 								800
+				flowstateRoundtime 								1020 //17 mins
 				
 				flowstateAutoChangeLevelEnable					1
 				flowstateRoundsBeforeChangeLevel				2
@@ -1662,6 +1658,7 @@ playlists
 				// fs_scenarios_max_queuetime 					150.0 //not implemented atm
 				// fs_scenarios_minimum_team_allowed 			1 // used only when max_queuetime is triggered
 				// fs_scenarios_maximum_team_allowed 			3
+				block_ammo_spawning								0
 				
 				/////////////////////////
 				// mkos added features //
@@ -2396,7 +2393,6 @@ playlists
 				
 				flowstateRoundtime 								600
 				
-				flowstateBubble 								"252, 140, 3" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
@@ -2525,7 +2521,6 @@ playlists
 				Admins 											"r5r_ColombiaFPS"
 				respawn_delay 									5
 				flowstateRoundtime 								600
-				flowstateBubble 								"252, 140, 3" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
@@ -2732,7 +2727,6 @@ playlists
 				Admins 											"DEAR5R r5r_ColombiaFPS"
 				respawn_delay 									1
 				flowstateRoundtime 								1800
-				flowstateBubble 								"111, 66, 245" //ring color
 				flowstateResetKills 							1
 				flowstateTimer 									1
 				flowstateGrenadesDisabled						1
@@ -3753,5 +3747,3 @@ playlists
 		
 	}
 }
-
-//Playlist cleaned up by @darthelmo
