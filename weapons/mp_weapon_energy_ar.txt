@@ -285,15 +285,15 @@ WeaponData
         }
         hopup_turbocharger
         {
-        	"charge_time" 					"0.01"
-        	"charge_cooldown_time"			"0.0"
-			"charge_cooldown_delay"   		"0.0"
-			"damage_near_value"   							"17"
-            "damage_far_value"								"17"
-            "damage_very_far_value"							"17"
-            "damage_near_value_titanarmor"					"17"
-            "damage_far_value_titanarmor" 					"17"
-            "damage_very_far_value_titanarmor" 				"17"
+        	// "charge_time" 					"0.01"
+        	// "charge_cooldown_time"			"0.0"
+			// "charge_cooldown_delay"   		"0.0"
+			// "damage_near_value"   							"17"
+            // "damage_far_value"								"17"
+            // "damage_very_far_value"							"17"
+            // "damage_near_value_titanarmor"					"17"
+            // "damage_far_value_titanarmor" 					"17"
+            // "damage_very_far_value_titanarmor" 				"17"
         }
 
         optic_cq_hcog_classic

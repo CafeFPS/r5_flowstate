@@ -1175,6 +1175,7 @@ void function Thread_OnGameStatePlaying()
 		// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		// AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 
+		Flowstate_AssignUniqueCharacterForPlayer( player, false )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_CL_ObserverModeSetToTrain" )
 		
 		thread function () : ( player )
@@ -1587,7 +1588,7 @@ void function ProcessContestedObjective()
 void function ProcessControlledObjective( int team )
 {
 	// DumpStack()
-	if ( !IsValid( svGlobal.levelEnt ) || team == GetGlobalNetInt("WinterExpress_ObjectiveOwner") )
+	if ( !IsValid( svGlobal.levelEnt ) || team == GetGlobalNetInt("WinterExpress_ObjectiveOwner") ) //Fix for capture timer changing for all team when teamates enter/leave train regardless of capture status. Cafe
 		return
 
 	float capPercentage = 0
@@ -1965,20 +1966,21 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 	if ( !IsValid( player ) )
 		return
 
+	#if DEVELOPER
+	Warning( "Flowstate_GivePlayerLoadoutOnGameStart_Copy " + player + " FromRespawning" + fromRespawning )
+	#endif
+
 	EndSignal( player, "OnDestroy" )
 	EndSignal( player, "OnDeath" )
 
 	SetPlayerInventory( player, [] )
-	
-	if( !fromRespawning )
-	{
-		TakeAllPassives( player )
-		Flowstate_AssignUniqueCharacterForPlayer( player, true )
-		#if DEVELOPER
-		Warning( "Flowstate_AssignUniqueCharacterForPlayer( player, true )" )
-		#endif
-	}
 
+	//just get itemflavor
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	CharacterSelect_AssignCharacter( player, playerCharacter )
 	Survival_SetInventoryEnabled( player, true )
 	GiveLoadoutRelatedWeapons( player )
 
@@ -1996,8 +1998,6 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 
 	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
-
-	ItemFlavor playerCharacter = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 
 	if( ItemFlavor_GetHumanReadableRef( playerCharacter ) != "character_gibraltar" )
 	{
@@ -2127,6 +2127,7 @@ void function ResetPlayerInventoryAndLoadoutOnRespawn( entity player, bool shoul
 	foreach( item in STANDARD_INV_LOOT )
 		SURVIVAL_AddToPlayerInventory(player, item, 1)
 
+	DeployAndEnableWeapons( player )
 }
 
 // Loadout info has been updated for Clients, make sure weapon icons are updated on screens that use them
@@ -2388,7 +2389,9 @@ void function RespawnTeamAfterDelay( int team, float delay )
 
 void function RespawnPlayer( entity player, bool startingGame = false )
 {
+	#if DEVELOPER
 	DumpStack()
+	#endif
 	if ( GetGameState() != eGameState.Playing )
 		return
 
@@ -2406,23 +2409,20 @@ void function RespawnPlayer( entity player, bool startingGame = false )
 
 	if ( !IsAlive( player ) )
 	{
-		DecideRespawnPlayer_Retail( player, false )
+		DecideRespawnPlayer( player, false )
 	}
-
-	// RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-	// RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )	
-	thread WinterExpress_OnPlayerRespawnedThread( player, startingGame )
 }
 
 void function WinterExpress_OnPlayerRespawned( entity player )
 {
-	// thread WinterExpress_OnPlayerRespawnedThread( player )
+	thread WinterExpress_OnPlayerRespawnedThread( player )
 }
 
 void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startingGame = false )
 {
 	#if DEVELOPER
-	printt( "WinterExpress_OnPlayerRespawnedThread", player, startingGame )
+	DumpStack()
+	Warning( "WinterExpress_OnPlayerRespawnedThread " + player + " StartinGame: " + startingGame + player.p.respawnPodLanded )
 	#endif
 	if ( !player.p.respawnPodLanded )
 		return // we didn't respawn
@@ -2570,7 +2570,7 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 			}
 		}
 	}
-printf("winter express: Failing a train spawn falling back to something else")
+	printf("winter express: Failing a train spawn falling back to something else")
 	return false
 }
 

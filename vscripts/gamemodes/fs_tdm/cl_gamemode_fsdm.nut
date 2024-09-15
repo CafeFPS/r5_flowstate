@@ -2101,8 +2101,11 @@ void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 		printt("FS_Scenarios_SetupPlayersCards", onlyUpdate, file.enemyTeamHandles2.len(), file.enemyTeamHandles.len(), file.allyTeamHandles.len() )
 	#endif
 
-	Hud_SetVisible( file.vsBasicImage, false )
-	Hud_SetVisible( file.vsBasicImage2, false )
+	if( file.vsBasicImage != null )
+		Hud_SetVisible( file.vsBasicImage, false )
+		
+	if( file.vsBasicImage2 != null )
+		Hud_SetVisible( file.vsBasicImage2, false )
 	
 	foreach( int i, int handle in file.enemyTeamHandles2 )
 	{
