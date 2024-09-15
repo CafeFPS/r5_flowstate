@@ -103,6 +103,7 @@ global function CodeCallback_OnNavMeshHotSwapEnd
 
 global function SetDefaultObserverBehavior
 global function CodeCallback_OnPlayerRespawned
+global function AddCallback_OnPlayerUsedOffhandWeapon
 
 const bool PRINT_MOVEMENT = false
 
@@ -1393,4 +1394,10 @@ void function CodeCallback_OnClientDisconnected( entity player, string reason )
 		callbackFunc( player )
 	}
 
+}
+
+void function AddCallback_OnPlayerUsedOffhandWeapon( void functionref( entity player, entity offhandWeapon ) callbackFunc )
+{
+	Assert( !svGlobal.onPlayerUsedOffhandCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerUsedOffhandWeapon" )
+	svGlobal.onPlayerUsedOffhandCallbacks.append( callbackFunc )
 }

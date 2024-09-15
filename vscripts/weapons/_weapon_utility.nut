@@ -4266,7 +4266,12 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 
 	#if CLIENT
 		if ( offhandWeapon == player.GetOffhandWeapon( OFFHAND_ULTIMATE ) )
-			UltimateWeaponStateSet( eUltimateState.ACTIVE )
+		{
+			if ( offhandWeapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) == 0 )
+				UltimateWeaponStateSet( eUltimateState.CHARGING )
+			else
+				UltimateWeaponStateSet( eUltimateState.ACTIVE )
+		}
 		Chroma_PlayerUsedAbility( player, offhandWeapon )
 	#endif //CLIENT
 }

@@ -250,6 +250,8 @@ void function SV_Survival_Loot_Init()
 
 	AddCallback_OnClientConnected( SurvivalLoot_OnConnected )
 
+	AddCallback_OnPlayerUsedOffhandWeapon( SURVIVAL_RemoveOffhandFromInventory )
+
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
 }
 
@@ -5598,5 +5600,21 @@ void function RemoveRefs_Loot( array<string> refsToKeep, array<ConsumableInvento
 				printt( "refstokeep_loot contains", data.ref, "and was kept" )
 			#endif 
 		}
+	}
+}
+
+void function SURVIVAL_RemoveOffhandFromInventory( entity player, entity offhandWeapon )
+{
+	string lootRef = offhandWeapon.GetWeaponClassName()
+
+	if ( !SURVIVAL_Loot_IsRefValid( lootRef ) )
+		return
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
+	if ( data.lootType == eLootType.ORDNANCE )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, lootRef )
+		StatsHook_PlayerUsedResource( player, offhandWeapon, lootRef )
+		thread Delayed_TryReplaceOrdnance( player, offhandWeapon )
 	}
 }
