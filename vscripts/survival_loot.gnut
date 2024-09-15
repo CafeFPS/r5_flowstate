@@ -3880,17 +3880,7 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin, int realm 
 	{
 		string ammoType = GetWeaponAmmoType( weaponName )
 
-		int ammoMin = 1
-		int ammoMax = 2
-
-		int numAmmo = 1
-		if ( RandomIntRangeInclusive( 1, 10 ) > 3 )
-			numAmmo = 2
-
-		for ( int i = 0; i < numAmmo; i++ )
-		{
-			thread DelayedSpawnAmmo( weapon, ammoType, newOrigin, GetCurrentPlaylistVarFloat( "survival_ammo_spawn_scale_" + ammoType, 1.0 ) )
-		}
+		thread DelayedSpawnAmmo( weapon, ammoType, newOrigin, GetCurrentPlaylistVarFloat( "survival_ammo_spawn_scale_" + ammoType, 2.0 ) )
 	}
 
 	return weapon

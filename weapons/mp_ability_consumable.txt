@@ -321,7 +321,7 @@ WeaponData
 			// Enalbe RUI
 			"ui1_enable"							"1"
 			
-			//"move_speed_modifier"                       "*1.2"
+			"move_speed_modifier"                       "*1.15"
         }
 
         ultimate_battery_supercharged_fx
