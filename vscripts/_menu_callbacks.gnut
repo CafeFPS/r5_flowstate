@@ -1,6 +1,10 @@
-// stub script
-
 global function MenuCallbacks_Init
+global function AddCallback_OnLeaveMatch
+
+struct
+{
+	array< void functionref(entity) > onLeaveMatchCallbacks
+} file
 
 void function MenuCallbacks_Init()
 {
@@ -9,6 +13,9 @@ void function MenuCallbacks_Init()
 
 bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
 {
+	foreach ( func in file.onLeaveMatchCallbacks )
+		func( player )
+
     // Maybe save persistent data here.
 	thread function() : ( player )
 	{
@@ -19,12 +26,13 @@ bool function ClientCommandCallback_LeaveMatch( entity player, array<string> arg
 			if(!IsValid(player)) return
 		}
 		ClientCommand( player, "disconnect" )
-		
-		while(IsValid( player ))
-			WaitFrame()
-		
-		UpdatePlayerCounts()
 	}()
 		
     return true
+}
+
+void function AddCallback_OnLeaveMatch( void functionref(entity) func )
+{
+	Assert( !file.onLeaveMatchCallbacks.contains(func) )
+	file.onLeaveMatchCallbacks.append( func )
 }

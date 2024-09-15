@@ -1040,7 +1040,9 @@ void function UICallback_CloseDeathScreenMenu( bool clearRecap = true )
 	file.isOpen = false
 
 	entity player = GetLocalClientPlayer()
-	player.ClientCommand( "playerRequeue_CloseDeathRecap" )
+
+	if( Playlist() == ePlaylists.fs_scenarios )
+		player.ClientCommand( "playerRequeue_CloseDeathRecap" )
 }
 
 
