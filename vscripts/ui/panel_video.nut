@@ -63,6 +63,10 @@ void function InitVideoPanel( var panel )
 		SetupSettingsButton( button, "#REFLEX", "#ADVANCED_VIDEO_MENU_REFLEX_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, NvidiaReflex_Changed )
 
+		button = Hud_GetChild( file.videoPanel, "SwchAntiLag" )
+		SetupSettingsButton( button, "#ANTILAG", "#ADVANCED_VIDEO_MENU_ANTILAG_DESC", $"rui/menu/settings/settings_video" )
+		AddButtonEventHandler( button, UIE_CHANGE, AmdAntiLag_Changed )
+
 		button = Hud_GetChild( file.videoPanel, "SldFpsMax" )
 		SetupSettingsSlider( button, "#FS_FPS_MAX", "#FS_MAX_FPS_DESC", $"rui/menu/settings/settings_video" )
 		//AddButtonEventHandler( button, UIE_CHANGE, FpsMax_Changed )
@@ -195,6 +199,7 @@ void function OnVideoPanel_Show( var panel )
 #endif
 	
 	NvidiaReflex_SetSettingsValue()
+	AmdAntiLag_SetSettingsValue()
 }
 
 
@@ -362,6 +367,16 @@ void function NvidiaReflex_Changed( var button )
 void function NvidiaReflex_SetSettingsValue()
 {
 	RunClientScript("NvidiaReflex_SetSettingsValue")
+}
+
+void function AmdAntiLag_Changed( var button )
+{
+	RunClientScript("AmdAntiLag_SetValues")
+}
+
+void function AmdAntiLag_SetSettingsValue()
+{
+	RunClientScript("AmdAntiLag_SetSettingsValue")
 }
 
 void function AdaptiveRes_Changed( var button )

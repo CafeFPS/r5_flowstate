@@ -215,9 +215,31 @@
 		}
 
         navUp					SwchVSync
-        navDown					SldFpsMax
+        navDown					SwchAntiLag
 
         pin_to_sibling			SwchVSync
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+		childGroupAlways        MultiChoiceButtonAlways
+	}
+
+    SwchAntiLag
+	{
+		ControlName				RuiButton
+		InheritProperties		SwitchButton
+		style					DialogListButton
+
+		ConVar "settings_antilag"				
+		list
+		{
+			"Off"      		0
+			"On"      		1
+		}
+
+        navUp					SwchReflex
+        navDown					SldFpsMax
+
+        pin_to_sibling			SwchReflex
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
 		childGroupAlways        MultiChoiceButtonAlways
@@ -231,7 +253,7 @@
 		
 		ConVar					"fps_max"
 
-		navUp					SwchReflex
+		navUp					SwchAntiLag
         navDown					SldAdaptiveRes
         minValue				-1
         maxValue				300
@@ -240,7 +262,7 @@
 		syncedConVar            "fps_max"
 		showConVarAsFloat		0
 		
-        pin_to_sibling			SwchReflex
+        pin_to_sibling			SwchAntiLag
 		pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
     }

@@ -27,6 +27,9 @@ global function RemoveCallback_UseConsumable
 global function NvidiaReflex_SetValues
 global function NvidiaReflex_SetSettingsValue
 
+global function AmdAntiLag_SetValues
+global function AmdAntiLag_SetSettingsValue
+
 global function ServerCallback_RefreshWeaponHighlights
 global function Promo_SetVersion
 
@@ -302,4 +305,42 @@ void function NvidiaReflex_SetSettingsValue()
 	{
 		SetConVarInt( "settings_reflex", 2 )
 	}
+}
+
+void function AmdAntiLag_SetValues()
+{
+	int settingsAntiLag
+
+	try{
+		settingsAntiLag = GetConVarInt( "settings_antilag" )
+	}catch(e420)
+	{
+		printt( "AMD Anti-Lag cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	switch( settingsAntiLag )
+	{
+	  case 0: //Off
+		SetConVarInt( "gfx_ffxUseLowLatency", 0 )
+		break
+	  case 1: //On
+		SetConVarInt( "gfx_ffxUseLowLatency", 1 )
+		break
+	}
+}
+
+void function AmdAntiLag_SetSettingsValue()
+{
+	bool lowLatency
+
+	try{
+		lowLatency = GetConVarBool( "gfx_ffxUseLowLatency" )
+	}catch(e420)
+	{
+		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	SetConVarInt( "settings_antilag", lowLatency ? 1 : 0 )
 }
