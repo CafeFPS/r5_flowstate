@@ -735,7 +735,11 @@ playlists
 
 				flowstate_weapon_selector_enabled 				1 //Weapon selector on hovertanks
 				flowstate_disable_all_map_triggers				0
-				survival_infinite_ammo							1
+				
+				/Ammo
+				survival_infinite_ammo							0
+				give_weapon_stack_count_amount					2 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
+				
 				flowstate_spectator_team_only					1
 				
 				flowstate_give_random_custom_models_toall		0
