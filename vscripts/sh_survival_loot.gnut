@@ -15,6 +15,7 @@ global function SURVIVAL_Loot_GetTotalHealthItems
 global function SURVIVAL_Loot_RegisterConditionalCheck
 global function SURVIVAL_Loot_RunConditionalCheck
 global function IsAmmoInUse
+global function FS_GetWeaponsThatUseThisAmmo
 global function SetPlayerRequireLootType
 
 global function SURVIVAL_CountSquaresInInventory
@@ -4206,6 +4207,22 @@ bool function IsAmmoInUse( entity player, string ref )
 	}
 
 	return false
+}
+
+array<entity> function FS_GetWeaponsThatUseThisAmmo( entity player, string ammo ) 
+{
+	array<entity> weapons 
+	foreach ( weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		string className = weapon.GetWeaponClassName()
+		if ( SURVIVAL_Loot_IsRefValid( className ) )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( className )
+			if ( data.ammoType == ammo )
+				weapons.append( weapon )
+		}
+	}
+	return weapons
 }
 
 //This function sets a given loot type as explicitly required by a given player.

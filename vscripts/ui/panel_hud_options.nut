@@ -84,7 +84,7 @@ void function InitHudOptionsPanel( var panel )
 	file.conVarDataList.append( CreateSettingsConVarData( "damage_indicator_style_pilot", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "speechtotext_enabled", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "player_setting_damage_closes_deathbox_menu", eConVarType.INT ) )
-	//file.conVarDataList.append( CreateSettingsConVarData( "enable_healthbar", eConVarType.INT ) )
+	file.conVarDataList.append( CreateSettingsConVarData( "enable_healthbar", eConVarType.INT ) )
 	
 	#if PC_PROG
 		file.conVarDataList.append( CreateSettingsConVarData( "hudchat_play_text_to_speech", eConVarType.INT ) )
@@ -137,7 +137,7 @@ void function RestoreHUDDefaults()
 	SetConVarToDefault( "weapon_setting_autocycle_on_empty" )
 	SetConVarToDefault( "player_setting_autosprint" )
 	SetConVarToDefault( "player_setting_damage_closes_deathbox_menu" )
-	//SetConVarToDefault( "enable_healthbar" )
+	SetConVarToDefault( "enable_healthbar" )
 
 	#if PC_PROG
 		SetConVarToDefault( "hudchat_visibility" )

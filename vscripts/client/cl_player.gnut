@@ -158,7 +158,7 @@ void function ClPlayer_Init()
 
 	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
 		
-	file.enable_healthbar = 1 //GetConVarInt( "enable_healthbar" )
+	file.enable_healthbar = GetConVarInt( "enable_healthbar" )
 	
 	file.bDoesPlaylistAllowHealthbars = GetCurrentPlaylistVarBool( "flowstate_enable_health_bars", false )
 	
@@ -167,7 +167,7 @@ void function ClPlayer_Init()
 
 void function FS_HealthBars_StartForPlayer( entity player )
 {
-	if( player == GetLocalClientPlayer() ) //|| GetConVarInt( "enable_healthbar" ) == 0 )
+	if( player == GetLocalClientPlayer() || GetConVarInt( "enable_healthbar" ) == 0 )
 		return
 
 	if( !( player in file.healthBars ) )
@@ -432,7 +432,7 @@ void function FS_HealthBars_Destroy( entity player )
 void function OnSettingsUpdated()
 {
 	int iCheckPlayerDamageCloseSetting = GetConVarInt( "player_setting_damage_closes_deathbox_menu" )
-	int iCheckShowHealthbarsSetting = 0 //GetConVarInt( "enable_healthbar" )
+	int iCheckShowHealthbarsSetting = GetConVarInt( "enable_healthbar" )
 	
 	if( iCheckPlayerDamageCloseSetting > 1 || iCheckShowHealthbarsSetting > 1 )
 		return

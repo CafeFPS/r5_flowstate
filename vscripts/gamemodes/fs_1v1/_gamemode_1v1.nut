@@ -58,6 +58,7 @@ global function is3v3Mode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
 global function ReloadTactical
+global function SetupPlayerReserveAmmo
 
 //utility
 global function ValidateBlacklistedWeapons
@@ -4834,7 +4835,8 @@ void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot ) //
 	else if( settings.give_weapon_stack_count_amount )
 	{	
 		player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
-		SetupPlayerReserveAmmo( player, weaponNew, settings.give_weapon_stack_count_amount )
+
+		SetupPlayerReserveAmmo( player, weaponNew )
 	}
 
 	player.ClearFirstDeployForAllWeapons()
@@ -4843,8 +4845,20 @@ void function GivePrimaryWeapon_1v1( entity player, string weapon, int slot ) //
 	if( weaponNew.UsesClipsForAmmo() )
 		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax() )	
 
-	if( weaponNew.LookupAttachment( "CHARM" ) != 0 )
-		weaponNew.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+	ItemFlavor ornull weaponSkinOrNull = null
+	array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+	int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+	ItemFlavor ornull weaponCharmOrNull = GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) == false ? null : GetItemFlavorByGUID( chosenCharm )
+	ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+
+	if( weaponFlavor != null )
+	{
+		array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+		if( weaponLegendaryIndexMap.len() > 1 && GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+			weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+	}
+
+	WeaponCosmetics_Apply( weaponNew, weaponSkinOrNull, weaponCharmOrNull )
 }
 
 string function ReturnRandomPrimaryMetagame_1v1()
@@ -5805,19 +5819,33 @@ void function DisablePlayerCollision( entity player )
 	player.kv.contents = CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_HITBOX | CONTENTS_BLOCKLOS | CONTENTS_PHYSICSCLIP; //CONTENTS_PLAYERCLIP
 }
 
-void function SetupPlayerReserveAmmo( entity player, entity weapon, int amount )
+void function SetupPlayerReserveAmmo( entity player, entity weapon )
 {
 	int ammoType = weapon.GetWeaponAmmoPoolType()
 	player.AmmoPool_SetCount( ammoType, 0 ) //always reset
-
+	
 	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ammoRef )
+
+	int amount = GetCurrentPlaylistVarInt( "give_weapon_stack_count_amount", 0 ) * FS_GetWeaponsThatUseThisAmmo( player, ammoRef ).len() //Revisit this
+	//todo remove the remaining ammo if player does not have two guns of the same ammo anymore
 	
+	//Clean up ammo. Cafe
+	foreach ( ammo, type in eAmmoPoolType )
+	{
+		if( !IsAmmoInUse( player, ammo ) )
+		{
+			int count = SURVIVAL_CountItemsInInventory( player, ammo )
+			SURVIVAL_RemoveFromPlayerInventory( player, ammo, count )
+			player.AmmoPool_SetCount( type, 0 )
+		}
+	}
+
 	int amountToGive = amount * data.inventorySlotCount
 	int amountToAdd = SURVIVAL_AddToPlayerInventory( player, ammoRef, amountToGive, false ) //don't actually add it here.
 	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )	
 	int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-
+	
 	player.AmmoPool_SetCount( ammoType, ammoInInventory + amountToAdd ) //add here.
 	
 	#if DEVELOPER

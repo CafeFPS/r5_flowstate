@@ -2033,21 +2033,9 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 	}
 
 	//give weapons on landing only? Cafe
-	if( GetCurrentPlaylistVarBool( "flowstate_weapon_selector_enabled", true ) && fromRespawning && file.playersOnHovertank.contains( player ) )
+	if( fromRespawning && file.playersOnHovertank.contains( player ) )
 	{
-		// wait 4.0
-
-		// if ( !IsValid( player ) )
-			// return
-
-		// Open Flowstate weapon selector
-		// if ( isPlayerOnHoverTankAtStart )
-			// wait 11.0
-
-		// if ( IsValid( player ) )
-		// {
-			// Remote_CallFunction_NonReplay( player, "OpenFRChallengesSettingsWpnSelector" )
-		// }
+		//hehe
 	} else
 	{
 		GiveRandomPrimaryWeaponMetagame( player )

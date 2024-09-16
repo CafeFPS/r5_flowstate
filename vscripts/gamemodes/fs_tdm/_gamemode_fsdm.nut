@@ -2042,7 +2042,20 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 {
 	if( !InfiniteAmmoEnabled() )
+	{
+		if( GetCurrentPlaylistVarInt( "give_weapon_stack_count_amount", 0 ) != 0 )
+		{	
+			player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
+
+			SetupPlayerReserveAmmo( player, weapon )
+			player.ClearFirstDeployForAllWeapons()
+			player.DeployWeapon()
+
+			if( weapon.UsesClipsForAmmo() )
+				weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )	
+		}
 		return
+	}
 	
 	if( IsValid( weapon ) && weapon.UsesClipsForAmmo() )
 	{

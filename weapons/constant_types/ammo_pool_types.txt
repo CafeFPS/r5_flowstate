@@ -9,7 +9,7 @@
 	highcal
 	shotgun
 	sniper
-	explosive
+	//explosive
 
 	//_count
 /////////////////////////////
