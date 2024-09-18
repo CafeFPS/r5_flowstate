@@ -1,0 +1,28 @@
+"mod"
+{
+  "name" "R5R Flowstate Localization"
+  "id" "Flowstate.Localization"
+  "description" "Localizes strings to client native language"
+  "version" "1.0"
+
+  "LocalizationFiles"
+  {
+    "resource/flowstate_%language%.txt" "1"
+  }
+  
+  "ConVars"
+  {
+	"enable_healthbar"
+	{
+		"helpString" "Displays flowstate healthbars"
+		"flags" 		"ARCHIVE | RELEASE"
+		
+		"Values"
+		{
+			"default"	"1"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+  }
+}

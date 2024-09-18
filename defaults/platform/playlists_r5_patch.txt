@@ -20,7 +20,15 @@ playlists
 				///////////////////////////////////////////////////////////////////////////////////
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
-
+				
+				bleedout_enable										0 //Not required to enable it here
+				bleedout_can_force_bleedout_timeout					0 //Hold Ctrl Key to die
+				bleedout_has_infinite_self_res						0 //Players will have infinite self res
+				bleedout_infinite_self_res_only_with_living_squad	1
+				bleedout_infinite_self_res_eliminate_with_self_res	1
+				
+				flowstate_rat_wipe_notification							0
+				
 				flowstate_giveskins_characters 					0 //Don't use this when hosting public servers
 				flowstate_giveskins_weapons						0 //Don't use this when hosting public servers
 				flowstate_givecharms_weapons 					1
@@ -670,6 +678,7 @@ playlists
 				sur_circle_start_paused							0
 				
 				//Flowstate by CafeFPS
+				bleedout_enabled								0
 				
 				SND_force_initial_map							6 // 0 dust2, 1 shoothouse, 2 de_cache, 3, nuketown, 4 dncanals, 5 killyard, 6 random
 				SND_change_to_next_map_when_game_finishes		1
@@ -730,10 +739,11 @@ playlists
 				
 				//Flowstate by CafeFPS
 
+				bleedout_enabled								0
+				
 				ground_loot_enable								0
 				lootbin_loot_enable								0
 
-				flowstate_weapon_selector_enabled 				1 //Weapon selector on hovertanks
 				flowstate_disable_all_map_triggers				0
 				
 				//Ammo
@@ -1011,7 +1021,7 @@ playlists
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
 				max_teams						  				2
 				max_players										16
-				min_players										0
+				min_players										5
 				
 				//Skip Intros:
 				character_select_time_min		  				0
@@ -1030,6 +1040,8 @@ playlists
 				replay_delay					   				5
 				
 				//Flowstate by CafeFPS
+
+				bleedout_enabled								1
 				
 				enable_small_pheonix			   				0
 				
@@ -1648,7 +1660,8 @@ playlists
 				deathbox_ondeath_enabled 						1
 				drop_loot_on_death								1
 
-				fs_scenarios_bleedout_enabled					1
+				bleedout_enabled								1
+				
 				fs_scenarios_show_death_recap_onkilled			1
 				fs_scenarios_zonewars_ring_mode					1
 				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
@@ -2793,6 +2806,8 @@ playlists
 				
 				//Flowstate by CafeFPS
 				
+				bleedout_enabled								1
+				
 				survival_shields							   	1
 				is_ranked_game								 	0
 				player_revive_enabled						  	1
@@ -2849,6 +2864,8 @@ playlists
 				
 				//Flowstate by CafeFPS
 				
+				bleedout_enabled								1
+				
 				survival_shields							   	1
 				is_ranked_game								 	0
 				player_revive_enabled						  	1
@@ -2903,6 +2920,8 @@ playlists
 				// character_select_time_max					0.0
 				// character_select_time_min					0.0
 				// survival_enable_gladiator_intros			   	0
+				
+				bleedout_enabled								1
 				
 				//Flowstate by CafeFPS
 				
@@ -3023,6 +3042,8 @@ playlists
 				// survival_enable_gladiator_intros			   	0
 				
 				//Flowstate by CafeFPS
+				
+				bleedout_enabled								1
 				
 				survival_shields							   	1
 				is_ranked_game								 	0
