@@ -1940,6 +1940,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 					if( settings.fs_scenarios_characterselect_enabled )
 						player.SetPlayerNetBool( "characterSelectionReady", false )
+					else
+						GiveLoadoutRelatedWeapons( player )
 
 					RemoveCinematicFlag( player, CE_FLAG_INTRO )
 					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
