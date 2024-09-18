@@ -339,16 +339,21 @@ void function PlayerDying( entity player, entity attacker, var damageInfo )
 			}
 		}
 
+		int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
+		entity incapShield
 		// All player's must at least have a basic lvl 0 knockdown shield
 		if ( Inventory_GetPlayerEquipment( player, equipSlot ) == "" )
 		{
 			Inventory_SetPlayerEquipment( player, KNOCKDOWN_SHIELD_BASIC, equipSlot )
-			player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT, ["incap_lvl_0"] )
+			incapShield = player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT, ["incap_lvl_0"] )
 		}
 		else
 		{
-			player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT )
+			incapShield = player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT )
 		}
+		
+		if( IsValid( incapShield ) )
+			incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( shieldTier ) )
 		
 		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, KNOCKDOWN_SHIELD_SLOT )
 
