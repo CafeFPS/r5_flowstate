@@ -70,7 +70,7 @@ void function DEV_SpawnDownedBots( int amount = 1 )
 		bot.p.IsBot = true
 
 		SetTeam( bot, gp()[0].GetTeam() )
-		thread Bleedout_StartPlayerBleedout( bot, gp()[0] )
+		thread Bleedout_StartPlayerBleedout( bot, gp()[0], null )
 	}
 }
 
