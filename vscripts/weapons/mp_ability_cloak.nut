@@ -5,17 +5,8 @@ var function OnWeaponPrimaryAttack_cloak( entity weapon, WeaponPrimaryAttackPara
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 
-	Assert( IsValid( ownerPlayer) && ownerPlayer.IsPlayer() )
-
-	// if ( IsValid( ownerPlayer ) && ownerPlayer.IsPlayer() )
-	// {
-		// if ( weapon.HasMod( "survival_finite_ordnance" ) )
-		// {
-			// entity activeWeapon = ownerPlayer.GetActiveWeapon( weapon.GetWeaponSettingEnum( eWeaponVar.offhand_active_slot, eActiveInventorySlot ) )
-			// if ( activeWeapon != null && activeWeapon.IsWeaponOffhand() )
-				// return false
-		// }
-	// }
+	if( !IsValid( ownerPlayer ) || !ownerPlayer.Isplayer() )
+		return
 
 	PlayerUsedOffhand( ownerPlayer, weapon )
 
