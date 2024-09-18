@@ -129,7 +129,6 @@ struct
 	//Callbacks new
 	array<void functionref(entity, var, int) >    Callbacks_OnPlayerKillDamage
 	array<void functionref(entity, entity) >    Callbacks_OnAttackerSquadWipe
-	array<void functionref(entity, entity) >    Callbacks_OnAttackerEliminatedLastManStanding
 	array<void functionref(entity, entity) >    Callbacks_OnAttackerSoloRatEliminated
 } file
 
@@ -1359,7 +1358,7 @@ bool function ShouldDoBleedout( entity damagedEnt )
 	Warning( "ShouldDoBleedout " + damagedEnt )
 	#endif
 
-	if ( !GetCurrentPlaylistVarBool( "bleedout_enabled", false ) ) //Bleedout system will be remain disabled by default. Cafe
+	if ( !GetCurrentPlaylistVarBool( "bleedout_enabled", false ) ) //Bleedout system will remain disabled by default. Cafe
 		return false
 
 	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) ) //Don't enable bleedout logic in practice maps made by the community. Cafe
