@@ -5,7 +5,7 @@ var function OnWeaponPrimaryAttack_cloak( entity weapon, WeaponPrimaryAttackPara
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 
-	if( !IsValid( ownerPlayer ) || !ownerPlayer.Isplayer() )
+	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
 		return
 
 	PlayerUsedOffhand( ownerPlayer, weapon )
