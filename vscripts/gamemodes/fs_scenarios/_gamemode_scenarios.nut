@@ -1,4 +1,4 @@
-// Made by @CafeFPS
+// Made and designed by @CafeFPS
 //
 // mkos - feedback, playtest, spawns framework, stats
 // DarthElmo & Balvarine - gamemode idea, spawns, feedback, playtest
@@ -124,7 +124,6 @@ struct
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
 	bool fs_scenarios_deathboxes_enabled = true
-	bool fs_scenarios_bleedout_enabled = true
 	bool fs_scenarios_show_death_recap_onkilled = true
 	bool fs_scenarios_zonewars_ring_mode = false
 	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
@@ -153,7 +152,6 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
-	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
 	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
 	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
@@ -189,6 +187,9 @@ void function Init_FS_Scenarios()
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
+	
+	Survival_AddCallback_OnAttackerSquadWipe( FS_Scenarios_OnSquadWipe )
+	Survival_AddCallback_OnAttackerSoloRatEliminated( FS_Scenarios_OnRatEliminated )
 
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
@@ -236,22 +237,18 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	
 	if ( victim.GetTeam() != attacker.GetTeam() && attacker.IsPlayer() )
 	{
-		if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
-		{
-			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
-		} 
-		else if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
-		{
-			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
-		}
-		
 		FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
 	}
 
-	FS_Scenarios_HandleGroupIsFinished( victim, damageInfo )
-
+	FS_Scenarios_HandleGroupIsFinished( victim )
+	
 	if( IsValid( group ) && group.IsFinished )
 		return
+
+	if( FS_Scenarios_GetDeathboxesEnabled() )
+	{
+		thread SURVIVAL_Death_DropLoot( victim, damageInfo )
+	}
 
 	if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 1 )
 	{
@@ -335,41 +332,12 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 			victim.GrappleDetach()
 	}
 	
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( victim ) && !IsDemigod( victim ) )
 	{
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
 		thread EnemyDownedDialogue( attacker, victim )
-
-		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
-			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.DOWNED, victim )
-
-		foreach ( cbPlayer in GetPlayerArray() )
-			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
-			
-		// Add the cool splashy blood and big red crosshair hitmarker
-		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-	
-		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, attacker )
-
-		// not sure if this is needed anymore ~mkos
-		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		if (attacker.IsPlayer() && IsValid( attacker ))
-        {
-            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-        }
-		
-		// no need to cancel damage since this function is now a post damaged callback ~mkos
-		
-		// Cancel the damage
-		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
-		// There might be a better way to do this, but this works well enough
-		//DamageInfo_SetDamage( damageInfo, 1 )
-
-		// Delete any shield health remaining
-		//victim.SetShieldHealth( 0 ) //this is redundant, bleedout logic handles this. ~mkos
 	}
 }
 
@@ -381,36 +349,22 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 	
 	_CleanupPlayerEntities( player )
 
+	FS_Scenarios_HandleGroupIsFinished( player )
+
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
 	if( IsValid( group ) && group.isValid && !group.IsFinished )
+	{
 		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
-
-	FS_Scenarios_HandleGroupIsFinished( player, null )
+		
+		if( FS_Scenarios_GetDeathboxesEnabled() )
+		{
+			Dev_ForceDropDeathbox( player )
+		}
+	}
 
 	if( player.p.handle in file.scenariosPlayerToGroupMap )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
-}
-
-array<vector> function FS_Scenarios_GeneratePlaneFlightPathForGroup( scenariosGroupStruct group )
-{
-	vector center = group.calculatedRingCenter
-	int realm = group.slotIndex
-
-	const float CENTER_DEVIATION = 2.0
-	const float POINT_FINDER_MULTIPLIER = 200
-
-	// Get a random point from map center within specified deviation
-	vector dropshipCenterPoint = center // GetRandomCenter( center, 0.0, CENTER_DEVIATION )
-	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight() / 2.5
-
-	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
-	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
-
-	vector startPos = ClampToWorldspace( dropshipCenterPoint - dropshipMovingForward* settings.fs_scenarios_default_radius )
-	vector endPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward* settings.fs_scenarios_default_radius )
-
-	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
 }
 
 void function FS_Scenarios_SaveBigDoorData( entity door )
@@ -2003,20 +1957,17 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 int function FS_SortPlayersByPriority( entity a, entity b )
 {
-	if ( a.p.scenariosTeamsMatched < b.p.scenariosTeamsMatched )
-		return 1
 	if ( a.p.scenariosTeamsMatched > b.p.scenariosTeamsMatched )
+		return 1
+	if ( a.p.scenariosTeamsMatched < b.p.scenariosTeamsMatched )
 		return -1
 
 	return 0
 }
 
-void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo )
+void function FS_Scenarios_HandleGroupIsFinished( entity player )
 {
 	if( !IsValid( player ) )
-		return
-
-	if( damageInfo != null && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
 		return
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
@@ -2031,7 +1982,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 		if( !IsValid( splayer ) )
 			continue
 		
-		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) ) //Give points to the downed alive players as well. So being alive and not skipping the knockdown stage will be more rewardable. Bleeding players can win the game if the remaining enemy dies to something first. Cafe
 		{
 			aliveCount1++
 			winners.append( splayer )
@@ -2044,7 +1995,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 		if( !IsValid( splayer ) )
 			continue
 		
-		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) )
 		{
 			aliveCount2++
 			winners.append( splayer )
@@ -2057,7 +2008,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 		if( !IsValid( splayer ) )
 			continue
 		
-		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) )
 		{
 			aliveCount3++
 			winners.append( splayer )
@@ -2092,11 +2043,6 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo 
 			g_fCurrentRoundEndTime = Time() //Set the global flowstate end time to end right now if this group was the last group from the round and everyone was waiting for them
 			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
 		}
-	}
-
-	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
-	{
-		thread SURVIVAL_Death_DropLoot( player, damageInfo )
 	}
 } 
 
@@ -2610,3 +2556,13 @@ void function FS_Scenarios_SetStopMatchmaking( bool set )
 		// }
 	// }
 // }
+
+void function FS_Scenarios_OnSquadWipe( entity victim, entity attacker )
+{
+	FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
+}
+
+void function FS_Scenarios_OnRatEliminated( entity victim, entity attacker )
+{
+	FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+}

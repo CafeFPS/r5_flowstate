@@ -560,7 +560,7 @@ void function IncapShield_ChargeThread( entity weapon, entity player )
 	// Collision
 	IncapShield_SetShieldEntCollision( shieldEnt, true )
 
-	while ( IsPlayerSelfHealing( player ) )
+	while ( Bleedout_IsPlayerSelfReviving( player ) )
 	{
 		wait 0.2
 	}

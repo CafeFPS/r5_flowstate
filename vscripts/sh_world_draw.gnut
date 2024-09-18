@@ -56,7 +56,8 @@ global enum eAssetType
 {
 	INVALID = -1,
 	IMAGE,
-	VIDEO
+	VIDEO,
+	AUDIO
 } 
 
 struct

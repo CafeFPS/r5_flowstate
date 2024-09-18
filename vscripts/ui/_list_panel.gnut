@@ -723,6 +723,12 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 			firstAmmoIndex = itemIndex
 		}
 		
+		if( data.availableElements.len() == 0 )
+		{
+			Warning("_list_panel data.availableElements was 0 an we catched a crash")
+			
+			continue
+		}
 		ListElementData buttonData = GetElementDataForItemIndex( data, itemIndex )
 
 		if ( forceRefresh )

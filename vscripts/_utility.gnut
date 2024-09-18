@@ -4563,7 +4563,7 @@ void function KillPlayer( entity player, int damageSource )
 
 	Assert( IsAlive( player ) )
 	Assert( player.IsPlayer() )
-	//player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
+	player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType = DF_SKIPS_DOOMED_STATE } )
 }
 
 
@@ -5402,6 +5402,9 @@ void function RestoreChargesForPlayer( entity player )
 			entity ultWeapon = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 			if ( IsValid( ultWeapon ) )
 			{
+				#if DEVELOPER
+				Warning( "Restored ultimate charge for player " + player + " Stored:" + file.playerToStoredUltimateCharge[player] + " Max: " + ultWeapon.GetWeaponPrimaryClipCountMax() )
+				#endif
 				ultWeapon.SetWeaponPrimaryClipCount( minint( file.playerToStoredUltimateCharge[player], ultWeapon.GetWeaponPrimaryClipCountMax() ) )
 				delete file.playerToStoredUltimateCharge[player]
 			}
@@ -5412,6 +5415,9 @@ void function RestoreChargesForPlayer( entity player )
 			entity tacWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 			if ( IsValid( tacWeapon ) )
 			{
+				#if DEVELOPER
+				Warning( "Restored tactical charge for player", player )
+				#endif
 				tacWeapon.SetWeaponPrimaryClipCount( minint( file.playerToStoredTacticalCharge[player], tacWeapon.GetWeaponPrimaryClipCountMax() ) )
 				delete file.playerToStoredTacticalCharge[player]
 			}

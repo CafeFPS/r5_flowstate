@@ -171,6 +171,7 @@ global const string CONSUMABLE_WEAPON_NAME = "mp_ability_consumable"
 
 const float HEAL_CHATTER_DEBOUNCE = 10.0
 const RESTORE_HEALTH_COCKPIT_FX = $"P_heal_loop_screen"
+global const vector HEALTH_RGB = < 114, 245, 250 >
 
 //Wattson
 const string WATTSON_EXTRA_ULT_ACCEL_SFX = "Wattson_Xtra_A"

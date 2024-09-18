@@ -55,6 +55,11 @@ global function Survival_GetPlayerTimeOnGround
 global function Survival_GetPlayerData
 global function Survival_OnClientConnected
 
+global function CodeCallback_KillDamagePlayerOrNPC
+global function Survival_AddCallback_OnPlayerKillDamage
+global function Survival_AddCallback_OnAttackerSquadWipe
+global function Survival_AddCallback_OnAttackerSoloRatEliminated
+
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
 //updated. Cafe
@@ -62,6 +67,7 @@ global const float REALBIG_CIRCLE_GRID_RADIUS = 52500
 const float PLANE_HEIGHT_REALBIG = 17000.0
 const float CLAMP_TO_RING_BUFFER = 400
 const float SURVIVAL_PLANE_DROP_RADIUS_MIN = 22000
+const string KNOCKED_SOUND = "flesh_bulletimpact_downedshot_3p_vs_3p"
 
 //fix debug draws calls
 const bool DEBUG_PLANE_PATH = false
@@ -119,6 +125,12 @@ struct
 	bool shouldFreezeControlsOnPrematch = true
 	table<EncodedEHandle, SurvivalPlayerData>        playerData
 	table< entity, float >         playerLastDamageSlowTime
+	
+	//Callbacks new
+	array<void functionref(entity, var, int) >    Callbacks_OnPlayerKillDamage
+	array<void functionref(entity, entity) >    Callbacks_OnAttackerSquadWipe
+	array<void functionref(entity, entity) >    Callbacks_OnAttackerEliminatedLastManStanding
+	array<void functionref(entity, entity) >    Callbacks_OnAttackerSoloRatEliminated
 } file
 
 void function GamemodeSurvival_Init()
@@ -145,6 +157,8 @@ void function GamemodeSurvival_Init()
 		AddCallback_OnPlayerKilled( OnPlayerKilled_DropLoot )
 		
 	AddCallback_OnClientConnected( OnClientConnected )
+	AddCallback_OnPreClientDisconnected( Survival_OnClientDisconnected )
+
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad_Survival )
 	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
@@ -299,7 +313,7 @@ bool function ClientCommand_bleedout(entity player, array<string> args)
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return false
 
-	Bleedout_StartPlayerBleedout( player, player )
+	Bleedout_StartPlayerBleedout( player, player, null )
 	return true
 }
 
@@ -1218,6 +1232,10 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
 	
 	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	
+	#if DEVELOPER
+	Warning( "OnPlayerDamaged " + victim )
+	#endif
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
 		return
 
@@ -1237,42 +1255,210 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	{
 		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
 	}
-	
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
-	{	
-		if( !IsValid(attacker) || !IsValid(victim) )
-			return
+}
 
-		thread EnemyDownedDialogue( attacker, victim )
+//Centralized start bleedout
+int function CodeCallback_KillDamagePlayerOrNPC( entity ent, var damageInfo, int actualTotalDamage )
+{
+	#if DEVELOPER
+	Warning( "CodeCallback_KillDamagePlayerOrNPC " + ent + " actualTotalDamage " + actualTotalDamage )
+	#endif
 
-		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
-			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
+	entity damagedEnt = ent
 
-		foreach ( cbPlayer in GetPlayerArray() )
-			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
-			
-		// Add the cool splashy blood and big red crosshair hitmarker
-		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-	
-		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, attacker )
+	if ( !damagedEnt.IsPlayer() )
+		return 0
 
-		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		if (attacker.IsPlayer() && IsValid( attacker ))
-        {
-            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-        }
-		
-		//no need to cancel damage as this function is now post damaged callback
-		
-		// Cancel the damage
-		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
-		// There might be a better way to do this, but this works well enough
-		//DamageInfo_SetDamage( damageInfo, 1 )
+	int damageType   = DamageInfo_GetCustomDamageType( damageInfo )
+	entity attacker  = GetAttackerOrLastAttacker( ent, damageInfo )
+	bool isForceKill = DamageInfo_GetForceKill( damageInfo )
+	// damagedEnt.p.PIN_VictimWeapon = damagedEnt.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
-		// Delete any shield health remaining
-		//victim.SetShieldHealth( 0 ) //This is redundant as bleedout logic handles this ~mkos
+	if ( !Bleedout_IsBleedingOut( damagedEnt )
+			&& DamageInfo_GetDamageSourceIdentifier( damageInfo ) != eDamageSourceId.fall
+			&& !( damageType & DF_SKIPS_DOOMED_STATE )
+			&& !isForceKill )
+	{
+		// StatsHook_OnDoomingDamage( damagedEnt, attacker, damageInfo )
+		// WeaponStatsHook_OnDownEnemy( damagedEnt, attacker, damageInfo )
+
+		if ( attacker.IsPlayer() && attacker != damagedEnt )
+		{
+			// AddGameSummaryKnockdown( attacker, ent, 1, damageInfo )
+
+			foreach ( entity assistCreditPlayer, float assistTime in ent.p.playerToTimeThatAssistCreditLastsTable )
+			{
+				if ( !IsValid( assistCreditPlayer ) )
+					continue
+
+				// if ( assistCreditPlayer.p.hasMatchParticipationEnded )
+					// continue
+
+				// AddGameSummaryKnockdownAssist ( assistCreditPlayer, ent, 1  )
+			}
+		}
+
+		if ( ShouldDoBleedout( damagedEnt ) )
+		{
+			if ( attacker.GetTeam() != damagedEnt.GetTeam() )
+			{
+				foreach ( player in GetPlayerArray() )
+				{
+					Remote_CallFunction_Replay( player, "ServerCallback_OnEnemyDowned", attacker, damagedEnt, DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamageSourceIdentifier( damageInfo ) )	
+				}
+
+				if( attacker.IsPlayer() && IsPlaylistAllowedForDefaultKillNotifications() )
+					AddPlayerScore( attacker, "Sur_DownedPilot", damagedEnt )
+
+				
+				if( attacker.IsPlayer() && Playlist() == ePlaylists.fs_scenarios )
+					FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.DOWNED, damagedEnt )
+			}
+
+			damagedEnt.p.playerToTimeThatAssistCreditLastsTable = GetLatestAssistingPlayersFromSameTeam( damagedEnt, attacker )
+			DamageInfo_AddCustomDamageType( damageInfo, DF_KNOCKDOWN )
+
+			// add knockdown to the latest damage history entry, it wasn't added earlier because we no longer know that we are going to be knocked down where the histroy is stored.
+			// Assert( ent.e.recentDamageHistory.len() > 0, "recentDamageHistory didn't have any history when it should" )
+			if( ent.e.recentDamageHistory.len() == 0 )
+			{
+				Warning( "recentDamageHistory didn't have any history when it should. Len: " + ent.e.recentDamageHistory.len() ) //Cafe
+			} else
+				ent.e.recentDamageHistory[0].damageType = ent.e.recentDamageHistory[0].damageType | DF_KNOCKDOWN
+
+			if ( attacker.IsPlayer() )
+				EmitSoundOnEntityExceptToPlayer( damagedEnt, attacker, KNOCKED_SOUND )
+			else
+				EmitSoundOnEntity( damagedEnt, KNOCKED_SOUND )
+
+			Bleedout_StartPlayerBleedout( damagedEnt, attacker, damageInfo )
+			damagedEnt.SetNPCPriorityOverride( 1 )
+
+			//TODO - the follow can cause Callbacks_OnPlayerKillDamage below to be skipped
+			return damagedEnt.GetMaxHealth()
+		}
+
+		//After this is full team bleedout. Cafe
+		thread Delayed_TryEliminateTeammates( damagedEnt, attacker ) //Now we ensure it will be triggered only one time. Cafe
+
+		if( attacker.IsPlayer() )
+		{
+			damagedEnt.p.playerToTimeThatAssistCreditLastsTable = GetLatestAssistingPlayersFromSameTeam( damagedEnt, attacker )
+		}
 	}
+
+	foreach ( func in file.Callbacks_OnPlayerKillDamage )
+		func( ent, damageInfo, actualTotalDamage )
+
+	return 0
+}
+
+bool function ShouldDoBleedout( entity damagedEnt )
+{
+	#if DEVELOPER
+	Warning( "ShouldDoBleedout " + damagedEnt )
+	#endif
+
+	if ( !GetCurrentPlaylistVarBool( "bleedout_enabled", false ) ) //Bleedout system will be remain disabled by default. Cafe
+		return false
+
+	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) ) //Don't enable bleedout logic in practice maps made by the community. Cafe
+		return false
+
+	if ( !IsValid( damagedEnt ) )
+		return false
+
+	Bleedout_TryToRemoveInfiniteSelfResOnDownedSquad( damagedEnt )
+
+	if ( Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( damagedEnt ) )
+		return true
+
+	if ( Flag( "BleedoutDebug" ) )
+		return true
+
+	if ( Bleedout_GetSelfResEnabled( damagedEnt ) )
+		return true
+
+	if ( Bleedout_CanTeammatesSelfRevive( damagedEnt ) )
+		return true
+
+	return false
+
+}
+
+
+void function Delayed_TryEliminateTeammates( entity victim, entity attacker = null )
+{
+	int bleedingMatesKilled = 0
+	foreach ( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
+	{
+		wait 0.1
+		if ( GetGameState() <= eGameState.Playing &&
+				IsAlive( player ) &&
+				player != victim &&
+				Bleedout_IsBleedingOut( player ) &&
+						!Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( player ) && Playlist() != ePlaylists.fs_duckhunt &&
+				!Bleedout_GetSelfResEnabled( player ) &&
+				!Bleedout_CanTeammatesSelfRevive( player )
+				)
+		{
+			Bleedout_PlayerDiesFromBleedout( player )
+			bleedingMatesKilled++
+		}
+	}
+	
+	if( !IsValid( attacker ) )
+		return
+
+	EndSignal( attacker, "OnDestroy" )
+	wait 0.1
+
+	if( attacker.IsPlayer() && bleedingMatesKilled != 0 ) //Squad wipe logic should only be triggered if there are not bleeding teammates
+	{
+		if( IsPlaylistAllowedForDefaultKillNotifications() )
+		{
+			array<entity> teammates = GetPlayerArrayOfTeam_Alive( attacker.GetTeam() )
+			foreach( entity teammate in teammates )
+			{
+				AddPlayerScore( teammate, "Sur_SquadWipe", victim, teammate == attacker ? "killer" : "" )
+			}
+		}
+		
+		foreach ( func in file.Callbacks_OnAttackerSquadWipe )
+			func( victim, attacker )
+	} else if( attacker.IsPlayer() && bleedingMatesKilled == 0 )
+	{
+		if( IsPlaylistAllowedForDefaultKillNotifications() && GetCurrentPlaylistVarBool( "flowstate_rat_wipe_notification", false ) )
+		{
+			array<entity> teammates = GetPlayerArrayOfTeam_Alive( attacker.GetTeam() )
+			foreach( entity teammate in teammates )
+			{
+				AddPlayerScore( teammate, "Sur_SquadWipeRat", victim, teammate == attacker ? "killer" : "" )
+			}
+		}
+
+		foreach ( func in file.Callbacks_OnAttackerSoloRatEliminated )
+			func( victim, attacker )
+	}
+}
+
+void function Delayed_TryClearTeam( int team )
+{
+	WaitFrame()
+
+	foreach ( p in GetPlayerArrayOfTeam( team ) )
+	{
+		if ( IsAlive( p ) &&
+				Bleedout_IsBleedingOut( p ) &&
+						!Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( p ) && Playlist() != ePlaylists.fs_duckhunt &&
+				!Bleedout_IsPlayerSelfReviving( p ) &&
+				!Bleedout_CanTeammatesSelfRevive( p ) )
+		{
+			Bleedout_PlayerDiesFromBleedout( p )
+		}
+	}
+
+	// OnPlayerKilled_Winner()
 }
 
 void function EnemyDownedDialogue( entity attacker, entity victim )
@@ -1463,6 +1649,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		victimEHandle = victim ? victim.GetEncodedEHandle() : -1
 	}
 
+
 	SetPlayerEliminated( victim )
 
 	if ( Flowstate_PlayerDoesRespawn() )
@@ -1504,11 +1691,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	// Restore weapons for deathbox
 	if ( victim.p.storedWeapons.len() > 0 )
 		RetrievePilotWeapons( victim )
-	
-	// int droppableItems = GetAllDroppableItems( victim ).len()
-
-	// if ( canPlayerBeRespawned || droppableItems > 0 )
-		// CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )// changed to s21 behavior. Café
 
 	thread EnemyKilledDialogue( attacker, victimTeamNum, victim )
 }
@@ -1601,6 +1783,62 @@ void function Survival_OnClientConnected( entity player )
 	AddButtonPressedPlayerInputCallback( player, IN_USE_LONG, OnPlayerPressedUseLong )
 
 	file.playerLastDamageSlowTime[player] <- 0.0
+}
+
+void function Survival_OnClientDisconnected( entity player )
+{
+	if ( IsAlive( player ) )
+	{
+		//quitting in combat counts as death
+		entity lastAttacker = GetLastAttacker( player ) //Attacker doesn't work, get last attacker
+		if ( !IsValid( lastAttacker ) )
+		{
+			//last attacker didn't work, get latestAssistingPlayerInfo
+			AssistingPlayerStruct attackerInfo = GetLatestAssistingPlayerInfo( player )
+			if ( IsValid( attackerInfo.player ) )
+			{
+				lastAttacker = attackerInfo.player
+			}
+		}
+
+		// bleedout + execution check
+		if ( Bleedout_IsBleedingOut( player ) )
+		{
+			entity attacker    = Bleedout_GetBleedoutAttacker( player )
+			int damageSourceID = GetLastDamageSourceIDForAttacker( player, attacker )
+
+			bool playerWasBeingExecuted = false
+
+			if ( player.ContextAction_IsMeleeExecutionTarget() && IsValid( player.e.syncedMeleeAttacker ) )
+			{
+				attacker               = player.e.syncedMeleeAttacker
+				damageSourceID         = eDamageSourceId.human_execution
+				playerWasBeingExecuted = true
+			}
+
+			if ( IsValid( attacker ) && attacker.IsPlayer() )
+			{
+				if ( playerWasBeingExecuted )
+					player.Die( attacker, attacker, { damageType = DMG_MELEE_EXECUTION, damageSourceId = damageSourceID } )
+				else
+					player.Die( attacker, attacker, { damageSourceId = damageSourceID } )
+			}
+		}
+		else if ( IsValid (lastAttacker ) ) //non-bleedout assist check
+		{
+			//quitting while in combat
+			int damageSourceID = GetLastDamageSourceIDForAttacker(player , lastAttacker )
+			player.Die( lastAttacker, lastAttacker, { damageSourceId = damageSourceID } )
+		}
+		// else
+		// {
+			// if ( GetGameState() >= eGameState.Playing )
+				// thread SURVIVAL_Disconnect_DropLoot( player )
+		// }
+	}
+
+	UpdatePlayerCounts()
+	thread Delayed_TryClearTeam( player.GetTeam() )
 }
 
 void function OnPlayerPressedUseLong( entity player )
@@ -1823,6 +2061,25 @@ void function Survival_AddCallback_OnAirdropLaunched( void functionref( entity d
 {
 
 }
+
+void function Survival_AddCallback_OnPlayerKillDamage( void functionref(entity, var, int) callbackFunc )
+{
+	Assert( !(file.Callbacks_OnPlayerKillDamage.contains( callbackFunc )) )
+	file.Callbacks_OnPlayerKillDamage.append( callbackFunc )
+}
+
+void function Survival_AddCallback_OnAttackerSquadWipe( void functionref(entity, entity) callbackFunc ) //Cafe
+{
+	Assert( !(file.Callbacks_OnAttackerSquadWipe.contains( callbackFunc )) )
+	file.Callbacks_OnAttackerSquadWipe.append( callbackFunc )
+}
+
+void function Survival_AddCallback_OnAttackerSoloRatEliminated( void functionref(entity, entity) callbackFunc ) //Cafe
+{
+	Assert( !(file.Callbacks_OnAttackerSoloRatEliminated.contains( callbackFunc )) )
+	file.Callbacks_OnAttackerSoloRatEliminated.append( callbackFunc )
+}
+
 
 void function Survival_CleanupPlayerPermanents( entity player )
 {

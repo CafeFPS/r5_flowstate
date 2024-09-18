@@ -12,6 +12,7 @@ global function ScoreEvent_NPCKilled
 
 global function ScoreEvent_SetEarnMeterValues
 global function ScoreEvent_SetupEarnMeterValuesForMixedModes
+global function IsPlaylistAllowedForDefaultKillNotifications
 
 struct {
 	bool firstStrikeDone = false
@@ -20,6 +21,24 @@ struct {
 void function Score_Init()
 {
 
+}
+
+bool function IsPlaylistAllowedForDefaultKillNotifications()
+{
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_scenarios:
+		return false
+		
+	}
+
+	switch( Gamemode() )
+	{
+		case eGamemodes.fs_snd:
+		return false
+	}
+
+	return true
 }
 
 void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity associatedEnt = null, string noideawhatthisis = "", int ownValueOverride = -1 )

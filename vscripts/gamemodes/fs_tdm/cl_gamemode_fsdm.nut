@@ -1672,7 +1672,7 @@ void function DM_HintCatalog(int index, int eHandle)
 			
 			case ePlaylists.fs_scenarios:
 			Obituary_Print_Localized( "%$rui/bullet_point% Players Connected: " + GetPlayerArray().len(), GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS and mkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios - Made and designed by @CafeFPS with the help from @ttvmkos.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_1v1:

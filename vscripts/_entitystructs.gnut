@@ -1116,6 +1116,11 @@ global struct ServerPlayerStruct
 	array<DropWeaponData> weaponsToDropData
 	
 	int scenariosTeamsMatched = 0
+
+	//Bleedout update
+	int numSelfRevivesUsed = 0
+	float lastUseTime
+	bool markedForRevive = false
 }
 
 global struct ChallengeScore

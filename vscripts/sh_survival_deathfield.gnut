@@ -2193,7 +2193,7 @@ float function SURVIVAL_GetDeathFieldCurrentRadius()
 
 bool function SurveyBeacon_CanUseFunction( entity player, entity beacon )
 {
-	if ( GetGameState() < eGameState.Playing )
+	if ( GetGameState() < eGameState.Playing || Gamemode() == eGamemodes.WINTEREXPRESS )
 		return false
 
 	if ( !PlayerHasPassive( player, ePassives.PAS_PATHFINDER ) )

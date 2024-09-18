@@ -20,6 +20,7 @@ global function SetChampion
 global function GetChampion
 
 global function PlayBattleChatterLineToTeamButNotSpeaker
+global function PlayBattleChatterLineToSpeakerAndOtherPlayer
 global function PlayBattleChatterLineDelayedToPlayer
 global function TryPlayWeaponBattleChatterLine
 global function PlayBattleChatterLineDelayedToSpeakerAndTeam
@@ -229,6 +230,12 @@ void function PlayBattleChatterLineToPlayer( string conversationType, entity lis
 int function SurvivalCommentary_GetChampionEEH()
 {
 	return GetGlobalNetInt( "championEEH" )
+}
+
+void function PlayBattleChatterLineToSpeakerAndOtherPlayer( entity speakingPlayer, entity otherPlayer, string chatterLine )
+{
+	PlayBattleChatterLineToPlayer( chatterLine, speakingPlayer, speakingPlayer, otherPlayer )
+	PlayBattleChatterLineToPlayer( chatterLine, otherPlayer, speakingPlayer, otherPlayer )
 }
 
 void function SurvivalCommentary_ResetAllData()

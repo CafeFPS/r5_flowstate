@@ -5070,9 +5070,11 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		if ( data.lootType == eLootType.ARMOR )
 		{
 			array< entity > spawnedLoot = SpawnAndThrowItems_ReturnItems( player, itemName, 1, 1.0, eSpawnSource.PLAYER_DEATH )
-			itemEnt = spawnedLoot[0]
+			if( spawnedLoot.len() > 0 )
+				itemEnt = spawnedLoot[0]
 		}
-		else if ( data.lootType != eLootType.ARMOR )
+		
+		if ( data.lootType != eLootType.ARMOR || !IsValid( itemEnt ) )
 		{
 			savedOrigin = IsValid( player ) ? player.GetOrigin() + vOffset : savedOrigin
 			itemEnt = SpawnGenericLoot( itemName, savedOrigin )

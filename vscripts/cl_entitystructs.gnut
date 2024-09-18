@@ -59,7 +59,6 @@ global struct ClientEntityStruct
 
 	float lastVocalizedCommsTime = -999.0
 
-	array<DamageHistoryStruct> recentDamageHistory
 	string functionref( entity ent ) entTextOverrideCallback
 
 	bool functionref( entity player, entity ent ) canUseEntityCallback = null
@@ -102,6 +101,8 @@ global struct ClientEntityStruct
 	
 	//extra survival int property ( max shield for infinite shield )
 	int extraSurvivalProperty = -1
+
+	array<DamageHistoryStruct>       recentDamageHistory
 }
 
 
@@ -214,6 +215,8 @@ global struct ClientPlayerStruct
 	
 	// halo grenade 
 	float haloGrenadeAttackTime
+	int numSelfRevivesUsed = 0
+	float lastUseTime
 }
 
 

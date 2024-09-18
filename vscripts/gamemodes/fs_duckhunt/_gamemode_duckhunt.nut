@@ -291,37 +291,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		if( !IsValid(victim) || IsValid(victim) && victim.GetPlayerGameStat( PGS_DEATHS ) >= DUCKHUNT_MAX_LIFES_FOR_DUCKS && victim.GetTeam() == TEAM_MILITIA)
 			return
 
-		if(!Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) || !IsValid(attacker)) return
-
-		// Remote_CallFunction_NonReplay( victim, "DUCKHUNT_CustomHint", 1, DUCKHUNT_MAX_LIFES_FOR_DUCKS - victim.GetPlayerGameStat( PGS_DEATHS ))
+		if(!Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( victim ) || !IsValid(attacker)) return
 
 		thread EnemyDownedDialogue( attacker, victim )
-
-		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
-			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
-
-		foreach ( cbPlayer in GetPlayerArray() )
-			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )
-
-		// Add the cool splashy blood and big red crosshair hitmarker
-		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-
-		if( victim.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
-			TakePassive(victim, ePassives.PAS_PILOT_BLOOD)
-
-		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, attacker )
-
-		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		if (attacker.IsPlayer() && IsValid( attacker ))
-            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-		// Cancel the damage
-		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
-		// There might be a better way to do this, but this works well enough
-		DamageInfo_SetDamage( damageInfo, 1 )
-
-		// Delete any shield health remaining
-		victim.SetShieldHealth( 0 )
 	}
 }
 
@@ -329,14 +301,6 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 {
 	if ( !IsValid( victim ) || !IsValid( attacker) || IsValid(victim) && !victim.IsPlayer() )
 		return
-
-	// Restore weapons for deathbox
-	// if ( victim.p.storedWeapons.len() > 0 )
-		// RetrievePilotWeapons( victim )
-
-	// int droppableItems = GetAllDroppableItems( victim ).len()
-	// if ( droppableItems > 0 )
-		// CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
 
 	switch(GetGameState())
     {

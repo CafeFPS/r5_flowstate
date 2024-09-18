@@ -1,194 +1,254 @@
 //Bleed Out Mechanic Shared by several game modes.
+//S21 script implementation by CafeFPS - September 2024
+
 global function Bleedout_Init
+global function Bleedout_SetPlayerBleedoutType
 global function Bleedout_StartPlayerBleedout
+
 global function Bleedout_AddCallback_OnPlayerStartBleedout
-global function Bleedout_AddCallback_OnPlayerGiveFirstAid
+global function Bleedout_AddCallback_OnPlayerStopBleedout
+global function Bleedout_AddCallback_OnPlayerStartGiveFirstAid
+global function Bleedout_AddCallback_OnPlayerFinishGiveFirstAid
+global function Bleedout_AddCallback_OnPlayerStartGiveSelfRevive
+global function Bleedout_AddCallback_OnPlayerStartReceiveFirstAid
+global function Bleedout_AddCallback_OnPlayerFirstAidInterrupted
+global function Bleedout_AddCallback_OnPlayerGotFirstAid
+global function Bleedout_AddCallback_CleanupUtilitySlot
+
 global function Bleedout_ShouldAIMissBleedingPlayer
-global function IsPlayerSelfHealing
-
-global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
-global function Bleedout_GetBleedoutAttacker
+global function Bleedout_GetBleedoutStartTime
+global function Bleedout_GetBleedoutWaypoint
+global function Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut
+global function Bleedout_CanTeammatesSelfRevive
+global function Bleedout_PlayerDiesFromBleedout
+global function Bleedout_IsPlayerGivingFirstAid
+global function Bleedout_IsPlayerSelfReviving
 global function Bleedout_GetBleedoutDamageInfo
+global function Bleedout_GetBleedoutDamageSourceId
+global function Bleedout_GetBleedoutAttacker
+global function Bleedout_GetBleedoutAttackerWeaponEnt
+global function Bleedout_IsPlayerGettingFirstAid
+global function Bleedout_IsReceivingFirstAid
+global function Bleedout_IsReviveButtonDown
+global function Bleedout_ReviveForceStop
+global function Bleedout_ForceStop
+global function ReviveThread_Target
+global function ReviveThread_Reviver
+global function Bleedout_SetRevivedPlayerHealth
 
-global function Bleedout_CheckForTeamBleedout
-global function Bleedout_AreThereAlivingMates
-global function PlayerDiesFromBleedout
+global const int KNOCKDOWN_SHIELD_SLOT = WEAPON_INVENTORY_SLOT_PRIMARY_3 // UTILITY slot
+const string KNOCKDOWN_SHIELD_BASIC = "incapshield_pickup_lv0"
+const int BLEEDOUT_DISABLED_WEAPON_TYPES = -1 // WPT_ALL_EXCEPT_VIEWHANDS_OR_INCAP
 
-global function Bleedout_GetCreditedKiller
+const asset FX_BLOODTRAIL = $"skit_blood_decal_LG"
+const asset FX_REVIVE_PROTOTYPE = $"P_revive_arcs"
+const asset FX_REVIVE_PROTOTYPE_END = $"P_armor_3P_max_CP"
+
+const string GUARDIAN_ANGEL_SOUND = "Survival_Gameplay_Revival_GoldBackpack_Start"
+const string GUARDIAN_ANGEL_SUCCESS_SOUND = "Survival_Gameplay_Revival_GoldBackpack_End"
+
+#if DEV
+const bool DEBUG_DRAG_REVIVE_PLACEMENT = false
+#endif
+
+const bool USE_QUICK_TO_REVIVE = true
+const bool USE_ALT_TO_REVIVE = true
+
+const int REVIVE_PASSIVE_HEAL_BONUS = 20
+const float REVIVE_PASSIVE_SELF_REVIVE = 12.0
+
+const int REVIVE_GUARDIAN_ANGEL_SHIELD_BONUS = 50
+const int REVIVE_GUARDIAN_ANGEL_HEALTH_BONUS = 50
 
 global table<string, string> EliminatedPlayers = {}
 
-//CONFIGS
-const bool LIFELINE_RGB_SHIELD = false
-
-const asset FX_BLOODTRAIL = $"skit_blood_decal_LG"
-const float BLEEDOUT_MAX_USE_DIST2_MOD = 64 * 64
-const FX_DRONE_MEDIC_OPEN				= $"P_LL_med_drone_open"
-const FX_DRONE_MEDIC_JET_CTR			= $"P_LL_med_drone_jet_ctr_loop"
-const FX_DRONE_MEDIC_EYE				= $"P_LL_med_drone_eye"
-const FX_DRONE_MEDIC_JET_LOOP			= $"P_LL_med_drone_jet_loop"
-
-// r5 stuff
-global function Bleedout_SetBleedoutEffects
-global function Bleedout_IsPlayerGivingFirstAid
-global function Bleedout_IsReviveButtonDown
-global function Bleedout_IsReceivingFirstAid
+struct BleedoutInfo
+{
+	float					bleedoutStartTime = -999.0
+	ScriptDamageInfoClone&	damageInfoClone
+	entity					attacker
+	entity					attackerWeaponEnt
+	ItemFlavor&				bleedoutAttackerDeathbox
+}
 
 struct
 {
-	table<entity,bool> isBleeding
-	table<entity,bool> hasSelfRes
-	table<entity, entity> IsGettingFirstAidFrom
-	table<entity, entity> IsGivingFirstAidTo
-	table<entity,entity> lastAttacker
-	void functionref(entity, entity, var) Callback_OnPlayerStartBleedout
-	void functionref(entity, entity, var) Callback_OnPlayerGiveFirstAid
-	void functionref(entity, entity) Callback_OnPlayerGotFirstAid
-	int firstAidAttemptID = 0 //The ID that identifies the first aid attempt. Used to distinguish between simultainous healing attempts on the client
+	table<entity, bool>										isGivingFirstAid
+	table<entity, entity>									IsGettingFirstAidFrom
+	table<entity, entity>									playerBleedoutWaypoint
+	table<entity, BleedoutInfo>								playerBleedoutInfo
+	array< void functionref(entity, entity, var) >			Callbacks_OnPlayerStartBleedout
+	array< void functionref(entity) >						Callbacks_OnPlayerStopBleedout
+	array< void functionref(entity, entity, vector, bool) >	Callbacks_OnPlayerStartGiveFirstAid
+	                    
+	array< void functionref(entity, entity, vector, bool) >	Callbacks_OnPlayerStartGiveSelfRevive
+       
+	array< void functionref(entity, entity) >				Callbacks_OnPlayerFinishGiveFirstAid
+	array< void functionref(entity, entity) >				Callbacks_OnPlayerStartReceiveFirstAid
+	array< void functionref(entity, entity) >				Callbacks_OnPlayerFirstAidInterrupted
+	array< void functionref(entity, entity) >				Callbacks_OnPlayerGotFirstAid
+	array< void functionref(entity) >						Callbacks_CleanupUtilitySlot
+	int														firstAidAttemptID = 0 //The ID that identifies the first aid attempt. Used to distinguish between simultainous healing attempts on the client
 } file
+
+bool function Bleedout_IsReviveButtonDown( entity player )
+{
+	bool inUse      = player.IsInputCommandHeld( IN_USE )
+	bool inUseAlt   = USE_ALT_TO_REVIVE && player.IsInputCommandHeld( IN_USE_ALT )
+	bool inUseQuick = USE_QUICK_TO_REVIVE && player.IsInputCommandHeld( IN_USE_LONG )
+
+	return inUse || inUseAlt || inUseQuick
+}
+
 
 void function Bleedout_Init()
 {
 	RegisterSignal( "BleedOut_StopBleeding" )
+	RegisterSignal( "BleedOut_OnReviveStart" )
 	RegisterSignal( "BleedOut_OnRevive" )
+	RegisterSignal( "BleedOut_OnReviveStop" )
 	RegisterSignal( "BleedOut_OnStartDying" )
+	RegisterSignal( "BleedOut_ReviveForceStop" )
 	RegisterSignal( "OnContinousUseStopped" )
+	RegisterSignal( "ReviveInterrupted" )
+
+	FlagInit( "BleedoutDebug", false )
 
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
-	
-	if( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_scenarios )
-		AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
+	AddCallback_GameStateEnter( eGameState.WinnerDetermined, Bleedout_OnWinnerDetermined )
 
-	PrecacheParticleSystem( FX_BLOODTRAIL )
-	PrecacheParticleSystem( $"P_drone_medic_shield_beam" )
-	PrecacheParticleSystem( $"P_drone_medic_shield" )
-	PrecacheParticleSystem( $"P_LL_med_drone_jet_loop" ) 
-	PrecacheParticleSystem( $"P_LL_med_drone_eye" )
-	PrecacheParticleSystem( $"P_LL_med_drone_jet_ctr_loop" )
-	PrecacheParticleSystem($"P_drone_shield_hit_enemy")
-
-	FlagInit( "BleedoutDebug", false )
-	
+	PrecacheParticleSystem( FX_REVIVE_PROTOTYPE_END )
+	PrecacheParticleSystem( FX_REVIVE_PROTOTYPE )
 }
 
-void function Bleedout_SetBleedoutEffects( entity target )
-{
-
-}
-
-bool function Bleedout_IsPlayerGivingFirstAid( entity player )
-{
-	return file.IsGivingFirstAidTo[player] != null
-}
-
-bool function Bleedout_IsReviveButtonDown( entity player )
-{
-	return player.UseButtonPressed()
-}
-
-bool function Bleedout_IsReceivingFirstAid( entity player )
-{
-	return IsPlayerGettingFirstAid( player )
-}
 
 void function Bleedout_OnClientConnected( entity player )
 {
-	file.isBleeding[ player ] <- false
-	file.hasSelfRes[ player ] <- false
+	file.isGivingFirstAid[ player ] <- false
 	file.IsGettingFirstAidFrom[ player ] <- null
-	file.IsGivingFirstAidTo[ player ] <- null
-	file.lastAttacker[ player ] <- svGlobal.worldspawn
+
+	BleedoutInfo info
+	info.attacker = null
+	info.attackerWeaponEnt = null
+	info.bleedoutStartTime = -999.0
+
+	file.playerBleedoutInfo[ player ] <- info
+
+	Bleedout_SetPlayerBleedoutType( player, 0 )
 }
+
 
 void function Bleedout_OnClientDisconnected( entity player )
 {
-	if( player in file.isBleeding )
-		delete file.isBleeding[ player ]
-	
-	if( player in file.hasSelfRes )
-		delete file.hasSelfRes[ player ]
-	
-	if( player in file.IsGettingFirstAidFrom )
+	if ( player in file.IsGettingFirstAidFrom )
 		delete file.IsGettingFirstAidFrom[ player ]
-	
-	if( player in file.IsGivingFirstAidTo )
-		delete file.IsGivingFirstAidTo[ player ]
-	
-	if( player in file.lastAttacker )
-		delete file.lastAttacker[ player ]
+	if ( player in file.playerBleedoutInfo )
+		delete file.playerBleedoutInfo[ player ]
 }
 
-void function Bleedout_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+
+void function Bleedout_SetPlayerBleedoutType( entity player, int type )
 {
-	thread Bleedout_CheckForTeamBleedout( victim )
+	player.SetPlayerNetInt( "bleedoutType", type )
 }
 
-void function Bleedout_AddCallback_OnPlayerStartBleedout( void functionref(entity, entity, var) callback ) //Bleedout_SetCallback_OnPlayerStartBleedout( void functionref(entity) callback )
+
+void function Bleedout_AddCallback_OnPlayerStartBleedout( void functionref(entity, entity, var) callbackFunc )
 {
-	file.Callback_OnPlayerStartBleedout = callback
+	Assert( !file.Callbacks_OnPlayerStartBleedout.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerStartBleedout" )
+	file.Callbacks_OnPlayerStartBleedout.append( callbackFunc )
 }
 
-void function Bleedout_AddCallback_OnPlayerGiveFirstAid( void functionref(entity, entity, var) callback ) //Bleedout_SetCallback_OnPlayerGiveFirstAid( void functionref(entity) callback )
+void function Bleedout_AddCallback_OnPlayerStopBleedout( void functionref(entity) callbackFunc )
 {
-	file.Callback_OnPlayerGiveFirstAid = callback
+	Assert( !file.Callbacks_OnPlayerStopBleedout.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerStopBleedout" )
+	file.Callbacks_OnPlayerStopBleedout.append( callbackFunc )
 }
 
-void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
+//Callbacks are run when player first starts giving first aid to another player.
+void function Bleedout_AddCallback_OnPlayerStartGiveFirstAid( void functionref(entity, entity, vector, bool) callbackFunc )
 {
-	if(!IsValid(player) || !IsValid(attacker)) return
-	
+	Assert( !file.Callbacks_OnPlayerStartGiveFirstAid.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerStartGiveFirstAid" )
+	file.Callbacks_OnPlayerStartGiveFirstAid.append( callbackFunc )
+}
+
+
+void function Bleedout_AddCallback_OnPlayerFinishGiveFirstAid( void functionref(entity, entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerFinishGiveFirstAid.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerFinishGiveFirstAid" )
+	file.Callbacks_OnPlayerFinishGiveFirstAid.append( callbackFunc )
+}
+
+                    
+void function Bleedout_AddCallback_OnPlayerStartGiveSelfRevive( void functionref(entity, entity, vector, bool) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerStartGiveSelfRevive.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerStartGiveSelfRevive" )
+	file.Callbacks_OnPlayerStartGiveSelfRevive.append( callbackFunc )
+}
+      
+
+void function Bleedout_AddCallback_OnPlayerStartReceiveFirstAid( void functionref(entity, entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerStartReceiveFirstAid.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerStartReceiveFirstAid" )
+	file.Callbacks_OnPlayerStartReceiveFirstAid.append( callbackFunc )
+}
+
+
+void function Bleedout_AddCallback_OnPlayerFirstAidInterrupted( void functionref( entity, entity ) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerFirstAidInterrupted.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerFirstAidInterrupted" )
+	file.Callbacks_OnPlayerFirstAidInterrupted.append( callbackFunc )
+}
+
+
+void function Bleedout_AddCallback_OnPlayerGotFirstAid( void functionref(entity, entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerGotFirstAid.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_OnPlayerGotFirstAid" )
+	file.Callbacks_OnPlayerGotFirstAid.append( callbackFunc )
+}
+
+
+void function Bleedout_AddCallback_CleanupUtilitySlot( void functionref(entity) callbackFunc )
+{
+	Assert( !file.Callbacks_CleanupUtilitySlot.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Bleedout_AddCallback_CleanupUtilitySlot" )
+	file.Callbacks_CleanupUtilitySlot.append( callbackFunc )
+}
+
+
+void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var damageInfo )
+{
 	//if the player is already bleeding don't restart bleeding logic.
-	if ( file.isBleeding[ player ] )
-		return 
-		
-	// #if DEVELOPER
-		// Warning( "-------------------start BLEEDOUT-----------------------" )
-		// Warning( "For player: " + string( player ) )
-	// #endif 
-		
+	if ( Bleedout_IsBleedingOut( player ) )
+		return
+
+	BleedoutState_SetPlayerBleedoutState( player, BS_ENTERING_BLEEDOUT )
+
 	player.Signal( "BleedOut_StopBleeding" )
 	player.Signal( "BleedOut_OnStartDying" )
 
-	file.lastAttacker[ player ] = attacker
-	
+	//thread BloodTrail( player )
 	thread Bleedout_DeathProtection( player )
-
-	//for reference
-	// const float BLEEDOUT_TIME_LV1 = 90.0
-	// const float BLEEDOUT_TIME_LV2 = 60.0
-	// const float BLEEDOUT_TIME_LV3 = 30.0
-	// const float BLEEDOUT_TIME_LV4 = 15.0
-	
-	player.SetPlayerNetInt( "bleedoutType",  EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) // 0 is BLEEDOUT_TIME_LV1. how many times have player died? why was EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ?? it doesn't make sense of you having better incap shield and you're dying quickly
-	player.SetHealth( 100 )
-	player.SetShieldHealth( 0 )
-	player.DisableMantle()
-	
-	if( IsValid( attacker ) && attacker.IsPlayer() )
-		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
-	else
-		EmitSoundOnEntity( player, "flesh_bulletimpact_downedshot_3p_vs_3p" )
-
-	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
-
-	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
-		file.Callback_OnPlayerStartBleedout( player, attacker, null )
-
-	// thread BloodTrail( player )
-	thread PlayerDying( player )
+	thread PlayerDying( player, attacker, damageInfo )
 	thread EnablePlayerRes( player )
-	
+
 	//Start selfhealing thread if enabled.
-	if ( Bleedout_GetSelfResEnabled( player ) )
-		thread EnablePlayerSelfRes( player )
-	
-	if ( Bleedout_GetDeathOnTeamBleedout( player ) && Gamemode() != eGamemodes.fs_duckhunt ) //FIXME add signals
-		thread Bleedout_CheckForTeamBleedout( player )
+	thread EnablePlayerSelfRes( player )
 
-	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
+	// If we have enabled forced bleedout through playlist vars, show the prompt and start the thread here
+	if ( IsValid( player ) && Bleedout_GetCanForceBleedoutTimeout() )
+	{
+		thread EnablePlayerForceBleedout_Thread( player )
+	}
 
-	thread Bleedout_FirstPersonAnim( player )
+	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
+		CheckForTeamBleedout( player.GetTeam() )
+
+	// Do the callbacks after we put player into bleedout state so the callback functions have bleedout info
+	foreach ( callbackFunc in file.Callbacks_OnPlayerStartBleedout )
+	{
+		callbackFunc( player, attacker, damageInfo )
+	}
 }
 
 void function Bleedout_DeathProtection( entity player )
@@ -200,155 +260,294 @@ void function Bleedout_DeathProtection( entity player )
 		ClearInvincible(player)
 }
 
-void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
-{
-	if(!IsValid(player)) return
-		
-	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
-	bool hasPlayed = false
-
-	// HolsterAndDisableWeapons( player )
-	player.HolsterWeapon()
-
-	while( IsValid(player) && file.isBleeding[ player ] )
-	{
-
-		if( player.IsOnGround() && lastPlayerVel.z <= -1000 || player.IsOnGround() && !hasPlayed )
-		{
-			thread function() : ( player )
-			{
-				player.SetVelocity( < 0, 0, 0 > )
-				// HolsterAndDisableWeapons( player )
-				player.HolsterWeapon()
-				wait 1.0 // TODO: Find a function that can get animation duration
-				player.DeployWeapon()
-				// DeployAndEnableWeapons( player )
-			}()
-			PlayFirstPersonAnimation( player, "ptpov_downed_transition" )
-			hasPlayed = true
-		}
-
-		lastPlayerVel = player.GetVelocity()
-
-		WaitFrame()
-	}
-}
-
-void function PlayerDying( entity player )
+void function PlayerDying( entity player, entity attacker, var damageInfo )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "BleedOut_OnRevive" )
 	player.EndSignal( "BleedOut_OnStartDying" )
-	
+	player.EndSignal( "BleedOut_StopBleeding" )
+	player.Signal( "ScriptAnimStop" ) // stop whatever you are doing
+
 	float bleedoutTime = Bleedout_GetBleedoutTime( player )
-	bool forceHolster = Bleedout_GetForceWeaponHolster( player )
-	
+	bool forceHolster  = Bleedout_GetForceWeaponHolster( player )
+
 	array<int> ids = []
-	ids.append( StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.25 ) )
-	ids.append( StatusEffect_AddEndless( player, eStatusEffect.turn_slow, 0.3 ) )
+	ids.append( StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.2 ) )
+	ids.append( StatusEffect_AddEndless( player, eStatusEffect.turn_slow, 0.4 ) )
+	ids.append( StatusEffect_AddEndless( player, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
 
-	// if ( bleedoutTime > 0 )
-	// 	ids.append( StatusEffect_AddEndless( player, eStatusEffect.bleedoutDOF, 1.0 ) )
+	file.playerBleedoutInfo[ player ].bleedoutStartTime = Time()
+	file.playerBleedoutInfo[ player ].attacker = attacker
+	file.playerBleedoutInfo[ player ].damageInfoClone = CloneScriptDamageInfo( damageInfo ) // todo(dw): aaaaaaaaaaa
 
-	file.isBleeding[ player ] = true
+	// Melee_StoreBleedoutAttackerForVictim( player, attacker ) // needed to get cosmetic deathbox info
 
-	player.SetUseDoomedAnims(true)
-	player.ForceCrouch()
-	player.SetOneHandedWeaponUsageOn()
-	BleedoutState_SetPlayerBleedoutState( player, BS_BLEEDING_OUT )
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	file.playerBleedoutInfo[ player ].attackerWeaponEnt = weapon
 
-	float bleedoutEndTime = Time() + bleedoutTime
-
-	entity bleedoutWp = CreateWaypoint_Bleedout( player, bleedoutEndTime )
+	float bleedoutEndTime = (Time() + bleedoutTime)
+	
+    #if DEVELOPER
+	Warning( "Player bleedout ending in " + bleedoutTime )
+	#endif	
+	
 	player.SetPlayerNetTime( "bleedoutEndTime", bleedoutEndTime )
+	file.playerBleedoutWaypoint[ player ] <- CreateWaypoint_Bleedout( player, bleedoutEndTime )
 
-	if ( forceHolster )
-		StorePilotWeapons( player )
+	player.SetUseDoomedAnims( true )
 
-	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
-
-	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "incapshield" )
-	string ref = es.getEquippedRefFunc( player, "incapshield" )
-
-	string oldWeapon = ""
-
-	entity currentWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	if ( IsValid( currentWeapon ) )
+	player.Zipline_Stop()
+	player.Zipline_Disallow()
+	player.ClearTraverse()
+	DisableMantle(player)
+	
+	foreach ( callbackFunc in file.Callbacks_CleanupUtilitySlot )
 	{
-		oldWeapon = currentWeapon.GetWeaponClassName()
-		player.TakeWeaponByEntNow( currentWeapon )
+		callbackFunc( player )
 	}
 
-	entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	if( IsValid( incapShield ) )
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	entity utilityWeapon = player.GetNormalWeapon( KNOCKDOWN_SHIELD_SLOT )
+	Assert( utilityWeapon == null, format( "%s has not been cleared from the utility slot when going into bleedout!", utilityWeapon.GetWeaponClassName() ) )
+
+	int forceCrouchHandle = 0//player.PushForcedStance( FORCE_STANCE_CROUCH )
+	player.ForceCrouch()
+	player.SetOneHandedWeaponUsageOn()
+
+	int lastActiveSlot = WEAPON_INVENTORY_SLOT_PRIMARY_2
+	LootData basicShield = SURVIVAL_Loot_GetLootDataByRef( KNOCKDOWN_SHIELD_BASIC )
+	string equipSlot = GetLootTypeData( basicShield.lootType ).equipmentSlot
+
+	if ( forceHolster )
+	{
+		entity aw = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( IsValid( aw ) )
+		{
+			array<int> slots = [ WEAPON_INVENTORY_SLOT_PRIMARY_0,
+				WEAPON_INVENTORY_SLOT_PRIMARY_1,
+				WEAPON_INVENTORY_SLOT_PRIMARY_2,
+				WEAPON_INVENTORY_SLOT_ANTI_TITAN,
+			]
+
+			foreach ( slot in slots )
+			{
+				if ( player.GetNormalWeapon( slot ) == aw )
+				{
+					lastActiveSlot = slot
+					break
+				}
+			}
+		}
+
+		// All player's must at least have a basic lvl 0 knockdown shield
+		if ( Inventory_GetPlayerEquipment( player, equipSlot ) == "" )
+		{
+			Inventory_SetPlayerEquipment( player, KNOCKDOWN_SHIELD_BASIC, equipSlot )
+			player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT, ["incap_lvl_0"] )
+		}
+		else
+		{
+			player.GiveWeapon( "mp_weapon_incap_shield", KNOCKDOWN_SHIELD_SLOT )
+		}
+		
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, KNOCKDOWN_SHIELD_SLOT )
+
+		HolsterAndDisableWeapons( player ) //Revisit
+		// LockWeaponsAndMelee( player, "bleedout" )
+		// player.DisableWeaponTypes( BLEEDOUT_DISABLED_WEAPON_TYPES )
+
+	}
 
 	OnThreadEnd(
-	function() : ( player, ids, forceHolster, bleedoutWp, oldWeapon )
+		function() : ( player, ids, equipSlot, forceHolster, lastActiveSlot, forceCrouchHandle )
 		{
 			if ( IsValid( player ) )
 			{
 				foreach ( id in ids )
 					StatusEffect_Stop( player, id )
 
-				file.isBleeding[ player ] = false
-				file.lastAttacker[ player ] = svGlobal.worldspawn
+				SetPlayerNotBleedingOut( player )
 
-				player.TakeWeaponNow( "mp_weapon_incap_shield" )
-				if ( oldWeapon != "" )
-					player.GiveWeapon( oldWeapon, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-
-				player.SetPlayerNetTime( "bleedoutEndTime", 0.0 )
-
+                #if DEVELOPER
+				Warning( "Player exit from bleedout state " + player )
+				#endif
+				
+				// player.RemoveForcedStance( forceCrouchHandle )
 				player.UnforceCrouch()
-				player.SetUseDoomedAnims(false)
+				
 				player.SetOneHandedWeaponUsageOff()
-				player.EnableMantle()
+				player.Zipline_Allow()
+				EnableMantle(player)
 				//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_PlayerRevivedDOF" )
+
+				// player.ClearTargetingCapacityOverride()
+
+				if ( IsValid( file.playerBleedoutWaypoint[ player ] ) )
+					file.playerBleedoutWaypoint[ player ].Destroy()
+
+				if ( forceHolster )
+				{
+					// UnlockWeaponsAndMelee( player, "bleedout" )
+					DeployAndEnableWeapons( player ) //revisit. Cafe
+					// player.EnableWeaponTypes( BLEEDOUT_DISABLED_WEAPON_TYPES )
+
+					player.TakeNormalWeaponByIndexNow( KNOCKDOWN_SHIELD_SLOT )
+					//SURVIVAL_TryGivePlayerDefaultMeleePrimary( player )
+
+					if ( GetCurrentPlaylistVarBool( "mirage_rework_enabled", true ) && player.IsCloaked( true ) )
+					{
+						player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+					}
+					else
+          
+					if ( lastActiveSlot != WEAPON_INVENTORY_SLOT_PRIMARY_0 && lastActiveSlot != WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					{
+						bool setActiveWeaponSuccess = false
+						
+						if ( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) ) )
+						{
+							player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+							setActiveWeaponSuccess = true
+						}
+						else if ( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ) )
+						{
+							player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+							setActiveWeaponSuccess = true
+						}
+						else if ( lastActiveSlot == WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+						{
+							entity grenadeWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+							
+							if ( IsValid( grenadeWeapon ) )
+							{
+								string grenadeWeaponName = grenadeWeapon.GetWeaponClassName()
+								int ammo = SURVIVAL_NumItemsInInventory( player, grenadeWeaponName )
+								if ( ammo > 0 )
+								{
+									player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+									setActiveWeaponSuccess = true
+								}
+							}
+						}
+						
+						if ( !setActiveWeaponSuccess )
+						{
+							player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+						}
+					}
+					else
+					{
+						player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, lastActiveSlot )
+					}
+
+					player.DeployWeapon()
+				}
+				
+				if ( Inventory_GetPlayerEquipment( player, equipSlot ) == KNOCKDOWN_SHIELD_BASIC )
+					Inventory_SetPlayerEquipment( player, "", equipSlot )
 
 				BleedoutState_SetPlayerBleedoutState( player, BS_NOT_BLEEDING_OUT )
 
-				DeleteWaypoint_Safe( player, bleedoutWp )
-
-				if ( forceHolster )
-					RetrievePilotWeapons( player )
-
-				//Hide wounded icon for wounded player's allies
-				int woundedPlayerEHandle = player.GetEncodedEHandle()
-				array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
-				foreach ( entity teamPlayer in teamPlayers )
+				// Do the callbacks after we put player into bleedout state so the callback functions have bleedout info
+				foreach ( callbackFunc in file.Callbacks_OnPlayerStopBleedout )
 				{
-					if ( teamPlayer == player )
-						continue
-					Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_HideWoundedMarker", woundedPlayerEHandle )
+					callbackFunc( player )
 				}
 			}
 		}
 	)
 
-	//if ( bleedoutTime > 0 )
-	//	StatusEffect_AddTimed( player, eStatusEffect.bleedoutDOF, 1.0, bleedoutTime, 0.0 )
-		//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_StartDyingDOF", bleedoutTime )
+	// moved to here so that the timer on the rui will match the actual death moment.
+	// the "for loop" might take a few seconds when in getting knocked down from the lava updraft damage.
+	float startTime = Time()
 
-	//Show wounded icon for wounded player's allies
-	int woundedPlayerEHandle = player.GetEncodedEHandle()
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
-	foreach ( entity teamPlayer in teamPlayers )
+	for ( ; ; )
 	{
-		if ( teamPlayer == player )
-			continue
+		if ( Bleedout_IsPlayerGettingFirstAid( player ) || player.ContextAction_IsMeleeExecution() )
+		{
+			break
+		}
 
-		Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_ShowWoundedMarker", woundedPlayerEHandle, Time(), bleedoutEndTime )
+		if ( IsPlayingParentedFirstAndThirdPersonAnimation( player ) )
+		{
+			break
+		}
+
+		if ( player.IsOnGround() )
+		{
+			thread BleedoutState_BleedoutTransitionAnimThink( player )
+			break
+		}
+
+		WaitFrame()
 	}
 
 	if ( bleedoutTime > 0 )
-		wait bleedoutTime
+	{
+		float timePassed = Time() - startTime
+		float timeLeft   = bleedoutTime - timePassed
+        
+		if ( timeLeft > 0 )
+			wait timeLeft
+	}
 	else
 		WaitForever()
 
-	PlayerDiesFromBleedout( player, file.lastAttacker[ player ] )
+	while ( !CanPlayerDieFromBleedout( player ) )
+		WaitFrame()
+
+	Bleedout_PlayerDiesFromBleedout( player )
 }
+
+bool function CanPlayerDieFromBleedout( entity player )
+{
+	if ( Bleedout_IsPlayerGettingFirstAid( player ) )
+		return false
+	if ( player.ContextAction_IsMeleeExecution() )
+		return false
+	if ( player.IsPhaseShifted() )
+		return false
+	if ( Bleedout_GetIsBleedoutDeathBlocked() )
+		return false
+
+	return true
+}
+
+void function BleedoutState_BleedoutTransitionAnimThink( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_StopBleeding" )
+
+	PlayFirstPersonAnimation( player, "ptpov_downed_transition" )
+
+	//For reference: Below is the proxy model animation
+	//PlayFirstAndThirdPersonAnimation( player, "mp_ptpov_downed_pain_trans_short", "ACT_TRANSITION_TO_DOWNED_FROM_STANDING" )
+
+	while ( true )
+	{
+		if ( !IsPlayingFirstPersonAnimation( player ) )
+		{
+			BleedoutState_SetPlayerBleedoutState( player, BS_BLEEDING_OUT )
+			break
+		}
+
+		WaitFrame()
+	}
+}
+
+void function SetPlayerNotBleedingOut( entity player )
+{
+	player.SetPlayerNetTime( "bleedoutEndTime", 0.0 )
+
+	if ( IsAlive( player ) )
+		player.SetUseDoomedAnims( false )
+
+	// file.playerBleedoutInfo[ player ].damageSourceId = -1
+	// file.playerBleedoutInfo[ player ].bleedoutStartTime = -999.0
+	file.playerBleedoutInfo[ player ].attacker = null
+	file.playerBleedoutInfo[ player ].attackerWeaponEnt = null
+}
+
 
 void function EnablePlayerRes( entity player )
 {
@@ -357,53 +556,71 @@ void function EnablePlayerRes( entity player )
 	player.EndSignal( "BleedOut_OnStartDying" )
 	player.EndSignal( "BleedOut_OnRevive" )
 
+	if ( IsPilotEliminationBased() && Playlist() != ePlaylists.survival_firingrange && Gamemode() == eGamemodes.SURVIVAL ) // && !GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_FIRING_RANGE ) )
+		SetPlayerEliminated( player )
+
+	//Wait until player is done playing their bleedout entrance animations before setting usable
+	while ( IsPlayingFirstAndThirdPersonAnimation( player ) )
+	{
+		WaitFrame()
+	}
+
 	OnThreadEnd(
-	function() : ( player )
+		function() : ( player )
 		{
 			if ( IsValid( player ) )
 			{
 				player.UnsetUsable()
-				Highlight_ClearFriendlyHighlight( player )
 			}
 		}
 	)
 
+	for ( ; ; )
+	{
+		if ( player.IsBot() )
+			break
+
+		if ( BleedoutState_GetPlayerBleedoutState( player ) == BS_BLEEDING_OUT )
+			break
+
+		WaitFrame()
+	}
+
+	player.SetUsableByGroup( "pilot" )
+	player.SetUsePrompts( " ", " " )
+	player.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_NO_FOV_REQUIREMENTS | USABLE_SHRINK_USEABLE_BOX | USABLE_BLOCK_CONTINUOUS_USE )
+
 	while ( true )
 	{
-		//If the player is not currently being treated or is self healing. (Team healing should always override self-healing)
-		if (  !IsPlayerGettingFirstAid( player ) || IsPlayerSelfHealing( player ) )
+		table inputTable  = player.WaitSignal( "OnPlayerUseLong" )
+		entity playerUser = expect entity( inputTable.player )
+
+		if ( !IsValid( playerUser ) || !playerUser.IsPlayer() )
+			// (dw): R5DEV-69069
+			continue
+
+		bool canRecruitPlayer = false
+
+		player.SetUsePrompts( "", "" )
+		// player.UnsetUsable()
+
+		//Player can only res other players if they are not bleeding out themselves.
+		if ( ( Bleedout_IsReviverFriendlyToVictim( playerUser, player ) || canRecruitPlayer) &&
+				!Bleedout_IsBleedingOut( playerUser ) &&
+						(!Bleedout_IsPlayerGettingFirstAid( player ) || IsPlayerSelfHealing( player )) &&
+				Bleedout_PlayerCanRes( playerUser ) &&
+				Bleedout_PlayerCanBeRessed( player )
+				)
 		{
-			// player.SetUsableByGroup( "pilot" )
-			// player.SetUsePrompts( "#BLEEDOUT_USE_TEAMMATE_RES", "#BLEEDOUT_USE_TEAMMATE_RES_PC" )
-			player.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
-
-			entity playerUser = expect entity ( player.WaitSignal( "OnPlayerUse" ).player )
-
-			player.UnsetUsable()
-
-			bool tryingToRevive = (IsFriendlyTeam( playerUser.GetTeam(), player.GetTeam() ) || IsRecruitMode())
-
-			if ( tryingToRevive )
-			{
-				//Player can only res other players if they are not bleeding out themselves.
-				if ( !file.isBleeding[ playerUser ] && ( !IsPlayerGettingFirstAid( player ) || IsPlayerSelfHealing( player ) ) )
-					waitthread PlayerAttemptRes( playerUser, player )
-			}
-			else
-			{
-				player.e.markedForExecutionDeath = true
-				if ( TryStartSyncedMelee( playerUser, player ) )
-				{
-					playerUser.WaitSignal( "SyncedMeleeOver" )
-				}
-			}
+			thread Bleedout_PlayerAttemptRes( playerUser, player )
 		}
-		else
+		else if ( TryStartSyncedMelee( playerUser, player ) )
 		{
 			WaitFrame()
 		}
 	}
 }
+
 
 void function EnablePlayerSelfRes( entity player )
 {
@@ -411,395 +628,800 @@ void function EnablePlayerSelfRes( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "BleedOut_OnStartDying" )
 	player.EndSignal( "BleedOut_OnRevive" )
+	player.EndSignal( "BleedOut_StopBleeding" )
 
 	while ( true )
 	{
-		//if (  !IsPlayerGettingFirstAid( player ) )
-		//	MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
-
-		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) && player.IsOnGround() )
+		if ( Bleedout_GetSelfResEnabled( player )
+		&& Bleedout_IsReviveButtonDown( player )
+		&& !Bleedout_IsPlayerGettingFirstAid( player )
+		&& Bleedout_PlayerInValidSeldResState( player )
+		)
 		{
-		//	MessageToPlayer( player, eEventNotifications.Clear )
-			waitthread PlayerAttemptRes( player, player )
+			MessageToPlayer( player, eEventNotifications.Clear )
+			waitthread Bleedout_PlayerAttemptRes( player, player )
 		}
 
 		WaitFrame()
 	}
 }
 
-void function ShieldRGB(entity medicWall)
+
+void function CreateSelfReviveWaypoint( entity target )
 {
-//by Colombia
-	while(IsValid(medicWall))
-	{
-		medicWall.kv.rendercolor = RandomInt(255) + " " + RandomInt(255) + " " + RandomInt(255)
-		WaitFrame()
-	}
+	if ( !Bleedout_IsBleedingOut( target ) )
+		return
+
+	if ( IsValid( file.playerBleedoutWaypoint[ target ] ) )
+		file.playerBleedoutWaypoint[ target ].Destroy()
+
+	file.playerBleedoutWaypoint[ target ] <- CreateWaypoint_SelfRevive( target, Time() + REVIVE_PASSIVE_SELF_REVIVE )
 }
 
-void function PlayDocAnims(entity droneMedic, entity medicWall)
-//by Colombia
-{
-	droneMedic.EndSignal( "OnDestroy" )
-	
-	int fxID_VENT   = droneMedic.LookupAttachment( "VENT_BOT" )
-	int fxID_EYE    = droneMedic.LookupAttachment( "EYEGLOW" )
-	int fxID_RF     = droneMedic.LookupAttachment( "VENT_RF" )
-	int fxID_LF     = droneMedic.LookupAttachment( "VENT_LF" )
-	int fxID_RR     = droneMedic.LookupAttachment( "VENT_RR" )
-	int fxID_LR     = droneMedic.LookupAttachment( "VENT_LR" )
 
-	//drone medic beam fx, still not 100% accurate
-	entity owner = droneMedic.GetOwner()
-	entity beamfx = StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( $"P_drone_medic_shield_beam"), FX_PATTACH_POINT_FOLLOW, fxID_EYE)
-	beamfx.DisableHibernation()
-	// EffectSetControlPointVector( beamfx, 0, droneMedic.GetOrigin()) //beam start point
-	EffectSetControlPointVector( beamfx, 1, owner.GetOrigin() + <0,0,45> + owner.GetForwardVector()*70 + owner.GetRightVector()*30) //beam endpoint
-	
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_EYE ), FX_PATTACH_POINT_FOLLOW, fxID_EYE )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_CTR ), FX_PATTACH_POINT_FOLLOW, fxID_VENT )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_CTR ), FX_PATTACH_POINT_FOLLOW, fxID_VENT )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_RF )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_LF )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_RR )
-	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_LR )
-	
-	// Anim
-	float animTime = droneMedic.GetSequenceDuration( "lifeline_drone_revive" )
-	PlayAnim(droneMedic, "lifeline_drone_revive")
-	wait animTime-0.2
-	if(IsValid(beamfx)) beamfx.Destroy()
-	wait 0.2
+void function RemoveSelfReviveWaypoint( entity target )
+{
+	if ( IsValid( file.playerBleedoutWaypoint[ target ] ) )
+		file.playerBleedoutWaypoint[ target ].Destroy()
+
+	if ( !Bleedout_IsBleedingOut( target ) )
+		return
+
+	if ( target.GetHealth() <= 0 )
+		return
+
+	float bleedoutEndTime = target.GetPlayerNetTime( "bleedoutEndTime" )
+	file.playerBleedoutWaypoint[ target ] <- CreateWaypoint_Bleedout( target, bleedoutEndTime )
 }
 
-void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
-//by Colombia
+
+void function AnimEvent_MarkForRevive( entity target )
 {
-	Assert( IsNewThread(), "Must be threaded off." )
-	playerToRes.EndSignal( "OnDeath" )
-	playerHealer.EndSignal( "OnDeath" )
-	playerHealer.EndSignal( "OnContinousUseStopped" )
+	target.p.markedForRevive = true
+}
 
-	HolsterAndDisableWeapons( playerHealer )
+bool function ReviveThread_ShouldReviverUseReviveSequence( entity reviver, entity target )
+{
+	return true
+}
+bool function ReviveThread_ShouldReviveTargetHaveCameraControl( entity reviver, entity target )
+{
+	return false
+}
 
-	playerHealer.MovementDisable()
-	playerToRes.MovementDisable()
+void function ReviveThread_Reviver( entity reviver, entity target, string reviveAnim, bool endReviveInCrouch )
+{
+	reviver.EndSignal( "OnAnimationInterrupted" )
+	reviver.EndSignal( "OnDeath" )
+	reviver.EndSignal( "ScriptAnimStop" )
+	reviver.EndSignal( "OnContinousUseStopped" )
+	reviver.EndSignal( "BleedOut_OnStartDying" )
+	reviver.EndSignal( "BleedOut_ReviveForceStop" )
 
-	bool selfRes = playerHealer == playerToRes
+	reviver.EndSignal( "OnDestroy" )
+	Assert( IsValid( target ) )
+	target.EndSignal( "OnDestroy" )
+	target.EndSignal( "BleedOut_OnReviveStop" )
 
-	ItemFlavor toResCharacter = LoadoutSlot_GetItemFlavor( ToEHI( playerToRes ), Loadout_CharacterClass() )
-	asset toResPlayerSettings = CharacterClass_GetSetFile( toResCharacter )
-	string toResRigWeight = GetGlobalSettingsString( toResPlayerSettings, "bodyModelRigWeight" )
-	// player.GetPlayerSettingString( "bodyModelRigWeight" )
-	string healerAnimation
-	string toResAnimation
-	LoadoutEntry characterSlot = Loadout_CharacterClass()
-
-	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( playerHealer ), characterSlot ) // this sometimes waits forever
-	string characterRef = ItemFlavor_GetHumanReadableRef( character )
-	entity medicWall
-	entity docdrone
-	
-	switch( characterRef )
-	{
-		case "character_lifeline":
-			healerAnimation = "mp_pt_light_revive_quick_healthy"
-			toResAnimation = "Pilot_doomed_revive_quick_injured"
-			
-			vector angles = AnglesCompose( playerHealer.GetAngles(), <0,180,0> )
-			medicWall = CreatePropDynamic( $"mdl/fx/medic_shield_wall.rmdl", playerHealer.GetOrigin() + <0,0,0> + playerHealer.GetForwardVector()*20 + playerHealer.GetRightVector()*30 , angles, SOLID_VPHYSICS )
-			medicWall.kv.contents = (CONTENTS_WINDOW)
-			medicWall.kv.rendercolor = "64 248 250 255"//Should look same color to all players
-			if(LIFELINE_RGB_SHIELD)
-				thread ShieldRGB(medicWall)
-			medicWall.kv.modelscale = 1
-			medicWall.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
-			medicWall.SetPassThroughFlags( PTF_ADDS_MODS | PTF_NO_DMG_ON_PASS_THROUGH )
-			medicWall.SetBlocksRadiusDamage( true )
-			medicWall.SetTakeDamageType( DAMAGE_NO)
-			medicWall.SetDamageNotifications( true )
-			if(!LIFELINE_RGB_SHIELD)
-				medicWall.Hide()
-			//medicWall.SetMaxHealth( 350 )
-			//medicWall.SetHealth( 350 )
-			
-			EmitSoundOnEntity(medicWall, "Lifeline_ReviveShield_Sustain_3P")
-			
-			docdrone = CreatePropDynamic( $"mdl/props/lifeline_drone/lifeline_drone.rmdl", medicWall.GetOrigin() + <0,0,0>, angles, SOLID_VPHYSICS )
-			docdrone.SetOwner(playerHealer)
-			
-			thread PlayDocAnims(docdrone, medicWall) 
-			
-			if(!LIFELINE_RGB_SHIELD)
-				{
-				entity shieldfx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex($"P_drone_medic_shield"), medicWall.GetOrigin(), playerHealer.GetAngles() )
-				shieldfx2.SetParent(medicWall)
-				}
-				
-			SetVisibleEntitiesInConeQueriableEnabled( medicWall, true )			
-			SetTeam( medicWall, TEAM_BOTH )
-			medicWall.SetPassThroughThickness( 0 )
-			medicWall.SetPassThroughDirection( -0.30 )	
-				break
-		case "character_wattson":
-			healerAnimation = "Pilot_doomed_revive_shock_healthy"
-			toResAnimation = "Pilot_doomed_revive_shock_injured"
-				break
-		default:
-			healerAnimation = "Pilot_doomed_revive_healthy"
-			toResAnimation = "Pilot_doomed_revive_injured"
-	}
-
-
-	if ( selfRes )
-		healerAnimation = "mp_pt_" + toResRigWeight + "_self_revive_crouch"
-	
-	float playbackRate = 1.0
-	
-	
-	float firstAidTime = playerHealer.GetSequenceDuration( healerAnimation )
-	
-	if( Gamemode() == eGamemodes.fs_duckhunt )
-	{
-		playbackRate = 1.35
-		firstAidTime = firstAidTime*0.65
-	}
-	
-	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( playerHealer )
-
-	float endTime = Time() + firstAidTime
-
-	int playerEHandle = playerToRes.GetEncodedEHandle()
-	int healerEHandle = playerHealer.GetEncodedEHandle()
-	int attemptID = GetNewFirstAidAttemptID()
-
-	Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_BLEEDOUT_StartFirstAidProgressBar", endTime, playerEHandle, healerEHandle, attemptID )
-	Remote_CallFunction_NonReplay( playerHealer, "ServerCallback_BLEEDOUT_StartFirstAidProgressBar", endTime, playerEHandle, healerEHandle, attemptID )
-	file.IsGettingFirstAidFrom[ playerToRes ] = playerHealer
-	file.IsGivingFirstAidTo[ playerHealer ] = playerToRes
-
-	playerToRes.Signal( "BleedOut_OnReviveStart" )
-
-	playerToRes.SetPlayerNetEnt( "revivePlayerHealer", playerHealer )
-	playerToRes.SetPlayerNetTime( "reviveEndTime", Time() + firstAidTime )
-	
 	OnThreadEnd(
-	function() : ( playerHealer, playerToRes, attemptID, medicWall, characterRef, docdrone )
+		function() : ( reviver, target, endReviveInCrouch )
 		{
-			playerToRes.SetPlayerNetEnt( "revivePlayerHealer", null )
-			playerToRes.SetPlayerNetTime( "reviveEndTime", 0.0 )
-
-	
-			if ( IsValid( playerHealer ) )
+			if ( IsValid( reviver ) )
 			{
-				switch( characterRef )
-					{
-					case "character_lifeline":
-						medicWall.Destroy()
-						docdrone.Destroy()
-					}
-				file.IsGivingFirstAidTo[ playerHealer ] = null
-				DestroyPlayAnimationEntityBlocker( playerHealer )
-				playerHealer.Anim_Stop()
-				playerHealer.ClearParent()
-				ClearPlayerAnimViewEntity( playerHealer )
-				DeployAndEnableWeapons( playerHealer )
-				playerHealer.MovementEnable()
-				Remote_CallFunction_NonReplay( playerHealer, "ServerCallback_BLEEDOUT_StopFirstAidProgressBar", attemptID )
+				reviver.Anim_Stop()
+				reviver.ClearParent()
+				reviver.SnapEyesToFeet()
+				ClearPlayerAnimViewEntity( reviver )
+
+				DestroyPlayAnimationEntityBlocker( reviver )
+
+				if ( endReviveInCrouch )
+					thread SetPlayerCrouched( reviver )
+				else
+					thread SetPlayerStanding( reviver )
 			}
+		}
+	)
 
-			if ( IsValid( playerToRes ) )
+	reviver.Lunge_ClearTarget()
+
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+		HolsterViewModelAndDisableWeapons( reviver )
+
+	// Cancel the banner pickup anim if they start a revive
+	// if ( CanInterruptBannerPickupEarly( reviver ) )
+	// {
+		// StopPlayingAnimation( reviver )
+	// }
+
+	float duration
+
+	if( ReviveThread_ShouldReviverUseReviveSequence( reviver, target ) )
+	{
+		CreatePlayAnimationEntityBlocker( reviver, false )
+
+		FirstPersonSequenceStruct reviverSequence
+		reviverSequence.blendTime = 0.25
+		reviverSequence.attachment = "ref"
+		reviverSequence.thirdPersonAnim = reviveAnim
+		reviverSequence.firstPersonAnim = ""
+		reviverSequence.useAnimatedRefAttachment = true
+		reviverSequence.thirdPersonCameraAttachments = ["VDU"]
+		reviverSequence.thirdPersonCameraVisibilityChecks = true
+		thread FirstPersonSequence( reviverSequence, reviver, target )
+
+		duration = reviver.GetSequenceDuration( reviverSequence.thirdPersonAnim )
+	}
+
+	wait duration
+}
+
+void function ReviveThread_Target( table resultTable, entity reviver, entity target, vector targetStartAngles, string reviveAnim, bool endReviveInCrouch, bool autoRevive = false )
+{
+
+	target.EndSignal( "OnAnimationInterrupted" )
+	target.EndSignal( "OnDeath" )
+	target.EndSignal( "ScriptAnimStop" )
+	target.EndSignal( "BleedOut_OnReviveStop" )
+	target.EndSignal( "BleedOut_OnStartDying" )
+	target.EndSignal( "OnDestroy" )
+
+	Assert( IsValid( reviver ) )
+	reviver.EndSignal( "OnDestroy" )
+
+	if ( !autoRevive )
+	{
+		reviver.EndSignal( "OnContinousUseStopped" )
+		reviver.EndSignal( "BleedOut_OnStartDying" )
+		reviver.EndSignal( "BleedOut_ReviveForceStop" )
+	}
+
+	BleedoutState_SetPlayerBleedoutState( target, BS_EXITING_BLEEDOUT )
+
+	target.p.markedForRevive = false
+
+	AddAnimEvent( target, "mark_for_revive", AnimEvent_MarkForRevive )
+
+	vector targetStartPos = target.GetOrigin()
+
+	bool hasCameraControl = ReviveThread_ShouldReviveTargetHaveCameraControl( reviver, target )
+
+	OnThreadEnd(
+		function() : ( target, reviver, targetStartPos, targetStartAngles, endReviveInCrouch, resultTable, autoRevive, hasCameraControl )
+		{
+			if ( IsValid( target ) )
 			{
-				file.IsGettingFirstAidFrom[ playerToRes ] = null
-				DestroyPlayAnimationEntityBlocker( playerToRes )
-				playerToRes.Anim_Stop()
-				playerToRes.ClearParent()
-				playerToRes.SnapEyesToFeet()
-				ClearPlayerAnimViewEntity( playerToRes )
-				playerToRes.MovementEnable()
-				Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_BLEEDOUT_StopFirstAidProgressBar", attemptID )
+				DeleteAnimEvent( target, "mark_for_revive" )
+				target.Anim_Stop()
+				target.ClearParent()
 
-				if ( !file.isBleeding[ playerToRes ] )
+				if( hasCameraControl )
+					target.ClearTrackEntitySettings()
+				else
+
+				target.SnapEyesToFeet()
+				ClearPlayerAnimViewEntity( target )
+
+				if ( resultTable.successfullyRevived )
 				{
-					// hack
-					thread function() : ( playerToRes )
-					{
-						if(!IsValid(playerToRes)) return
-						playerToRes.ForceStand()
-						WaitFrame()
-						if(!IsValid(playerToRes)) return
-						playerToRes.UnforceStand()
-						
-						if( Gamemode() == eGamemodes.fs_duckhunt )
-						{
-							Highlight_SetFriendlyHighlight( playerToRes, "prophunt_teammate" )
-							GivePassive(playerToRes, ePassives.PAS_PILOT_BLOOD)
-						}
-						BleedoutState_SetPlayerBleedoutState( playerToRes, BS_NOT_BLEEDING_OUT )
-					}()
+					if ( endReviveInCrouch )
+						thread SetPlayerCrouched( target )
+					else
+						thread SetPlayerStanding( target )
+
+					BleedoutState_SetPlayerBleedoutState( target, BS_NOT_BLEEDING_OUT )
+
+					// if ( IsAlive( target ) )
+						// LiveAPI_SendTwoPlayerEvent( eLiveAPI_EventTypes.playerRevive, reviver, target )
+
+					// if ( autoRevive )
+						// StatsHook_MedicDeployableDrone_OnAllyRevive( reviver )
+				}
+				else
+				{
+					if ( target.GetHealth() > 0 && IsAlive( target ) )
+						BleedoutState_SetPlayerBleedoutState( target, BS_BLEEDING_OUT )
+					else
+						BleedoutState_SetPlayerBleedoutState( target, BS_NOT_BLEEDING_OUT )
 				}
 			}
 		}
 	)
 
-	CreatePlayAnimationEntityBlocker( playerHealer, false )
-	CreatePlayAnimationEntityBlocker( playerToRes, false )
+	FirstPersonSequenceStruct targetSequence
+	targetSequence.blendTime = 0.25
+	targetSequence.attachment = "ref"
+	targetSequence.thirdPersonAnim = GetReviveAnimation_Victim( reviver, target, endReviveInCrouch )
+	targetSequence.firstPersonAnim = ""
+	targetSequence.thirdPersonCameraAttachments = ["VDU"]
+	targetSequence.enablePlanting = true
+	targetSequence.playerPushable = true
+	targetSequence.noParent = true
+	targetSequence.thirdPersonCameraVisibilityChecks = true
 
-	FirstPersonSequenceStruct reviverSequence
-	reviverSequence.blendTime = 0.25
-	reviverSequence.attachment = "ref"
-	reviverSequence.thirdPersonAnim = healerAnimation
-	reviverSequence.firstPersonAnim = ""
-	reviverSequence.useAnimatedRefAttachment = false
-	reviverSequence.thirdPersonCameraAttachments = ["VDU"]
-	reviverSequence.thirdPersonCameraVisibilityChecks = true
-	reviverSequence.playerPushable = true
-	reviverSequence.snapPlayerFeetToEyes = false
-	
-	FirstPersonSequenceStruct toResSequence
-	toResSequence.blendTime = 0.25
-	toResSequence.attachment = "ref"
-	toResSequence.thirdPersonAnim = toResAnimation
-	toResSequence.firstPersonAnim = ""
-	toResSequence.useAnimatedRefAttachment = true
-	toResSequence.thirdPersonCameraAttachments = ["VDU"]
-	toResSequence.thirdPersonCameraVisibilityChecks = true
-	toResSequence.noParent = false
-
-	if ( selfRes )
+	if ( hasCameraControl )
 	{
-		reviverSequence.noParent = true
-		reviverSequence.useAnimatedRefAttachment = false
-	}
-	
-	thread FirstPersonSequence( reviverSequence, playerHealer )
-	
-	if ( !selfRes )
-	{
-		PlayBattleChatterLineToSpeakerAndTeam( playerHealer, "bc_revivingPlayer" )
-		thread FirstPersonSequence( toResSequence, playerToRes, playerHealer )
-	}
-	
-	if(playbackRate != 1.0)
-	{
-		playerHealer.Anim_SetPlaybackRate(playbackRate)
-		playerToRes.Anim_SetPlaybackRate(playbackRate)
-	}
-	waitthread TrackContinuousUse( playerHealer, playerToRes, firstAidTime, true )
-
-	//Heal player health
-	playerToRes.SetHealth( playerToRes.GetMaxHealth() * firstAidHealPercent )
-	file.isBleeding[ playerToRes ] = false
-	file.lastAttacker[ playerToRes ] = svGlobal.worldspawn
-	if ( IsPilotEliminationBased() && Gamemode() != eGamemodes.fs_duckhunt )
-		ClearPlayerEliminated( playerToRes )
-
-	if ( IsValid( file.Callback_OnPlayerGiveFirstAid ) )
-	{
-		//Do not run this callback if player is self healing.
-		if ( playerHealer != playerToRes )
-			file.Callback_OnPlayerGiveFirstAid( playerHealer, null, null ) // 99% chance this will crash
+		targetSequence.attachment = ""
+		targetSequence.thirdPersonCameraAttachments = []
+		targetSequence.playerPushable = false
 	}
 
-	if ( IsValid( file.Callback_OnPlayerGotFirstAid ) )
-		file.Callback_OnPlayerGotFirstAid( playerToRes, playerHealer )
+	thread FirstPersonSequence( targetSequence, target )
 
-	if ( selfRes )
-    {
-		playerToRes.SetPlayerNetBool( "usedSelfRevive", true )
-        Inventory_SetPlayerEquipment(playerToRes, "incapshield_pickup_lv3", "incapshield")
-    }
+	WaitForever()
+}
+
+
+vector function ReviveThread_GetReviveAnimAngles( entity reviver, entity target )
+{
+	vector reviveAnimAngles
+
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+		reviveAnimAngles = VectorToAngles( FlattenVec( reviver.GetViewForward() * -1.0 ) )
+	else
+		reviveAnimAngles = target.GetAngles()
+
+	return reviveAnimAngles
+}
+
+
+bool function ReviveThread_ShouldEndInCrouch( entity reviver, entity target )
+{
+	if ( !Bleedout_IsPlayerSelfReviving( target ) && reviver.IsCrouched() )
+		return true
+
+	// Try to stand in all other cases..
+	// Get end position of animation, and see if target will end up colliding with something if standing...
+	string anim     = GetReviveAnimation_Victim( reviver, target, false )
+	int animID      = target.LookupSequence( anim )
+	vector startPos = target.Anim_GetStartForRefEntity( anim, target, "" ).origin
+
+	int tagID              = target.LookupAttachment( "REF" )
+	vector attachAngles    = target.GetAttachmentAngles( tagID )
+	vector animMotionDelta = target.GetAnimDeltas( animID, 0, 1 )
+	animMotionDelta = VectorRotate( animMotionDelta, attachAngles )
+	vector endPos = startPos + animMotionDelta
+
+	vector standingHullMax = target.GetStandingHullMax()
+	vector standingHullMin = target.GetStandingHullMin()
+
+	array<entity> ignoreEnts
+	if ( reviver == target )
+		ignoreEnts = [target]
+	else
+		ignoreEnts = [reviver, target]
+
+	TraceResults result = TraceHull( endPos + <0, 0, 16>, endPos + <0, 0, standingHullMax.z>, <-8, -8, -8>, <8, 8, 8>, ignoreEnts, TRACE_MASK_PLAYERSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_PLAYER )
+
+	if ( result.fraction == 1.0 )
+		return false
+
+	return true
+}
+
+
+string function GetReviveAnimation_Reviver( entity reviver, bool endCrouched )
+{
+	float heatShieldReviveTime = GetCurrentPlaylistVarFloat( "heatshield_revive_time", VOID_RING_REVIVE_TIME)
+	bool canVRFastRevive = GetCurrentPlaylistVarBool( "heatshield_allow_fast_revive", VOID_RING_CAN_FAST_REVIVE)
+
+	if ( PlayerHasPassive( reviver, ePassives.PAS_BATTERY_POWERED ) )
+	{
+		if ( endCrouched )
+			return "Pilot_doomed_revive_crouch_shock_healthy"
+		else
+			return "Pilot_doomed_revive_shock_healthy"
+	}
+
+	if ( endCrouched )
+		return "Pilot_doomed_revive_crouch_healthy"
+
+	return "Pilot_doomed_revive_healthy"
+}
+
+
+string function GetReviveAnimation_Victim( entity reviver, entity victim, bool endCrouched )
+{
+	float heatShieldReviveTime 		= GetCurrentPlaylistVarFloat( "heatshield_revive_time", VOID_RING_REVIVE_TIME)
+	float heatShieldSelfReviveTime 	= GetCurrentPlaylistVarFloat( "heatshield_self_revive_time", VOID_RING_SELF_REVIVE_TIME)
+	bool canVRFastRevive 			= GetCurrentPlaylistVarBool( "heatshield_allow_fast_revive", VOID_RING_CAN_FAST_REVIVE)
+
+
+	// if self heal
+	if ( Bleedout_IsPlayerSelfReviving( victim ) && Bleedout_CanSelfResFromUpgrade( reviver ) && reviver.p.numSelfRevivesUsed == 0 )
+	{
+		if ( endCrouched )
+			return "Pilot_doomed_revive_crouch_injured"
+		else
+			return "Pilot_doomed_revive_injured"
+	}
+
+	if ( Bleedout_IsPlayerSelfReviving( victim ) )
+	{
+		ItemFlavor victimCharacter = LoadoutSlot_GetItemFlavor( victim, Loadout_CharacterClass() )
+		asset setFile              = CharacterClass_GetSetFile( victimCharacter )
+		Assert( setFile == victim.GetPlayerSettings(), "Revive victim animation expected " + string( setFile ) + " but got " + string( victim.GetPlayerSettings() ) )
+
+		setFile              = victim.GetPlayerSettings()
+		string rigWeight = GetGlobalSettingsString( setFile, "bodyModelRigWeight" )
+
+		if ( (StatusEffect_GetSeverity( reviver, eStatusEffect.ring_immunity ) > 0.0) && heatShieldSelfReviveTime < REVIVE_PASSIVE_SELF_REVIVE && canVRFastRevive )
+		{
+			return format( "mp_pt_%s%s", rigWeight, (endCrouched ? "_self_revive_crouch_fast" : "_self_revive_stand_fast") ) //todo: for Devan "Let me know how much buffer we have here." Animation is 9.67seconds.  Right now it works at 9 seconds but it has an extra 20 frames if we need.
+		}
+		return format( "mp_pt_%s%s", rigWeight, (endCrouched ? "_self_revive_crouch" : "_self_revive_stand") )
+	}
+
+	else if ( PlayerHasPassive( reviver, ePassives.PAS_BATTERY_POWERED ) )
+	{
+		if ( endCrouched )
+			return "Pilot_doomed_revive_crouch_shock_injured"
+		else
+			return "Pilot_doomed_revive_shock_injured"
+	}
+
+	if ( endCrouched )
+		return "Pilot_doomed_revive_crouch_injured"
+
+	return "Pilot_doomed_revive_injured"
+}
+
+
+void function SetPlayerCrouched( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_OnStartDying" )
+
+	// int handle = player.PushForcedStance( FORCE_STANCE_CROUCH )
+	player.ForceCrouch()
+
+	OnThreadEnd( function() : ( player ) //, handle )
+		{
+			if ( IsValid( player ) )
+			{
+				player.UnforceCrouch()
+				// player.RemoveForcedStance( handle )
+			}	
+		}
+	)
+
+	WaitFrame()
+}
+
+
+void function SetPlayerStanding( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	// int handle = player.PushForcedStance( FORCE_STANCE_STAND )
+	player.ForceStand()
+
+	OnThreadEnd( function() : ( player ) //, handle )
+		{
+			if ( IsValid( player ) )
+			{
+				// player.RemoveForcedStance( handle )
+				player.UnforceStand()
+			}	
+		}
+	)
+
+	WaitFrame()
+}
+
+bool function Bleedout_IsPressToRevive( entity reviver, entity target )
+{
+	if( Bleedout_IsPlayerSelfReviving( target ) )
+		return false
+
+	if( PassiveMedic_ShouldDoCombatRevive( reviver ) )
+		return true
+
+	return false
+}
+
+void function Bleedout_PlayerAttemptRes( entity reviver, entity target )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	target.EndSignal( "OnDeath" )
+	target.EndSignal( "OnSyncedMelee" )
+	target.EndSignal( "ReviveInterrupted" )
+
+	file.IsGettingFirstAidFrom[ target ] = reviver
+
+	bool pressToRevive        = Bleedout_IsPressToRevive( reviver, target )
+	bool doAutoRevive 		  = false
+
+	doAutoRevive = ( !Bleedout_IsPlayerSelfReviving( target ) && PassiveMedic_ShouldDoCombatRevive( reviver ) )
+
+	if ( !doAutoRevive )
+	{
+		reviver.EndSignal( "OnDeath" )
+		reviver.EndSignal( "OnContinousUseStopped" )
+		reviver.EndSignal( "BleedOut_OnStartDying" )
+		reviver.EndSignal( "BleedOut_ReviveForceStop" )
+
+		file.isGivingFirstAid[ reviver ] = true
+	}
+
+	array<int> reviverStatusEffects = []
+	vector reviveAnimAngles
+
+	if ( !doAutoRevive )
+		reviver.ContextAction_SetReviving()
+
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+	{
+		target.ContextAction_SetBeingRevived()
+	}
+
+	//
+	// get animation sequence data
+	reviveAnimAngles = ReviveThread_GetReviveAnimAngles( reviver, target )
+
+	bool endReviveInCrouch = ReviveThread_ShouldEndInCrouch( reviver, target )
+	string targetAnim      = GetReviveAnimation_Victim( reviver, target, endReviveInCrouch )
+
+	target.Signal( "BleedOut_OnReviveStart" )
+	target.SetPlayerNetBool( "isReceivingFirstAid", true )
+
+	//animate the characters
+	vector targetStartAngles = target.GetAngles()
+	target.SetAngles( reviveAnimAngles )
+
+		{
+			if ( !Bleedout_IsPlayerSelfReviving( target ) && !doAutoRevive )
+			{
+				string reviverAnim     = GetReviveAnimation_Reviver( reviver, endReviveInCrouch )
+				thread ReviveThread_Reviver( reviver, target, reviverAnim, endReviveInCrouch )
+			}
+		}
+
+	table resultTable = {}
+	resultTable.successfullyRevived <- false
+
+	thread ReviveThread_Target( resultTable, reviver, target, targetStartAngles, targetAnim, endReviveInCrouch, doAutoRevive )
+
+	//We always use the first aid time of the player who is healing.
+	float firstAidTime        = Bleedout_DetermineFirstAidTime( target, reviver )
+	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( reviver )
+
+	float endTime = Time() + firstAidTime
+
+	float remainingBleedoutTime = target.GetPlayerNetTime( "bleedoutEndTime" ) - Time()
+
+	target.SetPlayerNetTime( "reviveEndTime", endTime )
+
+	if ( !doAutoRevive )
+		target.SetPlayerNetEnt( "revivePlayerHealer", reviver )
+	else
+		target.SetPlayerNetEnt( "revivePlayerHealer", target )
+
+	HolsterViewModelAndDisableWeapons( target )
+
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+	{
+		if ( GibraltarIsInDome( reviver ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
+			PlayBattleChatterLineToSpeakerAndOtherPlayer( reviver, target, "bc_gibDomeRevivingPlayer" )
+	} else
+	{
+		target.SetPlayerNetInt( "reviveType", eReviveTypes.SELF )
+		EmitSoundOnEntityOnlyToPlayer( target, target, "Survival_Gameplay_Revival_Loop" )
+	}
+
+	OnThreadEnd(
+		function() : ( reviver, target, reviverStatusEffects, remainingBleedoutTime, doAutoRevive )
+		{
+			if ( IsValid( reviver ) )
+			{
+				if ( !doAutoRevive )
+				{
+					file.isGivingFirstAid[ reviver ] = false
+					reviver.ContextAction_ClearReviving()
+					DeployAndEnableWeapons( reviver )
+					Embark_Allow( reviver )
+				}
+
+				foreach( effect in reviverStatusEffects )
+				{
+					StatusEffect_Stop( reviver, effect )
+				}
+			}
+
+			if ( IsValid( target ) )
+			{
+				if ( Bleedout_IsPlayerSelfReviving( target ) )
+				{
+					StopSoundOnEntity( target, "Survival_Gameplay_Revival_Loop" )
+				}
+				else if ( target.ContextAction_IsBeingRevived() )
+				{
+					target.ContextAction_ClearBeingRevived()
+				}
+
+				target.Signal( "BleedOut_OnReviveStop" )
+
+				file.IsGettingFirstAidFrom[ target ] <- null
+				target.SetPlayerNetEnt( "revivePlayerHealer", null )
+				target.SetPlayerNetTime( "reviveEndTime", 0.0 )
+				target.SetPlayerNetInt( "reviveType", eReviveTypes.FRIENDLY )
+				target.SetPlayerNetBool( "isReceivingFirstAid", false )
+				
+					{
+						if ( reviver != target )
+							DeployAndEnableWeapons( target )
+					}
+
+				if ( Bleedout_IsBleedingOut( target ) )
+				{
+					foreach ( callbackFunc in file.Callbacks_OnPlayerFirstAidInterrupted )
+						callbackFunc( target, reviver )
+				}
+
+				if ( reviver == target && !Bleedout_IsBleedingOut( target ) )
+				{
+					if ( PlayerHasPassive( target, ePassives.PAS_SELF_REVIVE ) )
+					{
+						{
+							if( Bleedout_ShouldSelfReviveGiveIncapShield( target ) )
+								SURVIVAL_GivePlayerEquipment( target, "incapshield_pickup_lv3" )
+
+							PlayBattleChatterLineToSpeakerAndTeam( target, "bc_reviveSelf" )
+
+							// StatsHook_OnPlayerSelfRevived( target )
+						}
+					}
+				}
+			}
+		}
+	)
+
+	//Do not run this callback if player is self healing.
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+	{
+		foreach ( callbackFunc in file.Callbacks_OnPlayerStartGiveFirstAid )
+		{
+			callbackFunc( reviver, target, reviveAnimAngles, endReviveInCrouch )
+		}
+	}
 	else
 	{
-		if ( GetCurrentPlaylistVarBool( "thank_for_revive_enabled", true ) )
-			Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_PromptSayThanks", playerHealer )
+		foreach ( callbackFunc in file.Callbacks_OnPlayerStartGiveSelfRevive )
+		{
+			callbackFunc( reviver, target, reviveAnimAngles, endReviveInCrouch )
+		}
+	}
+    
+	foreach ( callbackFunc in file.Callbacks_OnPlayerStartReceiveFirstAid )
+		callbackFunc( target, reviver )
+
+	waitthread Bleedout_TrackContinuousUse( reviver, target, firstAidTime, pressToRevive, doAutoRevive )
+
+	resultTable.successfullyRevived = true
+
+	// First allow normal heal logic to take place ( there are a lot of factors affecting heal on revive including items and legend upgrades
+	target.SetHealth( Bleedout_SetRevivedPlayerHealth( reviver, target ) )
+
+	SetPlayerNotBleedingOut( target )
+
+	if ( IsPilotEliminationBased() )
+		ClearPlayerEliminated( target )
+
+	//Do not run this callback if player is self healing.
+	if ( !Bleedout_IsPlayerSelfReviving( target ) )
+	{
+		foreach ( callbackFunc in file.Callbacks_OnPlayerFinishGiveFirstAid )
+		{
+			callbackFunc( reviver, target )
+		}
 	}
 
-	playerToRes.Signal( "BleedOut_OnRevive" )
-	playerHealer.p.revivesGiven++
+	foreach ( callbackFunc in file.Callbacks_OnPlayerGotFirstAid )
+	{
+		callbackFunc( target, reviver )
+	}
+
+	// Allow regular shield healing to take place, there are a lot of different systems that can affect this
+	target.SetShieldHealth( Bleedout_SetRevivedPlayerShields( reviver, target ) )
+
+	Bleedout_SetPlayerBleedoutType( target, minint( Bleedout_GetPlayerBleedoutTypeCount() - 1, Bleedout_GetPlayerBleedoutType( target ) + 1 ) )
+
+	target.Signal( "BleedOut_OnRevive" )
 }
+
+bool function Bleedout_ShouldSelfReviveGiveIncapShield( entity player )
+{
+	// Don't give players an incapshield if players have infinite self res tied to a gamemode
+	if ( Bleedout_GetIsInfiniteSelfResEnabled() )
+		return false
+
+	if( Bleedout_CanSelfResFromUpgrade( player ) )
+		return false
+	return true
+}
+
+float function Bleedout_DetermineFirstAidTime( entity target, entity reviver )
+{
+	bool isPlayerSelfReviving = Bleedout_IsPlayerSelfReviving( target )
+	float firstAidTime =isPlayerSelfReviving ? Bleedout_GetFirstAidTimeSelf( reviver ) : Bleedout_GetFirstAidTime( reviver )
+	if ( isPlayerSelfReviving )
+	{
+		bool hasSelfRevive = false
+		if ( target.HasPassive( ePassives.PAS_SELF_REVIVE ) )
+			hasSelfRevive = true
+
+		firstAidTime = hasSelfRevive ? REVIVE_PASSIVE_SELF_REVIVE : firstAidTime
+
+		if ( Bleedout_CanSelfResFromUpgrade( reviver ) && reviver.p.numSelfRevivesUsed == 0  )
+		{
+			return DEFAULT_FIRSTAID_TIME
+		}
+	}
+
+	// If defined, an override time is used
+	firstAidTime = GetCurrentPlaylistVarFloat( "revive_time_override", firstAidTime )
+
+	// if self reviving, allow self revive time override
+	if ( isPlayerSelfReviving )
+		firstAidTime = GetCurrentPlaylistVarFloat( "self_revive_time_override", firstAidTime )
+
+	return firstAidTime
+}
+
+
+float function Bleedout_SetRevivedPlayerHealth( entity reviver, entity target )
+{
+	float targetHealth = target.GetMaxHealth() * Bleedout_GetFirstAidHealPercent( reviver )
+	if ( target.HasPassive( ePassives.PAS_DOWN_HEALTH ) )
+	{
+		targetHealth += REVIVE_PASSIVE_HEAL_BONUS
+	}
+
+	if ( reviver.HasPassive( ePassives.PAS_GUARDIAN_ANGEL ) )
+	{
+		targetHealth += REVIVE_GUARDIAN_ANGEL_HEALTH_BONUS
+		targetHealth = min( targetHealth, target.GetMaxHealth() )
+	}
+
+	return targetHealth
+}
+
+float function Bleedout_SetRevivedPlayerShields( entity reviver, entity target )
+{
+	int shieldsToGive = target.GetShieldHealth()
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( reviver ), Loadout_CharacterClass() )
+
+	if ( reviver.HasPassive( ePassives.PAS_GUARDIAN_ANGEL ) )
+		shieldsToGive = maxint( REVIVE_GUARDIAN_ANGEL_SHIELD_BONUS, target.GetShieldHealth() )
+
+	if( reviver.HasPassive( ePassives.PAS_GUARDIAN_ANGEL ) )
+	{
+		entity shieldFX = StartParticleEffectOnEntity_ReturnEntity( target, GetParticleSystemIndex( FX_REVIVE_PROTOTYPE_END ), FX_PATTACH_POINT_FOLLOW, target.LookupAttachment( "CHESTFOCUS" ) )
+		shieldFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
+		shieldFX.SetOwner( target )
+		EffectSetControlPointVector( shieldFX, 1, GetFXRarityColorForTier( EquipmentSlot_GetEquipmentTier( target, "armor" ) ) )
+	}
+
+	return min( shieldsToGive, target.GetShieldHealthMax() )
+}
+
+bool function Bleedout_IsReceivingFirstAid( entity player )
+{
+	return player.GetPlayerNetBool( "isReceivingFirstAid" )
+}
+
 
 void function BloodTrail( entity player )
 {
 	player.EndSignal( "BleedOut_StopBleeding" )
 	player.EndSignal( "BleedOut_OnRevive" )
-	player.EndSignal( "OnDeath")
+	player.EndSignal( "OnDeath" )
+
+	const MIN_MOVE_DIST_FOR_NEW_FX = 64 * 64
+
+	int fxId = GetParticleSystemIndex( FX_BLOODTRAIL )
+	vector lastOrigin
 
 	while ( true )
 	{
+		float moveDist = Distance2DSqr( lastOrigin, player.GetOrigin() )
+		if ( moveDist >= MIN_MOVE_DIST_FOR_NEW_FX )
+		{
+			StartParticleEffectOnEntity( player, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+			lastOrigin = player.GetOrigin()
+		}
+
 		float interval = RandomFloatRange( 0.25, 0.5 )
-		PlayFXOnEntity( FX_BLOODTRAIL, player )
 		wait interval
 	}
 }
 
-void function PlayerDiesFromBleedout( entity player, entity attacker )
+void function Bleedout_PlayerDiesFromBleedout( entity teamPlayer )
 {
-	if( IsValid( player ) && Gamemode() != eGamemodes.fs_duckhunt )
-		SetPlayerEliminated( player )
+	if ( IsAlive( teamPlayer ) )
+		PlayerDiesFromBleedout_Internal( teamPlayer, file.playerBleedoutInfo[ teamPlayer ].attacker )
+}
 
 
-	if ( IsValid( attacker ) )
+void function PlayerDiesFromBleedout_Internal( entity player, entity attacker )
+{
+	if ( IsValid( attacker ) && ( attacker.IsPlayer() || attacker.IsNPC() ) )
 	{
-		try{
-			player.Die( attacker, attacker, { damageSourceId = eDamageSourceId.bleedout } )
-		//player.BecomeRagdoll( Vector(0,0,0), false )
-		}catch(e420)
-		{
-			printt( "Was not fixed, debug this asap:", e420 )
-		}
+		player.Die( attacker, attacker, { damageSourceId = eDamageSourceId.bleedout } )
+		//player.BecomeRagdoll( <0,0,0>, false )
+		#if DEVELOPER
+		Warning( "PlayerDiesFromBleedout " + player + " - Valid Attacker." )
+		#endif
+
 	}
 	else
 	{
-		try{
-			player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
-		}catch(e420)
-		{
-			printt( "Was not fixed, debug this asap 2", e420 )
-		}
-		//player.BecomeRagdoll( Vector(0,0,0), false )
+		player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
+		//player.BecomeRagdoll( <0,0,0>, false )
+		#if DEVELOPER
+		Warning( "PlayerDiesFromBleedout " + player + " - Attacker set to world." )
+		#endif
+
 	}
-
-
 }
 
 //This function checks to see if all players on a team are dead or bleeding out.
 //If all the players are dead/bleeding out, it kills the surviving team players.
-void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer = null )
+//UNLESS any player on the team can self revive.
+void function CheckForTeamBleedout( int team )
 {
-	if( Flag( "BleedoutDebug" ) )
+	if ( Flag( "BleedoutDebug" ) )
 		return
 
-	int team = player.GetTeam()
+	// if ( GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_RECRUIT ) )
+		// return
 
-	if( !Bleedout_AreThereAlivingMates( team, player ) )
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	foreach ( entity teamPlayer in teamPlayers )
 	{
-		foreach( targetPlayer in GetPlayerArrayOfTeam_Alive( team ) )
-		{
-			if( targetPlayer != excludePlayer )
-			{
-				wait 0.1
+		if ( IsAlive( teamPlayer ) && !Bleedout_IsBleedingOut( teamPlayer ) )
+			return
 
-				if( IsValid( targetPlayer ) && GetGameState() != eGameState.WinnerDetermined ) // Don't kill player after winner decided
-					PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
-			}
-		}
+		if ( IsAlive( teamPlayer ) && Bleedout_IsBleedingOut( teamPlayer ) && ( Bleedout_GetSelfResEnabled( teamPlayer ) || !Bleedout_IsPlayerGettingFirstAid( teamPlayer ) ) )
+			return
+	}
+
+	//All players on team are bleeding out
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( IsAlive( teamPlayer ) )
+			Bleedout_PlayerDiesFromBleedout( teamPlayer )
 	}
 }
 
-bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = null )
+bool function Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( entity player )
 {
-	if( Flag( "BleedoutDebug" ) )
-		return true
-
-	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_Alive( team ) )
+	array<entity> teamPlayers = GetFriendlySquadArrayForPlayer( player )
+	foreach ( entity teamPlayer in teamPlayers )
 	{
-		if( Bleedout_GetSelfResEnabled( teamPlayer ) )
-			file.hasSelfRes[ teamPlayer ] = true
-		else
-			file.hasSelfRes[ teamPlayer ] = false
+		if ( teamPlayer == player )
+			continue
 
-		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] )
+		if ( !IsAlive( teamPlayer ) )
+			continue
+
+		if ( Bleedout_IsBleedingOut( teamPlayer ) && (!Bleedout_IsPlayerGettingFirstAid( teamPlayer ) || Bleedout_GetRevivingPlayer( teamPlayer ) == player ) )
+			continue
+
+		return true
+	}
+
+	return false
+}
+
+bool function Bleedout_CanTeammatesSelfRevive( entity player )
+{
+	int team                  = player.GetTeam()
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( IsAlive( teamPlayer ) && Bleedout_GetSelfResEnabled( teamPlayer ) )
 			return true
 	}
 
@@ -809,7 +1431,7 @@ bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = nu
 bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
 {
 	//If the player is not bleeding
-	if ( !file.isBleeding[ player ] )
+	if ( !Bleedout_IsBleedingOut( player ) )
 		return false
 
 	//If the bleedout settings don't affect AI accuracy.
@@ -819,10 +1441,11 @@ bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
 	return true
 }
 
-bool function IsPlayerGettingFirstAid( entity player )
+bool function Bleedout_IsPlayerGettingFirstAid( entity player )
 {
 	return file.IsGettingFirstAidFrom[ player ] != null
 }
+
 
 bool function IsPlayerSelfHealing( entity player )
 {
@@ -832,64 +1455,279 @@ bool function IsPlayerSelfHealing( entity player )
 //////////////
 //Utilities
 //////////////
-void function TrackContinuousUse( entity player, entity useTarget, float useTime, bool doRequireUseButtonHeld )
+
+void function SetBodyGroupVisibilityForDragRevive( entity useTarget, bool visible )
 {
-	player.EndSignal( "OnDeath" )
+	if ( IsValid( useTarget ) )
+	{
+		ItemFlavor useTargetCharacter = LoadoutSlot_GetItemFlavor( useTarget, Loadout_CharacterClass() )
+		string characterName = ItemFlavor_GetHumanReadableRef( useTargetCharacter ).tolower()
+		string bodyGroup = ""
+
+		switch( characterName )
+		{
+			// case "character_ash":
+				// bodyGroup = "sword_grp"
+				// break
+
+			// case "character_fuse":
+				// bodyGroup = "launcher"
+				// break
+
+			// case "character_newcastle":
+				// bodyGroup = "Shield"
+				// break
+
+			// case "character_rampart":
+				// bodyGroup = "turret"
+				// break
+
+			// case "character_valkyrie":
+				// bodyGroup = "jetpack"
+				// break
+
+			case "character_wattson":
+				bodyGroup = "trophy"
+				break
+			default:
+				break
+		}
+
+		if ( bodyGroup != "" )
+		{
+			int bodyGroupIdx = useTarget.FindBodygroup( bodyGroup )
+
+			if ( bodyGroupIdx != -1 )
+			{
+				if ( visible )
+					useTarget.SetBodygroupModelByIndex( bodyGroupIdx, 0 )
+				else
+					useTarget.SetBodygroupModelByIndex( bodyGroupIdx, 1 )
+			}
+		}
+	}
+}
+
+void function Bleedout_TrackContinuousUse( entity player, entity useTarget, float useTime, bool pressToRevive, bool doAutoRevive )
+{
 	useTarget.EndSignal( "OnDeath" )
 	useTarget.EndSignal( "OnDestroy" )
+	useTarget.EndSignal( "StartPhaseShift" )
+	useTarget.EndSignal( "ReviveInterrupted" )
+
+	if ( !doAutoRevive )
+	{
+		player.EndSignal( "OnDeath" )
+		player.EndSignal( "StartPhaseShift" )
+		player.EndSignal( "BleedOut_OnStartDying" )
+		player.EndSignal( "OnContinousUseStopped" )
+	}
 
 	table result = {}
 	result.success <- false
 
-	float maxDist2 = DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) + BLEEDOUT_MAX_USE_DIST2_MOD
+	//FX_REVIVE_PROTOTYPE
+	entity reviveFX
+	if ( player.HasPassive( ePassives.PAS_GUARDIAN_ANGEL ) ) // || GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_STRIKEOUT )
+	{
+		int armorTier = EquipmentSlot_GetEquipmentTier( useTarget, "armor" )
+		vector fxColor = ( armorTier > 0 ) ? GetFXRarityColorForTier( armorTier ) : HEALTH_RGB
+		reviveFX = StartParticleEffectOnEntity_ReturnEntity( useTarget, GetParticleSystemIndex( FX_REVIVE_PROTOTYPE ),
+			FX_PATTACH_POINT_FOLLOW, useTarget.LookupAttachment( "CHESTFOCUS" ) )
+		EffectSetControlPointVector( reviveFX, 1, fxColor )
+		reviveFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		EmitSoundOnEntity( useTarget, GUARDIAN_ANGEL_SOUND )
+	}
 
 	OnThreadEnd
 	(
-		function() : ( player, result )
+		function() : ( player, useTarget, result, reviveFX )
 		{
 			if ( !result.success )
 			{
-				player.Signal( "OnContinousUseStopped" )
+				if ( IsValid( useTarget ) )
+					useTarget.Signal( "ReviveInterrupted" )
+				//if ( IsValid( player ) )
+				//	player.Signal( "OnContinousUseStopped" )
+			}
+			if ( IsValid( reviveFX ) )
+				EffectStop( reviveFX )
+			if ( player.HasPassive( ePassives.PAS_GUARDIAN_ANGEL ) ) // || GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_STRIKEOUT ) )
+			{
+				StopSoundOnEntity( useTarget, GUARDIAN_ANGEL_SOUND )
+				if ( result.success )
+					EmitSoundOnEntity( useTarget, GUARDIAN_ANGEL_SUCCESS_SOUND )
 			}
 		}
 	)
 
+	table<entity, vector> lastTargetPos
 	float startTime = Time()
-	while ( Time() < startTime + useTime && (!doRequireUseButtonHeld || player.UseButtonPressed()) && !player.IsPhaseShifted() && DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) <= maxDist2 )
-		WaitFrame()
 
-	if ( ( !doRequireUseButtonHeld || player.UseButtonPressed() ) && DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) <= maxDist2  )
+
+	while ( Time() < startTime + useTime && ( pressToRevive || (Bleedout_IsReviveButtonDown( player ) && Bleedout_CheckPlayerUseTargetDist( player, useTarget ) )))
+	{
+		if ( IsValid ( reviveFX ) )
+		{
+			if ( useTarget.IsCloaked( true ) )
+				reviveFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+			else
+				reviveFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		}
+
+		WaitFrame()
+	}
+
+	if ( ( pressToRevive || (Bleedout_IsReviveButtonDown( player ) && Bleedout_CheckPlayerUseTargetDist( player, useTarget ) && Time() >= startTime + useTime) ) )
 		result.success = true
 }
 
-int function GetNewFirstAidAttemptID()
+
+float function Bleedout_GetBleedoutStartTime( entity player )
 {
-	file.firstAidAttemptID += 1
-	return file.firstAidAttemptID
+	return file.playerBleedoutInfo[ player ].bleedoutStartTime
 }
 
-// dump functions
-
-void function Bleedout_AddCallback_OnPlayerGotFirstAid( void functionref( entity injured, entity healer ) callback )
+entity function Bleedout_GetBleedoutWaypoint( entity player )
 {
-	file.Callback_OnPlayerGotFirstAid = callback
+	entity wp
+	if( player in file.playerBleedoutWaypoint )
+	{
+		entity bleedoutWP = file.playerBleedoutWaypoint[player]
+		if( IsValid( bleedoutWP ) )
+			wp = bleedoutWP
+	}
+	return wp
 }
 
-entity function Bleedout_GetBleedoutAttacker( entity victim )
+bool function Bleedout_IsPlayerGivingFirstAid( entity player )
 {
-	return file.lastAttacker[victim]
+	return file.isGivingFirstAid[ player ]
 }
 
-ScriptDamageInfoClone function Bleedout_GetBleedoutDamageInfo( entity victim )
+
+bool function Bleedout_IsPlayerSelfReviving( entity player )
 {
-	ScriptDamageInfoClone damageInfo
-	return damageInfo
+	return file.IsGettingFirstAidFrom[ player ] == player ? true : false
 }
 
-entity function Bleedout_GetCreditedKiller( entity victim )
+ScriptDamageInfoClone function Bleedout_GetBleedoutDamageInfo( entity player )
 {
-	if( victim in file.lastAttacker )
-		return file.lastAttacker[ victim ]
-	
-	return GetEnt( "worldspawn" )
+	return file.playerBleedoutInfo[ player ].damageInfoClone
+}
+
+
+int function Bleedout_GetBleedoutDamageSourceId( entity player )
+{
+	return file.playerBleedoutInfo[ player ].damageInfoClone.damageSourceIdentifier
+}
+
+
+entity function Bleedout_GetBleedoutAttackerWeaponEnt( entity player )
+{
+	return file.playerBleedoutInfo[ player ].attackerWeaponEnt
+}
+
+entity function Bleedout_GetBleedoutAttacker( entity player )
+{
+	if ( player in file.playerBleedoutInfo )
+		return file.playerBleedoutInfo[ player ].attacker
+
+	return null
+}
+
+void function Bleedout_ForceStop( entity player )
+{
+	player.Signal( "BleedOut_OnReviveStop" )
+	player.Signal( "BleedOut_StopBleeding" )
+}
+
+void function Bleedout_ReviveForceStop( entity player )
+{
+	player.Signal( "BleedOut_ReviveForceStop" )
+}
+
+void function Bleedout_OnWinnerDetermined()
+{
+	array<entity> playerArray = GetPlayerArray_AliveConnected()
+	foreach ( player in playerArray )
+	{
+		// stop bleedout when a winner is determined
+		Bleedout_ForceStop( player )
+	}
+}
+
+// Allow the player to force bleedout and die while in a bleedout state if the option is enabled through playlist vars.
+// This thread waits for the player's input and handles the functionality of the feature.
+void function EnablePlayerForceBleedout_Thread( entity player, int inputOptionA = IN_DUCKTOGGLE, int inputOptionB = IN_DUCK )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_OnStartDying" )
+	player.EndSignal( "BleedOut_OnRevive" )
+	player.EndSignal( "BleedOut_StopBleeding" )
+
+	OnThreadEnd( void function() : ( player ) {
+		if ( IsValid( player ) )
+		{
+			StopSoundOnEntity( player, "survival_titan_linking_loop" )
+		}
+	} )
+
+	// Let's not release immediately if a player was downed while holding crouch/slide
+	while ( true )
+	{
+		if ( !IsForceBleedoutButtonDown( player, inputOptionA, inputOptionB ) )
+		{
+			break
+		}
+
+		WaitFrame()
+	}
+
+	bool bHeld = false
+	float buttonHoldTime =  GetCurrentPlaylistVarFloat( "bleedout_force_bleedout_time", 0.5 )
+
+	float lastframe = Time()
+	while ( true )
+	{
+		if ( IsForceBleedoutButtonDown( player, inputOptionA, inputOptionB )
+		&& !Bleedout_IsPlayerGettingFirstAid( player )
+		&& Bleedout_PlayerInValidSeldResState( player )
+		)
+		{
+			if ( !bHeld )
+			{
+				EmitSoundOnEntityOnlyToPlayer( player, player, "survival_titan_linking_loop" )
+				bHeld = true
+				lastframe = Time()
+			}
+
+			if ( Time() - lastframe >= buttonHoldTime )
+			{
+				break
+			}
+		} else if ( bHeld ) {
+			StopSoundOnEntity( player, "survival_titan_linking_loop" )
+			bHeld = false
+		}
+
+		WaitFrame()
+	}
+
+	StopSoundOnEntity( player, "survival_titan_linking_loop" )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "ui_menu_store_purchase_success" )
+	wait 0.5
+	KillPlayer( player, eDamageSourceId.damagedef_suicide )
+}
+
+// Helper function for the Force Bleedout feature, tells us if the Bleedout button is held down
+bool function IsForceBleedoutButtonDown( entity player, int inputOptionA = IN_DUCKTOGGLE, int inputOptionB = IN_DUCK )
+{
+	return player.IsInputCommandHeld( inputOptionA ) || player.IsInputCommandHeld( inputOptionB )
+}
+
+//temp. Cafe. Implement proper drone in medic passive, this works for now tho
+bool function PassiveMedic_ShouldDoCombatRevive( entity player )
+{
+	return PlayerHasPassive( player, ePassives.PAS_MEDIC )
 }

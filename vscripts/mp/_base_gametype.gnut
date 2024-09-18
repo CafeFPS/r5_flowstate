@@ -793,15 +793,20 @@ void function PlayerOrNPCKilled( entity ent, var damageInfo )
 	// player attacker only from here down
 
 	//PreScoreEventUpdateStats( attacker, ent )
-	if ( ent.GetTeam() != attacker.GetTeam() )
+	
+	// this has to be here to detect a thirst as opposed to a death during squad wipe
+	if( IsPlaylistAllowedForDefaultKillNotifications() )
 	{
-		if ( ent.IsPlayer() )
-			ScoreEvent_PlayerKilled( ent, attacker, damageInfo )
-		else if ( ent.IsTitan() && ent.IsNPC() )
-			ScoreEvent_TitanKilled( ent, attacker, damageInfo )
-		else
-			ScoreEvent_NPCKilled( ent, attacker, damageInfo )
+		entity downingPlayer = Bleedout_GetBleedoutAttacker( ent )
+		if ( IsValid( downingPlayer ) && downingPlayer.IsPlayer() )
+		{
+			AddPlayerScore( downingPlayer, "EliminatePilot", ent )
+		}
+		
+		if( attacker != downingPlayer && ent.GetTeam() != attacker.GetTeam() ) //Cafe. Also show the obituary to the original killer (?)
+			AddPlayerScore( attacker, "EliminatePilot", ent )
 	}
+
 	//PostScoreEventUpdateStats( attacker, ent )
 
 	if ( ent.GetTeam() == attacker.GetTeam() )

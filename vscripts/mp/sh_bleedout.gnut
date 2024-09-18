@@ -1,3 +1,5 @@
+//S21 script implementation by CafeFPS - September 2024
+
 global function BleedoutShared_Init
 global function Bleedout_GetBleedoutTime
 global function Bleedout_GetFirstAidTime
@@ -13,16 +15,35 @@ global function Bleedout_IsBleedingOut
 global function Bleedout_PlayerCanRes
 global function Bleedout_PlayerCanBeRessed
 global function Bleedout_PlayerCanSelfRes
+global function Bleedout_PlayerInValidSeldResState
 global function Bleedout_GetPlayerBleedoutType
 global function Bleedout_GetPlayerBleedoutTypeCount
 global function Bleedout_GetRevivingPlayer
+global function Bleedout_GetIsInfiniteSelfResEnabled
 
 global function BleedoutState_GetPlayerBleedoutState
+global function Bleedout_GetCanForceBleedoutTimeout
+global function Bleedout_CheckPlayerUseTargetDist
+global function Bleedout_GetIsBleedoutDeathBlocked
+global function Bleedout_AreFinishersEnabledDuringDeathPrevention
+global function Bleedout_GetIsBleedoutDamageBlocked
+global function Bleedout_IsReviverFriendlyToVictim
+
+global function Bleedout_CanSelfResFromUpgrade
 
 #if SERVER
 global function BleedoutState_SetPlayerBleedoutState
 global function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged
+global function Bleedout_TryToRemoveInfiniteSelfResOnDownedSquad
 #endif // SERVER
+
+#if DEV
+global function Bleedout_OverrideBleedoutTime
+#endif
+
+#if CLIENT
+global function Bleedout_ServerCallback_DisplaySelfResDelayHintForPlayer
+#endif
 
 //DEFAULT BLEEDOUT RULES
 const float BLEEDOUT_TIME_LV1 = 90.0
@@ -30,7 +51,7 @@ const float BLEEDOUT_TIME_LV2 = 60.0
 const float BLEEDOUT_TIME_LV3 = 30.0
 const float BLEEDOUT_TIME_LV4 = 15.0
 
-const float DEFAULT_FIRSTAID_TIME = 6.0
+global const float DEFAULT_FIRSTAID_TIME = 6.0
 const float DEFAULT_FIRSTAID_TIME_SELF = -1.0
 const float DEFAULT_FIRSTAID_HEAL_PERCENT = 0.2
 const float DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE = 0.0
@@ -40,12 +61,18 @@ const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = true
 //MEDIC BLEEDOUT RULES
 const float MEDIC_FIRSTAID_TIME = 4.5
 const float GIB_DOME_REVIVE_TIME = 4.5
+global const float VOID_RING_REVIVE_TIME = 4.5
+global const float VOID_RING_SELF_REVIVE_TIME = 9
+global const bool VOID_RING_CAN_FAST_REVIVE = true
+
+const float INFINITE_SELFRES_UNSET_DELAY_TIME = -1.0
 
 global enum eReviveTypes
 {
 	FRIENDLY
 	RECRUIT
 	COUNT
+	SELF
 }
 
 struct BleedoutData
@@ -65,20 +92,21 @@ struct
 	bool                bleedoutLogicActive = false
 	array<BleedoutData> bleedoutTypes
 
-#if SERVER
-	array< void functionref( entity ) > Callbacks_OnPlayerBleedoutStateChanged
-#endif // SERVER
+	#if SERVER
+		array< void functionref( entity, int ) > Callbacks_OnPlayerBleedoutStateChanged
+		table < entity, float > playerToInfiniteSelfResDelayTable
+	#endif // SERVER
 } file
 
 void function BleedoutShared_Init()
 {
-	PrecacheWeapon( "mp_weapon_incap_shield" )
-	
+	PrecacheWeapon( $"mp_weapon_incap_shield" )
+
 	//DEFAULT BLEEDOUT (Index 0)
 	BleedoutData defData
 	defData.bleedoutTime = GetCurrentPlaylistVarFloat( "survival_bleedout_time_1", BLEEDOUT_TIME_LV1 )
 	defData.firstAidTime = DEFAULT_FIRSTAID_TIME        //This is the amount of time it takes this player to res other players.
-		defData.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
+	defData.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
 	defData.firstAidHealPercent = DEFAULT_FIRSTAID_HEAL_PERCENT
 	defData.aiBleedingPlayerMissChance = DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE
 	defData.forceHolster = DEFAULT_FORCE_WEAPON_HOLSTER
@@ -128,17 +156,24 @@ void function BleedoutShared_Init()
 	#endif
 
 	AddCallback_CheckPlayerCanUse( CheckPlayerCanUse )
-
 	file.bleedoutLogicActive = true
-}
 
+	if ( Bleedout_GetIsInfiniteSelfResEnabled() )
+	{
+		Remote_RegisterClientFunction( "Bleedout_ServerCallback_DisplaySelfResDelayHintForPlayer", "float", 0.0, Bleedout_GetMaxInfiniteSelfResDelay(), 32 )
+		#if SERVER
+			BleedoutState_AddCallback_OnPlayerBleedoutStateChanged( OnBleedoutStateChanged_RunSelfRes )
+			AddCallback_OnPlayerRespawned( OnPlayerRespawned_ResetSelfResDelay )
+		#endif // SERVER
+	}
+}
 
 bool function CheckPlayerCanUse( entity player, entity target )
 {
 	if ( !Bleedout_IsBleedingOut( player ) )
 		return true
 
-	if ( target.GetNetworkedClassName() == "prop_door" || target.GetScriptName() == "survival_door_plain" )
+	if ( target.GetNetworkedClassName() == "prop_door" || target.GetScriptName() == "survival_door_plain")
 		return true
 
 	return false
@@ -146,11 +181,11 @@ bool function CheckPlayerCanUse( entity player, entity target )
 
 const float REVIVE_RANGE = 112
 const float REVIVE_RANGE_SQ = REVIVE_RANGE * REVIVE_RANGE
-const float REVIVE_RANGE_Z_MAX = 96.0
+const float REVIVE_RANGE_Z_MAX = 70.0
 const float REVIVE_RANGE_Z_MIN = 48.0
 
 const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN = 25
-const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_MAX = 35 //
+const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_MAX = 35 // note that the
 const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_RANGE = EXECUTION_ANGLE_UP_DOWN_DEVIATION_MAX - EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN
 const float EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MIN = 25
 const float EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MAX = 65
@@ -173,10 +208,10 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 	if ( !Bleedout_PlayerCanBeRessed( victim ) )
 		return false
 
-	bool tryingToRevive = (IsFriendlyTeam( reviver.GetTeam(), victim.GetTeam() ) || IsRecruitMode())
+	bool tryingToRevive = Bleedout_IsReviverFriendlyToVictim( reviver, victim ) //|| GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_RECRUIT )
 
 	vector victimPos          = victim.GetOrigin()
-	vector revivorEyePos      = reviver.EyePosition()
+	vector revivorEyePos      = reviver.UseableEyePosition( victim )
 	vector reviverPos         = reviver.GetOrigin()
 	vector reviverToVictim    = victimPos - reviverPos
 	vector reviverEyeToVictim = victimPos - revivorEyePos
@@ -185,12 +220,12 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 
 	if ( DEBUG_REVIVE_RANGE )
 	{
-		DebugDrawLine( revivorEyePos, victimPos, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
-		DebugDrawLine( reviverPos, victimPos, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
+		DebugDrawLine( revivorEyePos, victimPos, <DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B>, true, 0.3 )
+		DebugDrawLine( reviverPos, victimPos, <DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B>, true, 0.3 )
 	}
 
-	//
-	//
+	// players want to do executions much less than revives, so we do a stricter check for executions
+	// we do different checks for up-down angle and left-right angle, with up-down being stricter so players have to look down at the other player to get the execution prompt
 	if ( !tryingToRevive )
 	{
 		if ( reviverToVictimSq > EXECUTION_RANGE_SQ )
@@ -198,8 +233,8 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 
 		float reviveRangeFrac = (1.0 + DotProduct( reviver.GetViewForward(), Normalize( reviverEyeToVictim ) )) * 0.5
 
-		vector reviverViewForward                             = reviver.GetViewForward()
-		vector reviverRight                                   = reviver.GetViewRight()
+		vector reviverViewForward                             = Normalize( reviver.GetViewForward() )
+		vector reviverRight                                   = Normalize( reviver.GetViewRight() )
 		float reviverEyeToVictimOntoRight                     = DotProduct( reviverEyeToVictim, reviverRight )
 		vector reviverEyeToVictimOntoForwardUpPlane           = reviverEyeToVictim - (reviverEyeToVictimOntoRight * reviverRight)
 		vector reviverEyeToVictimOntoForwardUpPlaneNormalized = Normalize( reviverEyeToVictimOntoForwardUpPlane )
@@ -213,12 +248,12 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 		{
 			DebugDrawArrow( revivorEyePos, revivorEyePos + reviver.GetUpVector() * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
 			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverViewForward * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
-			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoForwardUpPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 200, 50, 50, true, 0.3 )
-			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoXYPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 50, 200, 50, true, 0.3 )
-			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverViewForwardOntoXYNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 50, 200, 50, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoForwardUpPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, <200, 50, 50>, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoXYPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, <50, 200, 50>, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverViewForwardOntoXYNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, <50, 200, 50>, true, 0.3 )
 		}
 
-		float distanceFrac              = 1 - reviverToVictimSq / EXECUTION_RANGE_SQ //
+		float distanceFrac              = 1 - reviverToVictimSq / EXECUTION_RANGE_SQ // this makes it so that the fraction doesn't scale linearly with distance, but that works out pretty well for this case
 		float finalUpDownAngleThreshold = EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN + distanceFrac * EXECUTION_ANGLE_UP_DOWN_DEVIATION_RANGE
 
 		float upDownAngle = acos( DotProduct( reviverViewForward, reviverEyeToVictimOntoForwardUpPlaneNormalized ) ) * 180 / PI
@@ -230,7 +265,7 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 		if ( leftRightAngle > finalLeftRightAngleThreshold )
 			return false
 
-		//
+		// revive should probably use this check as well, but we shipped the game with a different one so I don't want to break things
 		if ( !IsValidSyncedMeleeTarget( reviver, null, null, victim ) )
 			return false
 	}
@@ -240,17 +275,17 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 		float reviveRange     = reviveRangeFrac * REVIVE_RANGE
 
 		if ( DEBUG_REVIVE_RANGE )
-			DebugDrawTrigger( victimPos, reviveRange, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, 0.3, true )
+			DebugDrawTrigger( victimPos, reviveRange, <DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B>, 0.3, true )
 
-		if ( reviverToVictimSq > reviveRange * reviveRange )
+		if ( !Bleedout_CheckPlayerUseTargetDist( reviver, victim ) )
 			return false
 
-		//
+		// check the z-height to detect against cliffs (overall detection shape is now a triangle-tipped capsule)
 		float maxZDiff = GraphCapped( reviverToVictimSq, 0, REVIVE_RANGE_SQ, REVIVE_RANGE_Z_MAX, REVIVE_RANGE_Z_MIN )
 		if ( fabs( reviverToVictim.z ) > maxZDiff )
 			return false
 
-		//
+		// this just does a hull trace under the hood.
 		if ( !PlayerMelee_IsExecutionReachable( reviver, victim, 0.15 ) )
 			return false
 	}
@@ -258,12 +293,131 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 	return true
 }
 
+// Get whether the person trying to revive a victim allowed to
+bool function Bleedout_IsReviverFriendlyToVictim( entity reviver, entity victim )
+{
+	if ( !IsValid( reviver ) || !IsValid( victim ) )
+		return false
+
+	int reviverTeam = reviver.GetTeam()
+	int victimTeam = victim.GetTeam()
+
+	return Bleedout_IsReviveOnlyAllowedOnSquadmates() ? reviverTeam == victimTeam : IsFriendlyTeam( reviverTeam, victimTeam )
+}
 
 void function OnPlayerCreated( entity player )
 {
 	SetCallback_CanUseEntityCallback( player, Bleedout_CanRevivePlayer )
 }
 
+#if SERVER
+// Callback for when a player enters or leaves the bleedout state. Used to reset the infinite self res state
+// NOTE: THIS LOGIC IS CURRENTLY ONLY SET TO RUN IF Bleedout_GetIsInfiniteSelfResEnabled() IS TRUE
+// This function manages the delay before self res is available to a player ( if we delay it or increase the delay each time the player enters bleedout ) and also runs the thread that waits the delay and then grants the player self res
+// This function also takes self res away when the player is no longer in a bleedout state
+void function OnBleedoutStateChanged_RunSelfRes( entity player, int newState )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( newState == BS_ENTERING_BLEEDOUT )
+	{
+		// If we increase the delay before self res is available each time the player enters a bleedout state, set the delay time now
+		float selfResDelayIncreaseAmount = Bleedout_GetInfiniteSelfResDelayIncreaseAmountEachBleedout()
+
+		if ( selfResDelayIncreaseAmount > 0.0 )
+		{
+			float selfResDelayForPlayer = Bleedout_GetInfiniteSelfResDelayForPlayer( player )
+			// If we haven't set a default delay yet, set it now, don't want to increase the delay amount if the player hasn't had the default time yet
+			if ( selfResDelayForPlayer <= INFINITE_SELFRES_UNSET_DELAY_TIME )
+			{
+				Bleedout_SetInfiniteSelfResDelayForPlayer( player, Bleedout_GetDefaultInfiniteSelfResDelay() )
+			}
+			else // The player has already had the default delay time set, so increase their delay time
+			{
+				selfResDelayForPlayer = min( ( selfResDelayForPlayer + selfResDelayIncreaseAmount ), Bleedout_GetMaxInfiniteSelfResDelay() )
+				Bleedout_SetInfiniteSelfResDelayForPlayer( player, selfResDelayForPlayer )
+			}
+		}
+
+		// Run the self res thread that will run a delay ( if there is one ) and then allow the player to self res
+		if ( !Bleedout_ShouldBleedingOutSquadBeEliminatedEvenWithInfiniteSelfRes() || Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( player ) )
+				thread GivePlayerInfiniteSelfRes_Delayed_Thread( player )
+	}
+
+	if ( newState == BS_NOT_BLEEDING_OUT )
+	{
+		TakePassive( player, ePassives.PAS_SELF_REVIVE )
+	}
+}
+#endif // SERVER
+
+#if SERVER
+void function OnPlayerRespawned_ResetSelfResDelay(entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	// Set self revive time back to default on respawn
+	Bleedout_SetInfiniteSelfResDelayForPlayer( player, Bleedout_GetDefaultInfiniteSelfResDelay() )
+}
+#endif //SERVER
+
+#if SERVER
+// If we have enabled the infinite self res feature, apply the self res passive to players entering a downed state
+void function GivePlayerInfiniteSelfRes_Delayed_Thread( entity player )
+{
+	#if DEV
+		Assert( IsNewThread(), "Must be threaded off" )
+	#endif // DEV
+
+	if ( !IsValid( player ) )
+		return
+
+	float selfResDelay = Bleedout_GetInfiniteSelfResDelayForPlayer( player )
+	if ( selfResDelay > 0 )
+	{
+		Remote_CallFunction_NonReplay( player, "Bleedout_ServerCallback_DisplaySelfResDelayHintForPlayer", selfResDelay )
+		wait selfResDelay
+	}
+
+	// Player might not be valid after the wait
+	if ( !IsValid( player ) )
+		return
+
+	// If we want the squad to be eliminated even if a player has self res, don't give them self res ( teammates that already have self res will have it removed as well in the OnBleedoutStateChanged_RunSelfRes function )
+	if ( Bleedout_ShouldBleedingOutSquadBeEliminatedEvenWithInfiniteSelfRes() && !Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( player ) )
+		return
+
+	if ( Bleedout_GetIsInfiniteSelfResEnabled() && Bleedout_IsBleedingOut( player ) && !PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+	{
+		if ( !Bleedout_GetIsInfiniteSelfResOnlyAvailableWithLivingSquad() || Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( player ) )
+		{
+			GivePassive( player, ePassives.PAS_SELF_REVIVE )
+			Remote_CallFunction_NonReplay( player, "Bleedout_ServerCallback_DisplaySelfResDelayHintForPlayer", 0 )
+		}
+	}
+}
+#endif // SERVER
+
+#if SERVER
+// When we are determining if a squad should be eliminated, try to remove self res on the squadmates if we want them to be eliminated even with self res when the whole squad is downed.
+void function Bleedout_TryToRemoveInfiniteSelfResOnDownedSquad( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( Bleedout_GetIsInfiniteSelfResEnabled() && Bleedout_ShouldBleedingOutSquadBeEliminatedEvenWithInfiniteSelfRes() && !Bleedout_AnyOtherSquadmatesAliveAndNotBleedingOut( player ) )
+	{
+		array < entity > teammatesArray = GetPlayerArrayOfTeam( player.GetTeam() )
+		foreach ( teammate in teammatesArray )
+		{
+			if ( IsValid( teammate ) && PlayerHasPassive( teammate, ePassives.PAS_SELF_REVIVE ) )
+				TakePassive( teammate, ePassives.PAS_SELF_REVIVE )
+		}
+	}
+}
+#endif // SERVER
 
 float function Bleedout_GetBleedoutTime( entity player )
 {
@@ -272,16 +426,60 @@ float function Bleedout_GetBleedoutTime( entity player )
 	return file.bleedoutTypes[ type ].bleedoutTime
 }
 
+// Do we prevent the player from dying during a bleedout ( don't have a bleedout timer )
+bool function Bleedout_GetIsBleedoutDeathBlocked()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_death_prevention_enabled", false )
+}
+
+// Do we allow finishers even when Bleedout Death Prevention is enabled
+bool function Bleedout_AreFinishersEnabledDuringDeathPrevention()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_death_prevention_allow_finishers", false )
+}
+
+// Do we prevent the player from taking damage during a bleedout
+bool function Bleedout_GetIsBleedoutDamageBlocked()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_downedplayers_invulnerable", false )
+}
+
+#if DEV
+void function Bleedout_OverrideBleedoutTime( entity player, float time )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	file.bleedoutTypes[ type ].bleedoutTime = time
+}
+#endif
+
+float function Bleedout_GetFastReviveScaler()
+{
+	return GetCurrentPlaylistVarFloat( "fast_revive_time_scaler", .8 )
+}
 
 float function Bleedout_GetFirstAidTime( entity player )
 {
+	float firstAidTimeScaler = 1.0
+
+	if( Gamemode() == eGamemodes.fs_duckhunt )
+	{
+		firstAidTimeScaler = 0.65
+	}
+
+	// if( PlayerHasPassive( player, ePassives.PAS_FASTER_REVIVES ) )
+	// {
+		// firstAidTimeScaler = Bleedout_GetFastReviveScaler()
+	// }
+
+	return Bleedout_GetBaseFirstAidTime( player ) * firstAidTimeScaler
+}
+
+float function Bleedout_GetBaseFirstAidTime( entity player )
+{
 	int type = player.GetPlayerNetInt( "bleedoutType" )
 
-	if ( PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
-		return MEDIC_FIRSTAID_TIME
-
-	if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 0 ) == 1 )
-		return GIB_DOME_REVIVE_TIME
+	// if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
+		// return GIB_DOME_REVIVE_TIME
 
 	return file.bleedoutTypes[ type ].firstAidTime
 }
@@ -289,6 +487,11 @@ float function Bleedout_GetFirstAidTime( entity player )
 
 float function Bleedout_GetFirstAidTimeSelf( entity player )
 {
+	if ( Bleedout_CanSelfResFromUpgrade( player ) )
+	{
+		return DEFAULT_FIRSTAID_TIME
+	}
+    
 	int type = player.GetPlayerNetInt( "bleedoutType" )
 	return file.bleedoutTypes[ type ].firstAidTimeSelf
 }
@@ -304,7 +507,7 @@ float function Bleedout_GetFirstAidHealPercent( entity player )
 bool function Bleedout_GetForceWeaponHolster( entity player )
 {
 	int type = player.GetPlayerNetInt( "bleedoutType" )
-	return file.bleedoutTypes[ type ].forceHolster && !GetCurrentPlaylistVarBool( "lsm_mod2", false )
+	return file.bleedoutTypes[ type ].forceHolster
 }
 
 
@@ -338,9 +541,15 @@ entity function Bleedout_GetRevivingPlayer( entity player )
 
 bool function Bleedout_GetSelfResEnabled( entity player )
 {
-	//If player has self-res from equipment
-	if ( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) && !player.GetPlayerNetBool( "usedSelfRevive" ) )
-		return true
+	//If player has self revive from equipment
+	if ( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+	{
+		if ( Bleedout_GetIsInfiniteSelfResEnabled() )
+			return true
+			
+		if ( Bleedout_CanSelfResFromUpgrade( player ) && Gamemode() == eGamemodes.SURVIVAL && player.p.numSelfRevivesUsed == 0 )
+			return true
+	}
 
 	int type = player.GetPlayerNetInt( "bleedoutType" )
 	return file.bleedoutTypes[ type ].enableSelfRes
@@ -356,14 +565,10 @@ bool function Bleedout_IsBleedoutLogicActive()
 
 bool function Bleedout_IsBleedingOut( entity player )
 {
-
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !player.IsPlayer() )
 		return false
 
-	if ( !player.IsPlayer() )
-		return false
-
-	return BleedoutState_GetPlayerBleedoutState( player ) != BS_NOT_BLEEDING_OUT && !GetCurrentPlaylistVarBool( "lsm_mod2", false )
+	return BleedoutState_GetPlayerBleedoutState( player ) != BS_NOT_BLEEDING_OUT
 }
 
 
@@ -372,38 +577,32 @@ bool function Bleedout_PlayerCanRes( entity player )
 	if ( !player.IsPlayer() )
 		return false
 
-	if ( player.ContextAction_IsActive() )
-		return false
-
 	if ( Bleedout_IsBleedingOut( player ) )
 		return false
 
-	if ( player.IsPhaseShiftedOrPending() )
+	if ( !__PlayerInValidResState( player ) )
 		return false
 
-	if ( IsValid( player.GetParent() ) )
+	// Don't allow res if weapons are disabled unless they are disabled because we are picking up a banner
+	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL ) //&& !CanInterruptBannerPickupEarly( player ) )
 		return false
 
-	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
-		return false
-
-	if ( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && player.GetActiveWeapon( eActiveInventorySlot.mainHand ).IsWeaponOffhand() )
-		return false
-
-
+	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	if ( IsValid( activeWeapon ) )
+	{
+		if( activeWeapon.IsWeaponOffhand() )
+		{
+			var offhandAllowsPickups = activeWeapon.GetWeaponInfoFileKeyField( "offhand_allow_player_interact" )
+			if ( !offhandAllowsPickups || offhandAllowsPickups <= 0 )
+				return false
+		}
+	}
 	return true
 }
 
-
-bool function Bleedout_PlayerCanBeRessed( entity player )
+bool function __PlayerInValidResState( entity player )
 {
-	if ( !player.IsPlayer() )
-		return false
-
 	if ( player.ContextAction_IsActive() )
-		return false
-
-	if ( player.GetPlayerNetTime( "reviveEndTime" ) != 0.0 )
 		return false
 
 	if ( !player.IsOnGround() )
@@ -413,6 +612,40 @@ bool function Bleedout_PlayerCanBeRessed( entity player )
 		return false
 
 	if ( IsValid( player.GetParent() ) )
+		return false
+
+	if ( player.ContextAction_IsMeleeExecution() )
+		return false
+
+	if ( player.p.isInExtendedUse )
+		return false
+
+	return true
+}
+
+bool function Bleedout_PlayerInValidSeldResState( entity player )
+{
+	if ( !player.IsPlayer() )
+		return false
+
+	if ( !__PlayerInValidResState( player ) )
+		return false
+	
+	if ( (Time() - player.p.lastUseTime) < 0.2 )
+		return false
+
+	return true
+}
+
+bool function Bleedout_PlayerCanBeRessed( entity player )
+{
+	if ( !player.IsPlayer() )
+		return false
+
+	if ( player.GetPlayerNetTime( "reviveEndTime" ) != 0.0 )
+		return false
+
+	if ( !__PlayerInValidResState( player ) )
 		return false
 
 	if ( BleedoutState_GetPlayerBleedoutState( player ) != BS_BLEEDING_OUT )
@@ -435,12 +668,13 @@ bool function Bleedout_PlayerCanSelfRes( entity player )
 	if ( !hasSelfRes )
 		return false
 
-	if ( player.GetPlayerNetBool( "usedSelfRevive" ) )
-		return false
-
 	return true
 }
 
+bool function Bleedout_CanSelfResFromUpgrade( entity player )
+{
+	return false
+}
 
 int function Bleedout_GetPlayerBleedoutType( entity player )
 {
@@ -454,7 +688,7 @@ int function Bleedout_GetPlayerBleedoutTypeCount()
 }
 
 #if SERVER
-void function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged( void functionref( entity ) callbackFunc )
+void function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged( void functionref( entity, int ) callbackFunc )
 {
 	Assert( !file.Callbacks_OnPlayerBleedoutStateChanged.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with BleedoutState_AddCallback_OnPlayerBleedoutStateChanged" )
 	file.Callbacks_OnPlayerBleedoutStateChanged.append( callbackFunc )
@@ -465,6 +699,9 @@ void function BleedoutState_SetPlayerBleedoutState( entity player, int newState 
 	if ( !IsValid( player ) )
 		return
 
+	if ( !player.IsPlayer() )
+		return
+
 	int oldState = BleedoutState_GetPlayerBleedoutState( player )
 	if ( newState == oldState )
 		return
@@ -473,10 +710,11 @@ void function BleedoutState_SetPlayerBleedoutState( entity player, int newState 
 
 	foreach( callbackFunc in file.Callbacks_OnPlayerBleedoutStateChanged )
 	{
-		callbackFunc( player )
+		callbackFunc( player, newState )
 	}
 }
 #endif // SERVER
+
 
 int function BleedoutState_GetPlayerBleedoutState( entity player )
 {
@@ -487,18 +725,17 @@ int function BleedoutState_GetPlayerBleedoutState( entity player )
 void function OnPingCreatedByAnyPlayer_TrackCrosshairTarget( entity pingingPlayer, int pingType, entity focusEnt, vector pingLoc, entity wayPoint )
 {
 	if ( pingType != ePingType.BLEEDOUT && pingType != ePingType.RESPAWN_BANNER )
-			return
-
-	//
+		return
+	// don't handle this logic for spectator for now
 	if ( !IsAlive( GetLocalClientPlayer() ) )
 		return
 
 	thread TrackCrosshairTargetForPing( wayPoint )
 }
 
-//
-//
-//
+// Hide downed icons when an enemy blocks near LOS to the downed player, or visa versa
+// Note that GetAimAssistCurrentTarget() returns a valid value regardless of actual presense
+// of aim assist, so this still works for KB/M
 void function TrackCrosshairTargetForPing( entity wayPoint )
 {
 	EndSignal( wayPoint, "OnDestroy" )
@@ -527,3 +764,97 @@ void function TrackCrosshairTargetForPing( entity wayPoint )
 	}
 }
 #endif
+
+const float BLEEDOUT_MAX_USE_DIST2_MOD = 64 * 64
+bool function Bleedout_CheckPlayerUseTargetDist( entity player, entity useTarget )
+{
+	vector eyePos = player.UseableEyePosition( useTarget )
+	vector eyePos2D = <eyePos.x, eyePos.y, 0.0>
+	vector useOrigin = useTarget.GetOrigin()
+	vector useOrigin2D = <useOrigin.x, useOrigin.y, 0.0>
+	float vertDist = player.GetOrigin().z - useTarget.GetOrigin().z
+	if ( (DistanceSqr( eyePos2D, useOrigin2D ) > REVIVE_RANGE_SQ) || ((vertDist * vertDist) > BLEEDOUT_MAX_USE_DIST2_MOD) )
+		return false
+
+	return true
+}
+
+// Return whether infinite Self Res is enabled through playlist vars
+bool function Bleedout_GetIsInfiniteSelfResEnabled()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_has_infinite_self_res", false )
+}
+
+// Return whether infinite Self Res is only available to a downed player if they also have living squadmates
+bool function Bleedout_GetIsInfiniteSelfResOnlyAvailableWithLivingSquad()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_infinite_self_res_only_with_living_squad", true )
+}
+
+// Return whether a squad should be eliminated if all the players are bleeding out but they still have infinite self res
+bool function Bleedout_ShouldBleedingOutSquadBeEliminatedEvenWithInfiniteSelfRes()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_infinite_self_res_eliminate_with_self_res", true )
+}
+
+// Return whether players can only be revived by their squadmates
+bool function Bleedout_IsReviveOnlyAllowedOnSquadmates()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_limited_to_squadmates", false )
+}
+
+// Return the default time after being downed before a player receives their infinite self res
+float function Bleedout_GetDefaultInfiniteSelfResDelay()
+{
+	return GetCurrentPlaylistVarFloat( "bleedout_infinite_self_res_default_delay", 0.0 )
+}
+
+#if SERVER
+// If more than 0.0, each time the player enters a bleedout state, the delay before self revive is available increases by this amount
+float function Bleedout_GetInfiniteSelfResDelayIncreaseAmountEachBleedout()
+{
+	return GetCurrentPlaylistVarFloat( "bleedout_infinite_self_res_delay_rise_on_bleedout", 0.0 )
+}
+#endif // SERVER
+
+// If the self revive delay increases each time the player enters bleedout state ( see Bleedout_GetInfiniteSelfResDelayIncreaseAmountEachBleedout ), this is the max delay that can be set for self revive
+float function Bleedout_GetMaxInfiniteSelfResDelay()
+{
+	return GetCurrentPlaylistVarFloat( "bleedout_infinite_self_res_max_delay", Bleedout_GetDefaultInfiniteSelfResDelay() )
+}
+
+#if SERVER
+// Return the time after being downed before a player receives their infinite self res
+float function Bleedout_GetInfiniteSelfResDelayForPlayer( entity player )
+{
+	if ( !( player in file.playerToInfiniteSelfResDelayTable ) )
+		return INFINITE_SELFRES_UNSET_DELAY_TIME
+
+	return file.playerToInfiniteSelfResDelayTable[ player ]
+}
+#endif // SERVER
+
+#if SERVER
+// Set the time after being downed before a player receives their infinite self res
+void function Bleedout_SetInfiniteSelfResDelayForPlayer( entity player, float delay )
+{
+	file.playerToInfiniteSelfResDelayTable[ player ] <- delay
+}
+#endif // SERVER
+
+#if CLIENT
+// Display a hint for the player letting them know how long until self res is available
+const float HINT_DURATION = 5.0
+void function Bleedout_ServerCallback_DisplaySelfResDelayHintForPlayer( float delay )
+{
+	string hintString = delay > 0 ? Localize( "#BLEEDOUT_SELF_RES_DELAY", delay ) : Localize( "#BLEEDOUT_SELF_RES_AVAILABLE" )
+	AddPlayerHint( HINT_DURATION, 0.5, $"", hintString )
+}
+#endif // CLIENT
+
+
+// Global function used to figure out if the player is allowed to force die during the bleeding out phase
+bool function Bleedout_GetCanForceBleedoutTimeout()
+{
+	return GetCurrentPlaylistVarBool( "bleedout_can_force_bleedout_timeout", false )
+}

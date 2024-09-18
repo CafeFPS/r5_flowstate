@@ -155,8 +155,8 @@ void function GamemodeSurvivalShared_Init()
 		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 		
 		if( Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.fs_snd ) return
-	
-		BleedoutShared_Init()
+
+		//Bleedout system already started in sh init
 		Sh_RespawnBeacon_Init()
 		Sh_Airdrops_Init()
 
