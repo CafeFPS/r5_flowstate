@@ -133,6 +133,7 @@ struct
 	float fs_scenarios_characterselect_time_per_player = 3.5
 	bool fs_scenarios_characterselect_enabled = true
 	float fs_scenarios_ringclosing_maxtime = 120
+	float fs_scenarios_matchmaking_delay_after_dying = 8.0
 	
 	int waitingRoomRadius = 600
 } settings
@@ -161,7 +162,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
 	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
 	settings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
-
+	settings.fs_scenarios_matchmaking_delay_after_dying = GetCurrentPlaylistVarFloat( "fs_scenarios_matchmaking_delay_after_dying", 8.0 )
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
 	teamSlots[ 1 ] = true
@@ -206,8 +207,8 @@ bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> ar
 		return false
 	}
 	
-	player.p.InDeathRecap = false
-	player.p.lastRequeueUsedTime = Time()
+	// player.p.InDeathRecap = false
+	// player.p.lastRequeueUsedTime = Time()
 
 	return true
 }
@@ -1343,12 +1344,15 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 						if( settings.fs_scenarios_show_death_recap_onkilled )
 						{
-							player.p.InDeathRecap = true
+							// player.p.InDeathRecap = true
 							Remote_CallFunction_ByRef( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 							//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
-						} else
-							player.p.InDeathRecap = false
-							
+						} 
+						// else
+						// {
+							// player.p.InDeathRecap = false
+						// }
+						player.p.lastRequeueUsedTime = Time()
 						ScenariosPersistence_SendStandingsToClient( player )
 
 						#if DEVELOPER
@@ -1490,9 +1494,12 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( Time() < eachPlayerStruct.waitingTime )
 				continue
 				
-			if( player.p.InDeathRecap ) //Has player closed Death Recap?
+			// if( player.p.InDeathRecap ) //Has player closed Death Recap? //Not reliable until we solve all the death recap. Cafe
+				// continue
+			
+			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // A window so player can see death recap. TEMP? Cafe Penalizar el jugador si muere, los que ganan van a conseguir matchmaking más rápido = más partidas
 				continue
-
+			
 			waitingPlayers.append( player )
 		}
 

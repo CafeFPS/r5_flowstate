@@ -102,7 +102,7 @@ void function CodeCallbacksShared_Init()
 	#if CLIENT
 		RegisterConCommandTriggeredCallback( "-useAndReload", CancelDisembark )
 		RegisterConCommandTriggeredCallback( "-use", CancelDisembark )
-		if( Gamemode() == eGamemodes.SURVIVAL )
+		if( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_scenarios )
 			RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
 	
 		AddCallback_OnYouDied( FS_ForceDestroyCustomAdsOverlay_Callback )
