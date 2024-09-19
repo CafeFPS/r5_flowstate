@@ -160,42 +160,13 @@ void function CodeCallback_OnPrecache()
 
  	Assert( IsSingleplayer() || GAMETYPE in GAMETYPE_TEXT )
 
-	// these should be level specific in SP
-	//PrecacheEntity( "npc_soldier" )
-	//PrecacheEntity( "turret" )
+	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
 
-	//PrecacheEntity( "npc_dropship", DROPSHIP_MODEL )
+	if ( IsLobby() )
+		return
 
-	//Scavenger ore models. Need to precache here instead of in gamemode scripts for vpk builds
-    //Removing for build
-	/*level.scavengerSmallRocks <- [
-		$"models/rocks/rock_01_sandstone.mdl"
-		//$"models/rocks/rock_02_sandstone.mdl"
-		//$"models/rocks/rock_03_sandstone.mdl"
-		//$"models/rocks/single_rock_01.mdl"
-		//$"models/rocks/single_rock_02.mdl"
-		//$"models/rocks/single_rock_03.mdl"
-		//$"models/rocks/single_rock_04.mdl"
-	]
-
-	level.scavengerLargeRocks <- [
-		$"models/rocks/rock_boulder_large_01.mdl"
-		//$"models/rocks/sandstone_rock01.mdl"
-		//$"models/rocks/sandstone_rock02.mdl"
-		//$"models/rocks/sandstone_rock03.mdl"
-		//$"models/rocks/sandstone_rock04.mdl"
-		//$"models/rocks/sandstone_rock05.mdl"
-	]
-
-	foreach ( model in level.scavengerSmallRocks )
-	{
-		PrecacheModel( model )
-	}
-
-	foreach ( model in level.scavengerLargeRocks )
-	{
-		PrecacheModel( model )
-	}*/
+	PrecacheModel( $"mdl/dev/editor_ref.rmdl" )
+	PrecacheModel( $"mdl/dev/empty_model.rmdl" )
 
 	if ( !IsMenuLevel() )
 	{

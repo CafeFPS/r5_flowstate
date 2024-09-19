@@ -725,7 +725,7 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 		
 		if( data.availableElements.len() == 0 )
 		{
-			Warning("_list_panel data.availableElements was 0 an we catched a crash")
+			Warning("_list_panel data.availableElements was 0 and we catched a crash")
 			
 			continue
 		}

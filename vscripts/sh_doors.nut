@@ -1138,12 +1138,12 @@ void function BlockableDoorThink( entity door )
 
 			if ( newGoalNotch == eBlockableDoorNotch.CLOSED )
 			{
-				EmitSoundAtPosition( TEAM_UNASSIGNED, soundPosition, "Door_Single_Metal_Close_Start" )
+				EmitSoundAtPosition( TEAM_UNASSIGNED, soundPosition, "Door_Single_Metal_Close_Start", door )
 				HeatMapStat( door.e.usePlayer, "DoorClosed", door.GetOrigin() )
 			}
 			else
 			{
-				EmitSoundAtPosition( TEAM_UNASSIGNED, soundPosition, "Door_Single_Metal_Open_Start" )
+				EmitSoundAtPosition( TEAM_UNASSIGNED, soundPosition, "Door_Single_Metal_Open_Start", door )
 				HeatMapStat( door.e.usePlayer, "DoorOpened", door.GetOrigin() )
 			}
 		}
@@ -1672,7 +1672,7 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 		{
 			destroySound = "Survival_Door_Destroy_Frag" // todo(dw): temp
 		}
-		EmitSoundAtPosition( TEAM_ANY, door.GetOrigin(), destroySound )
+		EmitSoundAtPosition( TEAM_ANY, door.GetOrigin(), destroySound, door )
 
 		#if MP
 			if ( IsValid( attacker ) && attacker.IsPlayer() )

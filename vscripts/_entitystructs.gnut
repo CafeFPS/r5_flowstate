@@ -1121,6 +1121,9 @@ global struct ServerPlayerStruct
 	int numSelfRevivesUsed = 0
 	float lastUseTime
 	bool markedForRevive = false
+
+	//Lifeline drone update
+	int connectedLifelineDrones = 0 //Limiting to a max of 2 connected drones at a time. There is a code limit for healing sources.
 }
 
 global struct ChallengeScore

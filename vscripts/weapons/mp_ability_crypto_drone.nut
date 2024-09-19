@@ -1746,7 +1746,7 @@ void function SwapToCameraView_Thread( entity owner, entity activeCamera )
 	AddButtonPressedPlayerInputCallback( owner, IN_USE, Drone_AttemptUse )
 	AddButtonPressedPlayerInputCallback( owner, IN_USE_LONG, Drone_AttemptUseLong )
 
-	// Set3pHealRopeVisibility( owner )
+	Set3pHealRopeVisibility( owner )
 
 	EndSignal( owner, "ExitCameraView" )
 
@@ -1949,7 +1949,7 @@ void function TransitionOutOfCamera( entity owner, entity activeCamera, entity v
 			ScreenFade( owner, 255, 255, 255, 255, fadeInTime, 0.2, (FFADE_OUT | FFADE_PURGE) )
 			wait fadeInTime
 		}
-		// Set1pHealRopeVisibility( owner )
+		Set1pHealRopeVisibility( owner )
 		if ( IsValid( owner ) )
 			owner.EnableMantle()
 	}
