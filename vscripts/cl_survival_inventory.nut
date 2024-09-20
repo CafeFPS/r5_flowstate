@@ -2299,6 +2299,9 @@ void function UpdateHealHint( entity player )
 
 bool function ShouldShowHealHint( entity player )
 {
+	if( Flowstate_IsHaloMode() )
+		return false
+	
 	if ( !IsAlive( player ) )
 		return false
 
@@ -2317,7 +2320,7 @@ bool function ShouldShowHealHint( entity player )
 	{
 		int kitType = Consumable_GetLocalViewPlayerSelectedConsumableType()
 		if ( kitType == -1 )
-			kitType = Consumable_GetBestConsumableTypeForPlayer( player )
+			kitType = Consumable_GetBestConsumableTypeForPlayer( player, 0, 0 )
 
 		if ( !Consumable_CanUseConsumable( player, kitType, false ) && !CanDeployHealDrone( player ) )
 			return false

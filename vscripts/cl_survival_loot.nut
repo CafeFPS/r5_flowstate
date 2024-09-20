@@ -260,6 +260,13 @@ int function Survival_Health_GetSelectedHealthPickupType()
 
 void function UseSelectedHealthPickupType( entity player )
 {
+	if( Flowstate_IsHaloMode() )
+	{
+		printt("Hooked to do something hehe find how to execute the weapon on the consumable slot, so we can add a third ability")
+
+		return
+	}
+
 	if ( HealthkitWheelToggleEnabled() && IsCommsMenuActive() )
 		return
 	//printt("UseSelectedHealthPickupType ", WeaponDrivenConsumablesEnabled())

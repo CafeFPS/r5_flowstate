@@ -2714,3 +2714,11 @@ string function truncate( string str, int limit )
     
     return str;
 }
+
+bool function IsSpectator( entity player )
+{
+	if ( !IsValid( player ) )
+	return false
+
+	return player.GetTeam() == TEAM_SPECTATOR
+}

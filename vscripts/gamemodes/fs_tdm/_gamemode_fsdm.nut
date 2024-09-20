@@ -1644,11 +1644,12 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
-		const array<string> loot = [ "mp_weapon_frag_grenade_halomod", "mp_weapon_frag_grenade_halomod", "mp_weapon_grenade_emp" ]
+		const array<string> loot = [ "mp_weapon_frag_grenade_halomod", "mp_weapon_plasma_grenade_halomod" ]
 			foreach(item in loot)
-				SURVIVAL_AddToPlayerInventory(player, item)
-
-		SURVIVAL_EquipOrdnanceFromInventory( player, "mp_weapon_frag_grenade_halomod" )
+			{
+				SURVIVAL_AddToPlayerInventory(player, item, 2)
+				SURVIVAL_EquipOrdnanceFromInventory( player, item )
+			}
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	}
 
@@ -7075,6 +7076,9 @@ void function WaitForChampionToFinish()
 
 void function Common_DissolveDropable( entity prop )
 {
+	if( prop.GetScriptName() == "flowstate_halo_mod_weapon" ) //Don't remove weapons from halo mod weapon racks
+		return
+
 	thread
 	(
 		void function() : ( prop )

@@ -19,7 +19,7 @@ WeaponData
 	"leveled_pickup"								"1"
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
 	"offhand_default_inventory_slot"				"0"
-	"show_grenade_indicator"						"1"
+	"show_grenade_indicator"						"0"
 	"show_grenade_indicator_to_owner"				"1"
 	"projectile_ignores_vortex"						"fall"
     "does_not_interrupt_cloak"						"1"
@@ -27,22 +27,15 @@ WeaponData
     "allow_gibraltar_shield"                        "0"
     "hide_when_holstered"							"1"
 
-	"OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent_Halo"
-	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
+	//"OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent_Halo"
+	//"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
 	"OnWeaponTossCancel"							"Grenade_OnWeaponTossCancelDrop"
 	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
-	"OnWeaponNpcTossGrenade"						"Grenade_OnPlayerNPCTossGrenade_Common"
 
 	"OnWeaponActivate"								"Grenade_OnWeaponReady_Halo"
 	// "OnProjectileIgnite"							"Grenade_OnProjectileIgnite"
 
 	"projectile_killreplay_enabled"					"1"
-
-	"grenade_arc_indicator_show_from_hip"			"0"
-	"grenade_arc_indicator_bounce_count"			"1"
-	"grenade_arc_indicator_effect"					"P_arc_red"
-	"grenade_arc_indicator_effect_first"			"P_arc_red"
-	"grenade_arc_impact_indicator_effect"			"P_arc_red_end"
 
 	MP_BASE
 	{

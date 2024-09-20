@@ -108,10 +108,16 @@ void function SetupWeapons()
 	SetupDevCommand( "Pistol: Wingman", "give mp_weapon_wingman" )
 
 	// Grenades
-	SetupDevCommand( "Grenade: Arc Star", "give mp_weapon_grenade_emp" )
-	SetupDevCommand( "Grenade: Frag", "give mp_weapon_frag_grenade" )
-	SetupDevCommand( "Grenade: Thermite", "give mp_weapon_thermite_grenade" )
-	SetupDevCommand( "Grenade: Halo Frag", "give mp_weapon_frag_grenade_halomod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		SetupDevCommand( "Grenade: Halo Frag", "give mp_weapon_frag_grenade_halomod" )
+		SetupDevCommand( "Grenade: Halo Plasma  Frag", "give mp_weapon_plasma_grenade_halomod" )
+	} else
+	{
+		SetupDevCommand( "Grenade: Arc Star", "give mp_weapon_grenade_emp" )
+		SetupDevCommand( "Grenade: Frag", "give mp_weapon_frag_grenade" )
+		SetupDevCommand( "Grenade: Thermite", "give mp_weapon_thermite_grenade" )
+	}
 
 	// Dev
 	//SetupDevCommand( "Dev: Dev Tool", "give mp_weapon_mdlspawner" )

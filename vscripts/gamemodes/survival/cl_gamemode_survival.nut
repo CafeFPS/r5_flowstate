@@ -1351,9 +1351,12 @@ void function UpdateDpadHud( entity player )
 	}
 	PerfEnd( PerfIndexClient.SUR_HudRefresh )
 
-	#if(false)
+	if( Flowstate_IsHaloMode() )
+	{
+		RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", 420 )
+		RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", $"rui/flowstate_custom/colombia_flag_papa" )
+	}
 
-#endif
 	RuiSetInt( file.dpadMenuRui, "healthTypeCount", GetCountForLootType( eLootType.HEALTH ) )
 
 	entity ordnanceWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
@@ -2972,7 +2975,7 @@ void function TrackPrimaryWeapon( entity player )
 
 			if ( IsValid( weapon ) )
 			{
-				if ( weapon.GetWeaponType() == WT_ANTITITAN && SURVIVAL_GetAllPlayerOrdnance( player ).len() > 1 )
+				if ( weapon.GetWeaponType() == WT_ANTITITAN && SURVIVAL_GetAllPlayerOrdnance( player ).len() > 1 && !Flowstate_IsHaloMode() )
 					ServerCallback_SurvivalHint( eSurvivalHints.ORDNANCE )
 			}
 
@@ -4038,7 +4041,7 @@ void function PROTO_ContainersThink()
 
 void function TryCycleOrdnance( entity player )
 {
-	if ( player == GetLocalClientPlayer() && player == GetLocalViewPlayer() )
+	if ( player == GetLocalClientPlayer() && player == GetLocalViewPlayer() && !Flowstate_IsHaloMode() )
 	{
 		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
@@ -4106,7 +4109,7 @@ void function UsePressed( entity player )
 				{
 					array<string> allOrdnance = SURVIVAL_GetAllPlayerOrdnance( player )
 
-					if ( allOrdnance.len() > 1 )
+					if ( allOrdnance.len() > 1 && !Flowstate_IsHaloMode() )
 					{
 						ServerCallback_SurvivalHint( eSurvivalHints.ORDNANCE )
 					}
@@ -4944,13 +4947,8 @@ bool function HealthkitUseOnHold()
 
 void function HealthkitButton_Down( entity player )
 {
-	if ( !CommsMenu_CanUseMenu( player ) )
+	if ( !CommsMenu_CanUseMenu( player ) || Flowstate_IsHaloMode() )
 		return
-
-	#if(false)
-
-
-#endif
 
 	if ( !IsFiringRangeGameMode() )
 	{
@@ -4968,7 +4966,7 @@ void function HealthkitButton_Down( entity player )
 
 void function HealthkitButton_Up( entity player )
 {
-	if ( !IsCommsMenuActive() )
+	if ( !IsCommsMenuActive() || Flowstate_IsHaloMode() )
 		return
 
 	if ( CommsMenu_GetCurrentCommsMenu() != eCommsMenuStyle.INVENTORY_HEALTH_MENU )
@@ -4992,12 +4990,18 @@ bool function OrdnanceWheelToggleEnabled()
 
 bool function OrdnanceWheelUseOnRelease()
 {
+	if( Flowstate_IsHaloMode() )
+		return false
+	
 	return true && !OrdnanceUseOnHold()
 }
 
 
 bool function OrdnanceUseOnHold()
 {
+	if( Flowstate_IsHaloMode() )
+		return false
+	
 	return false && !OrdnanceWheelToggleEnabled()
 }
 

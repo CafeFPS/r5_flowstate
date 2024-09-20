@@ -392,7 +392,10 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 	bool forceDontSwitchTry = int( args[1] ) == 1
 	if ( forceDontSwitchTry )
 		forceDontSwitch = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) != player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-
+	
+	if( Flowstate_IsHaloMode() )
+		forceDontSwitch = true
+	
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
 		return true
 
@@ -444,6 +447,9 @@ bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args
 	int ordnanceCount = SURVIVAL_CountItemsInInventory( player, ordnanceLootData.ref )
 
 	if ( ordnanceCount == 0 )
+		return true
+
+	if( Flowstate_IsHaloMode() ) // Don't allow to enable halo nades from inventory, todo, change to that weapon grenade instead without enabling it
 		return true
 
 	SURVIVAL_EquipOrdnanceFromInventory( player, ordnanceLootData.ref )
@@ -2980,7 +2986,7 @@ bool function ShouldSpawnThisLoot( string entryRef )
 	return true
 }
 
-entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngles = < -1, -1, -1>, int clipCount = 1, int collisionGroup = TRACE_COLLISION_GROUP_NONE, bool onlySetModsForLockedAttachPoints = false, int stockpileCount = 0 )
+entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngles = < -1, -1, -1>, int clipCount = 1, int collisionGroup = TRACE_COLLISION_GROUP_NONE, bool onlySetModsForLockedAttachPoints = false, int stockpileCount = 0, bool isHaloModWeaponFromRack = false )
 {
 	if( SURVIVAL_Loot_IsReforBaseWeaponDisabled( ref ) )
 	{
@@ -3013,6 +3019,10 @@ entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngl
 	if ( lootData.lootType == eLootType.ARMOR )
 		ent.SetSurvivalProperty( SURVIVAL_GetArmorShieldCapacity( lootData.tier ) )
 
+	if( isHaloModWeaponFromRack && Flowstate_IsHaloMode() )
+	{
+		ent.SetScriptName( "flowstate_halo_mod_weapon" )
+	}
 	DispatchSpawn( ent )
 
 	// MarkEntForCleanupOnRoundEnd( ent )
@@ -4322,6 +4332,12 @@ float function GetThrowYawOffsetFromPlayer( entity player )
 
 void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shouldSwitch )
 {
+	if( Flowstate_IsHaloMode() )
+		return
+	
+	#if DEVELOPER
+	printt( "SURVIVAL_AutoEquipOrdnanceFromInventory" )
+	#endif
 	string lootRef                                 = ""
 	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
 
@@ -4444,6 +4460,10 @@ void function SURVIVAL_TryGivePlayerDefaultMeleeWeapons( entity player )
 
 void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, bool forceDontSwitch = false )
 {
+	#if DEVELOPER
+	DumpStack()
+	Warning( "SURVIVAL_EquipOrdnanceFromInventory " + player + " " + item + " " + forceDontSwitch )
+	#endif
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
 		return
 
@@ -4475,6 +4495,7 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 		entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		if ( activeWeapon != heldOrdnance )
 			player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, heldOrdnance.GetWeaponClassName() )
+			
 		return
 	}
 	else
@@ -4512,7 +4533,12 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 			{
 				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, ordnance.GetWeaponClassName() )
 			}
-
+			
+			if( forceDontSwitch )
+			{
+				Remote_CallFunction_NonReplay( player, "UpdateDpadHud", player )//Hack to make client execute UpdateDpadHud that updates ordnance icon in the hud. Ideally we have to use callback when grenade weapon (slot anti titan) changes. Cafe
+			}
+			
 			if ( !(player in file.hasEquippedOrdnanceEver) )
 				file.hasEquippedOrdnanceEver[ player ] <- true
 		}
@@ -4725,7 +4751,7 @@ void function SURVIVAL_TryReplaceOffhandWithPrimary( entity player, entity offha
 		return
 
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
-	if ( data.lootType == eLootType.ORDNANCE )
+	if ( data.lootType == eLootType.ORDNANCE && !Flowstate_IsHaloMode() )
 		thread Delayed_TryReplaceOrdnance( player, offhandWeapon )
 }
 

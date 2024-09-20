@@ -425,6 +425,9 @@ bool function PickupOrdnanceItem( entity ammoPickup, entity player, int pickupFl
 		if ( !conditionalResult )
 			autoSwitch = false
 
+		if( Flowstate_IsHaloMode() )
+			autoSwitch = false
+		
 		if ( IsValid( currentOrdnanceWeapon ) )
 		{
 			if ( currentOrdnanceWeapon.GetWeaponClassName() == data.ref )

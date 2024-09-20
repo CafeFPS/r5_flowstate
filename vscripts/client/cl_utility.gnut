@@ -2090,3 +2090,8 @@ int function KeyNameToKeyCode( string keyName )
 		
 	return -1
 }
+
+bool function IsSpectatorSpectatingPlayer( entity player )
+{
+	return IsSpectator( GetLocalClientPlayer() ) && GetLocalViewPlayer() == player
+}

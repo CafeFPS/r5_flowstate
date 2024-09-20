@@ -329,6 +329,16 @@ bool function IsNewLootEnabled( string ref )
 		return false
 	}
 	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) 
+	{
+		switch( ref )
+		{
+			case "mp_weapon_thermite_grenade":
+			case "mp_weapon_grenade_emp":
+			case "mp_weapon_frag_grenade":
+			return false
+		}
+	}
 	return true
 }
 

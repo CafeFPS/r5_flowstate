@@ -3689,7 +3689,7 @@ void function SURVIVAL_UpdateIcons( string weaponName, string category )
 
 bool function SurvivalLoot_IsAutoPickupOrdnance( LootData data )
 {
-	return data.lootType == eLootType.ORDNANCE && GetCurrentPlaylistVarBool( "auto_pickup_ordnance", false )
+	return data.lootType == eLootType.ORDNANCE && GetCurrentPlaylistVarBool( "auto_pickup_ordnance", false ) && !Flowstate_IsHaloMode()
 }
 
 bool function SurvivalLoot_CanUseFunction( entity player, entity ent )

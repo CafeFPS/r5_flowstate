@@ -230,7 +230,8 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	float directionScale = 1.0
 	Grenade_OnWeaponToss_Halo( weapon, attackParams, directionScale )
 	
-	SURVIVAL_RemoveFromPlayerInventory( weaponOwner, weaponNameString, 1 )
+	//Not required anymore since grenade are being cleaned up in AddCallback_OnPlayerUsedOffhandWeapon( SURVIVAL_RemoveOffhandFromInventory ) _survival_loot.gnut which is executed in PlayerUsedOffhand. Cafe
+	//SURVIVAL_RemoveFromPlayerInventory( weaponOwner, weaponNameString, 1 )
 }
 
 int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams attackParams, float directionScale )
