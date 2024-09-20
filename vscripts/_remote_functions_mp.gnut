@@ -291,7 +291,7 @@ void function RemoteFunctions_Init_Begin()
 	
 	// Remote_RegisterClientFunction("ServerCallback_RefreshWeaponHighlights", "int", INT_MIN, INT_MAX )
 	Remote_RegisterClientFunction( "Flowstate_SentinelChargeHUD", "float", 0.0, 999999.0, 32 )
-
+	Remote_RegisterClientFunction( "UpdateDpadHud", "entity" )
 	if( Playlist() != ePlaylists.fs_scenarios )
 		DEV_RegisterNetworking_SpawnSystem()
 
