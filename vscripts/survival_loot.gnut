@@ -392,10 +392,7 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 	bool forceDontSwitchTry = int( args[1] ) == 1
 	if ( forceDontSwitchTry )
 		forceDontSwitch = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) != player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-	
-	if( Flowstate_IsHaloMode() )
-		forceDontSwitch = true
-	
+
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
 		return true
 
@@ -448,10 +445,7 @@ bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args
 
 	if ( ordnanceCount == 0 )
 		return true
-
-	if( Flowstate_IsHaloMode() ) // Don't allow to enable halo nades from inventory, todo, change to that weapon grenade instead without enabling it
-		return true
-
+	
 	SURVIVAL_EquipOrdnanceFromInventory( player, ordnanceLootData.ref )
 	return true
 }
@@ -4332,12 +4326,13 @@ float function GetThrowYawOffsetFromPlayer( entity player )
 
 void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shouldSwitch )
 {
-	if( Flowstate_IsHaloMode() )
-		return
-	
 	#if DEVELOPER
 	printt( "SURVIVAL_AutoEquipOrdnanceFromInventory" )
 	#endif
+	
+	if( Flowstate_IsHaloMode() )
+		shouldSwitch = false
+	
 	string lootRef                                 = ""
 	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
 
@@ -4469,6 +4464,9 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 
 	if ( !SURVIVAL_Loot_IsRefValid( item ) )
 		return
+
+	if( Flowstate_IsHaloMode() )
+		forceDontSwitch = true
 
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
 
@@ -4751,7 +4749,7 @@ void function SURVIVAL_TryReplaceOffhandWithPrimary( entity player, entity offha
 		return
 
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
-	if ( data.lootType == eLootType.ORDNANCE && !Flowstate_IsHaloMode() )
+	if ( data.lootType == eLootType.ORDNANCE )
 		thread Delayed_TryReplaceOrdnance( player, offhandWeapon )
 }
 
