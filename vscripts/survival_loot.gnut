@@ -4491,9 +4491,9 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 	if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == item )
 	{
 		entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-		if ( activeWeapon != heldOrdnance )
+		if ( activeWeapon != heldOrdnance && !Flowstate_IsHaloMode() )
 			player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, heldOrdnance.GetWeaponClassName() )
-			
+		
 		return
 	}
 	else
