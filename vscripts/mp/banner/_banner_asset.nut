@@ -18,6 +18,7 @@ global function BannerAssets_BannerVisibilityMover 	// ( vector initialPosition,
 global function BannerAssets_RegisterAudioGroup		// ( string name, bool interupt = true )
 global function BannerAssets_PlayAudio				// ( entity player, string assetRef )
 global function BannerAssets_PlayAudioID			// ( entity player, int assetId = -1 )
+global function BannerAssets_GetAssetRefByName		// ( string assetName )
 
 global const MAX_VIDEO_CHANNELS = 10 //this must not surpass engine internals.
 global const CURRENT_RESERVED_CHANNELS = 5 //this is the limit we start from. (todo: disable systems where posible)
@@ -764,7 +765,7 @@ void function __AudioQueue( entity player, BannerImageData baseBannerVideo, Bann
 	}	
 	
 	for( ; ; )
-	{			
+	{		
 		table results = player.WaitSignal( "AudioQueue_Pop" )	
 		
 		if ( results.len() == 0 )
@@ -859,6 +860,15 @@ void function BannerAssets_PlayAudioID( entity player, int assetId = -1 )
 {
 	if( assetId != -1 )
 		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+}
+
+string function BannerAssets_GetAssetRefByName( string assetName )
+{	
+	if( assetName in WorldDrawAsset_GetAssetLookupTable() )
+		return WorldDrawAsset_GetAssetLookupTable()[ assetName ]
+		
+	string retString
+	return retString
 }
 
 void function __Singlethread( entity player, BannerGroupData groupData )

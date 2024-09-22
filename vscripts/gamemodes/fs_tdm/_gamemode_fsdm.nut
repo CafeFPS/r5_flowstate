@@ -77,6 +77,7 @@ global function SetChampionShowingState
 global function WaitForChampionToFinish
 global const float SHORT_CHAMPION_CARD_TIME = 7.0
 global function FS_ResetMapLightning
+global function HaloEventAudio
 
 #if DEVELOPER
 	global function DEV_NextRound
@@ -165,6 +166,8 @@ struct
 	
 	array< void functionref() > tdmStateInProgressCallbacks
 	bool bIsChampionShowing
+	
+	
 	
 } file
 
@@ -3502,15 +3505,22 @@ void function SimpleChampionUI()
 					}
 				}
 			}
+			
+			if( flowstateSettings.is_halo_gamemode )
+			{
+				HaloPlayAnnounce( g_fCurrentRoundEndTime )
+			}
+			else 
+			{
+				if( Time() == g_fCurrentRoundEndTime - 60 )
+					PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 
-			if( Time() == g_fCurrentRoundEndTime - 60 )
-				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
+				if( Time() == g_fCurrentRoundEndTime - 30 )
+					PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 
-			if( Time() == g_fCurrentRoundEndTime - 30 )
-				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
-
-			if( Time() == g_fCurrentRoundEndTime - 10 )
-				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
+				if( Time() == g_fCurrentRoundEndTime - 10 )
+					PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
+			}
 
 			wait 1
 		}
@@ -7127,10 +7137,8 @@ void function HaloAssets()
 	
 	BannerAssets_Init()
 	
-	AddCallback_GameStateEnter //using gamestate as proof of concept
+	AddCallback_OnTdmStateEnter_InProgress
 	(
-		eGameState.Playing,
-		
 		void function()
 		{
 			string audio
@@ -7152,4 +7160,42 @@ void function HaloAssets()
 				BannerAssets_PlayAudio( player, audio )
 		}
 	)
+	
+	AddCallback_OnPlayerKilled( Callback_HaloOnPlayerKilled )
+}
+
+void function HaloPlayAnnounce( float roundEndTime )
+{
+	float currentTime = Time()
+	
+	const table< int, string > eventTimes =
+	{
+		[ 60 ] 	= "media/halo/one_min_remaining.bik",
+		[ 30 ] 	= "media/halo/thirty_secs_remaining.bik",
+		[ 10 ] 	= "media/halo/ten_secs_remaining.bik",
+		[ 0 ] 	= "media/halo/game_over.bik" 
+	}
+	
+	foreach( int eventTime, string assetRef in eventTimes )
+	{
+		if( currentTime == roundEndTime - eventTime )
+        {
+            foreach( entity player in GetPlayerArray() )
+            {
+                BannerAssets_PlayAudio( player, assetRef )
+            }
+        }	
+	}
+}
+
+void function Callback_HaloOnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	//testing audio cues
+	HaloEventAudio( attacker, "halo_killing_frenzy" )
+}
+
+void function HaloEventAudio( entity player, string assetName )
+{
+	string assetRef = BannerAssets_GetAssetRefByName( assetName )
+	BannerAssets_PlayAudio( player, assetRef )
 }

@@ -3,6 +3,8 @@
 
 global function WorldDrawAsset_RegisterAllAssets
 global function WorldDrawAsset_GetAssetArrayByCategory
+global function WorldDrawAsset_GetAssetLookupTable
+global function WorldDrawAsset_PrintAssetLookupTable
 
 #if CLIENT
 	global function ClientCodeCallback_PakRequestFinished //todo: move?
@@ -37,6 +39,8 @@ struct
 	#endif
 	
 	table<string, array<string> > categoryAssetArrays
+	table<string,string> assetLookupTable 
+	table<string,string> reverseAssetLookupTable = {}
 
 } file
 
@@ -84,6 +88,8 @@ void function WorldDrawAsset_RegisterAllAssets()
 				
 				SortAsset( category, bikAssetRef )			
 				file.assets.append( bikAssetRef )
+				
+				WorldDrawAsset_AddToAssetTable( bikAssetName, bikAssetRef )
 			}
 			
 			string assetList = GetCurrentPlaylistVarString( "banner_assets", "" )
@@ -92,6 +98,9 @@ void function WorldDrawAsset_RegisterAllAssets()
 			{
 				array<string> assets = StringToArray( assetList )	
 				file.assets.extend( assets )
+				
+				foreach( assetString in assets )
+					WorldDrawAsset_AddToAssetTable( assetString, assetString, true )
 			}
 		}
 		catch( e )
@@ -154,6 +163,11 @@ void function WorldDrawAsset_RegisterAllAssets()
 		asset varAsset
 		varAsset = CastStringToAsset( potentialVarAsset )
 		
+		if( !WorldDrawAsset_AssetReverseTableContains( potentialVarAsset ) )
+		{
+			
+		}
+		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
 	}
 	
@@ -186,6 +200,52 @@ void function WorldDrawAsset_RegisterAllAssets()
 		)()
 	#endif
 }
+
+#if SERVER || CLIENT 
+	void function WorldDrawAsset_AddToAssetTable( string assetName, string assetRef, bool nformat = false )
+	{
+		if( nformat )
+		{
+			assetName = StringReplace( assetName, ".bik", "" )
+			assetName = StringReplace( assetName, "media/", "" )
+			assetName = StringReplace( assetName, "/", "_" )
+		}
+		
+		WorldDrawAsset_GetAssetLookupTable()[ assetName ] <- assetRef
+	}
+	
+	bool function WorldDrawAsset_AssetTableContains( string assetName )
+	{
+		return ( assetName in WorldDrawAsset_GetAssetLookupTable() )
+	}
+	
+	bool function WorldDrawAsset_AssetReverseTableContains( string assetPath )
+	{
+		if ( WorldDrawAsset_GetAssetLookupTable().len() == 0 )
+			return false 
+			
+		if( file.reverseAssetLookupTable.len() == 0 )
+		{
+			foreach( key, value in WorldDrawAsset_GetAssetLookupTable() )
+			{
+				file.reverseAssetLookupTable[ value ] <- key
+			}
+		}
+		
+		return ( assetPath in file.reverseAssetLookupTable )
+	}
+	
+	void function WorldDrawAsset_PrintAssetLookupTable()
+	{
+		string printStr
+		foreach( string key, string value in WorldDrawAsset_GetAssetLookupTable() )
+		{
+			printStr += "\n" + key + TableIndent( 30 - key.len() ) + "= " + value
+		}
+		
+		printt( printStr )
+	}
+#endif 
 
 #if SERVER 
 	array<int> function WorldDrawAsset_GetInvalid()
@@ -378,5 +438,10 @@ void function WorldDrawAsset_RegisterAllAssets()
 		
 		array<string> emptyArray
 		return emptyArray
+	}
+	
+	table<string,string> function WorldDrawAsset_GetAssetLookupTable()
+	{
+		return file.assetLookupTable
 	}
 #endif 
