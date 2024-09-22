@@ -352,10 +352,13 @@ void function _CustomTDM_Init()
 		PrecacheLockout()
 		PrecacheBeavercreek()
 		PrecacheChill()
+		
 		if( MapName() == eMaps.mp_flowstate )
 		{
 			VOTING_PHASE_ENABLE = false
 		}
+		
+		HaloAssets()
 	}
 
 	if( flowstateSettings.enable_oddball_gamemode )
@@ -541,7 +544,7 @@ void function DM__OnEntitiesDidLoad()
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
 
 		if( flowstateSettings.is_halo_gamemode )
-		{
+		{		
 			MapEditor_CreateRespawnableWeaponRack( <-10998.3535, -14660.9482, 3679.9812> , <0, 140, 0>, "mp_weapon_haloneedler", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <-8932.25488, -15722.7363, 3679.9812> , <0, 43.8712006, 0>, "mp_weapon_halobattlerifle", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <-10471.415, -16120.9883, 3679.9812> , <0, -135.00322, 0>, "mp_weapon_haloshotgun", 0.5 )
@@ -7089,4 +7092,64 @@ void function Common_DissolveDropable( entity prop )
 				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
 		}
 	)()
+}
+
+void function HaloAssets()
+{
+	BannerAssets_SetAllGroupsFunc
+	(
+		void function()
+		{
+			BannerAssets_RegisterAudioGroup
+			(
+				"halo_audio",
+				true //(audio interruptable)
+			)
+		}
+	)
+	
+	BannerAssets_SetAllAssetsFunc
+	(
+		void function()
+		{
+			array<string> haloAudio = WorldDrawAsset_GetAssetArrayByCategory( "halo" )
+
+			foreach( assetRef in haloAudio )
+			{
+				BannerAssets_GroupAppendAsset
+				(
+					"halo_audio",
+					WorldDrawAsset_AssetRefToID( assetRef )
+				)
+			}
+		}
+	)
+	
+	BannerAssets_Init()
+	
+	AddCallback_GameStateEnter //using gamestate as proof of concept
+	(
+		eGameState.Playing,
+		
+		void function()
+		{
+			string audio
+			switch( Playlist() )
+			{
+				case ePlaylists.fs_haloMod:
+					audio = "media/halo/slayer.bik"
+					break 
+					
+				case ePlaylists.fs_haloMod_ctf:
+					audio = "media/halo/capture_the_flag.bik"
+					break 
+					
+				case ePlaylists.fs_haloMod_oddball:
+					audio = "media/halo/capture_the_flag.bik"
+			}
+		
+			foreach( player in GetPlayerArray() )
+				BannerAssets_PlayAudio( player, audio )
+		}
+	)
 }

@@ -35,6 +35,7 @@ global function Bleedout_ForceStop
 global function ReviveThread_Target
 global function ReviveThread_Reviver
 global function Bleedout_SetRevivedPlayerHealth
+global function Bleedout_GetCreditedKiller
 
 global const int KNOCKDOWN_SHIELD_SLOT = WEAPON_INVENTORY_SLOT_PRIMARY_3 // UTILITY slot
 const string KNOCKDOWN_SHIELD_BASIC = "incapshield_pickup_lv0"
@@ -117,6 +118,7 @@ void function Bleedout_Init()
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, Bleedout_OnWinnerDetermined )
+	Bleedout_AddCallback_OnPlayerStartBleedout( SetCreditedKiller )
 
 	PrecacheParticleSystem( FX_REVIVE_PROTOTYPE_END )
 	PrecacheParticleSystem( FX_REVIVE_PROTOTYPE )
@@ -249,6 +251,16 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var 
 	{
 		callbackFunc( player, attacker, damageInfo )
 	}
+}
+
+entity function Bleedout_GetCreditedKiller( entity victim )
+{
+	return victim.p.killerByKnock
+}
+
+void function SetCreditedKiller( entity victim, entity attacker, var damageInfo )
+{
+	victim.p.killerByKnock = attacker
 }
 
 void function Bleedout_DeathProtection( entity player )

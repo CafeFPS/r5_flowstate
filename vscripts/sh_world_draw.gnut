@@ -8,6 +8,7 @@ global function WorldDrawAsset_RegisterRemoteAsset
 	global function WorldDrawAsset_GetAssetByRef
 	global function WorldDrawAsset_GetAssetType
 	global function WorldDrawAsset_GetAssetRefById
+	global function WorldDrawAsset_PrintAssetsTable
 #endif
 
 #if SERVER
@@ -56,8 +57,7 @@ global enum eAssetType
 {
 	INVALID = -1,
 	IMAGE,
-	VIDEO,
-	AUDIO
+	VIDEO
 } 
 
 struct
@@ -134,6 +134,16 @@ void function WorldDrawAsset_RegisterRemoteAsset( asset varAsset, int assetType 
 	registeredRemoteAssets[ varAsset ] <- assetType
 }
 
+void function WorldDrawAsset_PrintAssetsTable()
+{
+	string printData
+	
+	foreach( k,v in registeredRemoteAssets )
+		printData += "\n" + k + " = " + v
+		
+	printt( printData )
+}
+
 int function WorldDrawAsset_GetAssetType( asset varAsset, string assetRef = "" )
 {
 	asset potentialAsset
@@ -204,7 +214,7 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 	
 	#if DEBUG_WORLD_DRAW
 		mAssert( false, "Asset ref " + ref + " doesn't exist" )
-	#endif 
+	#endif
 	
 	return -1
 }
@@ -265,7 +275,7 @@ int function WorldDrawAsset_AssetRefToID( string ref )
 		if( speed < -4 || speed > 2 )
 		{
 			#if DEVELOPER && DEBUG_WORLD_DRAW
-				mAssert( false, "Cannot set speed greater than 3 or less than -2" )
+				mAssert( false, "Cannot set speed greater than 2 or less than -4" )
 			#endif 
 			
 			return

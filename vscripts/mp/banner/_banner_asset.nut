@@ -15,6 +15,9 @@ global function BannerAssets_KillAllBanners			// ()
 global function BannerAssets_Restart				// ()
 global function BannerAssets_IsEnabled				// ()
 global function BannerAssets_BannerVisibilityMover 	// ( vector initialPosition, vector initialAngles, float bannerWidth, float bannerHeight, float adjustmentDistance = 5.0, float maxIterations = 1000 ) 
+global function BannerAssets_RegisterAudioGroup		// ( string name, bool interupt = true )
+global function BannerAssets_PlayAudio				// ( entity player, string assetRef )
+global function BannerAssets_PlayAudioID			// ( entity player, int assetId = -1 )
 
 global const MAX_VIDEO_CHANNELS = 10 //this must not surpass engine internals.
 global const CURRENT_RESERVED_CHANNELS = 5 //this is the limit we start from. (todo: disable systems where posible)
@@ -64,10 +67,21 @@ struct BannerGroupData
 	bool bLocked		= false 
 	int syncToAsset		= -1
 	bool videoFinished	= false
+	bool isAudioQueue	= false
+	bool interupt		= true
+}
+
+struct AudioHistory
+{
+	int playAmount
+	int assetIdRef
+	float lastPlayTime
+	bool isValid = false 
 }
 
 struct
 {
+	table<string, table< int, AudioHistory > > audioHistoryMap
 	table< string, BannerGroupData > groupDataMap
 	table< string, bool > groupSignals
 	array<int> __channelRequiredGroups
@@ -87,9 +101,11 @@ void function BannerAssets_Init()
 
 	RegisterSignal( "KillAllBannerGroups" )
 	RegisterSignal( "VisibilityChanged" )
+	RegisterSignal( "AudioQueue_Once" )
+	RegisterSignal( "AudioQueue_Pop" )
 	
 	if( file.isEnabled && file.groupsInitCallbackFunc != null )
-	{	
+	{
 		file.groupsInitCallbackFunc()
 		
 		if( file.runImageAppendtoGroupsFunc != null )
@@ -141,7 +157,7 @@ bool function BannerAssets_DoesSignalExist( string signal )
 	return ( signal in file.groupSignals )
 }
 
-void function BannerAssets_RegisterGroup( string name, LocPair groupLoc, float width, float height, float alpha = -1.0, float startDelay = 0, bool isVisible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 2.00, int fadeSpeed = SLOWEST )
+void function BannerAssets_RegisterGroup( string name, LocPair groupLoc, float width, float height, float alpha = -1.0, float startDelay = 0, bool isVisible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 2.00, int fadeSpeed = SLOWEST, bool isAudioQueue = false, bool interupt = true )
 {	
 	mAssert( !_bBannerImages_Loaded, "Tried to register BannerAssets_RegisterGroup [" + name + "] but group registration is already complete." )
 
@@ -160,6 +176,8 @@ void function BannerAssets_RegisterGroup( string name, LocPair groupLoc, float w
 	bannerGroup.useRandom	= useRandom
 	bannerGroup.fadeSpeed	= fadeSpeed
 	bannerGroup.startDelay	= startDelay
+	bannerGroup.isAudioQueue= isAudioQueue
+	bannerGroup.interupt	= interupt
 	
 	#if DEVELOPER && DEBUG_BANNER_ASSET
 		printt
@@ -175,15 +193,42 @@ void function BannerAssets_RegisterGroup( string name, LocPair groupLoc, float w
 			bannerGroup.isValid,
 			bannerGroup.useRandom,
 			bannerGroup.fadeSpeed,
-			bannerGroup.startDelay
+			bannerGroup.startDelay,
+			bannerGroup.isAudioQueue
 		)
 	#endif
 	
 	bannerGroup.intermediateTime = intermediateTime
 	
-	mAssert( !(name in file.groupDataMap ), "Tried to add bannerGroup" + name + " with " + FUNC_NAME() + "()" + " but file.groupDataMap already contains it." )
+	mAssert( !(name in file.groupDataMap ), "Tried to add bannerGroup \"" + name + "\" with " + FUNC_NAME() + "()" + " but file.groupDataMap already contains bannerGroup \"" + name + "\"" )
 	
 	file.groupDataMap[ name ] <- bannerGroup
+}
+
+void function BannerAssets_RegisterAudioGroup( string name, bool interupt = true, LocPair ornull groupLocOrNull = null, float width = 0.1, float height = 0.1, float alpha = -1.0, float startDelay = 0, bool isVisible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 2.00, int fadeSpeed = SLOWEST, bool isAudioQueue = true )
+{
+	LocPair groupLoc
+	if( groupLocOrNull != null )
+		groupLoc = expect LocPair ( groupLocOrNull )
+	else 
+		groupLoc = NewLocPair( ZERO_VECTOR, ZERO_VECTOR )
+
+	BannerAssets_RegisterGroup
+	(
+		name, 
+		groupLoc, 
+		width, 
+		height, 
+		alpha,
+		startDelay,
+		isVisible,
+		cycleTime,
+		useRandom,
+		intermediateTime,
+		fadeSpeed, 
+		isAudioQueue,
+		interupt
+	)
 }
 
 void function BannerAssets_SetAllGroupsFunc( void functionref() callbackFunc )
@@ -217,6 +262,11 @@ string function GetBannerGroupName( int groupId )
 	}
 	
 	return "_INVALID"
+}
+
+BannerGroupData function GetBannerGroupByID( int groupId )
+{
+	return GetBannerGroup( GetBannerGroupName( groupId ) )
 }
 
 void function BannerAssets_GroupAppendAsset( string groupName, int assetIdRef, bool bLoopVideo = false, string assetName = "", string assetResourceRef = "" )
@@ -670,6 +720,147 @@ bool function BannerAssets_IsEnabled()
 	return file.isEnabled
 }
 
+void function UpdateAudioHistory( entity player, int assetIdRef )
+{
+	AudioHistory history = GetAudioHistoryForPlayer( player, assetIdRef )
+	
+	history.playAmount		+= 1
+	history.assetIdRef		= assetIdRef
+	history.lastPlayTime	= Time()
+}
+
+AudioHistory function GetAudioHistoryForPlayer( entity player, int assetIdRef )
+{
+	CheckAudioTrackingForPlayer( player, assetIdRef )
+	return file.audioHistoryMap[ player.p.UID ][ assetIdRef ]
+}
+
+int function GetPlayCountForPlayer( entity player, int assetIdRef )
+{
+	AudioHistory history = GetAudioHistoryForPlayer( player, assetIdRef )
+	return history.playAmount
+}
+
+float function GetLastPlayTime( entity player, int assetIdRef )
+{
+	AudioHistory history = GetAudioHistoryForPlayer( player, assetIdRef )
+	return history.lastPlayTime
+}
+
+void function __AudioQueue( entity player, BannerImageData baseBannerVideo, BannerGroupData groupData )
+{//thread
+
+	file.dummyEnt.Signal( "AudioQueue_Once" )
+	file.dummyEnt.EndSignal( "AudioQueue_Once" )
+	player.EndSignal( "OnDestroy", "KillAllBannerGroups" )
+	
+	if( !groupData.isValid )
+	{
+		#if DEVELOPER 
+			printw( "Invalid group for player: ", string( player ) )
+		#endif 	
+		
+		return
+	}	
+	
+	for( ; ; )
+	{			
+		table results = player.WaitSignal( "AudioQueue_Pop" )	
+		
+		if ( results.len() == 0 )
+			continue
+			
+		if( !( "assetRefId" in results ) )
+			continue
+		
+		int bannerImageId = expect int( results.assetRefId )
+		BannerImageData banner = __GetBannerDataForID( groupData.groupBanners, bannerImageId )	
+		
+		int clientRUIID = GetRUIID( player, groupData.groupId, banner.assetType )
+		//set the server managed ruiid instance to use based on type.
+		#if DEVELOPER && DEBUG_BANNER_ASSET
+			printw( "playing sound '" + banner.assetName + "' as type:", banner.assetType, "in group:", groupData.groupName, "RUIID = ", clientRUIID )
+		#endif 
+		
+		//change over to next asset.
+		WorldDrawAsset_Modify
+		(
+			player, 
+			clientRUIID,
+			groupData.groupId,
+			ZERO_VECTOR, 
+			ZERO_VECTOR, 
+			-1.0, 
+			-1.0, 
+			0, 
+			banner.id 
+		)
+		
+		//play it on the client
+		WorldDrawAsset_SetVisible
+		(
+			player,
+			clientRUIID, 
+			groupData.groupId,
+			true,
+			true, 
+			true, 
+			banner.id,
+			groupData.fadeSpeed,
+			banner.loopVideo
+		)
+		
+		IsPlayingAudioForPlayer( player, true )
+		UpdateAudioHistory( player, banner.id )
+		
+		if( !groupData.interupt )
+		{
+			string signal = "VideoFinishedPlaying_" + groupData.groupId
+			player.WaitSignal( signal )
+			
+			if( !IsValid( player ) )
+				return
+		}	
+		
+		IsPlayingAudioForPlayer( player, false )
+	}
+}
+
+//bool from flag 
+bool function IsPlayingAudioForPlayer( entity player, bool ornull isPlayingOrNull = null )
+{	
+	if( isPlayingOrNull != null )
+		player.p.isPlayingFlowstateAudio = expect bool( isPlayingOrNull )
+	
+	return player.p.isPlayingFlowstateAudio
+}
+
+AudioHistory function CheckAudioTrackingForPlayer( entity player, int assetIdRef )
+{
+	AudioHistory history
+	
+	if( !( player.p.UID in file.audioHistoryMap ) || !( assetIdRef in file.audioHistoryMap[ player.p.UID ] ) )
+		file.audioHistoryMap[ player.p.UID ] <- { [ assetIdRef ] = history }
+	
+	history.isValid = true	
+	return history
+}
+
+//Wrapper for playing audio files: 
+void function BannerAssets_PlayAudio( entity player, string assetRef )
+{
+	int assetId = WorldDrawAsset_AssetRefToID( assetRef )
+	
+	if( assetId != -1 )
+		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+}
+
+void function BannerAssets_PlayAudioID( entity player, int assetId = -1 )
+{
+	if( assetId != -1 )
+		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+}
+
 void function __Singlethread( entity player, BannerGroupData groupData )
 {
 	//FlagWait( "EntitiesDidLoad" )
@@ -679,7 +870,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	#endif
 	
 	array<BannerImageData> banners = DeepCopyBanner( groupData.groupBanners )
-	groupData.groupBanners = banners
+	//groupData.groupBanners = banners //?
 	
 	if( banners.len() == 0 )
 	{
@@ -701,7 +892,11 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	if( !player.p.bannersValidated )
 		player.WaitSignal( "BannersValidated" )
 		
-	for( int i = banners.len() - 1; i >= 0; i-- )
+	if( !IsValid( player ) )
+		return
+		
+	int ogBannersLen = banners.len()
+	for( int i = ogBannersLen - 1; i >= 0; i-- )
 	{
 		if( player.p.invalidAssets.contains( banners[ i ].id ) )
 			banners.remove( i )
@@ -731,9 +926,11 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		bool bFoundImage = false
 		bool bFoundVideo = false
 
-		iter = 0
+		iter = -1
 		foreach( banner in banners )
 		{
+			iter++
+			
 			switch( banner.assetType )
 			{
 				case eAssetType.IMAGE:
@@ -762,8 +959,6 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					bFoundVideo = true
 					break
 			}
-			
-			iter++
 		}
 		
 		WaitFrame()
@@ -817,7 +1012,8 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					"baseBannerImage.id", baseBannerImage.id, "\n",
 					"groupData.alpha", groupData.alpha, "\n",
 					"groupData.isVisible", groupData.isVisible, "\n",
-					"groupData.groupId", groupData.groupId, "\n"
+					"groupData.groupId", groupData.groupId, "\n",
+					"groupData.isAudioQueue", groupData.isAudioQueue, "\n"
 				)
 			#endif
 		}
@@ -874,19 +1070,35 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 					"baseBannerVideo.id", baseBannerVideo.id, "\n",
 					"groupData.alpha", groupData.alpha, "\n",
 					"groupData.isVisible", groupData.isVisible, "\n",
-					"groupData.groupId", groupData.groupId, "\n"
+					"groupData.groupId", groupData.groupId, "\n",
+					"groupData.isAudioQueue", groupData.isAudioQueue, "\n"
 				)
 			#endif
 		}
 	}
 	
-	OnThreadEnd
-	(
-		void function() : ( player, groupData )
+	
+	if( groupData.isAudioQueue ) //group only needed for audio channel/validation of assets
+	{
+		if( ogBannersLen != banners.len() )
 		{
-			__HideAllBanners( player, groupData )
+			//tell server something?
+			Warning( "Some audio files were removed from the queue as the client does not have them." )
 		}
-	)
+		
+		thread __AudioQueue( player, baseBannerVideo, groupData )
+		return
+	}
+	else 
+	{
+		OnThreadEnd
+		(
+			void function() : ( player, groupData )
+			{
+				__HideAllBanners( player, groupData )
+			}
+		)
+	}
 	
 	if( bFirstRun )
 	{

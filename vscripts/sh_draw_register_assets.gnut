@@ -2,6 +2,7 @@
 //Todo: Assign desired assets in a timely manner based on streamed rpaks success
 
 global function WorldDrawAsset_RegisterAllAssets
+global function WorldDrawAsset_GetAssetArrayByCategory
 
 #if CLIENT
 	global function ClientCodeCallback_PakRequestFinished //todo: move?
@@ -14,6 +15,7 @@ global function WorldDrawAsset_RegisterAllAssets
 	global function WorldDrawAsset_TransmitDesiredAssets
 #endif 
 
+const asset AUDIO_DATA_TABLE = $"datatable/flowstate_audio.rpak"
 const MAX_WAIT_FOR_RPAK_TRANSFER = 5
 const RPAK_MP_TEMP_PATH = ""
 
@@ -33,31 +35,77 @@ struct
 		array<int> invalidVideoAssets
 		bool videoValidationComplete = false
 	#endif
+	
+	table<string, array<string> > categoryAssetArrays
 
 } file
 
 void function WorldDrawAsset_RegisterAllAssets()
 {
+	#if SERVER 
+		AddCallback_OnClientConnected
+		(
+			void function( entity player )
+			{
+				ValidateDataTable( player, AUDIO_DATA_TABLE )
+			}
+		)
+	#endif 
+	
 	#if SERVER || CLIENT 
+	string print_data
+	
 		try 
 		{
 			#if CLIENT 
 				while( !IsConnected() )
 					WaitFrame()
 			#endif 
+		
+			var audioTbl 		= GetDataTable( AUDIO_DATA_TABLE )
+			
+			int audioCount 		= GetDatatableRowCount( audioTbl )
+			int pathCol 		= GetDataTableColumnByName( audioTbl, "path" )
+			int nameCol 		= GetDataTableColumnByName( audioTbl, "name" )
+			int catCol			= GetDataTableColumnByName( audioTbl, "category" )
+		
+			bool verify = audioCount != -1		
+			mAssert( verify, "No audio files?" )
+			
+			for ( int i = 0; i < audioCount; i++ )
+			{		
+				string bikAssetName  = GetDataTableString( audioTbl, i, nameCol )
+				string bikAssetRef   = GetDataTableString( audioTbl, i, pathCol )
+				string category		 = GetDataTableString( audioTbl, i, catCol )
+				
+				#if DEVELOPER
+					print_data += "\"" + bikAssetRef + "\"\n"
+				#endif
+				
+				SortAsset( category, bikAssetRef )			
+				file.assets.append( bikAssetRef )
+			}
 			
 			string assetList = GetCurrentPlaylistVarString( "banner_assets", "" )
 			
 			if( !empty( assetList ) )
 			{
 				array<string> assets = StringToArray( assetList )	
-				file.assets = assets
+				file.assets.extend( assets )
 			}
 		}
 		catch( e )
 		{
-			Warning( "Warning: Assets improperly configured in playlists from server." )
+			string errorString = "Warning: Assets improperly configured in playlists from server. -- " + e
+			Warning( errorString )
+			mAssert( false, errorString )
+			return
 		}
+		
+		#if DEVELOPER 
+			printt( " === AUDIO FROM DATATABLE === " )
+			printt( "\n\n", print_data )
+		#endif 
 	#endif 
 
 	#if SERVER 
@@ -308,3 +356,27 @@ void function WorldDrawAsset_RegisterAllAssets()
 		return true
 	}
 #endif
+
+#if SERVER || CLIENT 
+	void function SortAsset( string category, string bikAssetRef )
+	{
+		if( empty( bikAssetRef ) )
+			return
+			
+		if( !( category in file.categoryAssetArrays ) )
+			file.categoryAssetArrays[ category ] <- []
+				
+		file.categoryAssetArrays[ category ].append( bikAssetRef )
+	}
+	
+	array<string> function WorldDrawAsset_GetAssetArrayByCategory( string category )
+	{	
+		if( category in file.categoryAssetArrays )
+			return file.categoryAssetArrays[ category ]
+		
+		Warning( "Category \"" + category + "\" not found." )
+		
+		array<string> emptyArray
+		return emptyArray
+	}
+#endif 
