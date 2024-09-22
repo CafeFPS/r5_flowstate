@@ -7145,7 +7145,7 @@ void function HaloAssets()
 					break 
 					
 				case ePlaylists.fs_haloMod_oddball:
-					audio = "media/halo/capture_the_flag.bik"
+					audio = "media/halo/oddball.bik"
 			}
 		
 			foreach( player in GetPlayerArray() )
