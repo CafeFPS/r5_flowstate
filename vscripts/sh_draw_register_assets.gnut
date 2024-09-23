@@ -20,6 +20,7 @@ global function WorldDrawAsset_PrintAssetLookupTable
 const asset AUDIO_DATA_TABLE = $"datatable/flowstate_audio.rpak"
 const MAX_WAIT_FOR_RPAK_TRANSFER = 5
 const RPAK_MP_TEMP_PATH = ""
+const bool DEBUG_REGISTER_ASSETS = true
 
 struct
 {
@@ -111,10 +112,10 @@ void function WorldDrawAsset_RegisterAllAssets()
 			return
 		}
 		
-		#if DEVELOPER 
-			printt( " === AUDIO FROM DATATABLE === " )
-			printt( "\n\n", print_data )
-		#endif 
+		#if DEVELOPER && DEBUG_REGISTER_ASSETS
+			printt( "\n\n === AUDIO FROM DATATABLE === " )
+			printt( "\n", print_data )
+		#endif
 	#endif 
 
 	#if SERVER 
@@ -165,7 +166,9 @@ void function WorldDrawAsset_RegisterAllAssets()
 		
 		if( !WorldDrawAsset_AssetReverseTableContains( potentialVarAsset ) )
 		{
-			
+			#if DEVELOPER 
+				Warning( "Reverse table does not contain \"" + potentialVarAsset + "\"" )
+			#endif 
 		}
 		
 		WorldDrawAsset_RegisterRemoteAsset( varAsset, assetType )
@@ -332,7 +335,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 		foreach( assetId in videoAssetIds )
 		{
 			asset video = WorldDrawAsset_GetAssetByID( assetId )
-			StartVideoOnChannel( channel, video, false, 0.0 )
+			StartVideoOnChannel( channel, video, false, 0.1 ) //must be 0.1
 			PauseVideoOnChannel( channel )
 			
 			WaitFrames(3)

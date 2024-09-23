@@ -77,7 +77,7 @@ global function SetChampionShowingState
 global function WaitForChampionToFinish
 global const float SHORT_CHAMPION_CARD_TIME = 7.0
 global function FS_ResetMapLightning
-global function HaloEventAudio
+global function PrintKillHistoryFor
 
 #if DEVELOPER
 	global function DEV_NextRound
@@ -360,8 +360,6 @@ void function _CustomTDM_Init()
 		{
 			VOTING_PHASE_ENABLE = false
 		}
-		
-		HaloAssets()
 	}
 
 	if( flowstateSettings.enable_oddball_gamemode )
@@ -508,6 +506,9 @@ void function DM__OnEntitiesDidLoad()
 		__OnEntitiesDidLoadCTF()
 		return
 	}
+	
+	if( Flowstate_IsHaloMode() )
+		HaloAssets()
 
 	switch( MapName() )
     {
@@ -6069,12 +6070,43 @@ void function HisWattsons_HaloModFFA_KillStreakAnnounce( entity attacker )
 
 	if ( thisKillTime <= attacker.p.allowedTimeForNextKill && attacker.p.downedEnemy > 1 )
 	{
-		if( attacker.p.downedEnemy == 3 )
+		switch( attacker.p.downedEnemy )
 		{
-			EmitSoundOnEntityOnlyToPlayerWithSeek( attacker, attacker, "diag_ap_aiNotify_killLeaderTripleKill", 1.8 )
-		} else if( attacker.p.downedEnemy == 2 )
-		{
-			EmitSoundOnEntityOnlyToPlayerWithSeek( attacker, attacker, "diag_ap_aiNotify_killLeaderDoubleKill", 2 )
+			case 10:
+				BannerAssets_PlayAudioName( attacker, "halo_killionaire" )
+			break 
+			
+			case 9:
+				BannerAssets_PlayAudioName( attacker, "halo_killpocalypse" )
+			break 
+			
+			case 8:
+				BannerAssets_PlayAudioName( attacker, "halo_killtastrophe" )
+			break 
+			
+			case 7:
+				BannerAssets_PlayAudioName( attacker, "halo_killimanjaro" )
+			break 
+			
+			case 6:
+				BannerAssets_PlayAudioName( attacker, "halo_killtrocity" )
+			break 
+			
+			case 5:
+				BannerAssets_PlayAudioName( attacker, "halo_killtacular" )
+			break 
+			
+			case 4:
+				BannerAssets_PlayAudioName( attacker, "halo_overkill" )
+			break 
+			
+			case 3:
+				BannerAssets_PlayAudioName( attacker, "halo_triple_kill" )
+			break 
+			
+			case 2:
+				BannerAssets_PlayAudioName( attacker, "halo_double_kill" )
+			break 
 		}
 
 		Remote_CallFunction_NonReplay(attacker, "FSHaloMod_CreateKillStreakAnnouncement", attacker.p.downedEnemy )
@@ -7106,6 +7138,8 @@ void function Common_DissolveDropable( entity prop )
 
 void function HaloAssets()
 {
+	Warning( "Load it up" )
+	
 	BannerAssets_SetAllGroupsFunc
 	(
 		void function()
@@ -7113,7 +7147,7 @@ void function HaloAssets()
 			BannerAssets_RegisterAudioGroup
 			(
 				"halo_audio",
-				true //(audio interruptable)
+				false //(audio interruptable, false = queued for audio from this group. )
 			)
 		}
 	)
@@ -7190,12 +7224,43 @@ void function HaloPlayAnnounce( float roundEndTime )
 
 void function Callback_HaloOnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	//testing audio cues
-	HaloEventAudio( attacker, "halo_killing_frenzy" )
+	//UpdateKillHistory( victim, attacker )
 }
 
-void function HaloEventAudio( entity player, string assetName )
+//Halo kill event history
+void function UpdateKillHistory( entity victim, entity attacker )
 {
-	string assetRef = BannerAssets_GetAssetRefByName( assetName )
-	BannerAssets_PlayAudio( player, assetRef )
+	if( !victim.IsPlayer() || !attacker.IsPlayer() )
+		return 
+		
+	float killTime = Time()
+	
+	KillHistory history 
+	
+	history.victim 		= victim 
+	history.killTime 	= killTime
+	
+	attacker.p.killHistoryArray.append( history )
+	CleanupKillHistory( [ victim, attacker ] )
+}
+
+const MAX_KILL_HISTORY_TIME = 30.0
+void function CleanupKillHistory( array<entity> players )
+{
+	float timeNow = Time()
+	
+	foreach( player in players )
+	{
+		for( int i = player.p.killHistoryArray.len() -1; i >= 0; i-- )
+		{
+			if( timeNow - player.p.killHistoryArray[ i ].killTime > MAX_KILL_HISTORY_TIME )
+				player.p.killHistoryArray.remove( i )
+		}
+	}
+}
+
+void function PrintKillHistoryFor( entity player )
+{
+	foreach( KillHistory history in player.p.killHistoryArray )
+		printt( string( history.victim ), history.killTime, " seconds ago: ", Time() - history.killTime )
 }

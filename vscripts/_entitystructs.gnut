@@ -1,3 +1,11 @@
+global struct KillHistory
+{
+	entity victim 
+	float killTime
+}
+
+global typedef KillHistoryArray array<KillHistory>
+
 global struct BeamEffect
 {
 	entity effect
@@ -826,6 +834,8 @@ global struct ServerPlayerStruct
 	bool isPlayingFlowstateAudio= false
 	entity killerByKnock		
 	table< table<int, int> > groupTypeToRuiID = {}
+	KillHistoryArray killHistoryArray = []
+	array<int> audioQueue = []
 	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks

@@ -18,7 +18,10 @@ global function BannerAssets_BannerVisibilityMover 	// ( vector initialPosition,
 global function BannerAssets_RegisterAudioGroup		// ( string name, bool interupt = true )
 global function BannerAssets_PlayAudio				// ( entity player, string assetRef )
 global function BannerAssets_PlayAudioID			// ( entity player, int assetId = -1 )
+global function BannerAssets_PlayAudioName			// ( entity player, string audioName )
 global function BannerAssets_GetAssetRefByName		// ( string assetName )
+global function BannerAssets_GetPlayCountForPlayer	// ( entity player, int assetIdRef )
+global function BannerAssets_GetLastPlayTime		// ( entity player, int assetIdRef )
 
 global const MAX_VIDEO_CHANNELS = 10 //this must not surpass engine internals.
 global const CURRENT_RESERVED_CHANNELS = 5 //this is the limit we start from. (todo: disable systems where posible)
@@ -736,13 +739,13 @@ AudioHistory function GetAudioHistoryForPlayer( entity player, int assetIdRef )
 	return file.audioHistoryMap[ player.p.UID ][ assetIdRef ]
 }
 
-int function GetPlayCountForPlayer( entity player, int assetIdRef )
+int function BannerAssets_GetPlayCountForPlayer( entity player, int assetIdRef )
 {
 	AudioHistory history = GetAudioHistoryForPlayer( player, assetIdRef )
 	return history.playAmount
 }
 
-float function GetLastPlayTime( entity player, int assetIdRef )
+float function BannerAssets_GetLastPlayTime( entity player, int assetIdRef )
 {
 	AudioHistory history = GetAudioHistoryForPlayer( player, assetIdRef )
 	return history.lastPlayTime
@@ -766,15 +769,31 @@ void function __AudioQueue( entity player, BannerImageData baseBannerVideo, Bann
 	
 	for( ; ; )
 	{		
-		table results = player.WaitSignal( "AudioQueue_Pop" )	
+		if( !groupData.interupt )
+		{
+			while( IsPlayingAudioForPlayer( player ) )
+				WaitFrame()
+		}
 		
-		if ( results.len() == 0 )
-			continue
+		int bannerImageId
+		
+		if( AudioQueue_Len( player ) > 0 )
+		{
+			bannerImageId = AudioQueue_Pop( player )
+		}
+		else 
+		{
+			table results = player.WaitSignal( "AudioQueue_Pop" )	
 			
-		if( !( "assetRefId" in results ) )
-			continue
+			if ( results.len() == 0 )
+				continue
+				
+			if( !( "assetRefId" in results ) )
+				continue
 		
-		int bannerImageId = expect int( results.assetRefId )
+			bannerImageId = expect int( results.assetRefId )
+		}
+		
 		BannerImageData banner = __GetBannerDataForID( groupData.groupBanners, bannerImageId )	
 		
 		int clientRUIID = GetRUIID( player, groupData.groupId, banner.assetType )
@@ -810,9 +829,8 @@ void function __AudioQueue( entity player, BannerImageData baseBannerVideo, Bann
 			groupData.fadeSpeed,
 			banner.loopVideo
 		)
-		
-		IsPlayingAudioForPlayer( player, true )
-		UpdateAudioHistory( player, banner.id )
+			
+		thread AudioMonitor( player, groupData.groupId, banner.id )
 		
 		if( !groupData.interupt )
 		{
@@ -822,9 +840,24 @@ void function __AudioQueue( entity player, BannerImageData baseBannerVideo, Bann
 			if( !IsValid( player ) )
 				return
 		}	
-		
-		IsPlayingAudioForPlayer( player, false )
 	}
+}
+
+void function AudioMonitor( entity player, int groupId, int audioId )
+{
+	IsPlayingAudioForPlayer( player, true )
+	UpdateAudioHistory( player, audioId )
+		
+	OnThreadEnd
+	(
+		void function() : ( player )
+		{
+			IsPlayingAudioForPlayer( player, false )
+		}
+	)
+	
+	player.EndSignal( "VideoFinishedPlaying_" + groupId, "OnDestroy" )
+	WaitForever()
 }
 
 //bool from flag 
@@ -847,19 +880,76 @@ AudioHistory function CheckAudioTrackingForPlayer( entity player, int assetIdRef
 	return history
 }
 
+int function AudioQueue_Pop( entity player )
+{
+	if( player.p.audioQueue.len() == 0 )
+		mAssert( false, "Tried to pop audio queue with no items in it." )
+		
+	return player.p.audioQueue.pop()
+}
+
+void function AudioQueue_Append( entity player, int audio )
+{
+	player.p.audioQueue.append( audio )
+}
+
+void function AudioQueue_Remove( entity player, int audio )
+{
+	player.p.audioQueue.removebyvalue( audio )
+}
+
+void function AudioQueue_Clear( entity player )
+{
+	player.p.audioQueue.clear()
+}
+
+array<int> function AudioQueue_Get( entity player )
+{
+	return player.p.audioQueue
+}
+
+int function AudioQueue_Len( entity player )
+{
+	return player.p.audioQueue.len()
+}
+
+void function HandleAudioQueue( entity player, int audioId )
+{
+	if( IsPlayingAudioForPlayer( player ) )
+		AudioQueue_Append( player, audioId )
+}
+
 //Wrapper for playing audio files: 
 void function BannerAssets_PlayAudio( entity player, string assetRef )
 {
 	int assetId = WorldDrawAsset_AssetRefToID( assetRef )
 	
 	if( assetId != -1 )
+	{
+		HandleAudioQueue( player, assetId )
 		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+	}
 }
 
 void function BannerAssets_PlayAudioID( entity player, int assetId = -1 )
 {
 	if( assetId != -1 )
+	{
+		HandleAudioQueue( player, assetId )
 		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+	}
+}
+
+void function BannerAssets_PlayAudioName( entity player, string audioName )
+{
+	string assetRef = BannerAssets_GetAssetRefByName( audioName )
+	int assetId = WorldDrawAsset_AssetRefToID( assetRef )
+	
+	if( assetId != -1 )
+	{
+		HandleAudioQueue( player, assetId )
+		player.Signal( "AudioQueue_Pop", { assetRefId = assetId } )
+	}
 }
 
 string function BannerAssets_GetAssetRefByName( string assetName )

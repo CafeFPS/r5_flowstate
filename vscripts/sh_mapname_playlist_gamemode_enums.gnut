@@ -23,7 +23,7 @@ global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
 global function Flowstate_MapHasTrain
 global function Flowstate_ModeDissolveItems
-
+global function Flowstate_IsHaloMode
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 //																						//
@@ -365,6 +365,7 @@ void function AllModeConditionals_Init()
 	MapHasTrain_Init()
 	GamemodeHasSinglePlayerChampion()
 	ModeDissolvesDrops_Init()
+	IsHaloGamemode_Init()
 }
 
 
@@ -380,6 +381,7 @@ struct
 	bool mapHasTrain			= false
 	bool bSinglePlayerChampion	= false
 	bool dissolveDrops			= false
+	bool bIsHaloGamemode		= false
 	
 } modeSettings
 
@@ -529,6 +531,19 @@ void function ModeDissolvesDrops_Init()
 	modeSettings.dissolveDrops = result
 }
 
+void function IsHaloGamemode_Init()
+{
+	array<int> haloPlaylists =
+	[
+		ePlaylists.fs_haloMod,
+		ePlaylists.fs_haloMod_ctf,
+		ePlaylists.fs_haloMod_oddball
+	]
+	
+	bool result = GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || haloPlaylists.contains( Playlist() )
+	modeSettings.bIsHaloGamemode = result
+}
+
 //////////////////////////////////////////
 //	 gamemode conditional functions		//
 //////////////////////////////////////////
@@ -568,4 +583,9 @@ bool function g_bSinglePlayerChampion()
 bool function Flowstate_ModeDissolveItems()
 {
 	return modeSettings.dissolveDrops
+}
+
+bool function Flowstate_IsHaloMode()
+{
+	return modeSettings.bIsHaloGamemode
 }

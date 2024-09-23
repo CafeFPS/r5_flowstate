@@ -1720,8 +1720,8 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 {                                                                                                
 	if ( !SURVIVAL_Loot_IsRefValid (ref) )                             
 	{
-		Warning( "Trying to add non-valid loot to player inventory" )
-		return 0                                                                                                                                                     
+		Warning( "Trying to add non-valid loot to player inventory: \"" + ref + "\"" )
+		return 0                                                                                                                                                  
 	}
 
 	PerfStart( PerfIndexServer.AddToInventory )

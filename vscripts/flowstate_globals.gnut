@@ -273,7 +273,7 @@ bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSetting
 bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
 int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
-bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
+//bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }	//moved to sh_mapname_playlist_gamemode_enums.gnut	
 bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
 bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
 bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
