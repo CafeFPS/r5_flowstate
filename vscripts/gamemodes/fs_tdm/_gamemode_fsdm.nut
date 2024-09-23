@@ -7138,8 +7138,6 @@ void function Common_DissolveDropable( entity prop )
 
 void function HaloAssets()
 {
-	Warning( "Load it up" )
-	
 	BannerAssets_SetAllGroupsFunc
 	(
 		void function()
@@ -7200,7 +7198,8 @@ void function HaloAssets()
 
 void function HaloPlayAnnounce( float roundEndTime )
 {
-	float currentTime = Time()
+	int currentTime = int( floor( Time() ) )
+	int targetTime = int( floor( roundEndTime - currentTime ) )
 	
 	const table< int, string > eventTimes =
 	{
@@ -7210,15 +7209,14 @@ void function HaloPlayAnnounce( float roundEndTime )
 		[ 0 ] 	= "media/halo/game_over.bik" 
 	}
 	
-	foreach( int eventTime, string assetRef in eventTimes )
+	//printw( targetTime )
+	
+	if( targetTime in eventTimes )
 	{
-		if( currentTime == roundEndTime - eventTime )
-        {
-            foreach( entity player in GetPlayerArray() )
-            {
-                BannerAssets_PlayAudio( player, assetRef )
-            }
-        }	
+		foreach( entity player in GetPlayerArray() )
+		{
+			BannerAssets_PlayAudio( player, eventTimes[ targetTime ] )
+		}
 	}
 }
 
