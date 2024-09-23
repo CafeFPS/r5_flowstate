@@ -326,8 +326,6 @@ void function WorldDrawAsset_RegisterAllAssets()
 	//There really is no other way to validate if a video exists on the client. Sorry.
 	void function CheckVideoAssets_expensive( entity player, array<int> videoAssetIds )
 	{
-		return //temporary bypass until better method
-		
 		if( !IsValid( player ) ) //check again, was threaded off.
 			return
 			
@@ -337,10 +335,19 @@ void function WorldDrawAsset_RegisterAllAssets()
 		foreach( assetId in videoAssetIds )
 		{
 			asset video = WorldDrawAsset_GetAssetByID( assetId )
-			StartVideoOnChannel( channel, video, false, 0.2 )
+			StartVideoOnChannel( channel, video, false, 0.0 )
 			PauseVideoOnChannel( channel )
 			
-			WaitFrames(3)
+			const MAX_FRAME_WAIT = 10
+			int frameCount = 0		
+			while( !VideoChannelHasVideoAssigned( channel ) ) 
+			{
+				++frameCount
+				WaitFrame()
+				
+				if( frameCount >= MAX_FRAME_WAIT )
+					break 
+			}
 			
 			// please don't remove this debug comment. Thanks ~mkos.
 			
