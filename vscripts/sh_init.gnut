@@ -177,12 +177,7 @@ void function SV_CL_Init()
 
 	ShLootDrones_Init()
 	Sh_EvacShip_Init()
-
-	//if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
 	ShLootRollers_Init()
-	//} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
-	//ShFlyersDeathboxes_Init()
-	//}	
 
 	MpWeaponGuidedMissile_Init()
 	CharacterSelectNewMenu_Init()
@@ -216,6 +211,9 @@ void function SV_CL_Init()
 	ShIncapShield_Init()
 	
 	Sh_Squads_Init()
+	PassiveMedic_Init() //Should be shared. Cafe
+
+	// MpAbilityTank_Init()
 	
     // Zipline Utility
     #if SERVER
@@ -356,7 +354,6 @@ void function Server_Init()
 
 	TrackingVision_Init()
 	PassiveGasGear_Init()
-	PassiveMedic_Init()
 	Bombardment_Init()
 	ThreatDetection_Init()
 	Staging_Area_Init()

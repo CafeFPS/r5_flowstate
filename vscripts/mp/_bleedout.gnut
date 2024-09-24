@@ -1742,9 +1742,3 @@ bool function IsForceBleedoutButtonDown( entity player, int inputOptionA = IN_DU
 {
 	return player.IsInputCommandHeld( inputOptionA ) || player.IsInputCommandHeld( inputOptionB )
 }
-
-//temp. Cafe. Implement proper drone in medic passive, this works for now tho
-bool function PassiveMedic_ShouldDoCombatRevive( entity player )
-{
-	return PlayerHasPassive( player, ePassives.PAS_MEDIC )
-}

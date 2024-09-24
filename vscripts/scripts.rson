@@ -553,7 +553,6 @@ Scripts:
 	mp/_loot_ticks.nut
 	pilot/_pilot_tracking_vision.gnut
 	pilot/_pilot_passive_gas_gear.gnut
-	pilot/_pilot_passive_medic.gnut
 	mp/_jump_pads.gnut
 ]
 
@@ -562,6 +561,7 @@ Scripts:
 [
 	sh_sneak_peek.gnut
 	
+	pilot/_pilot_passive_medic.gnut //Should be shared. Cafe
 	pilot/sh_pilot_passive_voices.gnut
 	pilot/sh_pilot_passive_adrenaline.gnut
 	
@@ -958,8 +958,9 @@ Scripts:
 	weapons/mp_weapon_titan_sword_launcher.nut
 	weapons/mp_weapon_titan_sword_super.nut
 	
-	//weapons/mp_weapon_grenade_cryonade.nut
-	//weapons/mp_ability_phase_chamber.nut
+	// weapons/mp_weapon_grenade_cryonade.nut
+	// weapons/mp_ability_phase_chamber.nut
+	// weapons/mp_ability_tank.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -1086,7 +1087,7 @@ Scripts:
     // ReMap Live
     mp/levels/mp_rr_remap.nut
 	
-   // mp/_movement_recorder_deprecated.nut
+    // mp/_movement_recorder_deprecated.nut
 ]
 
 When: "CLIENT"

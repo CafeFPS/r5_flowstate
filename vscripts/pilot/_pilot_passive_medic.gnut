@@ -1,14 +1,20 @@
 global function PassiveMedic_Init
-#if(false)
 
-
-
-
+#if SERVER
+global function GetBestShieldDeployAngles
+global function ClientCommand_CancelRevive
+global function DeployMedicCover
+global function PassiveMedic_ShouldDoCombatRevive
 #endif
 
 #if CLIENT
 global function ServerToClient_DisplayCancelReviveHintForPlayer
 global function ServerToClient_RemoveCancelReviveHintForPlayer
+
+global function ServerToClient_NumSelfRevivesUsed
+// global function ServerToClient_DisplaySelfResRuiForPlayer
+// global function ServerToClient_RemoveDisplaySelfResRuiForlayer
+      
 #endif
 
 const DEPLOYABLE_SHIELD_FX = $"P_drone_medic_shield"
@@ -25,7 +31,7 @@ const DEPLOYABLE_SHIELD_LINGER_TIME = 0.5
 const PASSIV_MEDIC_SHEILD_MODEL = $"mdl/fx/medic_shield_wall.rmdl"
 const PASSIV_MEDIC_SHEILD_SOUND = "Lifeline_ReviveShield_Sustain_3P"
 
-//
+// duplicated from mp_weapon_deployable_medic
 const FX_DRONE_MEDIC_JET_CTR			= $"P_LL_med_drone_jet_ctr_loop"
 const FX_DRONE_MEDIC_EYE				= $"P_LL_med_drone_eye"
 const FX_DRONE_MEDIC_JET_LOOP			= $"P_LL_med_drone_jet_loop"
@@ -36,539 +42,635 @@ const asset DRONE_MODEL = $"mdl/props/lifeline_drone/lifeline_drone.rmdl"
 const vector DRONE_MINS = <-9, -9, -10>
 const vector DRONE_MAXS = <9, 9, 10>
 
+const string PASSIV_MEDIC_SHIELD_MOVER_SCRIPTNAME = "passive_medic_shield_mover"
+
+struct
+{
+	#if SERVER
+		bool shieldEnabled
+	#endif
+	#if CLIENT
+		var selfResRui
+	#endif
+} file
+
 void function PassiveMedic_Init()
 {
-	//Remote_RegisterServerFunction( "ClientCallback_CancelRevive" )
-	//Remote_RegisterClientFunction( "ServerToClient_DisplayCancelReviveHintForPlayer" )
-	//Remote_RegisterClientFunction( "ServerToClient_RemoveCancelReviveHintForPlayer" )
+	
+	Remote_RegisterClientFunction( "ServerToClient_DisplayCancelReviveHintForPlayer" )
+	Remote_RegisterClientFunction( "ServerToClient_RemoveCancelReviveHintForPlayer" )
+
+	Remote_RegisterClientFunction( "ServerToClient_NumSelfRevivesUsed", "entity", "int", 0, INT_MAX )
+	// Remote_RegisterClientFunction( "ServerToClient_DisplaySelfResRuiForPlayer", "entity" )
+	// Remote_RegisterClientFunction( "ServerToClient_RemoveDisplaySelfResRuiForlayer", "entity" )
 
 	RegisterSignal( "OnPassiveMedicReviveEnd" )
 
-	#if(false)
+	#if SERVER
+		AddClientCommandCallback( "ClientCommand_CancelRevive", ClientCommand_CancelRevive )
+		RegisterSignal( "CombatRevive_DestroyRope" )
+		RegisterSignal( "PassiveMedic_AttemptRes" )
+		RegisterSignal( "destroy_beam" )
 
+		PrecacheModel( PASSIV_MEDIC_SHEILD_MODEL )
+		PrecacheModel( DRONE_MODEL )
 
+		PrecacheParticleSystem( DEPLOYABLE_SHIELD_FX )
+		PrecacheParticleSystem( DRONE_BEAM_EFFECT_DUD )
 
+		// duplicated from mp_weapon_deployable_medic
+		PrecacheParticleSystem( FX_DRONE_MEDIC_JET_CTR )
+		PrecacheParticleSystem( FX_DRONE_MEDIC_EYE )
+		PrecacheParticleSystem( FX_DRONE_MEDIC_JET_LOOP	)
 
+		Bleedout_AddCallback_OnPlayerStartGiveFirstAid( PassiveMedic_OnPlayerStartGiveFirstAid )
+		Bleedout_AddCallback_OnPlayerStartGiveSelfRevive( PassiveMedic_OnPlayerStartSelfRevive )
+		Bleedout_AddCallback_OnPlayerGotFirstAid( PassiveMedic_OnPlayerGotFirstAid )
 
-
-
-
-
-
-//
-
-
-
-
-
-#else
-		//RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptCancelRevive )
+		AddCallback_OnPassiveChanged( ePassives.PAS_SELF_REVIVE, SelfRes_OnPassiveChanged )
+        
+		file.shieldEnabled = GetCurrentPlaylistVarBool( "lifeline_shield_revive_enabled", false )
+	#else
+		RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptCancelRevive )
+		RegisterSignal( "PassiveMedic_DestroySelfResRUI" )
+        
 	#endif
 }
 
-#if(false)
+#if SERVER
+void function PassiveMedic_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
+{
+}
+
+void function SelfRes_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
+{
+	if( nowHas )
+	{
+		// if( Bleedout_CanSelfResFromUpgrade( player ) )
+			// Remote_CallFunction_Replay( player, "ServerToClient_DisplaySelfResRuiForPlayer", player )
+	}
+
+	if( didHave )
+	{
+		// Remote_CallFunction_Replay( player, "ServerToClient_RemoveDisplaySelfResRuiForlayer", player )
+		player.p.numSelfRevivesUsed = 0
+		Remote_CallFunction_Replay( player, "ServerToClient_NumSelfRevivesUsed", player, player.p.numSelfRevivesUsed )
+	}
+}
+
+void function PassiveMedic_OnPlayerStartGiveFirstAid( entity medicPlayer, entity patientPlayer, vector animRefAngles, bool endCrouched )
+{
+	if ( PlayerHasPassive( medicPlayer, ePassives.PAS_MEDIC ) )
+	{
+		if ( !PassiveMedic_ShouldDoCombatRevive( medicPlayer ) )
+			return
+
+		patientPlayer.Signal( "PassiveMedic_AttemptRes" )
+		thread DeployMedicCover( medicPlayer, patientPlayer, Bleedout_GetFirstAidTime( medicPlayer ), animRefAngles, endCrouched )
+		// PassiveConsumed( medicPlayer, ePassives.PAS_MEDIC )
+	}
+}
+
+//Used for Lifeline's Self-Revive Upgrade
+void function PassiveMedic_OnPlayerStartSelfRevive( entity medicPlayer, entity patientPlayer, vector animRefAngles, bool endCrouched )
+{
+	if ( PlayerHasPassive( medicPlayer, ePassives.PAS_MEDIC ) )
+	{
+		if( medicPlayer != patientPlayer )
+			return
+
+		medicPlayer.Signal( "PassiveMedic_AttemptRes" )
+		thread DeployMedicCover( medicPlayer, medicPlayer, Bleedout_GetFirstAidTime( medicPlayer ), medicPlayer.GetAngles(), false )
+		// PassiveConsumed( medicPlayer, ePassives.PAS_MEDIC )
+	}
+}
+
+void function PassiveMedic_OnPlayerGotFirstAid(  entity medicPlayer, entity patientPlayer )
+{
+		if( IsValid( medicPlayer ) && medicPlayer == patientPlayer && Bleedout_CanSelfResFromUpgrade( medicPlayer ) )
+		{
+			medicPlayer.p.numSelfRevivesUsed += 1
+			Remote_CallFunction_Replay( patientPlayer, "ServerToClient_NumSelfRevivesUsed", patientPlayer, medicPlayer.p.numSelfRevivesUsed )
+		}
+}
+
+bool function PassiveMedic_ShouldDoCombatRevive( entity player )
+{
+	if ( !PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
+		return false
+
+	return true
+}
+
+void function DeployMedicCover( entity medicPlayer, entity patientPlayer, float duration, vector animRefAngles, bool endCrouched )
+{
+	Assert( IsValid( patientPlayer ) )
+	if ( !IsValid( patientPlayer ) )
+		return
+
+	medicPlayer.EndSignal( "OnDeath" )
+	patientPlayer.EndSignal( "OnDeath" )
+	patientPlayer.EndSignal( "PassiveMedic_AttemptRes" )
+
+	entity animRef = CreateScriptMover_NEW( PASSIV_MEDIC_SHIELD_MOVER_SCRIPTNAME, patientPlayer.GetOrigin(), animRefAngles )
+
+	PerfStart( PerfIndexServer.DroneLogic )
+	vector shieldOrigin = patientPlayer.GetOrigin()
+	vector ornull shieldAngles = GetBestShieldDeployAngles( shieldOrigin, animRefAngles )
+	PerfEnd( PerfIndexServer.DroneLogic )
+
+	if ( shieldAngles == null )
+		return
+
+	expect vector( shieldAngles )
+	
+	animRef.SetParent( patientPlayer, "ref" )
+
+	entity shieldEnt
+	entity shieldWallFX
+
+	if ( file.shieldEnabled )
+	{
+		shieldEnt = CreatePropShield( PASSIV_MEDIC_SHEILD_MODEL, COLORID_LIFELINE_SHIELD_IMPACT, shieldOrigin, ClampAngles( shieldAngles + <0, 180, 0> ), SOLID_VPHYSICS )
+		shieldEnt.SetScriptName( REVIVE_SHIELD_SCRIPTNAME )
+		shieldEnt.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+		shieldEnt.Hide()
+		shieldEnt.RemoveFromAllRealms()
+		shieldEnt.AddToOtherEntitysRealms( patientPlayer )
+
+		shieldEnt.SetMaxHealth( DEPLOYABLE_SHIELD_HEALTH )
+		shieldEnt.SetHealth( DEPLOYABLE_SHIELD_HEALTH )
+		shieldEnt.SetOwner( medicPlayer )
+		SetTeam( shieldEnt, patientPlayer.GetTeam() )
+		shieldEnt.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
 
+		shieldEnt.EndSignal( "OnDestroy" )
 
+		shieldEnt.SetParent( animRef )
 
+		shieldWallFX = StartParticleEffectOnEntityWithPos_ReturnEntity( shieldEnt, GetParticleSystemIndex( DEPLOYABLE_SHIELD_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 180, 0> )
+		if ( IsValid( shieldWallFX ) )
+		{
+			shieldWallFX.RemoveFromAllRealms()
+			shieldWallFX.AddToOtherEntitysRealms( patientPlayer )
+		}
+		shieldEnt.e.shieldWallFX = shieldWallFX
 
+		UpdateShieldWallFX( shieldEnt, GetHealthFrac( shieldEnt ) )
 
+		EmitSoundOnEntity( shieldEnt, PASSIV_MEDIC_SHEILD_SOUND )
+	}
 
+	entity drone = CreatePropDynamic( DRONE_MODEL, animRef.GetOrigin(), animRef.GetAngles(), 0 )
 
+	drone.SetHealth( 1 )
+	drone.SetTakeDamageType( DAMAGE_NO )
+	AddEntityCallback_OnPostDamaged( drone, OnDroneDamaged )
+	drone.SetOwner( medicPlayer )
 
+	if ( patientPlayer.IsPlayer() )
+	{
+		patientPlayer.SetPlayerNetEnt( "revivePlayerHealer", drone )
 
+		patientPlayer.p.droneRevivingPlayer = drone
+	}
 
+	SetTeam( drone, medicPlayer.GetTeam() )
+	drone.EndSignal( "OnDestroy" )
 
+	int droneAttchmentId = drone.LookupAttachment( "rope" )
+	int patientAttchmentId = patientPlayer.LookupAttachment( "R_HAND" )
 
+	if( medicPlayer != patientPlayer ) //In the case of Self-Revive, we don't need to animate the reviver delployment ( Lifeline's on the ground )
+       
+	thread MedicPlayerAnimate( medicPlayer )
 
+	// AddAnimEventTokenized( drone, "CombatRevive_CreateRope", DroneCreateRope, patientPlayer )
+	// AddAnimEvent( drone, "CombatRevive_DestroyRope", DroneDestroyRope )
 
+	if( medicPlayer != patientPlayer && patientPlayer.IsPlayer() ) //In the case of Self-Revive, we don't need to animate the reviver delployment ( Lifeline's on the ground )
+		Remote_CallFunction_Replay( patientPlayer, "ServerToClient_DisplayCancelReviveHintForPlayer")
 
+	OnThreadEnd(
+		function() : ( patientPlayer, medicPlayer, drone )
+		{
+			if ( IsValid( patientPlayer ) )
+			{
+				patientPlayer.Signal( "ReviveInterrupted" )
+                    
+				if( medicPlayer != patientPlayer && patientPlayer.IsPlayer() ) //In the case of Self-Revive, we don't need to animate the reviver delployment ( Lifeline's on the ground )
+					Remote_CallFunction_Replay( patientPlayer, "ServerToClient_RemoveCancelReviveHintForPlayer")
+			}
+		}
+	)
 
+	thread DeployDroneMedic( drone, animRef, patientPlayer, shieldEnt, duration, endCrouched )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-//
-//
-//
-//
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
+	OnThreadEnd(
+		function() : ( shieldEnt, shieldWallFX, animRef )
+		{
+			if ( IsValid( shieldEnt ) )
+				shieldEnt.Destroy()
+
+			if ( IsValid( shieldWallFX ) )
+				EffectStop( shieldWallFX )
+
+			if ( IsValid( animRef ) )
+				animRef.Destroy()
+		}
+	)
+
+	WaitSignal( patientPlayer, "BleedOut_OnRevive", "BleedOut_OnReviveStop" )
+
+	if ( !Bleedout_IsBleedingOut( patientPlayer ) )
+		wait DEPLOYABLE_SHIELD_LINGER_TIME
+}
+
+void function OnDroneDamaged( entity drone, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( !IsValid( attacker ) )
+		return
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if ( damage <= 0 )
+		return
+
+	if ( IsFriendlyTeam( attacker.GetTeam(), drone.GetTeam() ) )
+		return
+
+	drone.Destroy()
+}
+
+void function DroneCreateRope( entity drone, array<string> tokens )
+{
+	Assert( tokens.len() >= 3 )
+
+	var ent = null //GetOptionalTokenizedAnimEventVar( drone, "CombatRevive_CreateRope" )
+
+	if ( !IsValid( ent ) )
+		return
+
+	entity patientPlayer = expect entity( ent )
+
+	patientPlayer.EndSignal( "OnDeath" )
+	patientPlayer.EndSignal( "ReviveInterrupted" )
+	drone.EndSignal( "OnDestroy" )
+
+	string droneAttachName = tokens[ 1 ]
+	string patientAttachName = tokens[ 2 ]
+
+	int droneAttchmentId = drone.LookupAttachment( droneAttachName ) //"rope" )
+	int patientAttchmentId = patientPlayer.LookupAttachment( patientAttachName ) // "R_HAND" )
+	entity rope = CreateRope( <0, 0, 0>, <0, 0, 0>, 100, drone, patientPlayer, droneAttchmentId, patientAttchmentId, 1, "models/cable/drone_medic_cable", 10 )
+	HealRopeInit( rope, patientPlayer, true )
+
+	OnThreadEnd(
+		function() : ( patientPlayer, rope )
+		{
+			if ( IsValid( rope ) )
+			{
+				rope.Destroy()
+			}
+		}
+	)
+
+	drone.WaitSignal( "CombatRevive_DestroyRope" )
+}
+
+void function DroneDestroyRope( entity drone )
+{
+	drone.Signal( "CombatRevive_DestroyRope" )
+}
+
+void function MedicPlayerAnimate( entity medicPlayer )
+{
+	medicPlayer.EndSignal( "OnDeath" )
+
+	HolsterAndDisableWeapons( medicPlayer )
+
+	if ( GetCurrentPlaylistVarBool( "lifeline_res_slow_disabled", true ) )
+	{
+		StatusEffect_AddTimed( medicPlayer, eStatusEffect.move_slow, 0.4, 0.4, 0.2 )
+		StatusEffect_AddTimed( medicPlayer, eStatusEffect.turn_slow, 0.3, 0.3, 0.2 )
+	}
+	else
+   
+	{
+		StatusEffect_AddTimed( medicPlayer, eStatusEffect.move_slow, 0.7, 1.5, 0.8 )
+		StatusEffect_AddTimed( medicPlayer, eStatusEffect.turn_slow, 1.0, 1.0, 0.8 )
+	}
+
+	OnThreadEnd(
+		function () : ( medicPlayer )
+		{
+			if ( IsValid( medicPlayer ) )
+			{
+				DeployAndEnableWeapons( medicPlayer )
+			}
+		}
+	)
+
+	wait 0.5
+}
+
+void function DeployDroneMedic( entity drone, entity animRef, entity patientPlayer, entity shieldEnt, float duration, bool endCrouched )
+{
+	drone.EndSignal( "OnDestroy" )
+	animRef.EndSignal( "OnDestroy" )
+	if ( file.shieldEnabled )
+		shieldEnt.EndSignal( "OnDestroy" )
+
+	if( IsValid( patientPlayer ) )
+	{
+		drone.RemoveFromAllRealms()
+		drone.AddToOtherEntitysRealms( patientPlayer )
+	}
+	array<entity> droneFxArray
+
+	OnThreadEnd(
+		function() : ( drone, droneFxArray )
+		{
+			foreach( particle in droneFxArray )
+				particle.Destroy()
+
+			if ( IsValid( drone ) )
+			{
+				StopSoundOnEntity( drone, DEPLOYABLE_MEDIC_HOVER_SOUND )
+				EmitSoundAtPosition( TEAM_UNASSIGNED, drone.GetOrigin(), DEPLOYABLE_MEDIC_DISSOLVE_SOUND, drone )
+
+				drone.ClearParent()
+				drone.Signal( "destroy_beam" )
+				drone.Dissolve( ENTITY_DISSOLVE_CORE, < 0, 0, 0 >, 1000 )
+			}
+		}
+	)
+
+	int fxID_VENT   = drone.LookupAttachment( "VENT_BOT" )
+	int fxID_EYE    = drone.LookupAttachment( "EYEGLOW" )
+	int fxID_RF     = drone.LookupAttachment( "VENT_RF" )
+	int fxID_LF     = drone.LookupAttachment( "VENT_LF" )
+	int fxID_RR     = drone.LookupAttachment( "VENT_RR" )
+	int fxID_LR     = drone.LookupAttachment( "VENT_LR" )
+
+	if ( file.shieldEnabled )
+		CreateDroneBeam( drone, shieldEnt )
+
+	drone.SetParent( animRef, "ref", false, 0.0 )
+
+	waitthread PlayAnimTeleport( drone, "lifeline_drone_revive", animRef )
+}
+
+const bool DEBUG_SHIELD_ANGLES = false
+const DEBUG_SHIELD_DRAW_TIME = 0.5
+
+vector ornull function GetBestShieldDeployAngles( vector origin, vector angles, bool debug = false )
+{
+	angles = ClampAngles( angles + <0,180,0> )
+
+	const STEPS = 3
+	const DEGREE_PER_STEP = 20.0
+	const MAX_FAILS = 6 //3
+
+	vector bestAngles
+	int leastFails = 1000
+
+	for( int dir = 0; dir < 2; dir++ )
+	{
+		for( int i = dir; i < STEPS ; i++ )
+		{
+			float angleOffset = DEGREE_PER_STEP * i
+			angleOffset *= dir != 0 ? 1 : -1
+			vector testAngles = angles + <0, angleOffset, 0>
+
+			#if DEBUG_SHIELD_ANGLES
+				DebugDrawLine( origin, origin + AnglesToForward( testAngles ) * 32, COLOR_RED, true, DEBUG_SHIELD_DRAW_TIME )
+			#endif
+
+			int failes = CheckShieldFit( origin, testAngles, i )
+			if ( failes == 0 && leastFails > 0 )
+			{
+				#if DEBUG_SHIELD_ANGLES
+					DebugDrawLine( origin, origin + AnglesToForward( testAngles ) * 128, <0, 128, 0>, true, DEBUG_SHIELD_DRAW_TIME )
+					bestAngles = testAngles
+					leastFails = 0
+				#else
+					return testAngles
+				#endif
+			}
+			else if ( failes < leastFails )
+			{
+				leastFails = failes
+				bestAngles = testAngles
+				printt( "new bestAngles", failes, i, dir )
+			}
+
+			#if DEBUG_SHIELD_ANGLES
+				if ( debug )
+					wait DEBUG_SHIELD_DRAW_TIME
+			#endif
+		}
+	}
+
+	#if DEBUG_SHIELD_ANGLES
+		DebugDrawLine( origin, origin + AnglesToForward( bestAngles ) * 128, <255, 128, 64>, true, 3 )
+	#endif
+	if ( leastFails > MAX_FAILS )
+		return null
+	return bestAngles
+}
+
+int function CheckShieldFit( vector origin, vector angles, int step )
+{
+	const STEPS = 6
+	const SHIELD_ARC = 160
+	const DEGREE_PER_STEP = SHIELD_ARC / STEPS
+	const START_DEGREE = DEGREE_PER_STEP * -(STEPS-1)/2.0
+	const TRACE_START_HEIGHT = 32
+	const MINS = <-8, -8, 0>
+	const MAXS = <8, 8, DEPLOYABLE_SHIELD_HEIGHT - TRACE_START_HEIGHT * 2 >
+
+	int streak = 0
+	int longest = 0
+
+	for( int i = 0; i < STEPS; i++ )
+	{
+		float traceAngle = START_DEGREE + i * DEGREE_PER_STEP
+
+		vector forward = AnglesToForward( ClampAngles( angles + <0,traceAngle,0> ) )
+		vector traceStart = origin + <0,0,TRACE_START_HEIGHT>
+		vector traceEnd = traceStart + forward * DEPLOYABLE_SHIELD_RADIUS
+
+		TraceResults traceResult = TraceHull( traceStart, traceEnd, MINS, MAXS, null, TRACE_MASK_SHOT_BRUSHONLY, TRACE_COLLISION_GROUP_PLAYER )
+		if ( traceResult.fraction == 1 )
+		{
+			streak++
+			if ( longest < streak )
+				longest = streak
+			#if DEBUG_SHIELD_ANGLES
+				DebugDrawLine( traceStart, traceEnd, COLOR_GREEN, true, DEBUG_SHIELD_DRAW_TIME )
+			#endif
+		}
+		else
+		{
+			streak = 0
+			#if DEBUG_SHIELD_ANGLES
+				DebugDrawLine( traceStart, traceEnd, COLOR_RED, true, DEBUG_SHIELD_DRAW_TIME )
+			#endif
+		}
+	}
+
+	return STEPS - longest
+}
+
+void function CreateDroneBeam( entity drone, entity shieldEnt )
+{
+	//const OFFSET = <-86,0,48>
+	const OFFSET = <-82,0,40>
+
+	vector forward = shieldEnt.GetForwardVector()
+	vector up = shieldEnt.GetUpVector()
+	vector shieldCenter = shieldEnt.GetOrigin() + forward * OFFSET.x + up * OFFSET.z
+	vector cpAngles = VectorToAngles( forward )
+	cpAngles = AnglesCompose( cpAngles, <90,0,0> )
+
+	entity controlPoint = CreateEntity( "info_placement_helper" )
+	SetTargetName( controlPoint, UniqueString( "drone_beam_cpEnd" ) )
+	controlPoint.SetOrigin( shieldCenter )
+	controlPoint.SetAngles( cpAngles )
+	DispatchSpawn( controlPoint )
+
+	controlPoint.SetParent( shieldEnt )
+
+	entity beamFX = CreateDroneBeamWithControlPoint( drone, DRONE_BEAM_EFFECT_DUD, controlPoint )
+
+	thread DestroyDroneBeamOnSignal( drone, shieldEnt, beamFX, controlPoint )
+}
+
+entity function CreateDroneBeamWithControlPoint( entity drone, asset effect, entity controlPoint )
+{
+	entity beamSystem = CreateEntity( "info_particle_system" )
+	if ( IsValid( drone ) )
+	{
+		beamSystem.RemoveFromAllRealms()
+		beamSystem.AddToOtherEntitysRealms( drone )
+	}
+	beamSystem.kv.cpoint1 = controlPoint.GetTargetName()
+	beamSystem.SetValueForEffectNameKey( effect )
+	beamSystem.kv.start_active = 1
+	beamSystem.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE //ENTITY_VISIBLE_TO_NOBODY	// don't start visible
+	beamSystem.SetParent( drone, "EYEGLOW", false, 0.0 )
+	DispatchSpawn( beamSystem )
+
+	return beamSystem
+}
+
+void function DestroyDroneBeamOnSignal( entity drone, entity shieldEnt, entity beamFX, entity controlPoint )
+{
+	EndSignal( drone, "OnDestroy" )
+	EndSignal( shieldEnt, "OnDestroy" )
+	EndSignal( drone, "destroy_beam" )
+
+	OnThreadEnd(
+		function() : ( beamFX, controlPoint )
+		{
+			if ( IsValid( beamFX ) )
+			{
+				beamFX.Destroy()
+			}
+			if ( IsValid( controlPoint ) )
+			{
+				controlPoint.Destroy()
+			}
+		}
+	)
+
+	WaitForever()
+}
+
+bool function ClientCommand_CancelRevive( entity player, array<string> args )
+{
+	if( args.len() != 0 )
+		return true
+	
+	if ( !IsValid( player ) )
+		return true
+
+	if( !player.IsPlayer() )
+		return true
+
+	array<entity> players = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	foreach ( entity teammate in players )
+	{
+		if( PlayerHasPassive( teammate, ePassives.PAS_MEDIC ) )
+		{
+			player.p.droneRevivingPlayer.Signal( "OnDestroy" )
+		}
+	}
+	
+	return true
+}
 #endif
 
 #if CLIENT
 void function AttemptCancelRevive( entity player )
 {
-	if ( !PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
+	#if DEVELOPER
+	Warning( "AttemptCancelRevive " + player )
+	#endif
+	if( !player.ContextAction_IsBeingRevived() )
 		return
 
-	if ( !TryCharacterButtonCommonReadyChecks( player ) )
+	if( !IsEntLifelineReviveTarget( player ) )
 		return
 
-	Remote_ServerCallFunction( "ClientCallback_CancelRevive" )
+	if ( player != GetLocalViewPlayer() )
+		return
+	
+	if ( player != GetLocalClientPlayer() )
+		return
 
+	player.ClientCommand("ClientCommand_CancelRevive")
+}
+
+bool function IsEntLifelineReviveTarget( entity ent )
+{
+	if( !IsValid( ent ) )
+		return false
+
+	entity healer = ent.GetPlayerNetEnt( "revivePlayerHealer" )
+	if( !IsValid( healer ) )
+		return false
+	
+	entity healerOwner = healer.GetOwner()
+
+	if( !IsValid( healerOwner ) )
+		return false
+
+	asset settings = healerOwner.GetPlayerSettings()
+
+	array<entity> players = GetPlayerArrayOfTeam_Alive( ent.GetTeam() )
+
+	foreach ( entity teammate in players )
+	{
+		if( teammate.GetPlayerSettings() == settings )
+			return true
+	}
+
+	return false
+}
+
+void function ServerToClient_NumSelfRevivesUsed( entity medic, int numSelfRevives )
+{
+	if( medic != GetLocalClientPlayer() )
+		return
+
+	if( !IsValid( medic ) )
+		return
+
+	medic.p.numSelfRevivesUsed = numSelfRevives
 }
 
 void function ServerToClient_DisplayCancelReviveHintForPlayer()
