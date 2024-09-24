@@ -503,9 +503,9 @@ global const TITAN_GARAGE_TICK_TIME 					= 1
 global const TITAN_GARAGE_HEALTH_REGEN					= 150
 global const TITAN_GARAGE_MAX_HEALTH_REGEN				= 300
 
-global const MAX_DAMAGE_HISTORY_TIME 					= SECONDS_PER_MINUTE * 5
+global const MAX_DAMAGE_HISTORY_TIME 					= 30
 global const MAX_NPC_KILL_STEAL_PREVENTION_TIME			= 0.0 //fatal damage from an NPC will check for assisting players and give them the kill
-global const MAX_ASSIST_TIME_GAP						= 0.75 //give assist to teammate if damaged was dealt to the enemy within the time gap.
+global const MAX_ASSIST_TIME_GAP						= 30 //give assist to teammate if damaged was dealt to the enemy within the time gap.
 
 global const TITAN_DOOMED_EJECT_PROTECTION_TIME			= 1.5
 global const TITAN_DOOMED_INVUL_TIME 					= 0.25
@@ -542,11 +542,6 @@ global const PROWLER_EXECUTION_ANGLE = 40
 //Should move to set file when we get the chance, similar to titan melee damage settings
 global const HUMAN_MELEE_KICK_ATTACK_DAMAGE = 120
 global const HUMAN_MELEE_KICK_ATTACK_PUSHBACK_MULTIPLIER = 600
-
-global const TITAN_EXECUTION_RANGE = 350
-global const TITAN_EXECUTION_ANGLE = 45
-global const TITAN_MELEE_MAX_VERTICAL_PUSHBACK = 550.0
-//Note: Damage amounts, pushBack and melee lunge speed are defined in set files for the various titans
 
 
 //--------------------------------------------------
