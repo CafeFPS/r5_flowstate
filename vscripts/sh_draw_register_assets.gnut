@@ -335,7 +335,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 		foreach( assetId in videoAssetIds )
 		{
 			asset video = WorldDrawAsset_GetAssetByID( assetId )
-			StartVideoOnChannel( channel, video, false, 0.0 )
+			StartVideoOnChannel( channel, video, false, 1.0 )
 			PauseVideoOnChannel( channel )
 			
 			const MAX_FRAME_WAIT = 10
