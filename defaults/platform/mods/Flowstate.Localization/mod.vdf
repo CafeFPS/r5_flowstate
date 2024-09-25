@@ -15,7 +15,7 @@
 	"enable_healthbar"
 	{
 		"helpString" "Displays flowstate healthbars"
-		"flags" 		"ARCHIVE | RELEASE"
+		"flags" 		"ARCHIVE|RELEASE"
 		
 		"Values"
 		{

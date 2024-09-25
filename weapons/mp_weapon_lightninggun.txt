@@ -144,7 +144,7 @@ WeaponData
 	"sway_move_angle_factor_zoomed"   				"-3"
 	"sway_move_origin_factor_zoomed"  				"-3"
 	"projectile_adjust_to_hand"						"1"
-	"move_speed_modifier"                    		"1.25"
+	"move_speed_modifier"                    		"1.3"
 	
 	Mods
 	{
@@ -157,7 +157,7 @@ WeaponData
 			"fire_mode"   									""
 			"is_semi_auto"									"1"
 			"fire_rate"   									"5"
-			"move_speed_modifier"                    		"1.4"
+			"move_speed_modifier"                    		"1.8"
 
 			"fire_sound_1_player_1p"						"weapon_havoc_altfire_singleshot_1p_IntBase"
 			"fire_sound_1_player_3p"						"weapon_havoc_altfire_singleshot_3p_IntBase"

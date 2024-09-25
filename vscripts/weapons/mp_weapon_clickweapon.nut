@@ -46,8 +46,8 @@ global function Clickweapon_Init
 #endif //CLIENT
 
 const asset TheBestAssetInTheGame 	= $"P_tesla_trap_link_CP"
-const float LG_SINGLE_FIRE_DEBOUNCE = 1.5
-const float LG_DRAG_TIME			= 0.02
+const float LG_SINGLE_FIRE_DEBOUNCE = 0.75 //Incrased fire rate
+const float LG_DRAG_TIME			= 0.5 //Increased the time the fx is alive 
 
 struct BeamSettings 
 {
@@ -318,6 +318,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 							EffectSetDontKillForReplay( file.beamsFxs[ player ] )
 							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
 							EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
+							moverForHand.ClearParent() //to leave the fx alive for a moment
 							if( player.GetPlatformUID() == "1011657326453" ) //proto
 							{
 								thread function () : ( player )
@@ -330,7 +331,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 									}
 								}()
 							}
-						} 
+						}
 						else
 						{
 							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )

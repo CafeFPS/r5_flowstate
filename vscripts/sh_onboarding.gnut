@@ -1289,13 +1289,13 @@ void function OnboardingPlaylistSettings_Init()
 void function SetPlayerSettings( entity player, table settings )
 {
 	foreach( k,v in settings )
-	{		
-		player.kv.k = v
-		
+	{
 		#if ENTITYVAR_DEPRECATED
 			SetEntityVar( player, k, v )
 		#else
-			player.SetPlayerClassVar( k, v )
+			//Thanks amos for this implementation <3. Cafe
+			//SetClassSettingsVar( expect string( k ), expect float( v ).tostring() ) //for all players
+			player.SetClassVar( expect string( k ), expect float( v ).tostring() )
 		#endif
 	}
 }

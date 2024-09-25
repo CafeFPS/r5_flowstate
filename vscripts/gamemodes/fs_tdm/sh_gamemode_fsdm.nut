@@ -1118,7 +1118,83 @@ void function Sh_CustomTDM_Init()
 			
 			return
 		}
-
+		if( Flowstate_IsFastInstaGib() )
+		{
+			vector shipmentstartingorg = <6779,9016,11687>
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"Shipment By AyeZee",
+					[
+						NewLocPair(< 6848.7000, -3415.7000, 99.9000 > + shipmentstartingorg, < 0, -135.0003, 0 >),
+						NewLocPair(< 4750.8930, -5191.4390, 99.9000 > + shipmentstartingorg, < 0, 51.7723, 0 >),
+						NewLocPair(< 4765.2000, -3380.5000, 99.9000 > + shipmentstartingorg, < 0, -47.3245, 0 >),
+						NewLocPair(< 6886.6280, -5163.9330, 99.9000 > + shipmentstartingorg, < 0, 140.8409, 0 >),
+						NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + shipmentstartingorg, < 0, -167.7632, 0 >),
+						NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + shipmentstartingorg, < 0, 152.5185, 0 >),
+						NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
+						NewLocPair(< 5621, -5041, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
+						NewLocPair(< 4763, -4508, 99.9000 > + shipmentstartingorg, < 0, -38.7503, 0 >),
+						NewLocPair(< 4750.1250, -4088.1680, 99.9000 > + shipmentstartingorg, < 0, 40.1670, 0 >)
+					],
+					<0, 0, 3000>
+				)
+			)
+			
+			vector killhousestartingorg = <-2961,-13240,-2810>
+			Shared_RegisterLocation(
+			NewLocationSettings(
+					"Killhouse By AyeZee",
+					[
+						NewLocPair(< 156.6777, -1466.7410, 9.4000 > + killhousestartingorg,< 0, 131.0375, 0 >),
+						NewLocPair(< -1167.9380, -1466.3340, 9.4000 > + killhousestartingorg,< 0, 44.6976, 0 >),
+						NewLocPair(< -1170.2510, -996.2968, 9.4000 > + killhousestartingorg,< 0, -0.5495, 0 >),
+						NewLocPair(< 217.9963, -1035.2670, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
+						NewLocPair(< 217.9963, -563, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
+						NewLocPair(< 200.7263, 979.5248, 9.4000 > + killhousestartingorg,< 0, -147.1917, 0 >),
+						NewLocPair(< -1162.3790, 980.8486, 9.4000 > + killhousestartingorg,< 0, -45.0161, 0 >),
+						NewLocPair(< -1164.7130, 702.9291, 9.4000 > + killhousestartingorg,< 0, 2.9566, 0 >),
+						NewLocPair(< 208.7000, 707.6936, 9.4000 > + killhousestartingorg,< 0, -147.0432, 0 >),
+						NewLocPair(< -1171.6520, 7.8723, 9.4000 > + killhousestartingorg,< 0, 7.0074, 0 >),
+					],
+					<0, 0, 3000>
+				)
+			)
+			
+			vector nuketownstartingorg = <28524,23022,-3375>
+			Shared_RegisterLocation(
+			NewLocationSettings(
+					"Nuketown By AyeZee",
+					[
+						NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
+						NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
+						NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
+						NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
+						NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
+						NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+						NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+						NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+						NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+						NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
+					],
+					<0, 0, 3000>
+				)
+			)
+			
+			Shared_RegisterLocation(
+			NewLocationSettings(
+					"Skill trainer By CafeFPS",
+						[
+						   NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
+						   NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
+						   NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
+						   NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
+						],
+					   <0, 0, 3000>,$"rui/flowstatelocations/skilltrainer"
+					)
+				)
+			
+			return
+		}
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			Shared_RegisterLocation(
