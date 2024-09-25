@@ -1137,6 +1137,9 @@ global struct ServerPlayerStruct
 	//Lifeline drone update
 	int connectedLifelineDrones = 0 //Limiting to a max of 2 connected drones at a time. There is a code limit for healing sources.
 	entity droneRevivingPlayer
+	
+	//Cloak
+	float lastCloakTime
 }
 
 global struct ChallengeScore

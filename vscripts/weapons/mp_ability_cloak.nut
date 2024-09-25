@@ -5,29 +5,30 @@ var function OnWeaponPrimaryAttack_cloak( entity weapon, WeaponPrimaryAttackPara
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 
-	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
-		return
+	Assert( IsValid( ownerPlayer ) && ownerPlayer.IsPlayer() )
+
+	if ( IsValid( ownerPlayer ) && ownerPlayer.IsPlayer() )
+	{
+		if ( ownerPlayer.GetCinematicEventFlags() & CE_FLAG_CLASSIC_MP_SPAWNING )
+			return false
+		
+		if ( ownerPlayer.GetCinematicEventFlags() & CE_FLAG_INTRO )
+			return false
+
+		if ( weapon.HasMod( "survival_finite_ordnance" ) )
+		{
+			entity activeWeapon = ownerPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			if ( activeWeapon != null && activeWeapon.IsWeaponOffhand() )
+				return false
+		}
+	}
 
 	PlayerUsedOffhand( ownerPlayer, weapon )
 
 	#if SERVER
 		float duration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
-		EnableCloak( ownerPlayer, 2.0 )
-
-		thread(void function() : ( ownerPlayer )
-		{
-			while( IsValid( ownerPlayer ) && IsCloaked( ownerPlayer ) )
-			{
-				if( ownerPlayer.GetVelocity() != <0,0,0> && IsCloaked( ownerPlayer ) )
-					ownerPlayer.SetCloakFlicker( 0.5, 0.1 )
-
-				WaitFrame()
-			}
-		}())
-
-		#if BATTLECHATTER_ENABLED
-			TryPlayWeaponBattleChatterLine( ownerPlayer, weapon )
-		#endif
+		EnableCloak( ownerPlayer, duration )
+		TryPlayWeaponBattleChatterLine( ownerPlayer, weapon )
 		//ownerPlayer.Signal( "PlayerUsedAbility" )
 	#endif
 
