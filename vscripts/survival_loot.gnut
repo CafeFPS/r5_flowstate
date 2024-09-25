@@ -4327,6 +4327,7 @@ float function GetThrowYawOffsetFromPlayer( entity player )
 void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shouldSwitch )
 {
 	#if DEVELOPER
+	DumpStack()
 	printt( "SURVIVAL_AutoEquipOrdnanceFromInventory" )
 	#endif
 	
@@ -4404,6 +4405,12 @@ void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shoul
 				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, weapon.GetWeaponClassName() )
 			}
 		}
+
+		if( Flowstate_IsHaloMode() )
+		{
+			player.TakeWeaponByEntNow( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) )
+		}
+
 	}
 	else
 	{
@@ -5558,8 +5565,6 @@ void function RemoveCallback_LootPhysicsParented( entity ent, void functionref( 
 //TODO: Create separate logic for halo specific loot dropping.
 const array<string> VALID_FOR_HALO = 
 [ 
-	"mp_weapon_grenade_emp", 
-	"mp_weapon_frag_grenade", 
 	"mp_weapon_haloassaultrifle",  
 	"mp_weapon_haloshotgun", 
 	"mp_weapon_halosmg", 
