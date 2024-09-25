@@ -308,6 +308,7 @@ void function WeaponUtility_Init()
 		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
 			AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
+			AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_plasma_grenade_halomod, EMP_DamagedPlayerOrNPC )
 			AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, EMP_DamagedPlayerOrNPC )
 		}
 		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, EMP_DamagedPlayerOrNPC )
@@ -1279,7 +1280,7 @@ bool function PlantStickyEntity( entity ent, table collisionParams, vector angle
 			{
 				ent.SetParentWithHitbox( collisionParams.hitEnt, collisionParams.hitbox, true )
 			}
-			else
+			else if( collisionParams.hitEnt.GetParent() != ent )
 			{
 				ent.SetParent( collisionParams.hitEnt )
 			}
@@ -3738,6 +3739,9 @@ void function EMPGrenade_AffectsAccuracy( entity npcTitan )
 
 void function EMPGrenade_EffectsPlayer( entity player, var damageInfo )
 {
+	if( Flowstate_IsHaloMode() )
+		return
+	
 	player.Signal( "OnEMPPilotHit" )
 	player.EndSignal( "OnEMPPilotHit" )
 
