@@ -1929,11 +1929,10 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	PlayerRestoreHP(player, 100, CTF_Equipment_GetDefaultShieldHP())
 
 	TpPlayerToSpawnPoint(player)
-	array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
+	array<string> loot = ["health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item)
 
-	SURVIVAL_EquipOrdnanceFromInventory( player, "mp_weapon_frag_grenade" )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 
