@@ -152,7 +152,7 @@ void function SetCommonScoreRUIVars( var rui )
 		int pl = Playlist()
 
 		if( Flowstate_IsHaloMode() )
-			RuiSetString( rui, "gameModeString", "HALO DM" )
+			RuiSetString( rui, "gameModeString", "HALO SLAYER" )
 			
 		switch( pl )
 		{

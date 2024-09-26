@@ -1647,14 +1647,16 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] )
 
-	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")	
-
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
 		const array<string> loot = [ "mp_weapon_frag_grenade_halomod", "mp_weapon_plasma_grenade_halomod" ]
 			foreach(item in loot)
 			{
+				#if DEVELOPER
+				SURVIVAL_AddToPlayerInventory(player, item, 5)
+				#else
 				SURVIVAL_AddToPlayerInventory(player, item, 2)
+				#endif
 				SURVIVAL_EquipOrdnanceFromInventory( player, item )
 			}
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
@@ -1664,6 +1666,7 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 
 	if( !flowstateSettings.is_halo_gamemode )
 	{
+		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 		WpnPulloutOnRespawn(player, 0)
 		thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 		//maki script
@@ -3120,8 +3123,12 @@ void function SimpleChampionUI()
 								//Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
 						}()
 					}
-					else if( !is1v1EnabledAndAllowed() )
+					else if( !is1v1EnabledAndAllowed() && !flowstateSettings.is_halo_gamemode )
 						LocalMsg( player, "#FS_Deathmatch", "", eMsgUI.DEFAULT, 5, "", file.selectedLocation.name )
+					else if( flowstateSettings.is_halo_gamemode )
+					{
+						LocalMsg( player, "#FS_HALOSLAYER", "", eMsgUI.DEFAULT, 5, "", file.selectedLocation.name )
+					}
 						//Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
 
 					if( !IsValid( player ) || !IsAlive( player ) )
@@ -4336,7 +4343,7 @@ void function HaloMod_HandlePlayerModel( entity player )
 	{
 		printt( "new master chief assigned, color:", assignedColor, player )
 
-		if( RandomInt( 15 ) == 0 )
+		if( RandomInt( 50 ) == 1 )
 			assignedColor = 420
 		else
 		{
@@ -4403,13 +4410,13 @@ void function HaloMod_HandlePlayerModel( entity player )
 		break
 	}
 
-	#if DEVELOPER
-	if( player.GetPlayerName() == "7bt2ft55kl7i" || player.GetPlayerName() == "r5r_ColombiaFPS" )
-	{
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_haloelite.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_haloelite.rmdl" )
-	}
-	#endif
+	// #if DEVELOPER
+	// if( player.GetPlayerName() == "7bt2ft55kl7i" || player.GetPlayerName() == "r5r_CafeFPS" )
+	// {
+		// player.SetBodyModelOverride( $"mdl/flowstate_custom/w_haloelite.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_haloelite.rmdl" )
+	// }
+	// #endif
 }
 
 void function CharSelect( entity player)

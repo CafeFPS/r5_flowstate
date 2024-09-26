@@ -309,6 +309,46 @@ global const table HL1_MOVEMENT =
 	["wallrun"] = 0.0
 }
 
+global const table HALO_MOVEMENT_NEW = 
+{
+	["acceleration"] = 550.0,
+	["airStrafeAcceleration"] = 0.0,
+	["airStrafeEnabled"] = 0.0,
+	["airStrafeTaperFinish"] = 0.01,
+	["airStrafeTaperStart"] = 0.01,
+	["airacceleration"] = 0.0,
+	["airspeed"] = 0.0,
+	["antiMultiJumpHeightFrac"] = 1.0,
+	["automantle"] = 0.0,
+	["automantle_enable"] = 0.0,
+	["climbEnabled"] = 0.0,
+	["climbheight"] = 0.0,
+	["glideEnabled"] = 0.0,
+	["glideRedirectJumpHeightFinishOffset"] = 0.0,
+	["glideRedirectJumpHeightStartOffset"] = 0.0,
+	["glideRedirectSideways"] = 0.0,
+	["glideStrafe"] = 0.0,
+	["glideStrafeTaperFinish"] = 0.0,
+	["glideStrafeTaperStart"] = 0.0,
+	["gravityscale"] = 0.7,
+	["jumpheight"] = 65.0,
+	["landslowdownduration"] = 0.0,
+	["player_slideBoostEnabled"] = 0.0,
+	["speed"] = 162.5,
+	["sprintspeed"] = 243.0,
+	["skip_speed_retain"] = 99999.0,
+	["skip_speed_reduce"] = 0.0,
+	["skip_time"] = 0.0,
+	["slideRequiredStartSpeed"] = 9999999.0,
+	["slideRequiredStartSpeedAir"] = 9999999.0,
+	["slideSpeedBoost"] = 0.0,
+	["slideSpeedBoostCap"] = 0.0,
+	["slideVelocityDecay"] = 0.0,
+	["superjumpCanUseAfterWallrun"] = 0.0,
+	["superjumpMinHeight"] = 0.0,
+	["wallrun"] = 0.0
+}
+
 global const table HALO_MOVEMENT = 
 {
 	["acceleration"] = 550.0,
@@ -318,6 +358,8 @@ global const table HALO_MOVEMENT =
 	["airStrafeTaperStart"] = 0.01,
 	["airacceleration"] = 0.0,
 	["airspeed"] = 0.0,
+	["speed"] = 185.0,
+	// ["sprintspeed"] = 210.0,//43.0,
 	["antiMultiJumpHeightFrac"] = 1.0,
 	["automantle"] = 0.0,
 	["automantle_enable"] = 0.0,

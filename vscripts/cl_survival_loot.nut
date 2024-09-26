@@ -260,10 +260,10 @@ int function Survival_Health_GetSelectedHealthPickupType()
 
 void function UseSelectedHealthPickupType( entity player )
 {
-	if( Flowstate_IsHaloMode() )
+	if( Flowstate_IsHaloMode() ) //Make a system aruond this for a third ability, hook UpdateDpadHud as well to show an icon and a cooldown one
 	{
 		printt("Hooked to do something hehe find how to execute the weapon on the consumable slot, so we can add a third ability")
-
+		ActivateOffhandWeaponByIndex( OFFHAND_SLOT_FOR_CONSUMABLES )
 		return
 	}
 
