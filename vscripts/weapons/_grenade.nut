@@ -35,7 +35,7 @@ global function Grenade_Launch
 
 const EMP_MAGNETIC_FORCE = 1600
 const MAG_FLIGHT_SFX_LOOP = "Explo_MGL_MagneticAttract"
-const float HALO_GRENADE_COOLDOWN = 1.5
+const float HALO_GRENADE_COOLDOWN = 3.0
 
 //Proximity Mine Settings
 global const PROXIMITY_MINE_EXPLOSION_DELAY = 1.2
@@ -201,9 +201,8 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 		return
 	}
 	
-	if( Time() < weapon.GetNextAttackAllowedTime() )
+	if( Time() < weaponOwner.p.haloGrenadeAttackTime + HALO_GRENADE_COOLDOWN )
 	{
-		Warning( "In Cooldown " + weapon.GetNextAttackAllowedTime() )
 		#if CLIENT
 			SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
 		#endif
@@ -212,7 +211,7 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	}
 	
 	weaponOwner.p.haloGrenadeAttackTime = Time()
-	weapon.OverrideNextAttackTime( Time() + HALO_GRENADE_COOLDOWN )
+	weapon.OverrideNextAttackTime( Time() + 3.0 )
 
 	WeaponPrimaryAttackParams attackParams
 
