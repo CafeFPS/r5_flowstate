@@ -12,33 +12,41 @@ WeaponData
 	"weapon_type_flags"								"WPT_GRENADE"
 	"weaponClass" 									"human"
 	"weaponType"									"anti_titan"
-	"is_toss_weapon"								"1"
+	"is_toss_weapon"								"0"
 	"menu_category"									"ordnance"
 
 	"minimap_reveal_distance"						"32000"
 	"leveled_pickup"								"1"
-	"dev_menu_type"									"offhand"
-	"show_grenade_indicator"						"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+	"offhand_default_inventory_slot"				"0"
+	"show_grenade_indicator"						"0"
 	"show_grenade_indicator_to_owner"				"1"
-    "hide_when_holstered"							"1"
-
+	"projectile_ignores_vortex"						"fall"
     "does_not_interrupt_cloak"						"1"
     "ads_dof_disable"								"1"
     "allow_gibraltar_shield"                        "0"
-    "activitymodifier"								"ordnance"
+	
+    "hide_when_holstered"							"1"
+	"offhand_keep_primary_in_hand"					"1"
+	"offhand_holster_primary"						"0"
+	"hide_holstered_sidearm_when_active"			"0"
+	"offhand_interupts_weapon_anims"				"0"
+	"holster_time"	"0"
 
-	"OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent"
-	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
+	// "OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent"
+	// "OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
 	"OnWeaponTossCancel"							"Grenade_OnWeaponTossCancelDrop"
 	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
+	"OnWeaponActivate"								"Grenade_OnWeaponReady_Halo"
 	"OnProjectileCollision"							"OnProjectileCollision_weapon_grenade_emp"
 
 	// Menu Stats
 
 	// Models
-	"viewmodel"										"mdl/weapons/shuriken/ptpov_shuriken_held.rmdl"
-	"playermodel"									"mdl/weapons/shuriken/w_shuriken.rmdl"
-	"projectilemodel"								"mdl/weapons/shuriken/w_shuriken.rmdl"
+	"viewmodel"										"mdl/flowstate_custom/halomod/ptpov_plasma_grenade_halomod.rmdl"
+	// "viewmodel"										"mdl/weapons/grenades/ptpov_gibraltar_beacon.rmdl"
+	"playermodel"									"mdl/flowstate_custom/halomod/w_plasma_grenade_halomod.rmdl"
+	"projectilemodel"								"mdl/flowstate_custom/halomod/w_plasma_grenade_halomod.rmdl"
 
 	"offhand_default_inventory_slot"				"0"
 
@@ -98,10 +106,8 @@ WeaponData
 
 	"damage_shield_scale"                           "1"
 
-	MP_BASE
-	{
 		"fire_mode"   									"automatic"
-		"is_semi_auto"									"1"
+		"is_semi_auto"									"0"
 		"ammo_display"									"bar"
 		"ammo_stockpile_max"							"200"
 		"ammo_clip_size"   								"200"
@@ -116,52 +122,27 @@ WeaponData
 		"npc_explosion_damage"							"50"
 		"npc_explosion_damage_heavy_armor"				"350"
 
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
-	}
-
-	SP_BASE
-	{
-		"fire_mode"										"offhand"
-		"is_semi_auto"									"<KEEP_DEFAULT>"
-
-		"npc_explosion_damage"							"25"
-		"npc_explosion_damage_heavy_armor"				"350"
-
-		"ammo_clip_size"   								"4"
-		"ammo_default_total"							"1"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"1"
-		"ammo_per_shot"									"1"
-		"ammo_stockpile_max"							"4"
-		"regen_ammo_refill_rate"						"0"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-
-		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
-	}
-
 
 	"dof_zoom_nearDepthStart"						"0.0"
 	"dof_zoom_nearDepthEnd"							"0.0"
 	"dof_nearDepthStart"							"0.0"
 	"dof_nearDepthEnd"								"0.0"
 
+
 	// Behavior
 
 	"cooldown_type"									"ammo_instant"
 	"max_cook_time"									"-1"
-	"grenade_fuse_time"								"0.0"
-    "start_fuse_on_launch"                          "0"
-	"grenade_ignition_time"                         "2.8"
-	"fire_rate"   									"1.0"
-	"deploy_time" 									"0.5"
+	"grenade_fuse_time"								"2.8"
+	"start_fuse_on_launch"                          "1"
+	"grenade_ignition_time"							"0.0"
+	"fire_rate"   									"3"
+	"deploy_time" 									"0"
 	"vortex_refire_behavior"  						"grenade"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"0"
-	"allow_empty_click"   							"1"
+	"allow_empty_click"   							"0"
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
@@ -171,31 +152,16 @@ WeaponData
 	"grenade_bounce_randomness"						"0.2"
 	"grenade_bounce_extra_vertical_randomness"		"0.2"
 	"grenade_roll_vel_frac_per_second"				"0.1"
-	"grenade_touch_triggers_on_impact"				"1"
-	"grenade_ignore_planted_grenades"               "1"
-
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"
-
-	"toss_pullout_time"								"0.2"
-	"toss_time"										"0.4"
-	"toss_overhead_time"							"0.7"
-
-	"projectile_launch_speed"						"2200"
-	"projectile_launch_pitch_offset"				"2"
+	"toss_pullout_time"								"0"
+	"toss_time"										"0"
+	"toss_overhead_time"							"0"
+	"projectile_launch_speed"						"1300"
+	"projectile_launch_pitch_offset"				"9"
 	"projectile_first_person_offset_fraction"		"2"
-	"projectile_gravity_scale"						"1.6"
-
-	"grenade_disc_throw"							"1"
-	"grenade_death_drop_velocity_scale"				"0.05"
-	"grenade_death_drop_velocity_extraUp"			"0.10"
 
 	"projectile_inherit_owner_velocity_scale"		"1.0"
-
-	"stick_pilot"                                   "1"
-	"stick_titan"                                   "1"
-	"stick_npc"                                     "1"
-	"stick_drone"                                   "1"
 
 	// Spread
 
@@ -203,154 +169,14 @@ WeaponData
 
 	// View Kick
 	"viewkick_spring" 								"pistol"
-
-
-	// Bob
-	"bob_cycle_time"  								"0.4"
-	"bob_vert_dist"   								"0.19"
-	"bob_horz_dist"   								"0.1"
-	"bob_max_speed"   								"150"
-	//"bob_pitch"   									"0.75"
-	//"bob_yaw" 										"-1.7"
-	//"bob_roll"										"1.2"
-
-	// Bob zoomed
-	"bob_cycle_time_zoomed"  								"0.4"
-	"bob_vert_dist_zoomed"   								"0.19"
-	"bob_horz_dist_zoomed"   								"0.1"
-	"bob_max_speed_zoomed"   								"150"
-
-	// View Drift
-	//"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
-	//"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
-	//"viewdrift_hipfire_air_scale_pitch"   			"0.5"
-	//"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
-	//"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
-	//"viewdrift_hipfire_air_scale_yaw" 				"0.22"
-	//"viewdrift_hipfire_speed_pitch"   				"0.6"
-	//"viewdrift_hipfire_speed_yaw" 					"1.22"
-
-	// Rumble
-	"fire_rumble"  										"rumble_grenadier"
-
-	// Sway
-	"sway_rotate_attach"  							"jx_c_pov"
-	"sway_min_x"  									"-0.3"
-	"sway_min_y"  									"-0.5"
-	"sway_min_z"  									"-0.5"
-	"sway_max_x"  									"0.3"
-	"sway_max_y"  									"0.5"
-	"sway_max_z"  									"0.1"
-	"sway_min_pitch"  								"-3"
-	"sway_min_yaw"									"-3.5"
-	"sway_min_roll"   								"-1"
-	"sway_max_pitch"  								"3"
-	"sway_max_yaw"									"3.5"
-	"sway_max_roll"   								"2"
-	"sway_translate_gain" 							"4"
-	"sway_rotate_gain"								"7"
-	"sway_move_forward_translate_x"   				"0"
-	"sway_move_forward_translate_z"   				"-0.5"
-	"sway_move_back_translate_x"  					"-2"
-	"sway_move_back_translate_z"  					"-1"
-	"sway_move_left_translate_y"  					"-1"
-	"sway_move_left_translate_z"  					"-0.5"
-	"sway_move_left_rotate_roll"  					"-1"
-	"sway_move_right_translate_y" 					"1"
-	"sway_move_right_translate_z" 					"-0.5"
-	"sway_move_right_rotate_roll" 					"2"
-	"sway_move_up_translate_z"						"-1"
-	"sway_move_down_translate_z"  					"1"
-	"sway_turn_left_rotate_yaw"   					"-2"
-	"sway_turn_right_rotate_yaw"  					"2"
-	"sway_turn_up_rotate_pitch"   					"2"
-	"sway_turn_down_rotate_pitch" 					"-2"
-	"sway_turn_angle_factor"  						"-0.5"
-	"sway_turn_origin_factor" 						"0"
-	"sway_turn_angle_factor_zoomed"   				"0"
-	"sway_turn_origin_factor_zoomed"  				"0.05"
-	"sway_move_angle_factor"  						"0.5"
-	"sway_move_origin_factor" 						"0.5"
-	"sway_move_angle_factor_zoomed"   				"0"
-	"sway_move_origin_factor_zoomed"  				"0.03"
-	"sway_gain"   									"15.0"
-
-	"sway_rotate_attach_zoomed"  							"jx_c_pov"
-	"sway_min_x_zoomed"  									"-0.3"
-	"sway_min_y_zoomed"  									"-0.5"
-	"sway_min_z_zoomed"  									"-0.5"
-	"sway_max_x_zoomed"  									"0.3"
-	"sway_max_y_zoomed"  									"0.5"
-	"sway_max_z_zoomed"  									"0.1"
-	"sway_min_pitch_zoomed"  								"-3"
-	"sway_min_yaw_zoomed"									"-3.5"
-	"sway_min_roll_zoomed"   								"-1"
-	"sway_max_pitch_zoomed"  								"3"
-	"sway_max_yaw_zoomed"									"3.5"
-	"sway_max_roll_zoomed"  								"2"
-	"sway_translate_gain_zoomed" 							"4"
-	"sway_rotate_gain_zoomed"								"7"
-	"sway_move_forward_translate_x_zoomed"   				"0"
-	"sway_move_forward_translate_z_zoomed"   				"-0.5"
-	"sway_move_back_translate_x_zoomed"  					"-2"
-	"sway_move_back_translate_z_zoomed"  					"-1"
-	"sway_move_left_translate_y_zoomed"  					"-1"
-	"sway_move_left_translate_z_zoomed"  					"-0.5"
-	"sway_move_left_rotate_roll_zoomed"  					"-1"
-	"sway_move_right_translate_y_zoomed" 					"1"
-	"sway_move_right_translate_z_zoomed" 					"-0.5"
-	"sway_move_right_rotate_roll_zoomed" 					"2"
-	"sway_move_up_translate_z_zoomed"						"-1"
-	"sway_move_down_translate_z_zoomed"  					"1"
-	"sway_turn_left_rotate_yaw_zoomed"   					"-2"
-	"sway_turn_right_rotate_yaw_zoomed"  					"2"
-	"sway_turn_up_rotate_pitch_zoomed"   					"2"
-	"sway_turn_down_rotate_pitch_zoomed" 					"-2"
-	"sway_turn_angle_factor_zoomed"  						"-0.5"
-	"sway_turn_origin_factor_zoomed" 						"0"
-	"sway_move_angle_factor_zoomed"  						"0.5"
-	"sway_move_origin_factor_zoomed" 						"0.5"
-	"sway_gain_zoomed"   									"15.0"
-	"sway_turn_angle_factor_zoomed"   				"0"
-	"sway_turn_origin_factor_zoomed"  				"0.05"
-	"sway_move_angle_factor_zoomed"   				"0"
-	"sway_move_origin_factor_zoomed"  				"0.03"
-
-	// NPC
-	"npc_min_range"   								"600"
-	"npc_max_range"   								"1200"
-
+	"red_crosshair_range" 							"0"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
-	"fire_anim_rate"  								"1"
-	//"sprintcycle_time"								".55"
+	"fire_anim_rate"  								"10"
+	"sprintcycle_time"								".55"
 
 	Mods
 	{	
-		challenges_infinite_arcstars
-		{
-			"ammo_stockpile_max"							"1"
-			"ammo_clip_size"   								"1"
-			"ammo_default_total"							"1"
-			"ammo_per_shot"									"1"
-			"ammo_min_to_fire"								"1"
-
-			// Regen Ammo
-			"regen_ammo_refill_rate"						"2"
-			"regen_ammo_refill_start_delay"					"0.0"
-			"fire_rate"   									"2"
-			"explosion_damage"								"0"
-			"damage_near_value"   							"69"
-			"damage_far_value"								"69"
-			"damage_near_value_titanarmor"					"69"
-			"damage_far_value_titanarmor" 					"69"
-		}
-		
-		sp_disable_arc_indicator
-		{
-			grenade_arc_indicator_bounce_count				"0"
-		}
-
         survival_finite_ordnance
         {
             "ammo_clip_size"								"100"
@@ -363,33 +189,5 @@ WeaponData
             "regen_ammo_refill_start_delay"					"0.0"
             "ammo_no_remove_from_stockpile"					"1"
         }
-	}
-
-
-	active_crosshair_count				"1"
-	rui_crosshair_index					"0"
-
-	RUI_CrosshairData
-	{
-		DefaultArgs
-		{
-			adjustedSpread				weapon_spread
-			isSprinting					player_is_sprinting
-			isReloading					weapon_is_reloading
-			teamColor					crosshair_team_color
-			isAmped						weapon_is_amped
-			crosshairMovementX          crosshair_movement_x
-			crosshairMovementY          crosshair_movement_y
-		}
-
-		Crosshair_1
-		{
-			"ui"						"ui/crosshair_dot"
-			"base_spread"				"0"
-			Args
-			{
-				isFiring				weapon_is_firing
-			}
-		}
 	}
 }

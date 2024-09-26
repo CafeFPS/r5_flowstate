@@ -119,7 +119,7 @@ WeaponData
 	"reloadempty_time_late1"						"1"
 
 	"deploy_time" 									"0.225" // Quickdraw buff integration after removal. 10% faster handling from base
-    "holster_time"									"0.18"
+    "holster_time"									"0.15"
     "raise_time"  									"0.225"
     "lower_time"  									"0.18"
 	// View Kick

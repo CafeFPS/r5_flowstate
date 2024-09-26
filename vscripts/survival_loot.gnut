@@ -3763,9 +3763,16 @@ void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, b
 	}
 
 	physicsEnt.SetVelocity( vel + baseVel )
-	physicsEnt.PhysicsSetDamping( 0.0, 100.0 )
-
-	thread PhysicsEntDampOnFirstCollision( physicsEnt )
+	
+	if( Flowstate_IsHaloMode() )
+	{
+		physicsEnt.PhysicsSetDamping( 5.0, 100.0 )
+		thread PhysicsEntOnFirstCollision_Halo( physicsEnt )
+	} else
+	{
+		physicsEnt.PhysicsSetDamping( 0.0, 100.0 )
+		thread PhysicsEntDampOnFirstCollision( physicsEnt )
+	}
 
 	if ( drop.GetTargetName() != DEATH_BOX_TARGETNAME )
 	{
@@ -3790,6 +3797,98 @@ void function PhysicsEntDampOnFirstCollision( entity physicsEnt )
 	if ( IsValid( physicsEnt ) )
 	{
 		physicsEnt.PhysicsSetDamping( 1.0, 100.0 )
+	}
+}
+
+void function PhysicsEntOnFirstCollision_Halo( entity physicsEnt )
+{
+	Assert( IsValid( physicsEnt ) )
+	physicsEnt.EndSignal( "OnDestroy" )
+	physicsEnt.WaitSignal( "OnFirstCollision" )
+	
+	physicsEnt.PhysicsSetDamping( 10.0, 100.0 )
+	wait 0.5
+	
+	if ( IsValid( physicsEnt ) )
+	{
+
+		entity ent = physicsEnt.e.lastAttacker
+		
+		ent.ClearParent()
+		
+		if ( IsValid( ent ) && ent.GetNetworkedClassName() == "prop_survival" )
+		{
+			TraceResults trace //= TraceLineHighDetail( physicsEnt.GetOrigin() + <1, 1, 72>, physicsEnt.GetOrigin() - <1, 1, 72>, [physicsEnt, ent], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+
+			array<int> nonReorientTypes = [ eLootType.MAINWEAPON, eLootType.ORDNANCE ]
+			int lootType                = 0
+			bool shouldReorient         = false
+			if ( SURVIVAL_Loot_IsRefValid( ent.e.lootRef ) )
+			{
+				lootType = SURVIVAL_Loot_GetLootDataByRef( ent.e.lootRef ).lootType
+				shouldReorient = !nonReorientTypes.contains( lootType )
+			}
+			entity myNewParent = physicsEnt.GetParent() //trace.hitEnt
+			// bool shouldParent  = ( IsValid( myNewParent ) ) // && trace.hitEnt.HasPusherAncestor() )
+
+			vector origin = ent.GetOrigin()
+			vector angles = ent.GetAngles()
+
+			vector maxs = ent.GetBoundingMaxs()
+			vector mins = ent.GetBoundingMins()
+
+			if ( shouldReorient )
+			{
+				trace = GetGroundPosition( ent.GetOrigin() + <1, 1, 72>, ent.GetOrigin() - <1, 1, 72>, [ ent, physicsEnt ] )
+
+				origin = trace.endPos
+				vector up     = AnglesToUp( ent.GetAngles() )
+				vector normal = trace.surfaceNormal
+				float dot     = DotProduct( up, normal )
+
+				if ( dot < 0.99 )
+				{
+					float angleDiff = acos( dot )
+					vector cross    = Normalize( CrossProduct( normal, up ) )
+
+					if ( Length( cross ) == 1.0 )
+					{
+						angles = RotateAnglesAboutAxis( angles, cross, RadToDeg( angleDiff ) )
+					}
+				}
+
+				origin += <0, 0, -1 * mins.z>
+			}
+			else
+			{
+				trace = TraceLine( ent.GetOrigin() + <0, 0, 16>, ent.GetOrigin() - <0, 0, 8>, [ ent, physicsEnt ], LOOT_TRACE, LOOT_COLLISION_GROUP )
+				TraceResults trace2 = GetGroundPosition( ent.GetOrigin() + <0, 0, 16>, ent.GetOrigin() - <0, 0, 8>, [ ent, physicsEnt ] )
+				vector diff         = trace2.endPos - trace.endPos
+				origin = ent.GetOrigin() + diff
+			}
+
+			if( true )
+			{
+				thread MoveToNewPosition( ent, origin + <1,1,1>, angles )
+			} else
+			{
+				// if ( IsValid( ent ) && IsValid( myNewParent ) )	//seeing rare weird bugs where ent is marked for deletion somehow, so re-checking validity here as a defensive measure
+				// {
+					// ent.SetAbsOriginSmooth( origin )
+					// ent.SetAbsAnglesSmooth( angles )
+
+					// if ( IsValid( ent ) )	//Adding a second defensive layer here after moving the ent to account for destroy triggers marking for delete
+					// {
+						// ent.SetParent( myNewParent, "", true, 0 )
+					// }
+				// }
+			}
+		}
+		ent.Solid()
+
+		physicsEnt.Destroy()
+		
+		// physicsEnt.PhysicsSetDamping( 10.0, 100.0 )
 	}
 }
 
@@ -4868,20 +4967,29 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 		ammoLeftInWeapons[ ammoRef ] <- 0 //player.AmmoPool_GetCount( value )
 	}
 	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-	array<DropWeaponData> playerWeaponData         = player.p.weaponsToDropData
-	array<string> playerWeapons                    = player.p.weaponsToDropRefs
+	array<DropWeaponData> playerWeaponData         = []
+	array<string> playerWeapons                    = []
 	array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
 	LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
 
-	if( mainWeapons.len() == 0 ) //why was this expr > 0 to override??? ~mkos
-	{
-		#if DEVELOPER
-			printt( "weapons to drop overriden") 
-		#endif 
+	#if DEVELOPER
+	Warning( "SURVIVAL_Death_DropLoot_Internal " + mainWeapons.len() + " weapons to drop" )
+	#endif
+	// array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+	// array<DropWeaponData> playerWeaponData         = player.p.weaponsToDropData
+	// array<string> playerWeapons                    = player.p.weaponsToDropRefs
+	// array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
+	// LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
+
+	// if( mainWeapons.len() > 0 ) //why was this expr > 0 to override??? ~mkos
+	// {
+		// #if DEVELOPER
+			// printt( "weapons to drop overriden") 
+		// #endif 
 		
-		playerWeapons = []
-		mainWeapons = []
-	}
+		// playerWeapons = []
+		// mainWeapons = []
+	// }
 
 	foreach ( w in mainWeapons )
 	{
@@ -5483,10 +5591,16 @@ void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
 					ent.SetParent( myNewParent, "", true, 0 )
 				}
 			}
+			#if DEVELOPER
+			Warning( "SurvivalLoot_OnPhysicsDisabled parented " + ent )
+			#endif
 		}
 		else
 		{
 			thread MoveToNewPosition( ent, origin, angles )
+			#if DEVELOPER
+			Warning( "SurvivalLoot_OnPhysicsDisabled moved " + ent )
+			#endif
 		}
 	}
 	else if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )

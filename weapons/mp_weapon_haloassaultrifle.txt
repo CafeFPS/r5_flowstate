@@ -31,6 +31,7 @@ WeaponData
 	"stat_accuracy"   								"45"
 	"stat_rof"										"60"
 
+	"holster_time"									"0.15"
 	// Models
 	"viewmodel"   									"mdl/flowstate_custom/ptpov_haloassaultrifle.rmdl"
 	"playermodel" 									"mdl/flowstate_custom/w_haloassaultrifle.rmdl"
@@ -137,7 +138,7 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"11.2"
-	"reload_time" 									"2.4"
+	"reload_time" 									"2"
 	"reload_time_late1"								"1.2"
 	"reloadempty_time"								"3.1"
 	"reloadempty_time_late1"						"2.0"

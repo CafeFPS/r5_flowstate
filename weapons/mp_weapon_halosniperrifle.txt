@@ -37,7 +37,7 @@
 
 
 	// Behavior - Firing
-	//
+	"holster_time"									"0.15"
 	"fire_rate"                                "1"
 
 	// Behavior - Animation

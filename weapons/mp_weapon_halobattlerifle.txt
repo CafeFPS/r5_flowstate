@@ -26,6 +26,7 @@ WeaponData
 	"OnWeaponStartZoomIn"                    		"OnWeaponZoomIn_HaloModBattleRifle"
 	"OnWeaponStartZoomOut"                   		"OnWeaponZoomOut_HaloModBattleRifle"
 
+	"holster_time"									"0.15"
 	// Menu
 	"menu_category"                                 "ar"
 	"menu_anim_class"                               "medium"
@@ -135,7 +136,7 @@ WeaponData
 	"burst_fire_count"								"3"
 	"burst_fire_delay"								"0.28"  //"0.32"
 
-	"reload_time" 									"2.4"
+	"reload_time" 									"2"
 	"reload_time_late1"								"1.54"
 	"reloadempty_time"								"2.85"
 	"reloadempty_time_late1"						"2.0"

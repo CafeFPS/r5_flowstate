@@ -35,7 +35,7 @@ global function Grenade_Launch
 
 const EMP_MAGNETIC_FORCE = 1600
 const MAG_FLIGHT_SFX_LOOP = "Explo_MGL_MagneticAttract"
-const float HALO_GRENADE_COOLDOWN = 3.0
+const float HALO_GRENADE_COOLDOWN = 1.0
 
 //Proximity Mine Settings
 global const PROXIMITY_MINE_EXPLOSION_DELAY = 1.2
@@ -188,30 +188,54 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	var weaponName = weapon.GetWeaponClassName()	
 	string weaponNameString
 	
-	
+	if( !IsValid( weaponOwner ) )
+		return
+
+	#if DEVELOPER
+	Warning( "Halo nade On Activate. Next Weapon Allowed Attack Time: " + weapon.GetNextAttackAllowedTime() + " - Current Time: " + Time() )
+	#endif
 	if( weaponName != null )
 		weaponNameString = expect string( weaponName )
 	
 	if( !SURVIVAL_GetAllPlayerOrdnance( weaponOwner ).contains( weaponNameString ) )
 	{
-		#if CLIENT
-			SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
+		// #if CLIENT
+			// SwitchToLastUsedWeapon( weaponOwner )
+		// #endif
+		#if SERVER
+		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+		weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
 		#endif
-		
 		return
 	}
 	
 	if( Time() < weaponOwner.p.haloGrenadeAttackTime + HALO_GRENADE_COOLDOWN )
 	{
-		#if CLIENT
-			SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
+		Warning( "In Cooldown " + weapon.IsInCooldown() + " - " + ( weaponOwner.p.haloGrenadeAttackTime - Time() ) )
+		// #if CLIENT
+			// SwitchToLastUsedWeapon( weaponOwner ) //From client sucks
+		// #endif
+		#if SERVER
+		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+		weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
 		#endif
-
+		
 		return
 	}
+
+	// weapon.StartCustomActivity( "ACT_VM_TOSS", WCAF_NONE )
+	
+	// #if SERVER
+	// entity vm = weapon.GetWeaponViewmodel()
+
+	// try{
+	// vm.Anim_PlayOnly("animseq/weapons/grenades/ptpov_gibraltar_beacon/beacon_toss_seq.rseq")
+	// }catch(e420){}
+	// #endif
 	
 	weaponOwner.p.haloGrenadeAttackTime = Time()
-	weapon.OverrideNextAttackTime( Time() + 3.0 )
+	weapon.OverrideNextAttackTime( Time() + HALO_GRENADE_COOLDOWN )
+	weapon.SetNextAttackAllowedTime( Time() + HALO_GRENADE_COOLDOWN )
 
 	WeaponPrimaryAttackParams attackParams
 
@@ -296,9 +320,13 @@ int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams
 	// #endif
 #endif
 	
-#if CLIENT
-	SwitchToLastUsedWeapon( SwitchToLastUsedWeapon( weaponOwner ) )
-#endif
+// #if CLIENT
+	// SwitchToLastUsedWeapon( weaponOwner )
+// #endif
+	#if SERVER
+	entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+	weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
+	#endif
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 

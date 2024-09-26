@@ -26,6 +26,7 @@ WeaponData
     "OnProjectileCollision"                         "OnProjectileCollision_weapon_shotgun"
 	"OnWeaponReload"								"OnWeaponReload_HaloShotgun"
 
+	"holster_time"									"0.15"
 	"viewmodel_offset_hip"							"0 -5 0.0"
 	//"viewmodel_offset_ads"							"0 0.25 0.0"
 	// Menu
@@ -172,11 +173,8 @@ WeaponData
 	"dof_nearDepthEnd"								"0.0"
 
 	// Behavior
-                      
 	"fire_rate"   									"4"
-     
-                             
-      
+
 	"reload_time" 									"1"
 	"reload_time_late1"								"1"
 	"reload_time_late2"								"1"

@@ -39,6 +39,7 @@ WeaponData
 	"sprintcycle_time"								"0.55"
 	//SMART AMMO
 	
+	"holster_time"									"0.15"
 	"is_smart_pistol"								"1"
 	"smart_ammo_search_angle" 						"8"
 	"smart_ammo_search_npcs"						"1"
@@ -195,7 +196,7 @@ WeaponData
 	"dof_zoom_focusArea_top"						"0.18"
 	"dof_zoom_focusArea_bottom"						"-0.0069"
 
-	"reload_time" 									"1.9"
+	"reload_time" 									"1.5"
 	"reload_time_late1"								"0.85"
 	"reloadempty_time"								"2.23"
 	"reloadempty_time_late1"						"1.32"
