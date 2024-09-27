@@ -282,7 +282,7 @@ global const table CSGO_MOVEMENT_HIGH_AIRACCEL =
 global const table SURF_SETTINGS = 
 {
 	["airacceleration"] = 6000.0,
-	["acceleration"] = 10.0,
+	["acceleration"] = 550.0,
 	["airspeed"] = 60.0
 }
 
