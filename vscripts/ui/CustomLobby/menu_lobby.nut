@@ -47,6 +47,7 @@ global table<string, asset> MapAssets = {
 	[ "mp_rr_ashs_redemption" ] = $"rui/menu/maps/mp_rr_ashs_redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = $"rui/menu/maps/mp_rr_canyonlands_64k_x_64k",
 	[ "mp_rr_canyonlands_mu1" ] = $"rui/menu/maps/mp_rr_canyonlands_mu1",
+	[ "mp_rr_canyonlands_mu2" ] = $"rui/menu/maps/mp_rr_canyonlands_mu2",
 	[ "mp_rr_canyonlands_mu1_night" ] = $"rui/menu/maps/mp_rr_canyonlands_mu1_night",
 	[ "mp_rr_desertlands_64k_x_64k" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k",
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_nx",
@@ -55,6 +56,7 @@ global table<string, asset> MapAssets = {
 	[ "mp_rr_arena_skygarden" ] = $"rui/menu/maps/mp_rr_arena_skygarden",
 	[ "mp_rr_party_crasher" ] = $"rui/menu/maps/mp_rr_party_crasher",
 	[ "mp_rr_olympus_mu1" ] = $"rui/menu/maps/mp_rr_olympus_mu1",
+	[ "mp_rr_arena_phase_runner" ] = $"rui/menu/maps/mp_rr_phase_runner"
 	[ "mp_lobby" ] = $"rui/menu/maps/mp_lobby"
 }
 
@@ -66,6 +68,7 @@ global table<string, string> MapNames = {
 	[ "mp_rr_ashs_redemption" ] = "Ash's Redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = "Kings Canyon S1",
 	[ "mp_rr_canyonlands_mu1" ] = "Kings Canyon S2",
+	[ "mp_rr_canyonlands_mu2" ] = "Kings Canyon S5",
 	[ "mp_rr_canyonlands_mu1_night" ] = "Kings Canyon S2 After Dark",
 	[ "mp_rr_desertlands_64k_x_64k" ] = "Worlds Edge",
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
@@ -73,6 +76,9 @@ global table<string, string> MapNames = {
 	[ "mp_rr_arena_composite" ] = "Drop Off",
 	[ "mp_rr_arena_skygarden" ] = "Encore",
 	[ "mp_rr_party_crasher" ] = "Party Crasher",
+	[ "mp_rr_olympus_mu1" ] = "Olympus S9 [WIP]",
+	[ "mp_rr_arena_phase_runner" ] = "Phase Runner",
+	[ "mp_rr_arena_empty" ] = "Creative",
 	[ "mp_lobby" ] = "Lobby"
 }
 
