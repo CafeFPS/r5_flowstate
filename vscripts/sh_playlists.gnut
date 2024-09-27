@@ -374,6 +374,18 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
 
+		case "fs_haloMod":
+		emblemImage = $"rui/flowstatecustom/halo"
+		break
+
+		case "fs_haloMod_oddball":
+		emblemImage = $"rui/flowstatecustom/halo"
+		break
+
+		case "fs_haloMod_ctf":
+		emblemImage = $"rui/flowstatecustom/halo"
+		break
+		
 		case "fs_scenarios":
 		emblemImage = $""
 		break
