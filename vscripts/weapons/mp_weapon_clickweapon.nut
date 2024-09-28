@@ -280,7 +280,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 					{	
 						entity player = GetLocalViewPlayer()
 
-						vector origin = player.GetCrosshairTraceEndPos()
+						vector origin = ClampToWorldspace( player.GetCrosshairTraceEndPos() )
 						
 						entity moverForLaserEnt 
 						

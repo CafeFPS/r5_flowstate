@@ -1294,7 +1294,7 @@ void function SetPlayerSettings( entity player, table settings )
 			SetEntityVar( player, k, v )
 		#else
 			//Thanks amos for this implementation <3. Cafe
-			//SetClassSettingsVar( expect string( k ), expect float( v ).tostring() ) //for all players
+			//SetClassVarSynced( expect string( k ), expect float( v ).tostring() ) //for all players
 			player.SetClassVar( expect string( k ), expect float( v ).tostring() )
 		#endif
 	}
@@ -1316,7 +1316,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Titanfall 2" )
+				printw( "Player movement changed to Titanfall 2 " + player )
 			#endif
 		break
 		
@@ -1327,7 +1327,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS_HIGH_AIRACCEL )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Titanfall 2 High Air Accel" )
+				printw( "Player movement changed to Titanfall 2 High Air Accel " + player )
 			#endif
 		break
 		
@@ -1337,7 +1337,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Titanfall 2 Low Gravity" )
+				printw( "Player movement changed to Titanfall 2 Low Gravity " + player )
 			#endif
 		break
 		
@@ -1350,7 +1350,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, CSGO_MOVEMENT )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to CSGO" )
+				printw( "Player movement changed to CSGO " + player )
 			#endif
 		break
 		
@@ -1363,7 +1363,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, CSGO_MOVEMENT_HIGH_AIRACCEL )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to CSGO High Air Accel" )
+				printw( "Player movement changed to CSGO High Air Accel " + player )
 			#endif
 		break
 		
@@ -1372,7 +1372,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, SURF_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to (Apex) Surf" )
+				printw( "Player movement changed to (Apex) Surf " + player )
 			#endif
 		break
 
@@ -1384,19 +1384,19 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, HL1_MOVEMENT )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Half-Life 1" )
+				printw( "Player movement changed to Half-Life 1 " + player )
 			#endif
 		break
 
 		case eMovementType.HALO_MOVEMENT: //8
-				
+			
 			StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.1 )
 			player.SetMoveSpeedScale( 1.1 )
 			player.DisableMantle()
 			SetPlayerSettings( player, HALO_MOVEMENT )
-			
+
 			#if DEVELOPER
-				printt( "Player movement changed to Halo" )
+				printw( "Player movement changed to Halo " + player )
 			#endif
 		break
 		
@@ -1405,7 +1405,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Superglide modified for all players" )
+				printw( "Superglide modified for all players " + player )
 			#endif
 		break
 		
@@ -1414,7 +1414,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, INSTAGIB_PLAYER_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Insta-Gib" )
+				printw( "Player movement changed to Insta-Gib " + player )
 			#endif
 		break
 		
@@ -1423,7 +1423,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			SetPlayerSettings( player, HAVEFUN_PLAYER_SETTINGS )
 			
 			#if DEVELOPER
-				printt( "Player movement changed to Have Fun Settings" )
+				printt( "Player movement changed to Have Fun Settings " + player )
 			#endif
 		break
 	}

@@ -283,6 +283,7 @@ global const table SURF_SETTINGS =
 {
 	["airacceleration"] = 6000.0,
 	["acceleration"] = 550.0,
+	["landslowdownduration"] = 0.0,
 	["airspeed"] = 60.0
 }
 
