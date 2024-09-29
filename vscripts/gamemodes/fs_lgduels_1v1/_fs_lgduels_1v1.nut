@@ -66,10 +66,7 @@ void function INIT_LGDuels_Player( entity player )
 	
 	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
 		AddEntityCalllback_OnPlayerGamestateChange_1v1( player, Player1v1Gamestate )
-	
-	if( !EntityCallback_Exists( player, ZeroDamage ) )
-		AddEntityCallback_OnDamaged( player, ZeroDamage )
-	
+
 	AddClientCommandCallback( "hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback( "handicap", ClientCommand_mkos_LGDuel_p_damage )
 	
