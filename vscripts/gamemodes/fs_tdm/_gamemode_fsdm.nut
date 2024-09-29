@@ -6615,11 +6615,10 @@ void function FS_Instagib_PlayerSpawn( entity player )
 	if( !IsValid( player ) )
 		return
 
-	//Force Default Player Settings
 	SetPlayerSettings(player, INSTAGIB_PLAYER_SETTINGS)
-	// player.SetMoveSpeedScale( 1 )
-	// player.SetAccelerationScale( 2 )
-	// player.SetPowerRegenRateScale( 2 )
+	
+	//Disable players collision
+	player.kv.contents = CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_HITBOX | CONTENTS_BLOCKLOS | CONTENTS_PHYSICSCLIP; //CONTENTS_PLAYERCLIP
 }
 
 void function FS_Instagib_OnPlayerDamaged(entity victim, var damageInfo)
