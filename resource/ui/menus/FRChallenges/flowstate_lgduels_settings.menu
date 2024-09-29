@@ -159,60 +159,6 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			pin_to_sibling_corner	BOTTOM_RIGHT
 		}
 
-		PositionOffsetButtonText
-		{
-				ControlName				Label
-				auto_wide_tocontents    1
-				labelText				"#FS_LOCAL_BEAM_OFFSET"
-				visible                 1
-				zpos 0
-				tall					60
-				fontHeight				30
-				font					Default
-				fgcolor_override		"255 255 255 255"
-				"classname"					"SettingsBtn"
-				ypos                    250
-				xpos					-190
-				pin_to_sibling          Background
-				pin_corner_to_sibling   CENTER
-				pin_to_sibling_corner   CENTER
-		}
-
-		PositionOffsetButton
-		{
-			ControlName				SliderControl
-			InheritProperties		SliderControl
-			xpos 400
-			wide 360
-			zpos 5
-			showlabel 0
-			tabPosition				0
-			style					DialogListButton
-			classname				"SettingsBtn"
-			conCommand				"hud_setting_showLevelUp"
-			minValue				-30
-			maxValue				30
-			stepSize				1
-			showConVarAsFloat		0
-			pin_to_sibling			PositionOffsetButtonText
-			pin_corner_to_sibling	RIGHT
-			pin_to_sibling_corner	RIGHT
-		}
-
-		PositionOffsetTextBox
-		{
-			wide 55
-			ControlName				TextEntry
-			InheritProperties       SliderControlTextEntry
-			syncedConVar            "hud_setting_showLevelUp"
-			classname				"SettingsBtn"
-			showConVarAsFloat		1
-
-			pin_to_sibling			PositionOffsetButton
-			pin_corner_to_sibling	RIGHT
-			pin_to_sibling_corner	RIGHT
-		}
-
 		SelectBeamToModifyText
 		{
 				ControlName				Label
@@ -226,13 +172,11 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 				font					Default
 				fgcolor_override		"255 255 255 255"
 				"classname"					"SettingsBtn"
-				xpos                    0
-				ypos                    100
-				zpos                    15
-
-				pin_to_sibling          PositionOffsetButtonText
-				pin_corner_to_sibling   BOTTOM_LEFT
-				pin_to_sibling_corner   BOTTOM_LEFT
+				ypos                    250
+				xpos					-190
+				pin_to_sibling          Background
+				pin_corner_to_sibling   CENTER
+				pin_to_sibling_corner   CENTER
 		}
 		
 		SelectBeamToModifyButton_Local

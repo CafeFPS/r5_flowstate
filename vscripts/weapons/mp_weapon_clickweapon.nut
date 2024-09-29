@@ -16,7 +16,7 @@ global function Clickweapon_Init
 	global function LGDuels_SetR
 	global function LGDuels_SetG
 	global function LGDuels_SetB
-	global function LGDuels_SetPositionOffset
+	// global function LGDuels_SetPositionOffset
 	global function LGDuels_SetSettingsMenuOpen
 	global function LGDuels_SetModifyingLocalBeam
 	global function LGDuels_SetPresetRed
@@ -367,7 +367,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 						
 						int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
 						
-						if( !EffectDoesExist( file.beamsFxs[ player ] ) || !isAuto )
+						if( !EffectDoesExist( file.beamsFxs[ player ] ) || !isAuto && !isSettingsMenuOpen )
 						{
 							file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( moverForHand, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
 							EffectSetDontKillForReplay( file.beamsFxs[ player ] )
@@ -982,25 +982,25 @@ void function LGDuels_SetB( int B, bool isLocalChosen )
 	}
 }
 
-void function LGDuels_SetPositionOffset( float offset )
-{
-	positionOffset = offset
+// void function LGDuels_SetPositionOffset( float offset )
+// {
+	// positionOffset = offset
 	
-	LGDuels_UpdateSettings( true, offset )
+	// LGDuels_UpdateSettings( true, offset )
 
-	entity sPlayer = GetLocalViewPlayer()
+	// entity sPlayer = GetLocalViewPlayer()
 
-	if( sPlayer in file.beamsFxs && EffectDoesExist( file.beamsFxs[ sPlayer ] ) )
-	{
-		EffectStop( file.beamsFxs[ sPlayer ], false, true )
-	}
-}
+	// if( sPlayer in file.beamsFxs && EffectDoesExist( file.beamsFxs[ sPlayer ] ) )
+	// {
+		// EffectStop( file.beamsFxs[ sPlayer ], false, true )
+	// }
+// }
 #endif
 
 #if CLIENT
 void function LGDuels_SetFromPersistence( float s1, int s2, int s3, int s4, float s5, int s6, int s7, int s8 )
 {
-	LGDuels_SetPositionOffset( s1 )
+	// LGDuels_SetPositionOffset( s1 )
 	
 	SetConVarFloat( "hud_setting_showLevelUp", s1 )
 	SetConVarInt( "noise_filter_scale", s2 )
