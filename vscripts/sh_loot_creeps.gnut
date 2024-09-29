@@ -336,22 +336,6 @@ void function SpawnLootbinCreep( int lootCreepType, entity lootbin, entity playe
 #if SERVER
 void function LootCreepGarbageCollect()
 {
-	//R5RDEV-1
-	// foreach( creep in file.lootCreeps )
-	// {
-		// if ( !IsValid( creep ) )
-		// {
-			// file.lootCreeps.fastremovebyvalue( creep )
-			// continue
-		// }
-
-		// if ( ShouldGarbageCollectCreep( creep ) )
-		// {
-			// file.lootCreeps.fastremovebyvalue( creep )
-			// creep.Destroy()
-		// }
-	// }
-	
 	int maxIter = file.lootCreeps.len() - 1
 	
 	for( int i = maxIter; i >= 0; i-- )
@@ -365,7 +349,7 @@ void function LootCreepGarbageCollect()
 		if( ShouldGarbageCollectCreep( file.lootCreeps[ i ] ) )
 		{
 			file.lootCreeps.remove( i )
-			creep.Destroy()
+			file.lootCreeps[ i ].Destroy()
 		}
 	}
 
