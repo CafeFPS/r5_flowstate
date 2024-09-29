@@ -1412,7 +1412,8 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		case eMovementType.INSTAGIB_PLAYER_SETTINGS: //10
 		
 			SetPlayerSettings( player, INSTAGIB_PLAYER_SETTINGS )
-			
+			//Disable players collision
+			player.kv.contents = CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_HITBOX | CONTENTS_BLOCKLOS | CONTENTS_PHYSICSCLIP; //CONTENTS_PLAYERCLIP
 			#if DEVELOPER
 				printw( "Player movement changed to Insta-Gib " + player )
 			#endif
