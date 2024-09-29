@@ -611,13 +611,13 @@ void function Flowstate_ShowRespawnTimeUI( int timeUntilRespawn )
 	if( timeUntilRespawn == -1 )
 	{
 		Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), false )
-		Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+		// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
 		return
 	}
 
 	Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), true )
-	Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), true )
-	RuiSetImage( Hud_GetRui( HudElement( "FS_Respawn_Countdown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
+	// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+	// RuiSetImage( Hud_GetRui( HudElement( "FS_Respawn_Countdown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
 	
 	thread Flowstate_RespawnTimer_Thread( timeUntilRespawn )
 }
@@ -637,7 +637,7 @@ void function Flowstate_RespawnTimer_Thread( int timeUntilRespawn )
 		void function() : ()
 		{
 			Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), false )
-			Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+			// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
 		}
 	)
 	

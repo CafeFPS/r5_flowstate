@@ -1156,24 +1156,24 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 				float decidedWaitTime = 0.0
 				
 				bool bShouldShowReplay = false
-				if( Spectator_GetReplayIsEnabled() && IsValid( attacker ) && attacker.IsPlayer() && attacker != victim )
+				if( Spectator_GetReplayIsEnabled() && IsValid( attacker ) && attacker.IsPlayer() && attacker != victim && !Flowstate_IsFastInstaGib() )
 				{
-					if( !Flowstate_IsFastInstaGib() && ShouldSetObserverTarget( attacker ) )
+					if( ShouldSetObserverTarget( attacker ) )
 					{
 						decidedWaitTime 	= Spectator_GetReplayDelay()
 						bShouldShowReplay 	= true
 					}
 					else 
 					{
-						if( !Flowstate_IsFastInstaGib() )
-							decidedWaitTime = Deathmatch_GetRespawnDelay()
-						else
-							decidedWaitTime = STATIC_WAIT_TIME
+						decidedWaitTime = STATIC_WAIT_TIME
 					}
 				}
 				else 
 				{
 					decidedWaitTime = Deathmatch_GetRespawnDelay()
+					
+					if( Flowstate_IsFastInstaGib() )
+						decidedWaitTime = STATIC_WAIT_TIME
 				}
 				
 				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
