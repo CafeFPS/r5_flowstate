@@ -16,7 +16,7 @@ global function Clickweapon_Init
 	global function LGDuels_SetR
 	global function LGDuels_SetG
 	global function LGDuels_SetB
-	// global function LGDuels_SetPositionOffset
+	
 	global function LGDuels_SetSettingsMenuOpen
 	global function LGDuels_SetModifyingLocalBeam
 	global function LGDuels_SetPresetRed
@@ -981,20 +981,6 @@ void function LGDuels_SetB( int B, bool isLocalChosen )
 				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenEnemyColor )
 	}
 }
-
-// void function LGDuels_SetPositionOffset( float offset )
-// {
-	// positionOffset = offset
-	
-	// LGDuels_UpdateSettings( true, offset )
-
-	// entity sPlayer = GetLocalViewPlayer()
-
-	// if( sPlayer in file.beamsFxs && EffectDoesExist( file.beamsFxs[ sPlayer ] ) )
-	// {
-		// EffectStop( file.beamsFxs[ sPlayer ], false, true )
-	// }
-// }
 #endif
 
 #if CLIENT

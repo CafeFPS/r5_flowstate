@@ -32,8 +32,6 @@ void function InitLGDuelsSettings( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnR5RSB_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnR5RSB_Close )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
-
-	// AddButtonEventHandler( Hud_GetChild( file.menu, "PositionOffsetButton" ), UIE_CHANGE, PositionOffsetButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "RButton" ), UIE_CHANGE, RButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "GButton" ), UIE_CHANGE, GButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "BButton" ), UIE_CHANGE, BButton )
@@ -98,12 +96,6 @@ void function PresetPurpleButton(var button)
 {
 	RunClientScript( "LGDuels_SetPresetPurple", file.modifyLocalBeam )
 }
-
-// void function PositionOffsetButton(var button)
-// {
-	// float desiredVar = GetConVarFloat( "hud_setting_showLevelUp" )
-	// RunClientScript( "LGDuels_SetPositionOffset", desiredVar )
-// }
 
 void function RButton(var button)
 {
