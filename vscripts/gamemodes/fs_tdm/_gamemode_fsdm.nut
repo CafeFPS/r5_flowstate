@@ -1165,7 +1165,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 					}
 					else 
 					{
-						decidedWaitTime = STATIC_WAIT_TIME
+						decidedWaitTime = Deathmatch_GetRespawnDelay()
 					}
 				}
 				else 
