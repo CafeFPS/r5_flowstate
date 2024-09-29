@@ -46,8 +46,9 @@ global function Clickweapon_Init
 #endif //CLIENT
 
 const asset TheBestAssetInTheGame 	= $"P_tesla_trap_link_CP"
+const asset expAsset = $"P_plasma_exp_SM"
 const float LG_SINGLE_FIRE_DEBOUNCE = 0.75 //Incrased fire rate
-const float LG_DRAG_TIME			= 0.5 //Increased the time the fx is alive 
+const float LG_DRAG_TIME			= 0.35 //Increased the time the fx is alive 
 
 struct BeamSettings 
 {
@@ -82,7 +83,8 @@ void function Clickweapon_Init()
 	RegisterSignal( "EndLaser" )
 	RegisterSignal( "EndNoAutoThread" )
 	RegisterSignal( "PlayerStartShotingLightningGun" )
-
+	PrecacheParticleSystem( expAsset )
+	
 	#if CLIENT
 		AddCreateCallback( "player", FS_LG_OnPlayerCreated )
 		AddDestroyCallback( "player", FS_LG_OnPlayerDestroyed )
@@ -93,6 +95,8 @@ void function Clickweapon_Init()
 		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
 		SetConVarInt( "net_wifi", DesiredB )
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
+		
+		RegisterNetworkedVariableChangeCallback_bool( "isPlayerShootingFlowstateLightningGun", OnPlayerShoot )
 	#endif
 	
 	#if SERVER
@@ -116,6 +120,57 @@ void function DEV_PrintBeams()
 #endif //DEVELOPER && CLIENT
 
 #if CLIENT
+void function OnPlayerShoot( entity player, bool old, bool new, bool actuallyChanged )
+{
+	if ( player == GetLocalViewPlayer() || new == false )
+		return
+
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+		return
+	
+	bool isAuto = Playlist() != ePlaylists.fs_dm_fast_instagib //Fixme. Cafe
+	
+	if( isAuto )
+		return
+	
+	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+	if( player in file.beammover && IsValid( file.beammover[player] ) )
+		mover.SetOrigin( file.beammover[player].GetOrigin() )
+	
+	entity handmover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+	if( player in file.handmover && IsValid( file.handmover[player] ) )
+		handmover.SetOrigin( file.handmover[player].GetOrigin() )
+
+	int laserStoreMe = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+	StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( expAsset ), mover.GetOrigin(), <0, 0, 0> ) //Explosion
+	
+	thread function () : ( laserStoreMe, player, mover, handmover )
+	{
+		wait LG_DRAG_TIME
+		if( EffectDoesExist( laserStoreMe ) )
+			EffectStop( laserStoreMe, false, true )
+		
+		if( IsValid( mover ) )
+			mover.Destroy()
+		
+		if( IsValid( handmover ) )
+			handmover.Destroy()
+	}()
+	
+	EffectSetDontKillForReplay( laserStoreMe )
+	
+	if( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
+		EffectSetControlPointVector( laserStoreMe, 2, chosenEnemyColor )
+	else
+		EffectSetControlPointVector( laserStoreMe, 2, chosenColor )
+
+	EffectAddTrackingForControlPoint( laserStoreMe, 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
+
+	Warning( player + " shot fx created " + new )
+}
+
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 {
 	CheckBeamSettingsExist() //maybe only init in playercreated
@@ -312,27 +367,18 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 						
 						int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
 						
-						if( !EffectDoesExist( file.beamsFxs[ player ] ) )
+						if( !EffectDoesExist( file.beamsFxs[ player ] ) || !isAuto )
 						{
 							file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( moverForHand, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
 							EffectSetDontKillForReplay( file.beamsFxs[ player ] )
 							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
 							EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
 							moverForHand.ClearParent() //to leave the fx alive for a moment
-							if( player.GetPlatformUID() == "1011657326453" ) //proto
-							{
-								thread function () : ( player )
-								{
-									EndSignal( player, "OnDestroy" )
-									while( player in file.beamsFxs && EffectDoesExist( file.beamsFxs[ player ] ) )
-									{
-										EffectSetControlPointVector( file.beamsFxs[ player ], 2, <RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 )> )
-										wait 0.1
-									}
-								}()
-							}
+							
+							if( !isAuto )
+								StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( expAsset ), origin, <0, 0, 0> ) //Explosion
 						}
-						else
+						else if( EffectDoesExist( file.beamsFxs[ player ] ) )
 						{
 							EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
 						}
@@ -445,8 +491,7 @@ void function OnWeaponDeactivate_Clickweapon( entity weapon )
 	Signal( player, "EndLaser" )
 	
 	#if SERVER
-	if( player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
-		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
+	player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
 	#endif
 
 	#if CLIENT
@@ -468,19 +513,17 @@ void function FS_LG_PlayerStartShooting( entity player, entity weapon, string we
 
 void function FS_LG_PlayerStartShooting_Thread( entity player, entity weapon )
 {
-	if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
-		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
+	player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
 
 	Signal( player, "PlayerStartShotingLightningGun" )
 	EndSignal( player, "PlayerStartShotingLightningGun" )
 
-	wait 0.1
+	wait 0.25
 	
 	if( !IsValid( player ) )
 		return
 
-	if( player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
-		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
+	player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
 }
 #endif
 
@@ -490,12 +533,12 @@ void function FS_LG_OnPlayerCreated( entity player )
 	if ( !IsValid( player ) ) 
 		return
 
-	if( !( player in file.beammover ) )
+	if( !( player in file.beammover ) || player in file.beammover && !IsValid( file.beammover[player] ) )
 	{
 		file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
 	}
 
-	if( !( player in file.handmover ) )
+	if( !( player in file.handmover ) || player in file.handmover && !IsValid( file.handmover[player] ) )
 	{
 		file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
 	}
@@ -524,16 +567,36 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 	int fx = file.beamsFxs[ player ]
 
 	bool wasPlayerShooting = false
-	while( IsValid( player ) && IsValid( mover ) )
+	
+	bool isAuto //todo we should def make a new weapon for the no auto one xd. Cafe
+
+	while( IsValid( player ) )
 	{
-		if( !EffectDoesExist( file.beamsFxs[ player ] ) && player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && !wasPlayerShooting )
+		isAuto = Playlist() != ePlaylists.fs_dm_fast_instagib //todo (dw) aaaaaaaaaaaaaaaaaaa //we should def make a new weapon for the no auto one xd. Cafe
+		
+		if( !(player in file.handmover) || player in file.handmover && !IsValid( file.handmover[player] ) )
+			file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+		if( !(player in file.beammover) || player in file.beammover && !IsValid( file.beammover[player] ) )
+			file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+		
+		mover = file.beammover[player]
+		handmover = file.handmover[player]
+		
+		try
 		{
 			if( player.LookupAttachment( "R_HAND" ) != -1 )
 				handmover.SetParent( player, "R_HAND" )
 			else
 				handmover.SetParent( player )
-			//create a mover for the hand/weapon
+		}catch(e420)
+		{
+			printt("skipped set hand mover parented, 2 early")
+		}
+		
+		if( !EffectDoesExist( file.beamsFxs[ player ] ) && player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && !wasPlayerShooting && isAuto )
+		{
 			file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+
 			EffectSetDontKillForReplay( file.beamsFxs[ player ] )
 
 			if( player.GetPlatformUID() == "1011657326453" ) //proto
@@ -554,11 +617,12 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
 
 			EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
+			
 			wait 0.01
 			continue
 		}
 
-		if( EffectDoesExist( file.beamsFxs[ player ] ) )
+		if( EffectDoesExist( file.beamsFxs[ player ] ) && isAuto )
 		{
 			if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || 
 			!player.DoesShareRealms( GetLocalViewPlayer() ) || 

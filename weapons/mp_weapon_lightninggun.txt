@@ -1,3 +1,4 @@
+//Made by @CafeFPS
 WeaponData
 {
 	// General
@@ -17,7 +18,7 @@ WeaponData
 	"ammo_pool_type"								"special"
 	"fire_mode"   									"automatic"
 	// Models
-	"viewmodel"   									"mdl/flowstate_custom/ptpov_lightninggun.rmdl"//"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_lightninggun.rmdl"
 	"playermodel" 									"mdl/flowstate_custom/w_lightninggun.rmdl"
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"holster_type"									"anti_titan"
@@ -56,7 +57,7 @@ WeaponData
     "pass_through_damage_preserved_scale"			"0"
 
 	//idk
-	"viewmodel_offset_hip"							"0 -3 -3"
+	"viewmodel_offset_hip"							"0 0 0"
 
 	// Sounds
 	"sound_trigger_pull"							""
