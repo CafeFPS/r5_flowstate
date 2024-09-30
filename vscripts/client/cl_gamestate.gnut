@@ -175,10 +175,7 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 			
 			case ePlaylists.fs_scenarios:
-			if( GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", false ) )
-				RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
-			else
-				RuiSetString( rui, "gameModeString", "FS FAST BR(FIXME)" )
+			RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
 			break
@@ -212,7 +209,7 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 		
 			case ePlaylists.fs_dm_fast_instagib:
-			RuiSetString( rui, "gameModeString", "FS INSTAGIB" )
+			RuiSetString( rui, "gameModeString", "CAFE'S INSTAGIB" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )

@@ -129,10 +129,8 @@ void function OnPlayerShoot( entity player, bool old, bool new, bool actuallyCha
 	
 	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
 		return
-	
-	bool isAuto = Playlist() != ePlaylists.fs_dm_fast_instagib //Fixme. Cafe
-	
-	if( isAuto )
+
+	if( !file.isInstaGib ) //Fixme. Cafe
 		return
 	
 	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
@@ -572,7 +570,7 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 
 	while( IsValid( player ) )
 	{
-		isAuto = Playlist() != ePlaylists.fs_dm_fast_instagib //todo (dw) aaaaaaaaaaaaaaaaaaa //we should def make a new weapon for the no auto one xd. Cafe
+		isAuto = !file.isInstaGib // Playlist() != ePlaylists.fs_dm_fast_instagib //todo (dw) aaaaaaaaaaaaaaaaaaa //we should def make a new weapon for the no auto one xd. Cafe
 		
 		if( !(player in file.handmover) || player in file.handmover && !IsValid( file.handmover[player] ) )
 			file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )

@@ -630,16 +630,16 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	if( Playlist() == ePlaylists.fs_scenarios )
 		return
 
-	if( player.p.assignedCustomModel != -1 )
-	{
-		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
-	}
 	if( script_bGiveskins )
 	{
 		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
 		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
 	}
-	
+
+	if( player.p.assignedCustomModel != -1 )
+	{
+		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
+	}	
 	//commented, already signaled in code callback after DoRespawnPlayer fires ~mkos
 	
 	// if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
@@ -747,63 +747,68 @@ bool function PlayerShouldObserve( entity player )
 
 void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index )
 {
-	switch( index )
+	thread function () : ( index, player )
 	{
-		case 1:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
-		break
-		
-		case 2:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
-		break
-		
-		case 3:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
+		EndSignal( player, "OnDestroy" )
+		WaitEndFrame()
+		switch( index )
+		{
+			case 1:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+			break
+			
+			case 2:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+			break
+			
+			case 3:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
 
-		case 4:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
-		break
-		
-		case 5:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
-		break
+			case 4:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+			break
+			
+			case 5:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+			break
 
-		case 6:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
-		break
+			case 6:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+			break
 
-		case 7:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
-		break
-		
-		case 8:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
-		break
+			case 7:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+			break
+			
+			case 8:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+			break
 
-		case 9: // ballistic
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
-		break
-		
-		case 10: // mrvn
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
+			case 9: // ballistic
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+			break
+			
+			case 10: // mrvn
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
 
-		case 11: // pete
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
-		break
-	}	
+			case 11: // pete
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+			player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+			break
+		}
+	}()	
 }
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work

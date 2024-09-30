@@ -427,7 +427,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("ungod", ClientCommand_UnGod)
 		AddClientCommandCallback("next_round", ClientCommand_NextRound)
 
-		if( !Flowstate_IsMovementGym() && Playlist() != ePlaylists.fs_scenarios )
+		if( !Flowstate_IsMovementGym() && Playlist() != ePlaylists.fs_scenarios && !Flowstate_IsFastInstaGib() )
 			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 
@@ -1559,17 +1559,28 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
             player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 		} catch (e420) {}
     }
-	else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
+	else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ) && !Flowstate_IsFastInstaGib() )
 	{
 		try{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
             player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			GiveRandomPrimaryWeaponMetagame(player)
 			GiveRandomSecondaryWeaponMetagame(player)
 
             player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
             player.GiveOffhandWeapon( "melee_pilot_emptyhandede", OFFHAND_MELEE, [] )
+		} catch (e420) {}
+	} else if( Flowstate_IsFastInstaGib() )
+	{
+		try{
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.TakeOffhandWeapon( OFFHAND_MELEE )
+			__GiveWeapon( player, ["mp_weapon_lightninggun"], WEAPON_INVENTORY_SLOT_PRIMARY_0, RandomIntRange( 0, 1 ) )
+			// __GiveWeapon( player, ["mp_weapon_lightninggun"], WEAPON_INVENTORY_SLOT_PRIMARY_1, RandomIntRange( 0, 1 ) ) //If we give another one, player can exploit it by changing weapons and restoring next attack time
 		} catch (e420) {}
 	}
 
@@ -2093,17 +2104,6 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 void function GiveRandomPrimaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
-
-	if( Flowstate_IsFastInstaGib() )
-	{
-		array<string> Weapons = [
-			"mp_weapon_lightninggun"
-		]
-		
-		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
-		return
-	}
-
 	//todo: init outside func
 
     array<string> Weapons = [
@@ -2134,17 +2134,6 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
-	if( Flowstate_IsFastInstaGib() )
-	{
-		//todo: init outside func..
-		array<string> Weapons = [
-			"mp_weapon_lightninggun"
-		]
-		
-		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
-		return
-	}
-	
 	//todo: init outside func..
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
@@ -6617,6 +6606,10 @@ void function FS_Instagib_PlayerSpawn( entity player )
 
 	SetPlayerSettings(player, INSTAGIB_PLAYER_SETTINGS)
 	
+	if( player.p.assignedCustomModel != -1 )
+	{
+		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
+	}
 	//Disable players collision
 	player.kv.contents = CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_HITBOX | CONTENTS_BLOCKLOS | CONTENTS_PHYSICSCLIP; //CONTENTS_PLAYERCLIP
 }
@@ -6633,10 +6626,8 @@ void function FS_Instagib_OnPlayerDamaged(entity victim, var damageInfo)
 
 	vector origin = victim.GetWorldSpaceCenter()
 	EmitSoundAtPosition( victim.GetTeam(), origin, "ai_reaper_nukedestruct_explo_3p" )
-	PlayFX( $"P_plasma_exp_SM", origin, victim.GetAngles() )
-	
+	DamageInfo_SetDamage( damageInfo, victim.GetHealth() ) //to store correct damage
 	victim.Die( attacker, attacker, { damageSourceId = eDamageSourceId.mp_weapon_lightninggun } )
-	// DamageInfo_SetDamage( damageInfo, victim.GetHealth() + 1 )
 }
 
 void function ServerMsgToBox( entity player, string text, float Width = 600, float duration = 7.0, string sound = "", string subText = "")
