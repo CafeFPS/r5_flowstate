@@ -175,58 +175,6 @@ void function Sv_EntitiesDidLoad()
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 }
 
-void function FS_SND_SaveWeaponToDrop( entity victim, var damageInfo )
-{
-	if ( !IsValid( victim ) || !victim.IsPlayer() )
-		return
-	
-	array<string> weaponsToDropRefs
-	array<entity> mainWeapons = SURVIVAL_GetPrimaryWeapons( victim )
-	array<DropWeaponData> playerWeaponData = []
-
-	foreach ( w in mainWeapons )
-	{
-		LootData wData = SURVIVAL_GetLootDataFromWeapon( w )
-		if ( SURVIVAL_Loot_IsRefValid( wData.ref ) )
-		{
-			weaponsToDropRefs.append( wData.ref )
-
-			DropWeaponData weaponData
-			weaponData.name                = wData.ref
-			weaponData.skinItemFlavorGUID  = w.e.skinItemFlavorGUID
-			weaponData.charmItemFlavorGUID = w.e.charmItemFlavorGUID
-			weaponData.mods                = w.GetMods()
-			weaponData.originalOwner       = w.e.firstOwner
-			weaponData.stockpile           = 0
-
-			if ( w.GetActiveAmmoSource() == AMMOSOURCE_POOL )
-			{
-				int ammoInWeapon = w.GetWeaponPrimaryClipCount()
-				int ammoToDrop   = 0
-
-				weaponData.ammo = ammoInWeapon
-
-				LootData data  = SURVIVAL_Loot_GetLootDataByRef( w.GetWeaponClassName() )
-				string ammoRef = data.ammoType
-			}
-			else if ( w.GetLifetimeShotsRemaining() != -1 )
-			{
-				weaponData.ammo = w.GetLifetimeShotsRemaining()
-			}
-			else
-			{
-				weaponData.ammo = w.GetWeaponPrimaryClipCount()
-				weaponData.stockpile = w.GetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE )
-			}
-
-			playerWeaponData.append( weaponData )
-		}
-	}
-
-	victim.p.weaponsToDropRefs = weaponsToDropRefs
-	victim.p.weaponsToDropData = playerWeaponData
-}
-
 void function SND_StartGameThread()
 {
     WaitForGameState(eGameState.Playing)
@@ -279,7 +227,6 @@ void function _OnPlayerConnectedSND(entity player)
 	
 	ValidateDataTable( player, "datatable/flowstate_snd_buy_menu_data.rpak" )
 	
-	AddEntityCallback_OnDamaged( player, FS_SND_SaveWeaponToDrop )
 	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	
 	player.SetPlayerGameStat( PGS_DEATHS, 0)
@@ -376,7 +323,7 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 
 	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1)
 	victim.p.survivedShouldSaveWeapons = false
-	TakeAllWeapons(victim)
+	// TakeAllWeapons(victim)
 
 	switch(GetGameState())
     {

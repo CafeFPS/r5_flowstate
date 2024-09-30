@@ -32,6 +32,7 @@ global function FlowstateSND_CustomBuyMenu_Stop
 global function SetSNDKnifeColor
 global function SND_ForceUpdatePlayerCount
 
+
 #if DEVELOPER
 global function TestCustomModelAngles
 #endif
@@ -662,7 +663,8 @@ void function FlowstateSND_CustomBuyMenu_Stop()
 		Hud_SetVisible( HudElement( "MainWeapon0_Barrel" ), false )
 		Hud_SetVisible( HudElement( "MainWeapon0" ), false )
 		Hud_SetVisible( HudElement( "MainWeapon0_Name" ), false )
-	
+		Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
+		Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
 		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedSlot", -1 )
 		
 		file.isShowingBuyMenu = false
@@ -1712,6 +1714,7 @@ void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool
 				
 				RuiSetInt( rui, "lootTier", 0 )
 				Hud_SetText( HudElement( "MainWeapon0_Name" ), "Primary" )
+				Hud_SetVisible( HudElement( "MainWeapon0_Sell" ), false )
 			} else if(weaponID == file.weapon2ID)
 			{
 				var rui = Hud_GetRui( HudElement( "MainWeapon1" ) )
@@ -1723,6 +1726,7 @@ void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool
 				
 				RuiSetInt( rui, "lootTier", 0 )				
 				Hud_SetText( HudElement( "MainWeapon1_Name" ), "Secondary" )
+				Hud_SetVisible( HudElement( "MainWeapon1_Sell" ), false )
 			}
 		}
 	}
