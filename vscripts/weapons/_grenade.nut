@@ -35,7 +35,7 @@ global function Grenade_Launch
 
 const EMP_MAGNETIC_FORCE = 1600
 const MAG_FLIGHT_SFX_LOOP = "Explo_MGL_MagneticAttract"
-const float HALO_GRENADE_COOLDOWN = 1.0
+const float HALO_GRENADE_COOLDOWN = 0.85
 
 //Proximity Mine Settings
 global const PROXIMITY_MINE_EXPLOSION_DELAY = 1.2
@@ -190,6 +190,15 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 	
 	if( !IsValid( weaponOwner ) )
 		return
+	
+	if( weaponOwner.ContextAction_IsActive() || weaponOwner.PlayerMelee_IsAttackActive() )
+	{
+		#if SERVER
+		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
+		weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
+		#endif
+		return
+	}
 
 	#if DEVELOPER
 	Warning( "Halo nade On Activate. Next Weapon Allowed Attack Time: " + weapon.GetNextAttackAllowedTime() + " - Current Time: " + Time() )
@@ -203,8 +212,10 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 			// SwitchToLastUsedWeapon( weaponOwner )
 		// #endif
 		#if SERVER
-		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
 		weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
+		
+		weaponOwner.TakeWeaponByEnt( weaponOwner.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) )
 		#endif
 		return
 	}
@@ -216,7 +227,7 @@ void function Grenade_OnWeaponReady_Halo( entity weapon )
 			// SwitchToLastUsedWeapon( weaponOwner ) //From client sucks
 		// #endif
 		#if SERVER
-		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+		entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
 		weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
 		#endif
 		
@@ -323,10 +334,22 @@ int function Grenade_OnWeaponToss_Halo( entity weapon, WeaponPrimaryAttackParams
 // #if CLIENT
 	// SwitchToLastUsedWeapon( weaponOwner )
 // #endif
+	
 	#if SERVER
-	entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
+	entity latestDeployedWeapon      = weaponOwner.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
 	weaponOwner.SetActiveWeaponByName( eActiveInventorySlot.mainHand, latestDeployedWeapon.GetWeaponClassName() )
+	
+	thread function () : ( weaponOwner, weapon ) //Don't allow weapon activation while in cooldown. Cafe
+	{
+		EndSignal( weapon, "OnDestroy" )
+		weapon.AllowUse( false )
+		wait HALO_GRENADE_COOLDOWN + 0.1
+		weapon.AllowUse( true )
+	}()
+	// weaponOwner.TakeWeaponByEnt( weaponOwner.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) )
 	#endif
+	
+	
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 

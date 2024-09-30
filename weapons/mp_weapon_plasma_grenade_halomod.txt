@@ -142,7 +142,7 @@ WeaponData
 	"vortex_refire_behavior"  						"grenade"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"0"
-	"allow_empty_click"   							"0"
+	"allow_empty_click"   							"1"
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
@@ -172,8 +172,8 @@ WeaponData
 	"red_crosshair_range" 							"0"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
-	"fire_anim_rate"  								"10"
-	"sprintcycle_time"								".55"
+	//"fire_anim_rate"  								"10"
+	//"sprintcycle_time"								".55"
 
 	Mods
 	{	

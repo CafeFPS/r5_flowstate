@@ -809,7 +809,6 @@ void function OnGroundLootSpawned( entity ent )
 				}
 			}
 
-
 			if( itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
 			{
 				i--
@@ -4426,8 +4425,8 @@ float function GetThrowYawOffsetFromPlayer( entity player )
 void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shouldSwitch )
 {
 	#if DEVELOPER
-	DumpStack()
-	printt( "SURVIVAL_AutoEquipOrdnanceFromInventory" )
+	// DumpStack()
+	Warning( "SURVIVAL_AutoEquipOrdnanceFromInventory" )
 	#endif
 	
 	if( Flowstate_IsHaloMode() )
@@ -4507,12 +4506,18 @@ void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shoul
 
 		if( Flowstate_IsHaloMode() )
 		{
-			player.TakeWeaponByEntNow( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) )
+			player.TakeWeaponByEnt( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN ) )
+			
+			// RefreshOrdnanceSlot( player, lootRef )
+			// SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+			Warning("Nade weapon removed")
 		}
 
 	}
 	else
 	{
+		// RefreshOrdnanceSlot( player, lootRef )
+		Warning("Nade weapon the other way")
 		SURVIVAL_EquipOrdnanceFromInventory( player, lootRef, !shouldSwitch )
 	}
 }
@@ -4571,9 +4576,6 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 	if ( !SURVIVAL_Loot_IsRefValid( item ) )
 		return
 
-	if( Flowstate_IsHaloMode() )
-		forceDontSwitch = true
-
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
 
 	int ammo = SURVIVAL_NumItemsInInventory( player, item )
@@ -4594,10 +4596,10 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 	if ( shouldRecord )
 		file.lastOrdnanceHeld[ player ] = item
 
-	if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == item )
+	if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == item && !Flowstate_IsHaloMode() )
 	{
 		entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-		if ( activeWeapon != heldOrdnance && !Flowstate_IsHaloMode() )
+		if ( activeWeapon != heldOrdnance  )
 			player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, heldOrdnance.GetWeaponClassName() )
 		
 		return
@@ -4606,9 +4608,9 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 	{
 		entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		bool wasActive      = heldOrdnance == activeWeapon && (activeWeapon != null)
-
+	
 		entity ordnance = null
-		if ( wasActive && !forceDontSwitch )
+		if ( wasActive && !forceDontSwitch || wasActive && Flowstate_IsHaloMode() )
 		{
 			ordnance = player.ReplaceActiveWeapon( eActiveInventorySlot.mainHand, item, ["survival_finite_ordnance"] )
 		}
@@ -4616,7 +4618,7 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 		{
 			if ( IsValid( heldOrdnance ) )
 				player.TakeWeaponByEntNow( heldOrdnance )
-
+			
 			ordnance = player.GiveWeapon( item, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
 		}
 
@@ -4633,16 +4635,13 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 					AddRoundsToWeapon( player, ordnance, numStockpileToAdd )
 			}
 
-			if ( !wasActive && !forceDontSwitch )
+			if ( !wasActive && !forceDontSwitch && !Flowstate_IsHaloMode() )
 			{
 				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, ordnance.GetWeaponClassName() )
 			}
-			
-			if( forceDontSwitch )
-			{
-				Remote_CallFunction_NonReplay( player, "UpdateDpadHud", player )//Hack to make client execute UpdateDpadHud that updates ordnance icon in the hud. Ideally we have to use callback when grenade weapon (slot anti titan) changes. Cafe
-			}
-			
+
+			Remote_CallFunction_NonReplay( player, "UpdateDpadHud", player )//Hack to make client execute UpdateDpadHud that updates ordnance icon in the hud. Ideally we have to use callback when grenade weapon (slot anti titan) changes. Cafe
+
 			if ( !(player in file.hasEquippedOrdnanceEver) )
 				file.hasEquippedOrdnanceEver[ player ] <- true
 		}
@@ -4861,6 +4860,9 @@ void function SURVIVAL_TryReplaceOffhandWithPrimary( entity player, entity offha
 
 void function Delayed_TryReplaceOrdnance( entity player, entity offhandWeapon, bool autoEquip = true )
 {
+	#if DEVELOPER
+	Warning( "Delayed_TryReplaceOrdnance " + player )
+	#endif
 	offhandWeapon.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnDeath" )
 	WaitEndFrame()
