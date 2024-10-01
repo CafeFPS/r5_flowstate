@@ -275,21 +275,22 @@ void function Construct_MAPDATA()
             GetErray("npcspawn")[0].GetOrigin(),
             GetErray("npcspawn")[0].GetAngles())
 
-         CreateConstructTreasureTick(
-            GetErray("npcspawn")[1].GetOrigin(),
-            GetErray("npcspawn")[1].GetAngles(),
-            5,
-         [
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo",
-            "ammo"
-         ])
+		//FIXME
+         // CreateConstructTreasureTick(
+            // GetErray("npcspawn")[1].GetOrigin(),
+            // GetErray("npcspawn")[1].GetAngles(),
+            // 5,
+         // [
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo",
+            // "ammo"
+         // ])
 
          CreateConstructSpider(
             GetErray("npcspawn")[2].GetOrigin(),
