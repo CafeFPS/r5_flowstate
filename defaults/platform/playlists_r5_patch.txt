@@ -21,7 +21,7 @@ playlists
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
 
-				lifeline_shield_revive_enabled						1 //Enables Lifeline's Season 3 shield
+				lifeline_shield_revive_enabled						0 //Enables Lifeline's Season 3 shield
 				circular_hud										0 //Pilot HUD
 				bleedout_enable										0 //Not required to be enabled it here
 				bleedout_can_force_bleedout_timeout					0 //Hold crouch key to die
