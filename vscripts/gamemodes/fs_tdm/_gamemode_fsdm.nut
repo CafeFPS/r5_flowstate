@@ -7118,7 +7118,7 @@ void function WaitForChampionToFinish()
 
 void function Common_DissolveDropable( entity prop )
 {
-	if( prop.GetScriptName() == "flowstate_halo_mod_weapon" ) //Don't remove weapons from halo mod weapon racks
+	if( prop.GetScriptName() == "flowstate_halo_mod_weapon" || prop.GetScriptName() == "fs_ball" ) //Don't remove weapons from halo mod weapon racks, or oddball item
 		return
 
 	thread

@@ -1351,11 +1351,11 @@ void function UpdateDpadHud( entity player )
 	}
 	PerfEnd( PerfIndexClient.SUR_HudRefresh )
 
-	if( Flowstate_IsHaloMode() )
-	{
-		RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", 420 )
-		RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", $"rui/flowstate_custom/colombia_flag_papa" )
-	}
+	// if( Flowstate_IsHaloMode() )
+	// {
+		// RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", 1 )
+		// RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", $"rui/pilot_loadout/tactical/pilot_tactical_cloak" )
+	// }
 
 	RuiSetInt( file.dpadMenuRui, "healthTypeCount", GetCountForLootType( eLootType.HEALTH ) )
 

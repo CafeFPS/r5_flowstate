@@ -808,6 +808,15 @@ void function OnGroundLootSpawned( entity ent )
 					continue
 				}
 			}
+			
+			if( GetCurrentPlaylistVarBool( "ketchup_mod6", false ) )
+			{
+				if (  lootData.lootType != eLootType.HEALTH && lootData.lootType != eLootType.AMMO && lootData.lootType != eLootType.INCAPSHIELD && lootData.lootType != eLootType.BACKPACK || lootData.tier >= 2 )
+				{
+					i--
+					continue
+				}
+			}
 
 			if( itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
 			{
@@ -3016,6 +3025,11 @@ entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngl
 	{
 		ent.SetScriptName( "flowstate_halo_mod_weapon" )
 	}
+	
+	if( Playlist() == ePlaylists.fs_haloMod_oddball && ref == "fs_ball" )
+	{
+		ent.SetScriptName( "fs_ball" )
+	}
 	DispatchSpawn( ent )
 
 	// MarkEntForCleanupOnRoundEnd( ent )
@@ -4312,6 +4326,12 @@ bool function SURVIVAL_DropBackpackItem( entity player, string item, int dropCou
 	if ( !FlowstateCheckItemDropableFor__fs_snd( item, player ) )
 		return false
 
+	if( item == "fs_ball" )
+	{
+		Flowstate_ClientCommand_AttemptThrowOddball( player, [] )
+		return false
+	}
+	
 	int count = 0
 
 	if ( data.netInt != "" )
@@ -4977,21 +4997,6 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	#if DEVELOPER
 	Warning( "SURVIVAL_Death_DropLoot_Internal " + mainWeapons.len() + " weapons to drop" )
 	#endif
-	// array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-	// array<DropWeaponData> playerWeaponData         = player.p.weaponsToDropData
-	// array<string> playerWeapons                    = player.p.weaponsToDropRefs
-	// array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
-	// LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
-
-	// if( mainWeapons.len() > 0 ) //why was this expr > 0 to override??? ~mkos
-	// {
-		// #if DEVELOPER
-			// printt( "weapons to drop overriden") 
-		// #endif 
-		
-		// playerWeapons = []
-		// mainWeapons = []
-	// }
 
 	foreach ( w in mainWeapons )
 	{
@@ -5275,6 +5280,10 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	foreach ( invItem in playerInventory )
 	{
 		LootData data   = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+		
+		if( Gamemode() == eGamemodes.fs_snd && data.ref == "snd_bomb" )
+			continue
+		
 		bool mergeItems = data.inventorySlotCount > 1 || invItem.count > 1
 		vector throwDir = <sin( throwData.throwAngle ), cos( throwData.throwAngle ), 0>
 
