@@ -96,7 +96,8 @@ void function Clickweapon_Init()
 		SetConVarInt( "net_wifi", DesiredB )
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 		
-		RegisterNetworkedVariableChangeCallback_bool( "isPlayerShootingFlowstateLightningGun", OnPlayerShoot )
+		if( Playlist() == ePlaylists.fs_dm_fast_instagib )
+			RegisterNetworkedVariableChangeCallback_time( "lastLightningGunShotTime", OnPlayerShoot )
 	#endif
 	
 	#if SERVER
@@ -120,9 +121,9 @@ void function DEV_PrintBeams()
 #endif //DEVELOPER && CLIENT
 
 #if CLIENT
-void function OnPlayerShoot( entity player, bool old, bool new, bool actuallyChanged )
+void function OnPlayerShoot( entity player, float old, float new, bool actuallyChanged )
 {
-	if ( player == GetLocalViewPlayer() || new == false )
+	if ( player == GetLocalViewPlayer() || !actuallyChanged )
 		return
 
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -166,7 +167,9 @@ void function OnPlayerShoot( entity player, bool old, bool new, bool actuallyCha
 
 	EffectAddTrackingForControlPoint( laserStoreMe, 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
 
-	Warning( player + " shot fx created " + new )
+	#if DEVELOPER
+	Warning( player + " 3p shot fx created " + new )
+	#endif
 }
 
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
@@ -512,7 +515,10 @@ void function FS_LG_PlayerStartShooting( entity player, entity weapon, string we
 void function FS_LG_PlayerStartShooting_Thread( entity player, entity weapon )
 {
 	player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
-
+	
+	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
+		player.SetPlayerNetTime( "lastLightningGunShotTime", Time() )
+	
 	Signal( player, "PlayerStartShotingLightningGun" )
 	EndSignal( player, "PlayerStartShotingLightningGun" )
 

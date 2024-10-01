@@ -339,6 +339,11 @@ void function RemoteFunctions_Init_Begin()
 				Remote_RegisterClientFunction( "ServerCallback_SetLGDuelPesistenceSettings", "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999 )
 			}
 			
+			if( Playlist() == ePlaylists.fs_dm_fast_instagib )
+			{
+				RegisterNetworkedVariable( "lastLightningGunShotTime", SNDC_PLAYER_GLOBAL, SNVT_TIME, -1 )
+			}
+			
 			RegisterNetworkedVariable( "championDisplayEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "flowstate_DMStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "flowstate_DMRoundEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
