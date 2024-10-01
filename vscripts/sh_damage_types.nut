@@ -329,6 +329,8 @@ global enum eDamageSourceId
 	mp_ability_heal
 	mp_ability_holopilot
 	mp_weapon_grenade_gas
+	
+	mp_weapon_decoy_grenade
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
