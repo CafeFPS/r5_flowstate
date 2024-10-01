@@ -41,7 +41,7 @@ global function Survival_SetInventoryEnabled
 global function LootZones_GetRefForOrigin
 global function CodeCallback_WeaponDropped
 global function CodeCallback_WeaponLoadoutPickup
-global function PlayerThrowLoot
+
 global function CreateLootForFlyerDeathBox
 global function SURVIVAL_AutoEquipOrdnanceFromInventory
 global function SURVIVAL_EquipOrdnanceFromInventory
@@ -1598,89 +1598,6 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int uni
 		return
 
 	pickup.Destroy()
-}
-
-entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 0, 0>, int count = 1, bool fromBackpackLimit = false )
-{
-	vector origin = GetThrowOrigin( player )
-	vector fwd    = ( AnglesToForward( player.EyeAngles() ) * RandomIntRange( 80, 300) ) + ( AnglesToRight( player.EyeAngles() ) * RandomInt( 250 ) ) // This is ass Please fix. Colombia
-
-	if( CoinFlip() )
-		fwd    = ( AnglesToForward( player.EyeAngles() ) * RandomIntRange( 80, 300 ) ) - ( AnglesToRight( player.EyeAngles() ) * RandomInt( 250 ) ) // This is ass Please fix. Colombia
-
-	entity loot
-	
-	if( ref == "snd_bomb" )
-	{
-		#if DEVELOPER
-			printt("bomb dropped by " + player)
-		#endif
-		
-		player.p.playerHasBomb = false
-		
-		if(IsValid(GetBombEntity())) 
-			GetBombEntity().Destroy()
-		
-		loot = SpawnGenericLoot( ref, origin, angles, count )
-		
-		SetBombEntity(loot)
-
-		SetBombState(bombState.ONGROUND_IDLE)
-		loot.SetOrigin(player.GetOrigin())
-		
-		foreach( sPlayer in GetPlayerArrayOfTeam(Sh_GetAttackerTeam()) )
-		{
-			if(!IsValid(sPlayer)) continue
-			
-			Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 2, player) //a player dropped the bomb
-		}
-	} 
-	else if( ref == "fs_ball" )
-	{
-		#if DEVELOPER
-			printt("Ball dropped by " + player)
-		#endif
-
-		if( IsValid( GetBallEntity() ) ) 
-			GetBallEntity().Destroy()
-
-		ClearBallCarrierPlayerSetup( player )
-		
-		loot = SpawnGenericLoot( ref, origin, angles, count )
-		SetBallEntity( loot )
-		// loot.SetOrigin( player.GetOrigin() )
-	}
-	else
-		loot = SpawnGenericLoot( ref, origin, angles, count )
-
-	loot.RemoveFromAllRealms()
-	loot.AddToOtherEntitysRealms( player )	
-	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
-	
-	if( ref != "snd_bomb" )
-	{
-		if( !fromBackpackLimit )
-			FakePhysicsThrow( player, loot, fwd )
-		else
-			FakePhysicsThrow( player, loot, AnglesToForward( player.EyeAngles() ) * RandomIntRange( 100, 300 ) ) // This is just a workaround for items from backpack limit check dropping in same pos as backpack and not allowing to grab backpack. In retail, the items are attached to the backpack and spawned in a circle when the backpack reaches the ground, fix this
-	}
-	BroadcastItemDrop( player, ref )
-	
-	thread function() : ( player, loot )
-	{
-		EndSignal( loot, "EndTyThread" )
-		
-		thread TimeOutThanksPromptForThrowedLoot( loot )
-		
-		entity pickedUpBy = expect entity( loot.WaitSignal( "OnItemPickup" ).player )
-
-		if ( !IsValid( pickedUpBy ) || player == pickedUpBy || pickedUpBy.GetTeam() != player.GetTeam() )
-			return
-
-		Remote_CallFunction_NonReplay( pickedUpBy, "ServerCallback_PromptSayThanks", player )
-	}()
-	
-	return loot
 }
 
 void function TimeOutThanksPromptForThrowedLoot( entity loot )
