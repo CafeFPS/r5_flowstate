@@ -1501,7 +1501,7 @@ playlists
 				flowstateChosenCharacter 						9	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 
 				//visuals
-				flowstate_give_random_custom_models_toall		1
+				flowstate_give_random_custom_models_toall		0
 				
 				//game continuity 
 				flowstateAutoreloadPrimary 						1
