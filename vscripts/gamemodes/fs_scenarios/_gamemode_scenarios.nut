@@ -1280,10 +1280,14 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				DecideRespawnPlayer( player, false )
 				HolsterAndDisableWeapons( player )
-				player.SetHealth( player.GetMaxHealth() )
-				player.SetShieldHealth( player.GetShieldHealthMax() )
+				
 			}
-
+			
+			player.SetHealth( player.GetMaxHealth() )
+			player.SetShieldHealth( player.GetShieldHealthMax() )
+			player.SetSkin(0)
+			player.SetCamo( 0 )
+			
 			if( Distance( player.GetOrigin(), waitingRoomLocation.origin ) > settings.waitingRoomRadius ) //waiting player should be in waiting room,not battle area
 			{
 				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
@@ -1762,7 +1766,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 
-				if( !settings.fs_scenarios_dropshipenabled  )
+				if( !settings.fs_scenarios_dropshipenabled  ) //deprecated var
 				{
 					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
 					player.MovementDisable()
@@ -1949,6 +1953,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					player.SetShieldHealth( 0 )
 					player.SetShieldHealthMax( 0 )
 					Inventory_SetPlayerEquipment(player, "", "armor")
+					
+					player.SetSkin(2)
+					player.SetCamo( player.GetTeam() % 10 )
 				}
 
 				wait settings.fs_scenarios_game_start_time_delay

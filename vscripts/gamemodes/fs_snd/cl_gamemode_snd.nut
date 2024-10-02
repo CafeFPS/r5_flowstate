@@ -443,10 +443,19 @@ void function FlowstateSND_CustomBuyMenu_Start(int currentRound, int availableMo
 	file.camera = CreateClientSidePointCamera(file.cameraStart, file.cameraAnglesStart,70)
 
 	EmitSoundOnEntity(player, "UI_Menu_Purchase_Coins" )
+	asset modelToUse = GetLocalClientPlayer().GetModelName()
+
 	
-	file.menumodelCharacter = CreateClientSidePropDynamic( Vector(0,0,-60) + file.camera.GetOrigin() + AnglesToForward(file.camera.GetAngles())*55 + AnglesToRight(file.camera.GetAngles())*20, Vector(0,0,0), GetLocalClientPlayer().GetModelName() ) // GetLocalClientPlayer().GetModelName() )
+	//Fixme. Cafe
+	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
+	{
+		modelToUse = $"mdl/humans/class/medium/pilot_medium_holo.rmdl"
+		// file.menumodelCharacter.SetAngles( Vector(0,90,90) )
+	}
+	
+	file.menumodelCharacter = CreateClientSidePropDynamic( Vector(0,0,-60) + file.camera.GetOrigin() + AnglesToForward(file.camera.GetAngles())*55 + AnglesToRight(file.camera.GetAngles())*20, Vector(0,0,0), modelToUse ) // GetLocalClientPlayer().GetModelName() )
 	file.menumodelCharacter.SetAngles( Vector(0, VectorToAngles( file.camera.GetOrigin() - file.menumodelCharacter.GetOrigin() ).y - 10 % 360, 0) )
-	
+
 	// file.menumodelCharacter.SetAngles( Vector(0,90,90) )
 
 	// file.menumodelCharacter.SetSkin(2)

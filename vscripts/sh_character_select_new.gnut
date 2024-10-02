@@ -2886,6 +2886,12 @@ void function UpdatePlayerModel( ItemFlavor character )
 		CharacterSkin_Apply( fileLevel.characterModel, characterSkin )
 		fileLevel.characterModel.Show()
 
+		if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			fileLevel.characterModel.SetSkin(2)
+			entity playerTeam = GetLocalClientPlayer() // expect entity( pickingPlayer )
+			fileLevel.characterModel.SetCamo( playerTeam.GetTeam() % 10 )
+		}
 		// Model swap effect
 		vector rarityColor           = ItemFlavor_GetQualityColor( characterSkin )
 		float fillIntensityScalar    = 10
