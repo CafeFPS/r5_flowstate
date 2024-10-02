@@ -72,7 +72,7 @@
 	{
         "ControlName"			"ImagePanel"
 		"wide"					"508"
-		"tall"					"300"
+		"tall"					"600"
 		"visible"				"1"
         "scaleImage"			"1"
 		"zpos"					"1"
@@ -90,7 +90,7 @@
 		"xpos"                  "-15"
 		"ypos"					"-5"
 		"wide"					"325"
-		"tall"					"300"
+		"tall"					"600"
 		"visible"				"1"
 		"wrap"					"1"
 		"fontHeight"			"25"

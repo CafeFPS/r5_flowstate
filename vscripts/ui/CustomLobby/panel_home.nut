@@ -135,7 +135,7 @@ void function InitHomePanel( var panel )
 
 void function Play_SetupUI()
 {
-	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "Flowstate v4.5 \n R5Reloaded v2.4" )
+	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "Flowstate Scripts v4.5 \n R5Reloaded v2.4" )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "playerName", GetPlayerName() )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountLevel", GetAccountDisplayLevel( 100 ) )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountBadge", $"rui/gladiator_cards/badges/account_t21" )
@@ -156,7 +156,7 @@ void function Play_SetupUI()
 	Hud_SetToolTipData( serversButton, serversToolTip )
 	HudElem_SetRuiArg( serversButton, "buttonText", "" + MS_GetServerCount() )
 	Hud_SetWidth( serversButton, Hud_GetBaseWidth( serversButton ) * 2 )
-
+	
 	Hud_SetText( Hud_GetChild( file.panel, "Info" ), "#MOTD" )
 
 	//GetR5RPromos()
