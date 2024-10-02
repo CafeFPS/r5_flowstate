@@ -99,19 +99,19 @@ void function PresetPurpleButton(var button)
 
 void function RButton(var button)
 {
-	int desiredVar = GetConVarInt( "noise_filter_scale" )
+	int desiredVar = GetConVarInt( "fs_lightning_gun_color_r" )
 	RunClientScript( "LGDuels_SetR", desiredVar, file.modifyLocalBeam )
 }
 
 void function GButton(var button)
 {
-	int desiredVar = GetConVarInt( "net_minimumPacketLossDC" )
+	int desiredVar = GetConVarInt( "fs_lightning_gun_color_g" )
 	RunClientScript( "LGDuels_SetG", desiredVar, file.modifyLocalBeam )
 }
 
 void function BButton(var button)
 {
-	int desiredVar = GetConVarInt( "net_wifi" )
+	int desiredVar = GetConVarInt( "fs_lightning_gun_color_b" )
 	RunClientScript( "LGDuels_SetB", desiredVar, file.modifyLocalBeam )
 }
 

@@ -65,7 +65,7 @@ void function InitFRChallengesSettings( var newMenuArg )
 
 void function ShieldSelectorButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_minimapRotate")
+	int desiredVar = GetConVarInt("fs_aimtrainer_dummies_shield")
 	RunClientScript("ChangeAimTrainer_AI_SHIELDS_LEVELClient", desiredVar.tostring())
 }
 
@@ -106,49 +106,49 @@ void function SupportTheDev(var button)
 
 void function SpeedTargetsButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_accessibleChat")
+	int desiredVar = GetConVarInt("fs_aimtrainer_dummies_speed_selector")
 	RunClientScript("ChangeAimTrainer_STRAFING_SPEEDClient", desiredVar.tostring())	
 }
 
 void function InmortalTargetsButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_streamerMode")
+	int desiredVar = GetConVarInt("fs_aimtrainer_dummies_are_inmortal")
 	RunClientScript("ChangeAimTrainer_INMORTAL_TARGETSClient", desiredVar.tostring())
 }
 
 void function InfiniteAmmoButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_showTips")
+	int desiredVar = GetConVarInt("fs_aimtrainer_infinite_ammo")
 	RunClientScript("ChangeAimTrainer_INFINITE_AMMOClient", desiredVar.tostring())
 }
 
 void function InfiniteAmmoButton2(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_compactOverHeadNames")
+	int desiredVar = GetConVarInt("fs_aimtrainer_autoreload_on_kill")
 	RunClientScript("ChangeAimTrainer_INFINITE_AMMO2Client", desiredVar.tostring())
 }
 
 void function RGBHudButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_showMeter")
+	int desiredVar = GetConVarInt("fs_aimtrainer_rgb_hud")
 	RunClientScript("ChangeRGB_HUDClient", desiredVar.tostring())
 }
 
 void function DummiesColorButton(var button)
 {
-	int desiredVar = GetConVarInt("noise_filter_scale")
+	int desiredVar = GetConVarInt("fs_aimtrainer_dummies_color")
 	RunClientScript("ChangeAimTrainer_AI_DUMMIES_COLORClient", desiredVar.tostring())
 }
 
 void function InfiniteTrainingButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_showMedals")
+	int desiredVar = GetConVarInt("fs_aimtrainer_infinite_training")
 	RunClientScript("ChangeAimTrainer_INFINITE_CHALLENGEClient", desiredVar.tostring())
 }
 
 void function UseDummyModelButton(var button)
 {
-	int desiredVar = GetConVarInt("hud_setting_showLevelUp")
+	int desiredVar = GetConVarInt("fs_aimtrainer_use_dummy_model")
 	RunClientScript("ChangeAimTrainer_USER_WANNA_BE_A_DUMMYClient", desiredVar.tostring())
 }
 
@@ -170,13 +170,13 @@ void function UpdateChallengeDuration(var button)
 
 void function UpdateSpawnDistance(var button)
 {
-	float desiredDistance = GetConVarFloat("net_minimumPacketLossDC")
+	float desiredDistance = GetConVarFloat("fs_aimtrainer_dummies_spawn_distance")
 	RunClientScript("ChangeAimTrainer_AI_SPAWN_DISTANCE", desiredDistance)
 }
 
 void function UpdateAIHealth(var button)
 {
-	float desiredHealth = GetConVarFloat("net_wifi")
+	float desiredHealth = GetConVarFloat("fs_aimtrainer_dummies_health")
 	RunClientScript("ChangeAimTrainer_AI_HEALTH", desiredHealth)
 }
 

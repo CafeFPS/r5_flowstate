@@ -90,10 +90,10 @@ void function Clickweapon_Init()
 		AddDestroyCallback( "player", FS_LG_OnPlayerDestroyed )
 		
 		chosenColor = < DesiredR, DesiredG, DesiredB >
-		SetConVarFloat( "hud_setting_showLevelUp", positionOffset )
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 		
 		if( Playlist() == ePlaylists.fs_dm_fast_instagib )
@@ -678,9 +678,9 @@ void function LGDuels_SetPresetRed( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( true, DesiredR, DesiredG, DesiredB )
 
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 
 		chosenColor = < DesiredR, DesiredG, DesiredB >
 
@@ -699,9 +699,9 @@ void function LGDuels_SetPresetRed( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( false, DesiredEnemyR, DesiredEnemyG, DesiredEnemyB )
 
-		SetConVarInt( "noise_filter_scale", DesiredEnemyR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredEnemyG )
-		SetConVarInt( "net_wifi", DesiredEnemyB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredEnemyR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredEnemyG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredEnemyB )
 
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 
@@ -721,9 +721,9 @@ void function LGDuels_SetPresetBlue( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( true, DesiredR, DesiredG, DesiredB )
 		
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 
 		chosenColor = < DesiredR, DesiredG, DesiredB >
 
@@ -742,9 +742,9 @@ void function LGDuels_SetPresetBlue( bool isLocalChosen )
 
 		LGDuels_UpdateSettings( false, DesiredEnemyR, DesiredEnemyG, DesiredEnemyB )
 		
-		SetConVarInt( "noise_filter_scale", DesiredEnemyR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredEnemyG )
-		SetConVarInt( "net_wifi", DesiredEnemyB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredEnemyR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredEnemyG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredEnemyB )
 
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 
@@ -764,9 +764,9 @@ void function LGDuels_SetPresetYellow( bool isLocalChosen )
 
 		LGDuels_UpdateSettings( true, DesiredR, DesiredG, DesiredB )
 					
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 
 		chosenColor = < DesiredR, DesiredG, DesiredB >
 
@@ -785,9 +785,9 @@ void function LGDuels_SetPresetYellow( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( false, DesiredEnemyR, DesiredEnemyG, DesiredEnemyB )
 
-		SetConVarInt( "noise_filter_scale", DesiredEnemyR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredEnemyG )
-		SetConVarInt( "net_wifi", DesiredEnemyB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredEnemyR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredEnemyG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredEnemyB )
 
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 
@@ -807,9 +807,9 @@ void function LGDuels_SetPresetGreen( bool isLocalChosen )
 
 		LGDuels_UpdateSettings( true, DesiredR, DesiredG, DesiredB )
 		
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 
 		chosenColor = < DesiredR, DesiredG, DesiredB >
 
@@ -828,9 +828,9 @@ void function LGDuels_SetPresetGreen( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( false, DesiredEnemyR, DesiredEnemyG, DesiredEnemyB )
 
-		SetConVarInt( "noise_filter_scale", DesiredEnemyR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredEnemyG )
-		SetConVarInt( "net_wifi", DesiredEnemyB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredEnemyR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredEnemyG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredEnemyB )
 
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 
@@ -850,9 +850,9 @@ void function LGDuels_SetPresetPurple( bool isLocalChosen )
 	
 		LGDuels_UpdateSettings( true, DesiredR, DesiredG, DesiredB )
 					
-		SetConVarInt( "noise_filter_scale", DesiredR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredG )
-		SetConVarInt( "net_wifi", DesiredB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 
 		chosenColor = < DesiredR, DesiredG, DesiredB >
 
@@ -871,9 +871,9 @@ void function LGDuels_SetPresetPurple( bool isLocalChosen )
 		
 		LGDuels_UpdateSettings( false, DesiredEnemyR, DesiredEnemyG, DesiredEnemyB )
 
-		SetConVarInt( "noise_filter_scale", DesiredEnemyR )
-		SetConVarInt( "net_minimumPacketLossDC", DesiredEnemyG )
-		SetConVarInt( "net_wifi", DesiredEnemyB )
+		SetConVarInt( "fs_lightning_gun_color_r", DesiredEnemyR )
+		SetConVarInt( "fs_lightning_gun_color_g", DesiredEnemyG )
+		SetConVarInt( "fs_lightning_gun_color_b", DesiredEnemyB )
 
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 
@@ -992,10 +992,9 @@ void function LGDuels_SetFromPersistence( float s1, int s2, int s3, int s4, floa
 {
 	// LGDuels_SetPositionOffset( s1 )
 	
-	SetConVarFloat( "hud_setting_showLevelUp", s1 )
-	SetConVarInt( "noise_filter_scale", s2 )
-	SetConVarInt( "net_minimumPacketLossDC", s3 )
-	SetConVarInt( "net_wifi", s4 )
+	SetConVarInt( "fs_lightning_gun_color_r", s2 )
+	SetConVarInt( "fs_lightning_gun_color_g", s3 )
+	SetConVarInt( "fs_lightning_gun_color_b", s4 )
 
 	chosenColor = < s2, s3, s4 > //uses global script var
 

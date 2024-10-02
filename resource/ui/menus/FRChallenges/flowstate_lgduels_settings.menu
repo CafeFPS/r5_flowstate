@@ -264,7 +264,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			tabPosition				0
 			style					DialogListButton
 			classname				"SettingsBtn"
-			conCommand				"noise_filter_scale"
+			conCommand				"fs_lightning_gun_color_r"
 			minValue				0
 			maxValue				255
 			stepSize				1
@@ -282,7 +282,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			wide 55
 			ControlName				TextEntry
 			InheritProperties       SliderControlTextEntry
-			syncedConVar            "noise_filter_scale"
+			syncedConVar            "fs_lightning_gun_color_r"
 			classname				"SettingsBtn"
 			showConVarAsFloat		1
 			// ypos                    100
@@ -323,7 +323,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			tabPosition				0
 			style					DialogListButton
 			classname				"SettingsBtn"
-			conCommand				"net_minimumPacketLossDC"
+			conCommand				"fs_lightning_gun_color_g"
 			minValue				0
 			maxValue				255
 			stepSize				1
@@ -341,7 +341,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			wide 55
 			ControlName				TextEntry
 			InheritProperties       SliderControlTextEntry
-			syncedConVar            "net_minimumPacketLossDC"
+			syncedConVar            "fs_lightning_gun_color_g"
 			classname				"SettingsBtn"
 			showConVarAsFloat		1
 			// ypos                    100
@@ -382,7 +382,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			tabPosition				0
 			style					DialogListButton
 			classname				"SettingsBtn"
-			conCommand				"net_wifi"
+			conCommand				"fs_lightning_gun_color_b"
 			minValue				0
 			maxValue				255
 			stepSize				1
@@ -400,7 +400,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			wide 55
 			ControlName				TextEntry
 			InheritProperties       SliderControlTextEntry
-			syncedConVar            "net_wifi"
+			syncedConVar            "fs_lightning_gun_color_b"
 			classname				"SettingsBtn"
 			showConVarAsFloat		1
 			// ypos                    100

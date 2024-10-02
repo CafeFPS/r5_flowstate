@@ -135,7 +135,8 @@ void function InitHomePanel( var panel )
 
 void function Play_SetupUI()
 {
-	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "Flowstate Scripts v4.5 \n R5Reloaded v2.4" )
+	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "                 SEE FULL CHANGELOG" )
+	AddButtonEventHandler( Hud_GetChild( file.panel, "R5RVersionButton"), UIE_CLICK, TestNewButton)
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "playerName", GetPlayerName() )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountLevel", GetAccountDisplayLevel( 100 ) )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountBadge", $"rui/gladiator_cards/badges/account_t21" )
@@ -172,8 +173,13 @@ void function Play_SetupUI()
 	}
 }
 
-void function SettingsPressed(var button)
+void function TestNewButton(var button)
 {
+	LaunchExternalWebBrowser( "https://github.com/Mauler125/r5sdk", WEBBROWSER_FLAG_NONE )
+}
+
+void function SettingsPressed(var button)
+{	
 	AdvanceMenu( GetMenu( "SystemMenu" ) )
 }
 

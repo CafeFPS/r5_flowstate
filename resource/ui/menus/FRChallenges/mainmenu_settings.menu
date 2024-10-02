@@ -471,7 +471,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			classname					"SettingsBtn"
 			xpos 400
 			wide 360
-			ConVar "hud_setting_minimapRotate"
+			ConVar "fs_aimtrainer_dummies_shield"
 			
 			list{
 				"No shields"      0
@@ -513,7 +513,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			tabPosition				0
 			style					DialogListButton
 			classname				"SettingsBtn"
-			conCommand				"net_wifi"
+			conCommand				"fs_aimtrainer_dummies_health"
 			minValue				1
 			maxValue				100
 			stepSize				1
@@ -528,7 +528,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			wide 55
 			ControlName				TextEntry
 			InheritProperties       SliderControlTextEntry
-			syncedConVar            "net_wifi"
+			syncedConVar            "fs_aimtrainer_dummies_health"
 			classname				"SettingsBtn"
 			showConVarAsFloat		1
 
@@ -563,7 +563,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			classname					"SettingsBtn"
 			xpos 400
 			wide 360
-			ConVar "hud_setting_accessibleChat"				
+			ConVar "fs_aimtrainer_dummies_speed_selector"				
 			list
 			{
 				"Static"	0
@@ -607,7 +607,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			tabPosition				0
 			style					DialogListButton
 			classname				"SettingsBtn"
-			conCommand				"net_minimumPacketLossDC"
+			conCommand				"fs_aimtrainer_dummies_spawn_distance"
 			minValue				1
 			maxValue				20
 			stepSize				1
@@ -622,7 +622,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			wide 55
 			ControlName				TextEntry
 			InheritProperties       SliderControlTextEntry
-			syncedConVar            "net_minimumPacketLossDC"
+			syncedConVar            "fs_aimtrainer_dummies_spawn_distance"
 			classname				"SettingsBtn"
 			showConVarAsFloat		1
 
@@ -660,7 +660,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//ConVar                  "sound_without_focus"
 			xpos 400
 			wide 360
-			ConVar "hud_setting_streamerMode"
+			ConVar "fs_aimtrainer_dummies_are_inmortal"
 			"classname"					"SettingsBtn"
 			
 			list
@@ -703,7 +703,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//navUp                   SldLobbyMusicVolume
 			//navDown                 SwchChatTextToSpeech
 			//ConVar                  "sound_without_focus"
-			ConVar "hud_setting_showTips"
+			ConVar "fs_aimtrainer_infinite_ammo"
 			xpos 400
 			wide 360
 			"classname"					"SettingsBtn"			
@@ -745,7 +745,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//navUp                   SldLobbyMusicVolume
 			//navDown                 SwchChatTextToSpeech
 			//ConVar                  "sound_without_focus"
-			ConVar "hud_setting_compactOverHeadNames"
+			ConVar "fs_aimtrainer_autoreload_on_kill"
 			"classname"					"SettingsBtn"		
 			xpos 400
 			wide 360
@@ -852,7 +852,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//navDown                 SwchChatTextToSpeech
 			//ConVar                  "sound_without_focus"
 			visible 0
-			ConVar "hud_setting_showMeter"
+			ConVar "fs_aimtrainer_rgb_hud"
 			"classname"					"SettingsBtn2"
 			xpos 400
 			wide 360
@@ -894,7 +894,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			xpos 400
 			wide 360
 			visible 0
-			ConVar "noise_filter_scale"				
+			ConVar "fs_aimtrainer_dummies_color"				
 			list
 			{
 				"Grey"      0
@@ -939,13 +939,13 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//ConVar                  "sound_without_focus"
 			visible 0
 			"classname"					"SettingsBtn2"
-			ConVar "hud_setting_showLevelUp"
+			ConVar "fs_aimtrainer_use_dummy_model"
 			xpos 400
 			wide 360
 			list
 			{
-				"Disable"  2
-				"Enable"   3
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          UseDummyModelText
@@ -981,7 +981,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			//navDown                 SwchChatTextToSpeech
 			//ConVar                  "sound_without_focus"
 			"classname"					"SettingsBtn2"
-			ConVar "hud_setting_showMedals"
+			ConVar "fs_aimtrainer_infinite_training"
 			xpos 400
 			wide 360
 			visible 0

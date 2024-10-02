@@ -3611,6 +3611,7 @@ playlists
 				mp_rr_ashs_redemption						  	1
 				mp_rr_olympus_mu1 								1
 				mp_rr_arena_empty								1
+				mp_rr_construct									1
 			} } }
 		}
 
@@ -3666,6 +3667,7 @@ playlists
 				mp_rr_aqueduct_night						   	1
 				mp_rr_ashs_redemption						  	1
 				mp_rr_arena_composite						  	1
+				mp_rr_construct									1
 			} } }
 		}
 
@@ -3719,7 +3721,7 @@ playlists
 				"DISCONNECT_SEND_OVERFLOW"						"Connection to server overflowed (code:dam)."
 				"DISCONNECT_NETCHAN_OVERFLOW"		 			"Connection to server overflowed (code:vulkan)."
 				"DISCONNECT_STRINGCMD_OVERFLOW"	   				"Connection to server overflowed (code:skillissue)."
-				"MOTD"								  			"Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
+				"MOTD"								  			"What's new in R5Reloaded? \n\nFlowstate Scripts now uses S21 retail scripts as base. Enjoy updated map features and hundred of bugs fixes. \n\nIt also features new modes: \nLG Duels, Cafe's Instagib, Winter Express, Zone Wars, Movement Recorder, Search and Destroy, Surf, Halo Mod and two new movement practice modes! \n\nNew maps: \n   -Kings Canyon MU2 (S5)\n    -Phase Runner\n    -World's Edge Holiday (Winter Express)\n    -mp_rr_construct (custom)\n    -Empty Map (custom) \n\n Flowstate Scripts (Gameplay) brought to you by @CafeFPS and collaborators.\nR5Reloaded (Engine) by @AmosModz and collaborators."
 				"BETA_BUILD_WATERMARK" 				  			""
 				"FS_PLAYLIST_MOTD"					  			"g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b " //Flowstate x R5Reloaded" //1000 char max [dev-note: DO NOT SHIP WITH THIS FILLED]
 				"FS_PLAYLIST_MOTD_CONTINUE"			  			"  \n\n\n\n THIS IS THE NEXT MESSAGE \n\n\n\n\n g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b " //append to first - 1000 char limit

@@ -62,6 +62,7 @@ global function StartChallenge5NewCClient
 global function StartChallenge6NewCClient
 global function StartChallenge7NewCClient
 global function StartChallenge8NewCClient
+global function StartChallenge9NewCClient
 global function SkipButtonResultsClient
 global function RestartButtonResultsClient
 
@@ -210,31 +211,18 @@ void function ActuallyPutDefaultSettings()
 {
 	entity player = GetLocalClientPlayer()
 	EndSignal( player, "OnDestroy" )
-	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
-	SetConVarInt( "hud_setting_minimapRotate", 1 )
-	SetConVarInt( "hud_setting_accessibleChat", 1 )
-	SetConVarInt( "hud_setting_streamerMode", 0)
-	SetConVarInt( "hud_setting_showTips",  	1 )
-	SetConVarInt( "hud_setting_compactOverHeadNames", 0 )
-	SetConVarInt( "hud_setting_showMeter", 0)
-	SetConVarInt( "hud_setting_showMedals", 0)
-	SetConVarInt( "hud_setting_showLevelUp", 2)
-	SetConVarInt( "net_minimumPacketLossDC", 4)
-	SetConVarInt( "net_wifi", 100)
-	SetConVarInt( "noise_filter_scale", 5)
-	WaitFrame() //idk?
-	//set default settings
-	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("hud_setting_minimapRotate").tostring())
-	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + GetConVarInt("hud_setting_accessibleChat").tostring())
-	player.ClientCommand("CC_RGB_HUD " + GetConVarInt("hud_setting_showMeter").tostring())
-	player.ClientCommand("CC_AimTrainer_INFINITE_CHALLENGE " + GetConVarInt("hud_setting_showMedals").tostring())
-	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO " + GetConVarInt("hud_setting_showTips").tostring())
-	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO2 " + GetConVarInt("hud_setting_compactOverHeadNames").tostring())	
-	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + GetConVarInt("hud_setting_streamerMode").tostring())
-	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())
-	player.ClientCommand("CC_AimTrainer_SPAWN_DISTANCE " + GetConVarInt("net_minimumPacketLossDC").tostring())		
-	player.ClientCommand("CC_AimTrainer_AI_HEALTH " + GetConVarInt("net_wifi").tostring())
-	player.ClientCommand("CC_AimTrainer_DUMMIES_COLOR " + GetConVarInt("noise_filter_scale").tostring())
+
+	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("fs_aimtrainer_dummies_shield").tostring())
+	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + GetConVarInt("fs_aimtrainer_dummies_speed_selector").tostring())
+	player.ClientCommand("CC_RGB_HUD " + GetConVarInt("fs_aimtrainer_rgb_hud").tostring())
+	player.ClientCommand("CC_AimTrainer_INFINITE_CHALLENGE " + GetConVarInt("fs_aimtrainer_infinite_training").tostring())
+	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO " + GetConVarInt("fs_aimtrainer_infinite_ammo").tostring())
+	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO2 " + GetConVarInt("fs_aimtrainer_autoreload_on_kill").tostring())	
+	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + GetConVarInt("fs_aimtrainer_dummies_are_inmortal").tostring())
+	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("fs_aimtrainer_use_dummy_model").tostring())
+	player.ClientCommand("CC_AimTrainer_SPAWN_DISTANCE " + GetConVarInt("fs_aimtrainer_dummies_spawn_distance").tostring())		
+	player.ClientCommand("CC_AimTrainer_AI_HEALTH " + GetConVarInt("fs_aimtrainer_dummies_health").tostring())
+	player.ClientCommand("CC_AimTrainer_DUMMIES_COLOR " + GetConVarInt("fs_aimtrainer_dummies_color").tostring())
 }
 
 
@@ -289,6 +277,9 @@ string function ReturnChallengeName(int index)
 			break
 		case 17:
 			final = "ARMOR SWAP"
+			break
+		case 18:
+			final = "DROPSHIP DRILL"
 			break
 		case 0:
 		default: 
@@ -821,7 +812,10 @@ void function ServerCallback_RestartChallenge(int challenge)
 			break
 		case 17:
 			StartChallenge8NewCClient()
-			break		
+			break	
+		case 18:
+			StartChallenge9NewCClient()
+			break	
 	}
 }
 
@@ -970,6 +964,14 @@ void function StartChallenge8NewCClient()
 	ToggleArmorSwapUI(true)
 }
 
+void function StartChallenge9NewCClient()
+{
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("Practice dropship scenario")
+	thread CreateTimerRUIandSTATS()
+	player.ClientCommand("CC_StartChallenge9NewC")
+}
 void function SkipButtonResultsClient()
 {
 	entity player = GetLocalClientPlayer()

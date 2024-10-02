@@ -12,6 +12,7 @@
   
   "ConVars"
   {
+	//General ConVars
 	"enable_healthbar"
 	{
 		"helpString" "Displays flowstate healthbars"
@@ -22,6 +23,176 @@
 			"default"	"1"
 			"min" 		"0"
 			"max"		"1"
+		}
+	}
+	//AimTrainer UI buttons
+	"fs_aimtrainer_dummies_health"
+	{
+		"helpString" "Dummies health"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"1"
+			"min" 		"1"
+			"max"		"100"
+		}
+	}
+	"fs_aimtrainer_dummies_shield"
+	{
+		"helpString" "Dummies shield"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"1"
+			"min" 		"0"
+			"max"		"4"
+		}
+	}
+	"fs_aimtrainer_dummies_speed_selector"
+	{
+		"helpString" "Dummies speed selector"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"2"
+			"min" 		"0"
+			"max"		"4"
+		}
+	}
+	"fs_aimtrainer_dummies_spawn_distance"
+	{
+		"helpString" "Dummies spawn distance"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"4"
+			"min" 		"1"
+			"max"		"20"
+		}
+	}
+	"fs_aimtrainer_dummies_are_inmortal"
+	{
+		"helpString" "Dummies inmortal selector"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_infinite_ammo"
+	{
+		"helpString" "Aim trainer autoreload on hit"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_autoreload_on_kill"
+	{
+		"helpString" "Aim trainer autoreload on kill"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"1"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_rgb_hud"
+	{
+		"helpString" "Aim trainer rgb hud"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_use_dummy_model"
+	{
+		"helpString" "Aim trainer use dummy model"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_infinite_training"
+	{
+		"helpString" "Aim trainer infinite training"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"1"
+		}
+	}
+	"fs_aimtrainer_dummies_color"
+	{
+		"helpString" "Aim trainer dummies color(fixme)"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"5"
+		}
+	}
+	//Lightning Gun
+	"fs_lightning_gun_color_r"
+	{
+		"helpString" "Lightning Gun color R"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"255"
+			"min" 		"0"
+			"max"		"255"
+		}
+	}
+	"fs_lightning_gun_color_g"
+	{
+		"helpString" "Lightning Gun color G"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"255"
+		}
+	}
+	"fs_lightning_gun_color_b"
+	{
+		"helpString" "Lightning Gun color B"
+		"flags" 		"ARCHIVE|RELEASE"
+		
+		"Values"
+		{
+			"default"	"0"
+			"min" 		"0"
+			"max"		"255"
 		}
 	}
   }
