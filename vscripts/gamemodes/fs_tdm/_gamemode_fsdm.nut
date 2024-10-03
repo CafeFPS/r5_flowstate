@@ -4410,7 +4410,9 @@ void function HaloMod_HandlePlayerModel( entity player )
 
 void function CharSelect( entity player)
 {
-	DumpStack()
+	#if DEVELOPER 
+		DumpStack()
+	#endif 
 	//Char select.
 	file.characters = clone GetAllCharacters()
 	if(FlowState_ForceAdminCharacter() && IsAdmin(player))
@@ -4877,7 +4879,7 @@ bool function ClientCommand_adminlogin(entity player, array < string > args)
 
 string function GetOwnerName()
 {
-	if(file.mAdmins.len() != 0)
+	if( file.mAdmins.len() != 0 )
 		return file.mAdmins[0]
 	else
 		return ""
@@ -4887,7 +4889,8 @@ string function GetOwnerName()
 
 bool function IsAdmin( entity player )
 {
-	if(file.authkey == "") return false
+	if( file.authkey == "" ) 
+		return false
 	
 	return player.p.isAdmin
 }

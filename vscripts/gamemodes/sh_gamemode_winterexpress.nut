@@ -2378,7 +2378,7 @@ void function RespawnTeamAfterDelay( int team, float delay )
 void function RespawnPlayer( entity player, bool startingGame = false )
 {
 	#if DEVELOPER
-	DumpStack()
+		DumpStack()
 	#endif
 	if ( GetGameState() != eGameState.Playing )
 		return
@@ -2409,7 +2409,7 @@ void function WinterExpress_OnPlayerRespawned( entity player )
 void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startingGame = false )
 {
 	#if DEVELOPER
-	DumpStack()
+		DumpStack()
 	Warning( "WinterExpress_OnPlayerRespawnedThread " + player + " StartinGame: " + startingGame + player.p.respawnPodLanded )
 	#endif
 	if ( !player.p.respawnPodLanded )
@@ -2647,7 +2647,10 @@ bool function WinterExpress_RespawnOnTeam( entity player )
 
 void function WinterExpress_RespawnHoverTank( entity player, bool isGameStartLerp = false, int teamIndexOverride = -1, int playerIndexOverride = -1 )
 {
-	DumpStack()
+	#if DEVELOPER 
+		DumpStack()
+	#endif 
+	
 	if ( !IsValid( player ) )
 		return
 

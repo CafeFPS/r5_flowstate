@@ -38,6 +38,7 @@ global function AddEntityCalllback_OnPlayerGamestateChange_1v1
 global function RemoveEntityCalllback_OnPlayerGamestateChange_1v1
 global function Gamemode1v1_GiveWeapon
 global function Gamemode1v1_SetPlayerGamestate
+global function IsCurrentState
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -253,17 +254,14 @@ const array<string> LEGEND_INDEX_ARRAY = [
 		"Blisk", //11
 		"Fade", //12
 		"Amogus", //13
-								//"Peter", //14 --
+		
 		"Rhapsody", //14
 		"Ash", //15
-								//"CJ", //17 --
 		"Jack", //16
 		"Loba", //17 --
 		"Revenant", //18
 		"Ballistic", //19
 		"Marvin", //20
-								//"Gojo", //23 --
-								//"Naruto", //24 --
 		"Pete", //21
 	];
 
@@ -281,7 +279,7 @@ void function DEV_legend( entity player, int id )
 {
 	if( id < GetAllCharacters().len() )
 	{
-		ItemFlavor select_character = file.characters[characterslist[id]]
+		ItemFlavor select_character = file.characters[ characterslist[ id ] ]
 		CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
 	}
 	else
@@ -1089,7 +1087,7 @@ void function mkos_Force_Rest( entity player )
 	if( ( !file.bRestEnabled ) )
 		return
 	
-	if( !IsValid(player) ) //|| !IsAlive(player) )
+	if( !IsValid( player ) ) //|| !IsAlive(player) )
 		return
 
 	if( player.p.handle in file.soloPlayersResting )
@@ -1098,12 +1096,12 @@ void function mkos_Force_Rest( entity player )
 		return
 	} 
 	
-	if( isPlayerInWaitingList(player) )
-	{	
-		deleteWaitingPlayer(player.p.handle)
+	if( isPlayerInWaitingList( player ) )
+	{
+		deleteWaitingPlayer( player.p.handle )
 	}
 	
-		soloModePlayerToRestingList(player)
+		soloModePlayerToRestingList( player )
 		
 		try
 		{
@@ -1114,8 +1112,8 @@ void function mkos_Force_Rest( entity player )
 
 		}
 	
-	HolsterAndDisableWeapons(player)
-	//TakeAllWeapons( player )	
+	HolsterAndDisableWeapons( player )
+	//TakeAllWeapons( player )
 	player.p.lastRestUsedTime = Time()
 }
 

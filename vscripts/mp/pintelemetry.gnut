@@ -983,7 +983,8 @@ void function FireRemoteMotd( entity player )
 				Remote_CallFunction_UI( player, "UI_Callback_MOTD" )
 					wait 5
 					
-				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+				if( IsValid( player ) )
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 			}
 		}
 	)()
@@ -5368,7 +5369,8 @@ void function FireRemoteMotd( entity player )
 				Remote_CallFunction_UI( player, "UI_Callback_MOTD" )
 					wait 5
 					
-				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+				if( IsValid( player ) )
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 			}
 		}
 	)()

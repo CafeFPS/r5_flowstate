@@ -275,7 +275,10 @@ struct
 		"#FS_WAITING_PANEL",
 		"#FS_STATS_SHIPPED",
 		"#FS_STATS_SHIPPED_MSG",
-		"#FS_HALOSLAYER"
+		"#FS_HALOSLAYER",
+		"#FS_AFK_ALERT",
+		"#FS_AFK_REST_MSG",
+		"#FS_AFK_KICK_MSG"
 	]
 	
 } file

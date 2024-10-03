@@ -4508,7 +4508,6 @@ array<entity> function GetAllMinions()
 	return ai
 }
 
-
 bool function GameScore_IsLowScoreDifference()
 {
 	int winningTeam = GameScore_GetWinningTeam()
@@ -4557,8 +4556,8 @@ bool function IsFastPilot( entity player )
 void function KillPlayer( entity player, int damageSource )
 {
 	#if DEVELOPER
-	printt( "Played Killed from script: " )
-	DumpStack()
+		printt( "Played Killed from script: " )
+		DumpStack()
 	#endif
 
 	Assert( IsAlive( player ) )

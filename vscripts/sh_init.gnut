@@ -384,6 +384,7 @@ void function Server_Init()
 		
 	Flowstate_SpawnSystem_Init()
 	NotificationSystem_Init()
+	Flowstate_Afk_Init()
 
 	#if DEVELOPER
 		SmokeTest_Init()
