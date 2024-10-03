@@ -3077,17 +3077,14 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //å¤æ
 
 	if(!IsValid(player)) return
 
-	
-
-	if ( Flowstate_IsLGDuels() ) //todo: remove hard set?
+	if( Equipment_GetDefaultShieldHP() > 0 && !Flowstate_IsLGDuels() )
 	{
-		PlayerRestoreHP_1v1( player, 100, 0 ) //lg
-		Inventory_SetPlayerEquipment(player, "", "armor")
-	}
-	else 
-	{
+		player.SetShieldHealthMax( Equipment_GetDefaultShieldHP() )
 		PlayerRestoreHP_1v1( player, 100, player.GetShieldHealthMax().tofloat() )
-		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+	} else
+	{
+		PlayerRestoreHP_1v1( player, 100, 0 )
+		Inventory_SetPlayerEquipment(player, "", "armor")
 	}
 	
 	wait 0.1

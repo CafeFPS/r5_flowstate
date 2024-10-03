@@ -752,6 +752,8 @@ playlists
 				
 				flowstateAdminTgive 							0 //tgive is for the admin ONLY
 				
+				flowstate_give_character_passive				1
+				
 				//winter express exclusive
 				infinite_heal_items								1
 				desertlands_script_train_enable					1
@@ -988,7 +990,6 @@ playlists
 				flowstateAutoreloadSecondary 					1
 				flowstateKillshotEnabled 						1	//enables the killshot sound when killing
 				flowstate_disable_all_map_triggers				0
-				flowstate_give_character_passive				0
 			}
 			gamemodes { fs_prophunt { maps {
 				mp_rr_desertlands_64k_x_64k						1
@@ -1501,7 +1502,7 @@ playlists
 				flowstateChosenCharacter 						9	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 
 				//visuals
-				flowstate_give_random_custom_models_toall		0
+				flowstate_give_random_custom_models_toall		1
 				
 				//game continuity 
 				flowstateAutoreloadPrimary 						1
@@ -1761,10 +1762,12 @@ playlists
 				flowstate1v1MatchLoadout						0
 				
 				flowstate_disable_all_map_triggers				1
-				flowstate_give_random_custom_models_toall		1
+				
 				flowstate_seconds_to_wait_without_players_before_restarting		3600 // 3600 : 1 hour
 				
 				flowstateRoundtime 								600
+				
+				flowstate_give_character_passive				1
 				
 				/////////////////////////
 				// mkos added features //
@@ -1823,7 +1826,10 @@ playlists
 				// extra
 				default_start_in_rest_setting					0 // players default to starting in rest if 1 and player has no prior saved preference
 				default_lock1v1_setting							1 // default setting if player has no saved preference ( 0 means disabled until player turns on )
+				
+				flowstate_give_random_custom_models_toall		0
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
+
 				enable_voice									0
 				default_enable_input_banner_setting	 			1 // display input ui default setting for players
 				enable_chat_commands							1 // allows typing /rest /info /id  into chat. 
@@ -2777,6 +2783,8 @@ playlists
 				
 				survival_server_restart_after_end				1
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_give_character_passive				1
 			}
 			gamemodes { survival { maps {
 				mp_rr_desertlands_64k_x_64k						1
@@ -2835,6 +2843,8 @@ playlists
 
 				survival_server_restart_after_end				1
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_give_character_passive				1
 			}
 			gamemodes { survival { maps {
 				mp_rr_desertlands_64k_x_64k						1
@@ -2895,6 +2905,8 @@ playlists
 
 				survival_server_restart_after_end				0
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_give_character_passive				1
 
 			}
 			gamemodes { survival { maps {

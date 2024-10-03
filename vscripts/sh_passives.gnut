@@ -539,6 +539,7 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 	}
 }
 
+
 void function Wattson_PassiveToggle(  entity player, int passive, bool didHave, bool nowHas )
 {
 	if ( !IsAlive( player ) )
@@ -616,7 +617,7 @@ void function PilotBlood_Passive_Body( entity player )
 
 	EndSignal( player, "EndPilotBloodThread" )
 	
-	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym )
+	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym || Gamemode() == eGamemodes.WINTEREXPRESS )
 		tickTime = 0.05
 	
 	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Playlist() == ePlaylists.fs_movementgym )
@@ -637,7 +638,7 @@ void function PilotBlood_Passive_Body( entity player )
 			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
 
 		}
-		else if( player.GetShieldHealth() != player.GetShieldHealthMax() )
+		else if( player.GetShieldHealth() != player.GetShieldHealthMax() && Gamemode() != eGamemodes.WINTEREXPRESS )
 		{
 			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
 		}
