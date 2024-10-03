@@ -446,11 +446,6 @@ playlists
 			inherit defaults
 		}
 
-		map_editor_deprecated
-		{
-			inherit defaults
-		}
-
 		//By @CafeFPS
 		winterexpress
 		{
@@ -1685,8 +1680,7 @@ playlists
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_desertlands_64k_x_64k 					1
-				//mp_rr_canyonlands_64k_x_64k					1
-				mp_rr_olympus_mu1								1
+				mp_rr_olympus_mu1 								1
 			} } }
 		}
 
