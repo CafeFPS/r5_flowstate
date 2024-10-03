@@ -15,7 +15,6 @@ global function ServerCallback_CTF_SetSelectedLocation
 global function ServerCallback_CTF_SetObjectiveText
 global function ServerCallback_CTF_AddPointIcon
 global function ServerCallback_CTF_RecaptureFlag
-global function ServerCallback_CTF_ResetFlagIcons
 global function ServerCallback_CTF_SetPointIconHint
 global function ServerCallback_CTF_UpdatePlayerStats
 global function ServerCallback_CTF_CheckUpdatePlayerLegend
@@ -416,20 +415,6 @@ void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float 
 			RuiDestroyIfAlive( FlagRUI.FlagReturnRUI )
 			FlagRUI.FlagReturnRUI = null
 		}
-	}
-}
-
-void function ServerCallback_CTF_ResetFlagIcons()
-{
-	if( FlagRUI.IMCpointicon != null)
-	{
-		RuiDestroyIfAlive( FlagRUI.IMCpointicon )
-		FlagRUI.IMCpointicon = null
-	}
-	if( FlagRUI.MILITIApointicon != null)
-	{
-		RuiDestroyIfAlive( FlagRUI.MILITIApointicon )
-		FlagRUI.MILITIApointicon = null
 	}
 }
 

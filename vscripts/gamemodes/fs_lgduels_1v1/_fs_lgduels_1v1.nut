@@ -286,7 +286,7 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 		try
 		{	
 			player.p.hitsound = IntToSound( param )
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 			LocalMsg( player, "#FS_SUCCESS", "#FS_HitsoundChanged", eMsgUI.DEFAULT, 3, "", param )
 			return true	
 		} 
@@ -327,7 +327,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 					{
 						
 						player.p.p_damage = 2;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOnSubstr", eMsgUI.DEFAULT, 3 )
 						return true
 					
@@ -343,7 +343,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 					{
 						
 						player.p.p_damage = 3;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" );
 						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOffSubstr", eMsgUI.DEFAULT, 3 )
 						return true
 					

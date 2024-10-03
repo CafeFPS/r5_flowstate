@@ -3426,7 +3426,7 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 				if( !IsValid( player ) || !player.p.isConnected )
 					return
 					
-				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+				Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 				mkos_Force_Rest( player )
 			}
 

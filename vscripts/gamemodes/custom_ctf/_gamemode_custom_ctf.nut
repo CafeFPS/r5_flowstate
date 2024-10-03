@@ -363,7 +363,7 @@ void function VotingPhase()
 
 		foreach( player in GetPlayerArray() )
 		{
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
@@ -590,7 +590,7 @@ void function StartRound()
 
 		foreach(player in GetPlayerArray())
 		{
-			Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+			Remote_CallFunction_ByRef(player, "FSIntro_ForceEnd")
 		}
 	}
 	
@@ -915,7 +915,7 @@ void function StartRound()
 
 					if( Flowstate_IsHaloMode() )
 					{
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 						Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 					}
 
@@ -1438,7 +1438,7 @@ void function GiveBackWeapons(entity player)
 		return
 
 	// Needs to check and set legend change before taking weapons
-	Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_CheckUpdatePlayerLegend")
+	Remote_CallFunction_ByRef(player, "ServerCallback_CTF_CheckUpdatePlayerLegend")
 
 	TakeAllWeapons(player)
 	
@@ -1846,7 +1846,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			
 			if( Flowstate_IsHaloMode() )
 			{
-				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
+				Remote_CallFunction_ByRef( victim, "ForceScoreboardLoseFocus" )
 				Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 			}
 
@@ -1854,7 +1854,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{
 				if( !Flowstate_IsHaloMode() )
 				{
-					//Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
 					Remote_CallFunction_ByRef( victim, "ServerCallback_CTF_HideCustomUI" )
 
 					wait 4 // so we dont go straight to respawn menu
@@ -2114,7 +2113,7 @@ void function FS_StartIntroScreen()
 	foreach( player in GetPlayerArray() )
 	{
 		player.MakeInvisible()
-		Remote_CallFunction_NonReplay(player, "FS_CreateIntroScreen")
+		Remote_CallFunction_ByRef(player, "FS_CreateIntroScreen")
 	}
 }
 

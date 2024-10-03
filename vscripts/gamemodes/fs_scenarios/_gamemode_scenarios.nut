@@ -1188,7 +1188,7 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		player.SetTakeDamageType( DAMAGE_YES )
     }
 
-	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+	Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 
    	if( isPlayerInRestingList( player ) )
 	{	

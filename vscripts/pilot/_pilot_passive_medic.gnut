@@ -56,10 +56,6 @@ struct
 
 void function PassiveMedic_Init()
 {
-	
-	Remote_RegisterClientFunction( "ServerToClient_DisplayCancelReviveHintForPlayer" )
-	Remote_RegisterClientFunction( "ServerToClient_RemoveCancelReviveHintForPlayer" )
-
 	Remote_RegisterClientFunction( "ServerToClient_NumSelfRevivesUsed", "entity", "int", 0, INT_MAX )
 	// Remote_RegisterClientFunction( "ServerToClient_DisplaySelfResRuiForPlayer", "entity" )
 	// Remote_RegisterClientFunction( "ServerToClient_RemoveDisplaySelfResRuiForlayer", "entity" )
@@ -249,7 +245,7 @@ void function DeployMedicCover( entity medicPlayer, entity patientPlayer, float 
 	// AddAnimEvent( drone, "CombatRevive_DestroyRope", DroneDestroyRope )
 
 	if( medicPlayer != patientPlayer && patientPlayer.IsPlayer() ) //In the case of Self-Revive, we don't need to animate the reviver delployment ( Lifeline's on the ground )
-		Remote_CallFunction_Replay( patientPlayer, "ServerToClient_DisplayCancelReviveHintForPlayer")
+		Remote_CallFunction_ByRef( patientPlayer, "ServerToClient_DisplayCancelReviveHintForPlayer")
 
 	OnThreadEnd(
 		function() : ( patientPlayer, medicPlayer, drone )
@@ -259,7 +255,7 @@ void function DeployMedicCover( entity medicPlayer, entity patientPlayer, float 
 				patientPlayer.Signal( "ReviveInterrupted" )
                     
 				if( medicPlayer != patientPlayer && patientPlayer.IsPlayer() ) //In the case of Self-Revive, we don't need to animate the reviver delployment ( Lifeline's on the ground )
-					Remote_CallFunction_Replay( patientPlayer, "ServerToClient_RemoveCancelReviveHintForPlayer")
+					Remote_CallFunction_ByRef( patientPlayer, "ServerToClient_RemoveCancelReviveHintForPlayer")
 			}
 		}
 	)

@@ -95,7 +95,7 @@ void function SV_CL_Init()
 
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
-	ShInfoCords_Init()
+	// ShInfoCords_Init()
 
 	//#if DEVELOPER
 		ShDevUtility_Init()
@@ -213,8 +213,6 @@ void function SV_CL_Init()
 	Sh_Squads_Init()
 	PassiveMedic_Init() //Should be shared. Cafe
 
-	// MpAbilityTank_Init()
-	
     // Zipline Utility
     #if SERVER
 		TurretPlasma_Init() //turret dev ability by cafefps
@@ -232,9 +230,9 @@ void function SV_CL_Init()
 
 	//Sh_PersistentDamageLayer_Init()
 
-	#if DEVSCRIPTS
-	Dev_RemoteFunctions_Init()
-	#endif
+	// #if DEVSCRIPTS
+	// Dev_RemoteFunctions_Init()
+	// #endif
 
 	if( Playlist() == ePlaylists.fs_movementrecorder )
 	{

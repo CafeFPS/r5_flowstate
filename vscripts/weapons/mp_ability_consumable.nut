@@ -1487,7 +1487,7 @@ string function GetCanUseResultString( int consumableUseActionResult )
 void function UseConsumable( entity player, ConsumableInfo info, ConsumablePersistentData useData )
 {
 	EndSignal( player, "OnChargeEnd" )
-	EndSignal( player, "OnDisconnecting" )
+	EndSignal( player, "OnDisconnected" )
 	EndSignal( player, "OnDestroy" )
 
 	string itemName = info.lootData.ref

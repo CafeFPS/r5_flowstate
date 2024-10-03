@@ -2640,7 +2640,7 @@ void function soloModePlayerToWaitingList( entity player )
 	FS_ClearRealmsAndAddPlayerToAllRealms( player )
 	
 	if( !is3v3Mode() )
-		Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
+		Remote_CallFunction_ByRef( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
 	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode )
@@ -3009,7 +3009,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 		player.SetTakeDamageType( DAMAGE_YES )
     }//disable replay mode
 
-	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+	Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 
    	if( isPlayerInRestingList(player) )
 	{
@@ -4636,10 +4636,10 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 			
 			if ( IsValid( player ) && IsValid( opponent ) && player.p.input != opponent.p.input )
 			{	
-				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )			
+				Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )			
 				LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
-
-				Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" )
+				
+				Remote_CallFunction_ByRef( opponent, "ForceScoreboardLoseFocus" )
 				LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 			
 				if( IsValid( group ) )
@@ -5469,7 +5469,7 @@ bool function ClientCommand_mkos_IBMM_wait( entity player, array<string> args )
 			
 			player.p.IBMM_grace_period = user_value;
 			SavePlayerData( player, "wait_time", user_value )
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 			
 			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
 			return true
@@ -5517,7 +5517,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 					try
 					{	
 						player.p.lock1v1_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 						SavePlayerData( player, "lock1v1_setting", true )
 						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
 						return true
@@ -5537,7 +5537,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 					try
 					{
 						player.p.lock1v1_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 						SavePlayerData( player, "lock1v1_setting", false )
 						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
 						return true
@@ -5589,7 +5589,7 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 					try
 					{	
 						player.p.start_in_rest_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" );
 						
 						SavePlayerData( player, "start_in_rest_setting", true )
 						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
@@ -5610,7 +5610,7 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 					try
 					{
 						player.p.start_in_rest_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" );
 						
 						SavePlayerData( player, "start_in_rest_setting", false )
 						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
@@ -5662,7 +5662,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						try
 						{	
 							player.p.enable_input_banner = true;
-							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 							
 							SavePlayerData( player, "enable_input_banner", true )
 							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
@@ -5683,7 +5683,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						try
 						{
 							player.p.enable_input_banner = false;
-							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 							
 							SavePlayerData( player, "enable_input_banner", false )
 							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )

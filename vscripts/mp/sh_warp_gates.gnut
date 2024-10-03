@@ -177,8 +177,6 @@ void function ShWarpGates_Init()
 	#endif // SERVER
 
 	Remote_RegisterClientFunction( "ServerCallback_StartWarpGateExitSequence", "float", 0.0, 100.0, 8 )
-	Remote_RegisterClientFunction( "ServerCallback_FlashScreenForPlayer" )
-	Remote_RegisterClientFunction( "ServerCallback_PlayPhaseGateSoundSuite" )
 
 	RegisterSignal( "WarpGates_PlayerExitPortal" )
 }
@@ -934,8 +932,8 @@ void function MovePlayerThroughWarpGate( entity trigger, entity player )
 			}
 		#endif
 
-		Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayPhaseGateSoundSuite" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_FlashScreenForPlayer" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_PlayPhaseGateSoundSuite" )
 		EmitSoundOnEntityExceptToPlayer( mover, player, PHASE_GATE_TRAVEL_3P )
 
 		// Warp from node to node
@@ -1033,7 +1031,7 @@ void function MovePlayerThroughWarpGate( entity trigger, entity player )
 		}
 	#endif
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+	Remote_CallFunction_ByRef( player, "ServerCallback_FlashScreenForPlayer" )
 	EmitSoundAtPosition( TEAM_ANY, warpExitPos, PHASE_GATE_EXIT_3P, player )
 
 	player.Signal( "WarpGates_PlayerExitPortal" )

@@ -1176,7 +1176,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 						decidedWaitTime = STATIC_WAIT_TIME
 				}
 				
-				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
+				Remote_CallFunction_ByRef( victim, "ForceScoreboardLoseFocus" )
 				
 				// I originally intended this to be apart of a lifestate change or YouDied callback, and setting UpdateNextRespawnTime( entity player, float time ), client using: GetNextRespawnTime( player )  but due to various mode behavior, it's better left as a remote func call. ~mkos
 				Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", int( DEATHCAM_TIME_SHORT + decidedWaitTime ) )//+ DEATHCAM_TIME_SHORT ) )
@@ -3713,7 +3713,7 @@ void function SimpleChampionUI()
 			if( !IsValid( player ) )
 				continue
 			
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
 			
 			if( flowstateSettings.is_halo_gamemode )
 				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
