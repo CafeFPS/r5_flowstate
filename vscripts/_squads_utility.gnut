@@ -108,7 +108,7 @@ void function Sh_Squads_Init()
 
 void function Squads_RegisterNetworking()
 {
-	Remote_RegisterClientFunction( SERVERCALLBACK_SQUAD_SET_IS_NESSIE, "int", -1, INT_MAX )
+	// Remote_RegisterClientFunction( SERVERCALLBACK_SQUAD_SET_IS_NESSIE, "int", -1, INT_MAX )
 }
 
 #if SERVER
@@ -123,8 +123,8 @@ void function Sv_Squads_Init()
 #if SERVER
 void function Squads_OnEnterPickLoadout()
 {
-	file.squadIdIsNessie = TEAM_INVALID
-	RollForNessieTeam()
+	// file.squadIdIsNessie = TEAM_INVALID
+	// RollForNessieTeam()
 }
 #endif
 
@@ -153,10 +153,10 @@ void function RollForNessieTeam()
 #if SERVER
 void function OnClientConnected( entity player )
 {
-	if( GetGameState() >= eGameState.PickLoadout )
-	{
-		Remote_CallFunction_NonReplay( player, SERVERCALLBACK_SQUAD_SET_IS_NESSIE, file.squadIdIsNessie )
-	}
+	// if( GetGameState() >= eGameState.PickLoadout )
+	// {
+		// Remote_CallFunction_NonReplay( player, SERVERCALLBACK_SQUAD_SET_IS_NESSIE, file.squadIdIsNessie )
+	// }
 }
 #endif
 

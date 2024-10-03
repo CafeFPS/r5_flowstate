@@ -112,6 +112,7 @@ global function SetDpadMenuHidden
 global function UpdateImageAndScaleOnFullmapRUI
 global function GetFullMapScale
 global function Survival_SetVictorySoundPackageFunction
+global function UpdateDpadHud_Copy
 
 global struct NextCircleDisplayCustomData
 {
@@ -1317,6 +1318,67 @@ void function OnHealthPickupTypeChanged( entity player, int oldKitType, int kitT
 
 void function UpdateDpadHud( entity player )
 {
+	if ( !IsValid( player ) || file.pilotRui == null || file.dpadMenuRui == null )
+		return
+
+	if ( !IsLocalViewPlayer( player ) )
+		return
+
+	PerfStart( PerfIndexClient.SUR_HudRefresh )
+
+	PerfStart( PerfIndexClient.SUR_HudRefresh_1 )
+	int healthItems = SURVIVAL_Loot_GetTotalHealthItems( player, eHealthPickupCategory.HEALTH )
+	PerfEnd( PerfIndexClient.SUR_HudRefresh_1 )
+	RuiSetInt( file.dpadMenuRui, "totalHealthPackCount", healthItems )
+	PerfStart( PerfIndexClient.SUR_HudRefresh_2 )
+	int shieldItems = SURVIVAL_Loot_GetTotalHealthItems( player, eHealthPickupCategory.SHIELD )
+	PerfEnd( PerfIndexClient.SUR_HudRefresh_2 )
+	RuiSetInt( file.dpadMenuRui, "totalShieldPackCount", shieldItems )
+
+	int kitType = Survival_Health_GetSelectedHealthPickupType()
+	if ( kitType != -1 )
+	{
+		PerfStart( PerfIndexClient.SUR_HudRefresh_3 )
+		string kitRef    = SURVIVAL_Loot_GetHealthPickupRefFromType( kitType )
+		LootData kitData = SURVIVAL_Loot_GetLootDataByRef( kitRef )
+		PerfEnd( PerfIndexClient.SUR_HudRefresh_3 )
+		RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", SURVIVAL_CountItemsInInventory( player, kitRef ) )
+		RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", kitData.hudIcon )
+	}
+	else
+	{
+		RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", -1 )
+		RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", $"rui/hud/gametype_icons/survival/health_pack_auto" )
+	}
+	PerfEnd( PerfIndexClient.SUR_HudRefresh )
+
+	// if( Flowstate_IsHaloMode() )
+	// {
+		// RuiSetInt( file.dpadMenuRui, "selectedHealthPickupCount", 1 )
+		// RuiSetImage( file.dpadMenuRui, "selectedHealthPickupIcon", $"rui/pilot_loadout/tactical/pilot_tactical_cloak" )
+	// }
+
+	RuiSetInt( file.dpadMenuRui, "healthTypeCount", GetCountForLootType( eLootType.HEALTH ) )
+
+	entity ordnanceWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	int ammo              = 0
+	asset ordnanceIcon    = $""
+
+	if ( IsValid( ordnanceWeapon ) )
+	{
+		ammo = SURVIVAL_CountItemsInInventory( player, ordnanceWeapon.GetWeaponClassName() )
+		ordnanceIcon = ordnanceWeapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
+	}
+
+	RuiSetImage( file.dpadMenuRui, "ordnanceIcon", ordnanceIcon )
+	RuiSetInt( file.dpadMenuRui, "ordnanceCount", ammo )
+	RuiSetInt( file.dpadMenuRui, "ordnanceTypeCount", GetCountForLootType( eLootType.ORDNANCE ) )
+}
+
+void function UpdateDpadHud_Copy()
+{
+	entity player = GetLocalViewPlayer()
+	
 	if ( !IsValid( player ) || file.pilotRui == null || file.dpadMenuRui == null )
 		return
 

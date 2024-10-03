@@ -4577,7 +4577,7 @@ void function SURVIVAL_EquipOrdnanceFromInventory( entity player, string item, b
 				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, ordnance.GetWeaponClassName() )
 			}
 
-			Remote_CallFunction_NonReplay( player, "UpdateDpadHud", player )//Hack to make client execute UpdateDpadHud that updates ordnance icon in the hud. Ideally we have to use callback when grenade weapon (slot anti titan) changes. Cafe
+			Remote_CallFunction_ByRef( player, "UpdateDpadHud_Copy" )//Hack to make client execute UpdateDpadHud that updates ordnance icon in the hud. Ideally we have to use callback when grenade weapon (slot anti titan) changes. Cafe
 
 			if ( !(player in file.hasEquippedOrdnanceEver) )
 				file.hasEquippedOrdnanceEver[ player ] <- true

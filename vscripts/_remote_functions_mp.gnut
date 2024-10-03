@@ -86,6 +86,7 @@ void function SetupRemoteFuncAliases()
 			ServerCallback_CTF_CheckUpdatePlayerLegend,
 			ForceScoreboardLoseFocus,
 			ForceScoreboardFocus
+			UpdateDpadHud_Copy
 		]
 	#endif
 	
@@ -138,7 +139,8 @@ void function SetupRemoteFuncAliases()
 			"FSIntro_ForceEnd",
 			"ServerCallback_CTF_CheckUpdatePlayerLegend",
 			"ForceScoreboardLoseFocus",
-			"ForceScoreboardFocus"
+			"ForceScoreboardFocus",
+			"UpdateDpadHud_Copy"
 		]
 	#endif
 	
@@ -239,7 +241,8 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction("Flowstate_UpdateRainbowShieldExtraProperty", "int", INT_MIN, INT_MAX, "int", 0, 9999)
 	
 	//Dynamic client side lights spawn from server
-	Remote_RegisterClientFunction( "ServerCallback_SpawnClientSideDynamicLight", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 255, "float", 0.0, 32000.0, 8, "float", 0.0, 32000.0, 8 )
+	if( MapName() == eMaps.mp_rr_arena_composite ) //TEMP. To free up buffer space. Currently only used in composite.
+		Remote_RegisterClientFunction( "ServerCallback_SpawnClientSideDynamicLight", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 255, "float", 0.0, 32000.0, 8, "float", 0.0, 32000.0, 8 )
 
 	// R5R Sword
 	RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
@@ -269,7 +272,6 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	
 	Remote_RegisterClientFunction( "Flowstate_SentinelChargeHUD", "float", 0.0, 999999.0, 32 )
-	Remote_RegisterClientFunction( "UpdateDpadHud", "entity" )
 
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
