@@ -127,7 +127,8 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	}
 
 	ZiplineInit( player )
-
+	
+	AssignTeamIndexToPlayer( player )
 	player.hasConnected = true
 
 	foreach ( cb in svGlobal.onClientConnectedCallbacks )	

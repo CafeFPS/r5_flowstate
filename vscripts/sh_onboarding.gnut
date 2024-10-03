@@ -1030,11 +1030,6 @@ void function OnClientConnected( entity player )
 		}
 	}
 
-	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	int teamMemberIndex = playerTeam.len() - 1
-	player.SetTeamMemberIndex( teamMemberIndex )
-
-
 	bool replaceOrigin = false
 	if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementrecorder )
 	{

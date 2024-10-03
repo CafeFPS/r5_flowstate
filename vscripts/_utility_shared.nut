@@ -3666,62 +3666,23 @@ string function GetPlayerVoice( entity player )
 
 void function SetTeam( entity ent, int team )
 {
-	#if CLIENT
-		ent.Code_SetTeam( team )
-	#else
-		if ( ent.IsNPC() )
+	int oldTeam = ent.GetTeam()
+	ent.Code_SetTeam( team )
+
+	#if SERVER
+		if( ent.IsPlayer() )
 		{
-			int currentTeam = ent.GetTeam()
-			bool alreadyAssignedValidTeam = ( currentTeam == TEAM_IMC || currentTeam == TEAM_MILITIA )
-
-			ent.Code_SetTeam( team )
-
-			if ( ent.GetModelName() == $"" )
-				return
-
-			if ( IsGrunt( ent ) || IsSpectre( ent ) )
+			AssignTeamIndexToPlayer( ent )
+			
+			foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
 			{
-				int eHandle = ent.GetEncodedEHandle()
-
-				array<entity> players = GetPlayerArray()
-				foreach ( player in players )
-				{
-					Remote_CallFunction_Replay( player, "ServerCallback_UpdateOverheadIconForNPC", eHandle )
-				}
+				if( IsValid( player ) && player.p.isConnected )
+					Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 			}
-			else if ( IsShieldDrone( ent ) )
+			foreach ( player in GetPlayerArrayOfTeam( team ) )
 			{
-				if ( team == 0 )
-				{
-					// anybody can use neutral shield drone
-					ent.SetUsable()
-				}
-				else
-				{
-					// only friendlies use a team shield drone
-					ent.SetUsableByGroup( "friendlies pilot" )
-				}
-			}
-		}
-		else
-		{
-			int oldTeam = ent.GetTeam()
-			ent.Code_SetTeam( team )
-
-			if( ent.IsPlayer() )
-			{
-				foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
-				{
-					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
-						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-				}
-				foreach ( player in GetPlayerArrayOfTeam( team ) )
-				{
-					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
-						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-				}
+				if( IsValid( player ) && player.p.isConnected )
+					Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 			}
 		}
 	#endif

@@ -389,3 +389,39 @@ void function ObserverThread( entity player )
 	}
 }
 #endif
+
+
+int function GetLowestUnusedMemberIndexForTeam( int teamIndex )
+{
+	int indexIter             = 0
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( teamIndex )
+	for ( ; ; )
+	{
+		bool found = false
+		foreach ( entity player in teamPlayers )
+		{
+			int thisIdx = player.GetTeamMemberIndex()
+			if ( thisIdx == indexIter )
+				found = true
+		}
+
+		if ( !found )
+			return indexIter
+		indexIter++
+	}
+
+	unreachable
+}
+
+void function AssignTeamIndexToPlayer( entity player )
+{
+	int newTeamMemberIndex = GetLowestUnusedMemberIndexForTeam( player.GetTeam() )
+	player.SetTeamMemberIndex( newTeamMemberIndex )
+	if ( HaveSquadBasedUI() && player.GetTeam() != TEAM_SPECTATOR )
+		player.SetSquadID( (player.GetTeam() - TEAM_MULTITEAM_FIRST) )
+}
+
+bool function HaveSquadBasedUI()
+{
+	return GetCurrentPlaylistVarBool("has_squad_based_ui", false)
+}
