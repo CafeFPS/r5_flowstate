@@ -1603,7 +1603,7 @@ playlists
 				flowstate_give_character_passive				1
 				
 				flowstate_disable_all_map_triggers				0
-				flowstate_give_random_custom_models_toall		1	
+
 				flowstate_seconds_to_wait_without_players_before_restarting		3600 // 3600 : 1 hour
 					
 				fs_scenarios_dropshipenabled 					0
