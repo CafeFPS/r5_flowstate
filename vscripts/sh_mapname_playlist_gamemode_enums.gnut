@@ -552,8 +552,10 @@ void function IsHaloGamemode_Init()
 
 bool function Flowstate_PassivesAllowedForMode()
 {
+	#if !UI
 	if( !Flowstate_GivePassive() )
 		return false
+	#endif
 	
 	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
 		if( !modeSettings.passivesAllowed ){ printt("PRINT_GAMEMODE_DEBUGS: Gamemode not defined as allowed for passives in: sh_mapname_playlist_gamemode_enums.gnut") }

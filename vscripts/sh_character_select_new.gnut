@@ -2870,8 +2870,8 @@ void function UpdatePlayerModel( ItemFlavor character )
 		if ( !IsValid( fileLevel.characterModel ) )
 			return
 		
-		DoF_SetNearDepth( 7.5, 7.7 )
-		DoF_SetFarDepth( 500, 1000 )
+		// DoF_SetNearDepth( 7.5, 7.7 )
+		// DoF_SetFarDepth( 500, 1000 )
 		DoFSetDilateInfocus( true )
 
 		entity ornull pickingPlayer = GetTeammateForPickingIndex( Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" ) )
