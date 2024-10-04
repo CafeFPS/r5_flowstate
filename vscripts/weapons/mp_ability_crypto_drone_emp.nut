@@ -459,10 +459,7 @@ void function FS_ArrayRemoveItemsThatArentArmorsNearby( array<entity> ents, vect
 	for ( int i = ents.len() - 1; i >= 0; i-- )
 	{
 		if( !IsValid( ents[ i ] ) )
-		{
-			ents.remove( i )
 			continue
-		}
 		
 		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( ents[i].GetSurvivalInt() )
 		if ( lootData.lootType != eLootType.ARMOR || Distance( ents[i].GetOrigin(), origin ) > maxrange )
@@ -470,7 +467,7 @@ void function FS_ArrayRemoveItemsThatArentArmorsNearby( array<entity> ents, vect
 	}
 }
 
-void function FS_CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner, vector cameraOrigin, int maxShieldDamage )
+void function CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner, vector cameraOrigin, int maxShieldDamage )
 {
 	//why this shit doesn't work? (GetSurvivalLootNearbyPos). Cafe
 	//array<entity> nearbyLoot = GetSurvivalLootNearbyPos( cameraOrigin, EMP_RANGE, false, false ) //, false, owner )
