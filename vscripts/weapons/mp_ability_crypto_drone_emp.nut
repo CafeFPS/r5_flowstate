@@ -270,7 +270,7 @@ void function DroneEMP( entity owner )
 	}
 
 	// if ( !GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_FIRING_RANGE ) )
-		CrytoDrone_DamageRecentlyDroppedArmorInEMPRange( owner, cameraOrigin, maxShieldDamage )
+		CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( owner, cameraOrigin, maxShieldDamage )
 
 	if ( IsValid( owner ) && IsPlayerInCryptoDroneCameraView( owner ) )
 		camera.Anim_PlayOnly( "drone_active_idle" )
@@ -439,7 +439,7 @@ void function EMP_Explosion_Common( entity owner, entity source, array<int> chat
 	}
 
 	// if ( !GameModeVariant_IsActive( eGameModeVariants.SURVIVAL_FIRING_RANGE ) )
-		CrytoDrone_DamageRecentlyDroppedArmorInEMPRange( owner, sourceOrigin, maxShieldDamage )
+		CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( owner, sourceOrigin, maxShieldDamage )
 
 	EMP_HitDevices( owner, source, EMP_RANGE, eDamageSourceId.mp_ability_crypto_drone_emp_trap )
 
@@ -454,9 +454,30 @@ bool function EMP_ShouldAffectAlterTac()
 	return GetCurrentPlaylistVarBool( "crypto_emp_hits_alter_tac", true )
 }
 
-void function CrytoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner, vector cameraOrigin, int maxShieldDamage )
+void function FS_ArrayRemoveItemsThatArentArmorsNearby( array<entity> ents, vector origin, float maxrange )
 {
-	array<entity> nearbyLoot = GetSurvivalLootNearbyPos( cameraOrigin, EMP_RANGE, false, false ) //, false, owner )
+	for ( int i = ents.len() - 1; i >= 0; i-- )
+	{
+		if( !IsValid( ents[ i ] ) )
+			continue
+		
+		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( ents[i].GetSurvivalInt() )
+		if ( lootData.lootType != eLootType.ARMOR || Distance( ents[i].GetOrigin(), origin ) > maxrange )
+			ents.remove( i )
+	}
+}
+
+void function FS_CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner, vector cameraOrigin, int maxShieldDamage )
+{
+	//why this shit doesn't work? (GetSurvivalLootNearbyPos). Cafe
+	//array<entity> nearbyLoot = GetSurvivalLootNearbyPos( cameraOrigin, EMP_RANGE, false, false ) //, false, owner )
+	
+	//expensive method? Cafe
+	array<entity> nearbyLoot = GetEntArrayByClass_Expensive( "prop_survival" )
+	ArrayRemoveItemsThatArentArmorsNearby( nearbyLoot, cameraOrigin, EMP_RANGE )
+	
+	printt( "CryptoDrone_DamageRecentlyDroppedArmorInEMPRange ", cameraOrigin , nearbyLoot.len() )
+	
 	foreach ( item in nearbyLoot )
 	{
 		if ( !owner.DoesShareRealms( item ) ) // Fix for the Firing Range
@@ -469,6 +490,9 @@ void function CrytoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner, vec
 		int shieldDamage = int( min( maxShieldDamage, shieldHealth ) )
 		int newHealth    = shieldHealth - shieldDamage
 		item.SetSurvivalProperty( newHealth )
+		#if DEVELOPER
+		Warning( "Changing armor health on ground " + item + " to " + newHealth )
+		#endif
 		// SetPropSurvivalMainPropertyOnEnt( item, newHealth )
 	}
 }
