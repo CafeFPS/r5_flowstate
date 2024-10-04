@@ -477,7 +477,7 @@ void function FS_CryptoDrone_DamageRecentlyDroppedArmorInEMPRange( entity owner,
 	
 	//expensive method? Cafe
 	array<entity> nearbyLoot = GetEntArrayByClass_Expensive( "prop_survival" )
-	ArrayRemoveItemsThatArentArmorsNearby( nearbyLoot, cameraOrigin, EMP_RANGE )
+	FS_ArrayRemoveItemsThatArentArmorsNearby( nearbyLoot, cameraOrigin, EMP_RANGE )
 	
 	printt( "CryptoDrone_DamageRecentlyDroppedArmorInEMPRange ", cameraOrigin , nearbyLoot.len() )
 	
