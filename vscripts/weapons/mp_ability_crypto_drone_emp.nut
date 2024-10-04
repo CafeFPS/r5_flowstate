@@ -459,7 +459,10 @@ void function FS_ArrayRemoveItemsThatArentArmorsNearby( array<entity> ents, vect
 	for ( int i = ents.len() - 1; i >= 0; i-- )
 	{
 		if( !IsValid( ents[ i ] ) )
+		{
+			ents.remove( i )
 			continue
+		}
 		
 		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( ents[i].GetSurvivalInt() )
 		if ( lootData.lootType != eLootType.ARMOR || Distance( ents[i].GetOrigin(), origin ) > maxrange )
