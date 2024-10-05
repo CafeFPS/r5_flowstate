@@ -524,7 +524,9 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	switch( Playlist() )
 	{
 		case ePlaylists.fs_scenarios:
-		main = "Stats shipping: "
+		
+		if( GetServerVar( "tracker_enabled" ) )
+			main = "Stats shipping in: "
 
 		UIPos basepos = REPLACEHud_GetBasePos( frame )	
 		UISize screenSize = GetScreenSize()

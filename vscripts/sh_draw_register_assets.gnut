@@ -20,7 +20,7 @@ global function WorldDrawAsset_PrintAssetLookupTable
 const asset AUDIO_DATA_TABLE = $"datatable/flowstate_audio.rpak"
 const MAX_WAIT_FOR_RPAK_TRANSFER = 5
 const RPAK_MP_TEMP_PATH = ""
-const bool DEBUG_REGISTER_ASSETS = true
+const bool DEBUG_REGISTER_ASSETS = false
 
 struct
 {

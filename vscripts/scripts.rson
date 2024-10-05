@@ -52,7 +52,6 @@ Scripts:
 	_threads.nut
 	_settings.nut
 	sh_utility_all.gnut
-	REMOVE_BEFORE_SHIPPING.nut // ~mkos test area
 	sh_assets.nut
 	sh_playlists.gnut
 	sh_networkvars.gnut

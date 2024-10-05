@@ -33,7 +33,7 @@ global function WorldDrawAsset_RegisterRemoteAsset
 #endif
 
 global const float WORLD_DRAW_BASE_SPEED		= 0.01
-const DEBUG_WORLD_DRAW = true
+const DEBUG_WORLD_DRAW = false
 asset NULL_ASSET
 
 #if CLIENT

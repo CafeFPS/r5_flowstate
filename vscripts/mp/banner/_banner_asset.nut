@@ -34,7 +34,7 @@ const int NORMAL 	= 0
 const int FAST 		= 1
 const int FASTER	= 2
 
-const DEBUG_BANNER_ASSET = true
+const DEBUG_BANNER_ASSET = false
 
 //script local global
 bool _bBannerImages_Loaded 	= false
@@ -641,7 +641,7 @@ vector function BannerAssets_BannerVisibilityMover( vector initialPosition, vect
 	int iter = 0
     while ( iter < maxIterations ) 
 	{
-		#if DEVELOPER
+		#if DEVELOPER && DEBUG_BANNER_ASSET
 			Warning( "Adjusting..." )
 		#endif
 
@@ -669,7 +669,7 @@ vector function BannerAssets_BannerVisibilityMover( vector initialPosition, vect
 
         if ( allCornersVisible ) 
 		{
-			#if DEVELOPER
+			#if DEVELOPER && DEBUG_BANNER_ASSET
 				Warning( "FOUND A GOOD POSITION: " + currentPosition )
 			#endif
 			
@@ -706,7 +706,7 @@ vector function AdjustBannerPosition( vector currentPosition, vector currentAngl
 			return newPosition
 	}
 
-	#if DEVELOPER
+	#if DEVELOPER && DEBUG_BANNER_ASSET
 		Warning( "Failed to find a good position" )
 	#endif
 
