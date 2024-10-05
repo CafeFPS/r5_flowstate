@@ -1393,6 +1393,169 @@ playlists
 			} } }
 		}
 
+		fs_9k
+		{
+			inherit defaults
+			vars
+			{
+				visible											1
+				
+				name							   				"DM Movement PVP"
+				description										"DM Movement PVP"
+				abbreviation					  				"DM Movement PVP"
+				lobbytitle						 				"DM Movement PVP"
+			
+				image							  				worlds_edge
+				video							  				worlds_edge
+				panel_image										panel_worlds_edge
+				battlechatter_enabled			  				1
+				
+				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
+				max_team_size									1 // above 1 will enable tdm
+				max_players										20
+				min_players										0
+				
+				//Skip Intros:
+				character_select_time_min		  				0
+				character_select_time_max		  				0
+				charselect_picking_delay_after_all 				0
+				survival_enable_squad_intro						0
+				survival_enable_gladiator_intros   				0
+				jump_from_plane_enabled							0
+				match_ending_enabled			   				0
+				
+				//No circle:
+				sur_circle_start_paused							1
+				
+				//Replays: 
+				replay_enabled					 				1 		 
+				replay_delay					   				5
+				replay_new_ui 									1
+				
+				//Flowstate by CafeFPS
+				
+				//GENERAL SETTINGS
+				flowstate_allow_cfgs							0
+				flowstateBattleLogEnable 						0
+				flowstateChatLogEnable 							0
+				
+				default_shield_hp				  				75
+				survival_shields				   				1
+				skydive_ziplines_enabled		   				1
+				ground_loot_enable 				   				0
+				lootbin_loot_enable								0
+				
+				survival_jumpkit_enabled		   				0
+				survival_wallrun_enabled		   				0
+				
+				survival_infinite_ammo			 				1
+				survival_custom_deploy			 				1
+				
+				enable_small_pheonix			   				0
+					
+				//For FFA classic mode
+				//specific weapons and abilities settings
+				respawn_kit_enabled 							1
+				respawn_kit_primary_weapon 						"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 barrel_stabilizer_l4_flash_hider stock_tactical_l3"
+				respawn_kit_secondary_weapon 					"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3 hopup_headshot_dmg"
+				respawn_kit_tactical 							"mp_ability_grapple"
+				respawn_kit_ultimate 							"mp_ability_phase_rewind"
+				
+				//random weapons and abilities settings
+				flowstateRandomGuns 							0 	//round, big weapons list
+				flowstateRandomGunsMetagame						1 	//Metagame small weapon list primary:(r99,r301,flatline) secondary:(wingman,pk,eva,mastiff) every round
+				flowstateRandomTactical 						0 	//grapple,phase walk,stim,bubble, bang smokes, hound q, tf2 cloak
+				flowstateRandomUltimate							0 	//caustic ult,jumppad,wraith ult,3dash,hound ult, gibby ult
+
+				//whitelisted_weapon_0 							"mp_weapon_mastiff"
+				//whitelisted_weapon_1 							""				
+				
+				//whitelisted_ability_0 						"mp_weapon_grenade_bangalore"
+				//whitelisted_ability_1 						""
+				
+				flowstateEndlessFFAorTDM						0 //location won't change, no champion will be defined
+				Admins											"r5r_CafeFPS"
+				respawn_delay 									5
+				flowstateRoundtime 								800
+				flowstateResetKills 							1
+				flowstateTimer 									1
+				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
+				flowstateLockeedPOI 							0
+				flowstateCapitolCityReplacesTTVLocation 		0 //Makes ttv building bigger
+				flowstateAdminTgive 							0 //tgive is for the admin ONLY
+				flowstateAutoChangeLevelEnable					1
+				flowstateRoundsBeforeChangeLevel				3
+				flowstateGiveAllOpticsToPlayer					0
+				flowstate_headshots_only_gamemode 				0 //i recommend a wingman only in respawn kit above
+				flowstateReloadTacticalOnRespawn  				0
+				flowstateReloadUltimateOnRespawn 				1
+				
+				//custom maps by community
+				flowstate_Enable_Shipment_By_AyeZee				0
+				flowstate_Enable_Killhouse_By_AyeZee			0
+				flowstate_Enable_Nuketown_By_AyeZee				0
+				flowstate_Enable_Encore							1 //if disabled, it will try to load Rust first
+				flowstate_Enable_Killyard_By_DEAFPS				0
+				flowstate_Enable_Dustment_By_DEAFPS				0
+				flowstate_Enable_Shoothouse_By_DEAFPS			0
+				flowstate_Enable_Rust_By_DEAFPS					0
+				flowstate_Enable_NCanals_By_DEAFPS				0				
+				flowstate_Enable_Encore_Nuketown_By_AyeZee		0
+				
+				//disabled atm
+				flowstate_Enable_BRIGHWATER_By_Zero				0
+				flowstate_Enable_CAVE_By_BlessedSeal			0
+				flowstate_Enable_SKILLTRAINER_By_Colombia		0				
+				flowstate_Enable_CUSTOMMAP_By_Biscutz			0
+				flowstate_Enable_WHITEFOREST_By_Zero			0
+				
+				flowstateKickHighPingPlayer						0
+				flowstateMaxPingAllowed							300
+				solo_mode 										1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
+				flowstateDoorsEnabled							0 //Doors enabled or disabled in all buildings.
+				flowstateDoorsRegen								0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
+
+				//visuals
+				flowstateForceCharacter 						1	//It enables the following settings
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
+				flowstateChosenCharacter 						8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateForceAdminCharacter					0
+				flowstateChosenAdminCharacter					0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateDummyOverride 							0	// explains itself, it's bugged with some abilities (grapple ie)
+				
+				//game continuity 
+				flowstateAutoreloadPrimary 						1
+				flowstateAutoreloadSecondary 					1
+				flowstateKillshotEnabled 						1	//enables the killshot sound when killing
+				
+				//extrashields
+				flowstateExtrashieldsEnabled 					0
+				flowstateExtrashieldsSpawntime 					240
+				flowstateExtrashieldValue 						150 //extrashield actual value
+				afk_to_rest_bool								0
+				
+				flowstate_enable_bullet_slow					1
+				
+				flowstate_modified_movement						2 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode		
+				player_collision_enabled						0 // 0 disables players colliding with each other.
+			}
+			gamemodes { fs_dm { maps {
+				mp_rr_canyonlands_64k_x_64k						1
+				mp_rr_canyonlands_mu1						 	1
+				mp_rr_desertlands_64k_x_64k						1
+				mp_rr_desertlands_64k_x_64k_nx				 	1
+				mp_rr_desertlands_64k_x_64k_tt				 	1
+				mp_rr_arena_skygarden						  	1
+				mp_rr_party_crasher					  			1
+				mp_rr_canyonlands_mu1_night						1
+				mp_rr_canyonlands_staging					  	1
+				mp_rr_ashs_redemption						  	1
+				mp_rr_aqueduct									1
+				mp_rr_arena_composite							1
+				mp_rr_aqueduct_night							1
+			} } }
+		}
+		
 		fs_dm_fast_instagib
 		{
 			inherit defaults
@@ -1477,7 +1640,7 @@ playlists
 				flowstate_Enable_Shipment_By_AyeZee				1
 				flowstate_Enable_Killhouse_By_AyeZee			1
 				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							1
+				flowstate_Enable_Encore							0
 				flowstate_Enable_Killyard_By_DEAFPS				1
 				flowstate_Enable_Dustment_By_DEAFPS				1
 				flowstate_Enable_Shoothouse_By_DEAFPS			1
@@ -1830,7 +1993,7 @@ playlists
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				give_weapon_stack_count_amount					3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
-				player_collision_enabled						0 // 0 disables players colliding with each other.
+				player_collision_enabled						1 // 0 disables players colliding with each other.
 				
 				//The following is for when 
 				//installing or enabling extra spawn paks
