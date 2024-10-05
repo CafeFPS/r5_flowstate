@@ -3394,12 +3394,9 @@ void function SimpleChampionUI()
 
 	g_fCurrentRoundEndTime = Time() + FlowState_RoundTime() //set global for server
 
-	if( is3v3Mode() )
+	if( is3v3Mode() && ( !flowstateSettings.show_short_champion_screen || !GetChampion() && flowstateSettings.show_short_champion_screen ) )
 	{
-		if( !flowstateSettings.show_short_champion_screen || !GetChampion() && flowstateSettings.show_short_champion_screen )
-		{
-			FS_Scenarios_SetStopMatchmaking( false )
-		}
+		FS_Scenarios_SetStopMatchmaking( false )
 	}
 
 	if( flowstateSettings.EndlessFFAorTDM )
