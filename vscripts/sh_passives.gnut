@@ -837,7 +837,7 @@ void function ReviveCloak( entity medicPlayer, entity patientPlayer )
 
 float function GetMirageCloakDuration( entity player, float duration )
 {
-	if( PlayerHasPassive( player, ePassives.PAS_MIRAGE ) )
+	if( PlayerHasPassive( player, ePassives.PAS_MIRAGE ) && GetCurrentPlaylistVarBool( "enable_mirage_revive_cloak_upgrade", false ) )
 	{
 		duration += GetCurrentPlaylistVarFloat( "upgrade_mirage_extra_cloak_duration", 1.0 )
 	}

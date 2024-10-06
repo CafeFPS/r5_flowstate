@@ -143,6 +143,11 @@ void function OnViewPlayerChanged( entity newViewPlayer )
 void function UpdateRUITest()
 {
 	RefreshUnitframesForPlayer( GetLocalViewPlayer() )
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		Consumable_SetSelectedConsumableType( 2 )
+	}
 	// thread InitSurvivalHealthBar()
 }
 
