@@ -119,6 +119,8 @@ table playersInfo
 //solo mode
 global function CheckForObservedTarget
 
+global function FS_Hack_CreateBulletsCollisionVolume
+
 const float STATIC_WAIT_TIME = 1.0
 
 struct 
@@ -2913,7 +2915,11 @@ void function SimpleChampionUI()
 	}
 	
 	file.isLoadingCustomMap = true
+	vector spawnone 
 	
+	if( file.selectedLocation.spawns.len() > 0 )
+		spawnone = file.selectedLocation.spawns[0].origin
+
 	switch( file.selectedLocation.name )
 	{
 		case "Skill trainer By CafeFPS":
@@ -2952,35 +2958,42 @@ void function SimpleChampionUI()
 		
 		case "Shipment By AyeZee":
 		thread Shipment()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Killhouse By AyeZee":
 		thread Killhouse()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Nuketown By AyeZee":
 		thread nuketown()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Killyard":
-        DestroyPlayerProps()
 		thread Killyard()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Dustment by DEAFPS":
 		thread Dustment()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Shoothouse by DEAFPS":
 		thread Shoothouse()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Rust By DEAFPS":
 		thread Rust()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Noshahr Canals by DEAFPS":
 		thread de_NCanals()
+		FS_Hack_CreateBulletsCollisionVolume( spawnone )
 		break
 		
 		case "Movement Gym":
@@ -7259,4 +7272,65 @@ void function PrintKillHistoryFor( entity player )
 {
 	foreach( KillHistory history in player.p.killHistoryArray )
 		printt( string( history.victim ), history.killTime, " seconds ago: ", Time() - history.killTime )
+}
+
+void function FS_Hack_CreateBulletsCollisionVolume( vector origin, float large = 15000 )
+{
+	float halfLarge = large/2
+	
+	entity ceiling = CreateEntity("trace_volume")
+	ceiling.kv.origin = origin + <0, 0, halfLarge>
+	ceiling.kv.contents = CONTENTS_BULLETCLIP
+	DispatchSpawn(ceiling);
+
+	vector mins = <-halfLarge, -halfLarge, -1>
+	vector maxs = <halfLarge, halfLarge, 1>
+	
+	ceiling.SetBox(mins, maxs)
+	file.playerSpawnedProps.append( ceiling )
+
+	entity floor = CreateEntity("trace_volume")
+	floor.kv.origin = origin - <0, 0, halfLarge>
+	floor.kv.contents = CONTENTS_BULLETCLIP
+	DispatchSpawn(floor)
+	
+	floor.SetBox(mins, maxs)
+	file.playerSpawnedProps.append( floor )
+	
+	//wall dimensions for X-axis aligned walls
+	vector x_wall_mins = <-1, -halfLarge, -halfLarge>
+	vector x_wall_maxs = <1, halfLarge, halfLarge>
+
+	//wall dimensions for Y-axis aligned walls
+	vector y_wall_mins = <-halfLarge, -1, -halfLarge>
+	vector y_wall_maxs = <halfLarge, 1, halfLarge>
+
+	array<vector> offsets = 
+	[
+		<halfLarge, 0, 0>,  //wall at +X, centered along X-axis
+		<-halfLarge, 0, 0>, //wall at -X, centered along X-axis
+		<0, halfLarge, 0>,  //wall at +Y, centered along Y-axis
+		<0, -halfLarge, 0>  //wall at -Y, centered along Y-axis
+	];
+
+	for (int i = 0; i < 4; i++)
+	{
+		vector wall_origin = origin + offsets[i]
+		entity wall = CreateEntity("trace_volume")
+		wall.kv.origin = wall_origin
+		wall.kv.contents = CONTENTS_BULLETCLIP
+		DispatchSpawn(wall)
+
+		if (i < 2) //walls along the X-axis
+		{
+			wall.SetBox(x_wall_mins, x_wall_maxs)
+		}
+		else //walls along the Y-axis
+		{
+			wall.SetBox(y_wall_mins, y_wall_maxs)
+		}
+		file.playerSpawnedProps.append( wall )
+	}
+
+	Warning("Spawned collision volume with walls centered for custom map")
 }
