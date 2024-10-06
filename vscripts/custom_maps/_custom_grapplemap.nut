@@ -932,7 +932,7 @@ function grapplemap_load() {
                 ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
                 ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
                 ent.SetSuitGrapplePower(100)
-                file.cp_table[ent] <-  < 18476.58, 2155.62, 17846.65 >
+                file.cp_table[ent] <-  < 19655, 1142, 17877 >
             }
         })
     DispatchSpawn(trigger_21)
