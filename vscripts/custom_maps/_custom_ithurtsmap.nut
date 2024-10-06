@@ -564,6 +564,7 @@ function ithurtsmap_load() {
 
                     if (file.last_cp[ent]) {
                         int gen = ent.GetPersistentVarAsInt("gen")
+                        file.last_cp[ent] = false
 
                         if (gen != 0) {
                             float final_time = Time() - gen
@@ -573,9 +574,7 @@ function ithurtsmap_load() {
                             LocalMsg(ent, "#FS_STRING_VAR", "", 2, 5.0, format("%d:%02d", minutes, seconds), "FINAL TIME", "", false)
                             ent.SetPersistentVar("gen", 0)
                         } else {
-                            if (file.last_cp[ent])
-                                LocalMsg(ent, "#FS_STRING_VAR", "", 2, 5.0, "YOU FINISHED!", "CONGRATULATIONS", "", false)
-                            file.last_cp[ent] = false
+                            LocalMsg(ent, "#FS_STRING_VAR", "", 2, 5.0, "YOU FINISHED!", "CONGRATULATIONS", "", false)
                         }
                     }
 
