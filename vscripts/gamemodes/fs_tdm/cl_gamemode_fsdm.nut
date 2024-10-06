@@ -2017,7 +2017,7 @@ void function FS_Scenarios_InitPlayersCards()
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
 
-	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 || Gamemode() == eGamemodes.WINTEREXPRESS )
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) == 3 || Gamemode() == eGamemodes.WINTEREXPRESS )
 	{
 		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )	
 		UISize screenSize = GetScreenSize()

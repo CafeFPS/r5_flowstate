@@ -212,6 +212,8 @@ void function SV_CL_Init()
 	
 	Sh_Squads_Init()
 	PassiveMedic_Init() //Should be shared. Cafe
+	MpAbilityCryptoDrone_Init()
+	MpAbilityCryptoDroneEMP_Init()
 
     // Zipline Utility
     #if SERVER

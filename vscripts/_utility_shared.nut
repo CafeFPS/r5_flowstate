@@ -197,9 +197,6 @@ void function InitWeaponScripts()
 	MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 	MpAbilityMirageUltimate_Init()
 
-	MpAbilityCryptoDrone_Init()
-
-	MpAbilityCryptoDroneEMP_Init()
 	MpWeaponPhaseTunnel_Init()
 	MpWeaponTeslaTrap_Init()
 	MpWeaponTrophy_Init()
