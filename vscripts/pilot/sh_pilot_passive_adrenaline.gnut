@@ -196,9 +196,12 @@ void function PassiveAdrenaline_StartVisualEffect( entity ent, int statusEffect,
 
 	entity viewPlayer = ent
 
-	EmitSoundOnEntity( viewPlayer, ADRENALINE_SOUND_START )
-
+	if(!PlayerHasPassive( viewPlayer, ePassives.PAS_SLIPSTREAM ))
+	{
+		EmitSoundOnEntity( viewPlayer, ADRENALINE_SOUND_START )
+	}
 	CreatePassiveAdrenalineRUI()
+	
 	thread PassiveAdrenaline_UpdatePlayerScreenColorCorrection( viewPlayer )
 
 	int fxHandle = StartParticleEffectOnEntityWithPos( viewPlayer, file.ScreenFxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, viewPlayer.EyePosition(), <0,0,0> )

@@ -93,6 +93,7 @@ global enum ePassives
 	PAS_ARMOR_5,
 	PAS_ARMOR_6,
 	PAS_ARMOR_7,
+	PAS_SLIPSTREAM
 	
 	_count,
 }
@@ -178,9 +179,14 @@ void function PassivesShared_Init()
 		AddCallback_OnPassiveChanged( ePassives.PAS_FORTIFIED, PassiveToggleFortified )
 		AddCallback_OnPassiveChanged( ePassives.PAS_MEDIC, Lifeline_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PILOT_BLOOD, PilotBlood_Passive )
+		AddCallback_OnPassiveChanged( ePassives.PAS_SLIPSTREAM, ThreadSlipstream_Passive )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PATHFINDER, Pathfinder_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_TRACKING_VISION, Bloodhound_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_BATTERY_POWERED, Wattson_PassiveToggle )
+		
+		RegisterSignal( "PassiveMirage_StartRes" )
+		Bleedout_AddCallback_OnPlayerStartGiveFirstAid( Passives_OnPlayerStartRes )		
+		Bleedout_AddCallback_OnPlayerFinishGiveFirstAid( ReviveCloak  )
 	#endif
 
 	#if CLIENT
@@ -538,7 +544,36 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 		GiveExtraWeaponMod( player, "fast_heal" )
 	}
 }
+void function ThreadSlipstream_Passive( entity player, int passive, bool didHave, bool nowHas )
+{
+	thread Slipstream_Passive(player, passive, didHave, nowHas)
+}
 
+void function Slipstream_Passive(entity player, int passive, bool didHave, bool nowHas)
+{
+	bool onetime = false
+	float duration = 1.0
+	while ( IsValid( player ) )
+	{
+		if(player.IsSliding())
+		{
+			WaitFrame()
+			onetime = false
+			continue	
+		} else {
+			if(onetime == false)
+			{
+				//printt("out of sliding? boost here")
+				StatusEffect_AddTimed( player, eStatusEffect.anti_slow, 0.5, duration + 0.5, 0.5 ) //
+				StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.3, duration + 0.5, 0.5 ) //
+				StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, duration, duration )
+				EmitSoundOnEntity(player, "pilot_stimpack_activate_3p_enemy")
+			}
+			onetime = true
+		}
+		WaitFrame()
+	}
+}
 
 void function Wattson_PassiveToggle(  entity player, int passive, bool didHave, bool nowHas )
 {
@@ -725,4 +760,122 @@ void function Bloodhound_PassiveToggle( entity player, int passive, bool didHave
 		StatusEffect_AddEndless( player, eStatusEffect.tracking_vision, 1 )
 	}
 }
+
+const float UPGRADE_MIRAGE_CLOAK_SPEED_BOOST_AMNT 		= 0.5
+const float MIRAGE_DOWNED_CLOAK_DURATION 				= 5.0
+const float MIRAGE_REVIVE_CLOAK_DURATION 				= 3.0
+
+void function Passives_OnPlayerStartRes( entity medicPlayer, entity patientPlayer, vector animRefAngles, bool endCrouched )
+{
+	if ( PlayerHasPassive( medicPlayer, ePassives.PAS_MIRAGE ) )
+	{
+		patientPlayer.Signal( "PassiveMirage_StartRes" )
+
+		thread CloakBothPlayers( medicPlayer, patientPlayer, Bleedout_GetFirstAidTime( medicPlayer ), animRefAngles )
+	}
+}
+
+void function CloakBothPlayers( entity medicPlayer, entity patientPlayer, float duration, vector animRefAngles )
+{
+	Assert( IsValid( patientPlayer ) )
+	if ( !IsValid( patientPlayer ) )
+		return
+
+	medicPlayer.EndSignal( "BleedOut_OnStartDying" )
+	medicPlayer.EndSignal( "OnDeath" )
+	patientPlayer.EndSignal( "OnDeath" )
+	patientPlayer.EndSignal( "PassiveMirage_StartRes" )
+
+	string medicId = EnableCloakForever( medicPlayer )
+	string patientId = EnableCloakForever( patientPlayer )
+
+	OnThreadEnd(
+		function() : ( medicPlayer, medicId, patientPlayer, patientId )
+		{
+			if ( IsValid( medicPlayer ) )
+			{
+				DisableCloakForever( medicPlayer, medicId, 0.5 )
+			}
+			if ( IsValid( patientPlayer ) )
+			{
+				DisableCloakForever( patientPlayer, patientId, 0.5 )
+			}
+		}
+	)
+
+	WaitSignal( patientPlayer, "BleedOut_OnRevive", "BleedOut_OnReviveStop" )
+}
+
+void function ReviveCloak( entity medicPlayer, entity patientPlayer )
+{
+	if( !IsValid( medicPlayer ) || !IsValid( patientPlayer ) )
+		return
+
+	bool patientIsMirage = patientPlayer.HasPassive( ePassives.PAS_MIRAGE )
+
+	if ( PlayerHasPassive( medicPlayer, ePassives.PAS_MIRAGE ) || patientIsMirage )
+	{
+		if( !patientIsMirage )
+			EnableCloak( medicPlayer, GetMirageCloakDuration( medicPlayer, MIRAGE_REVIVE_CLOAK_DURATION ), 0.0 )
+		
+		EnableCloak( patientPlayer, GetMirageCloakDuration( patientPlayer, MIRAGE_REVIVE_CLOAK_DURATION ), 0.0 )
+
+		thread PassiveUpgrade_CloakedSpeedBoost_Thread( medicPlayer )
+
+		if( patientIsMirage )
+		{
+			thread PassiveUpgrade_CloakedSpeedBoost_Thread( patientPlayer )
+		}
+
+		if( !patientIsMirage )
+			thread DisarmOnCloak( medicPlayer )
+
+		if( patientPlayer.IsPlayer() )
+			thread DisarmOnCloak( patientPlayer )
+	}
+}
+
+float function GetMirageCloakDuration( entity player, float duration )
+{
+	if( PlayerHasPassive( player, ePassives.PAS_MIRAGE ) )
+	{
+		duration += GetCurrentPlaylistVarFloat( "upgrade_mirage_extra_cloak_duration", 1.0 )
+	}
+
+	return duration
+}
+
+void function DisarmOnCloak( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
+	// Swap to unarmed
+	if( IsValid( player ) )
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+}
+
+void function PassiveUpgrade_CloakedSpeedBoost_Thread( entity player )
+{
+	int speedHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, UPGRADE_MIRAGE_CLOAK_SPEED_BOOST_AMNT )
+
+	OnThreadEnd(
+		function() : ( player, speedHandle )
+		{
+			if ( IsValid( player ) )
+			{
+				StatusEffect_Stop( player, speedHandle )
+			}
+		}
+	)
+
+	while( IsValid( player) )
+	{
+		if( !player.IsCloaked( true ) )
+			return
+
+		WaitFrame()
+	}
+}
+
 #endif
