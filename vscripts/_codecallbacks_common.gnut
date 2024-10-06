@@ -234,6 +234,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.e.canBeDamagedFromGas = true
 
 	thread PlayerLifeThread( player )
+	thread RedishHighlight_Thread( player )
 }
 
 void function PlayerLifeThread( entity player )

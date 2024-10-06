@@ -708,7 +708,26 @@ void function Highlight_Init()
 	HighlightContext_SetParam( highlight, 1, <0.0, 0, 0> )
 	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetAfterPostProcess( highlight, true )
+	HighlightContext_SetAfterPostProcess( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, CAUSTIC_GAS_THREAT_DIST )
+
+	highlight = RegisterHighlight( "redish_highlight" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OCCLUDED_NOSCANLINES )
+	
+	string stringColor = GetCurrentPlaylistVarString( "redish_highlight_los_color", "190 20 20"  )
+	array<string> colors = split( stringColor, " " )
+	
+	vector colorToUse = <190, 20, 20>
+
+	if( colors.len() == 3 )
+		colorToUse = <colors[0].tofloat(), colors[1].tofloat(), colors[2].tofloat()>
+	
+	HighlightContext_SetParam( highlight, 0, colorToUse / 255.0 )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetParam( highlight, 1, <0.0, 0, 0> )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetAfterPostProcess( highlight, false )
 	HighlightContext_SetFarFadeDistance( highlight, CAUSTIC_GAS_THREAT_DIST )
 
 	Highlight_EndRegisteringHighlights()
@@ -1861,12 +1880,12 @@ int function GetHighlightContextForEnt( entity viewPlayer, entity ent )
 	int viewTeam = viewPlayer.GetTeam()
 	int entTeam  = ent.GetTeam()
 
-	if ( BangSmoke_IsPlayerHighlighted( viewPlayer, ent ) )
+	if ( BangSmoke_IsPlayerHighlighted( viewPlayer, ent ) || RedishHighlight_IsPlayerHighlighted( viewPlayer, ent ) )
 	{
 		// printt( "player is highlighted in smoke! Cafe", viewPlayer, ent )
 		return HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT
 	}
-
+	
 	if ( ent.GetBossPlayer() == viewPlayer )
 	{
 		return HIGHLIGHT_CONTEXT_OWNED

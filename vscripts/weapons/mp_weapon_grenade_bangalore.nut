@@ -527,6 +527,7 @@ void function BangSmoke_GetPlayersToHighlight( entity player, array<entity> outP
 	array<entity> allTargets = GetPlayerArray_Alive()
 	allTargets.extend( GetEntArrayByScriptName( DECOY_SCRIPTNAME ) )
 	allTargets.extend( GetEntArrayByScriptName( CONTROLLED_DECOY_SCRIPTNAME ) )
+	allTargets.extend( GetNPCArrayOfEnemies( player.GetTeam() ) )
 
 	TraceResults results
 	foreach ( entity otherPlayer in allTargets )

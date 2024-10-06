@@ -21,6 +21,10 @@ playlists
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
 
+				redish_highlight_los								1 //Enables redish highlight at player range
+				redish_highlight_los_range							20
+				redish_highlight_los_color							"190 20 20"
+				
 				lifeline_shield_revive_enabled						0 //Enables Lifeline's Season 3 shield
 				circular_hud										0 //Pilot HUD
 				bleedout_enable										0 //Not required to be enabled it here

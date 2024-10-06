@@ -511,6 +511,7 @@ void function ServerCallback_YouRespawned()
 	StopLocal1PDeathSound()
 
 	thread OnClientPlayerAlive( clientPlayer )
+	thread RedishHighlight_Thread( clientPlayer )
 
 	clGlobal.lastKiller = null
 	ClHighlight_YouRespawned()

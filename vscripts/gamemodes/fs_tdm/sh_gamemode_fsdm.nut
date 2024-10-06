@@ -63,6 +63,9 @@ struct {
     array choices
     array<LocationSettings> locationSettings
     var scoreRui
+
+	table< entity, table<entity, bool> > highlightedPlayersInArea
+	float highlightDistance = 20 * METERS_TO_INCHES
 } file
 
 int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
@@ -75,7 +78,8 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 void function Sh_CustomTDM_Init()
 {
 
-
+	file.highlightDistance = GetCurrentPlaylistVarFloat( "redish_highlight_los_range", 20 ) * METERS_TO_INCHES
+	
     // Map locations
 
     switch( MapName() )
@@ -1874,3 +1878,165 @@ StoredWeapon function Equipment_GetRespawnKit_Weapon(string input, int type, int
 }
 
 #endif
+
+
+//Redish highlight. Cafe
+bool function RedishHighlightEnabled()
+{
+	return GetCurrentPlaylistVarBool( "redish_highlight_los", true )
+}
+
+void function RedishHighlight_Thread( entity player )
+{
+	if( !RedishHighlightEnabled() )
+		return
+	
+	EndSignal( player, "OnDestroy", "OnDeath" )
+
+	table< entity, bool > highlightedPlayers
+	file.highlightedPlayersInArea[player] <- highlightedPlayers
+
+	OnThreadEnd(
+		function() : ( player, highlightedPlayers )
+		{
+			if( player in file.highlightedPlayersInArea )
+				delete file.highlightedPlayersInArea[player]
+
+			#if SERVER
+			player.Highlight_SetCurrentContext( -1 )
+			#endif
+
+			#if CLIENT
+			foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
+			{
+				ManageHighlightEntity( otherPlayer )
+			}
+			#endif
+		}
+	)
+
+	const float effectMin = 0.6
+	const float effectMax = 0.2
+	int contextId = HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT // :nerd:
+
+	while(true)
+	{
+		array< entity > playersToHighlight
+		array< entity > playersToNotHighlight
+
+		#if SERVER
+		player.Highlight_SetCurrentContext( contextId )
+		#endif
+	
+		RedishThingo_GetPlayersToHighlight( player, playersToHighlight, playersToNotHighlight )
+
+		foreach( entity otherPlayer in playersToHighlight )
+		{
+			if ( !( otherPlayer in highlightedPlayers ) )
+			{
+				highlightedPlayers[ otherPlayer ] <- false
+			}
+
+			if ( highlightedPlayers[otherPlayer] )
+			{
+				continue
+			}
+
+			highlightedPlayers[otherPlayer] = true
+
+			#if SERVER
+			Highlight_SetSpecialHighlight( otherPlayer, "redish_highlight" )
+			#endif
+
+			#if CLIENT
+			ManageHighlightEntity( otherPlayer )
+			#endif
+		}
+
+		foreach( entity otherPlayer in playersToNotHighlight )
+		{
+			if ( otherPlayer in highlightedPlayers )
+			{
+				if ( !highlightedPlayers[otherPlayer] )
+					continue
+
+				highlightedPlayers[otherPlayer] = false
+
+				#if SERVER
+				otherPlayer.Highlight_SetFunctions( contextId, 0, true, 0, 2, 0, false ) //remove special highlight. Cafe
+				#endif
+
+				#if CLIENT
+				ManageHighlightEntity( otherPlayer )
+				#endif
+			}
+		}
+
+		WaitFrame()
+	}
+
+}
+
+void function RedishThingo_GetPlayersToHighlight( entity player, array<entity> outPlayersToHighlight, array<entity> outPlayersToNotHighlight )
+{
+	int playerTeam = player.GetTeam()
+
+	vector visibilityCheckPoint = player.EyePosition()
+	float maxSqrDist = file.highlightDistance * file.highlightDistance
+
+	array<entity> allTargets = GetPlayerArray_Alive()
+	allTargets.extend( GetEntArrayByScriptName( DECOY_SCRIPTNAME ) )
+	allTargets.extend( GetEntArrayByScriptName( DECOY_SCRIPTNAME ) )
+	allTargets.extend( GetNPCArrayOfEnemies( player.GetTeam() ) )
+
+	TraceResults results
+	foreach ( entity otherPlayer in allTargets )
+	{
+		if ( otherPlayer == player )
+			continue
+
+		if( !otherPlayer.DoesShareRealms( player ) ) // missing check. Cafe
+			continue
+		
+		if ( !IsEnemyTeam( playerTeam, otherPlayer.GetTeam() ) )
+			continue
+		
+		if( StatusEffect_GetSeverity( otherPlayer, eStatusEffect.smokescreen ) > 0.0 )
+		{
+			outPlayersToNotHighlight.append( otherPlayer )
+			continue
+		}
+
+		vector otherPlayerEyePos = otherPlayer.EyePosition()
+
+		if ( DistanceSqr( visibilityCheckPoint, otherPlayerEyePos ) < maxSqrDist )
+		{
+			// results = TraceLine( visibilityCheckPoint, otherPlayerEyePos, allTargets, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+			// if ( results.fraction == 1.0 )
+			// {
+				outPlayersToHighlight.append( otherPlayer )
+				continue
+			// }
+			// continue
+		}
+
+		outPlayersToNotHighlight.append( otherPlayer )
+	}
+}
+
+bool function RedishHighlight_IsPlayerHighlighted( entity player, entity otherPlayer )
+{
+	if ( !RedishHighlightEnabled() )
+		return false
+
+	if ( !(player in file.highlightedPlayersInArea) )
+		return false
+
+	if ( !(otherPlayer in file.highlightedPlayersInArea[player]) )
+		return false
+
+	if ( !file.highlightedPlayersInArea[player][otherPlayer] )
+		return false
+
+	return true
+}
