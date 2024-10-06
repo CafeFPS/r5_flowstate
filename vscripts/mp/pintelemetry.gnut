@@ -1425,13 +1425,13 @@ void function PIN_Init()
 		AddCallback_GameStateEnter( eGameState.Playing, __executeEventStart_messages )
 	}
 	
+	#if TRACKER 
+		FlagInit( "DeterminePreviousChampion", false )
+		FlagInit( "PreviousChampionDetermined", false )
+	#endif
+	
 	if( file.LogOn )
 	{
-		#if TRACKER 
-			FlagInit( "DeterminePreviousChampion", false )
-			FlagInit( "PreviousChampionDetermined", false )
-		#endif
-		
 		SetServerVar( "tracker_enabled", true )
 		AddCallback_OnTdmStateEnter_InProgress( SetStartLog )
 		FlagInit( "START_LOG", true )
