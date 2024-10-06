@@ -132,8 +132,12 @@ function Gymmovementmap_load() {
     array < entity > NoGrappleArray;
     array < entity > ClipInvisibleNoGrappleNoClimbArray;
     array < entity > NoCollisionArray;
+    array < entity > ClipNoGrappleNoClimb;
 
     // Props
+    ClipNoGrappleNoClimb.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 15975 > , < 0, 0, 89.9998 > , true, 50000, -1, 1))
+    ClipNoGrappleNoClimb.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 15625 > , < 0, 0, 89.9998 > , true, 50000, -1, 1))
+    ClipNoGrappleNoClimb.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 16328 > , < 0, 0, 89.9998 > , true, 50000, -1, 1))
     MapEditor_CreateProp($"mdl/desertlands/fence_large_concrete_metal_dirty_128_01.rmdl", < 9042.719, -10672.88, 15774.35 > , < 0, 89.9999, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", <- 1461.048, -10678.16, 16841.25 > , < 0, 180, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/fx/core_energy.rmdl", < 1610.718, -10766.63, 16076.51 > , < 0, -179.9998, 0 > , true, 50000, -1, 1)
@@ -278,7 +282,6 @@ function Gymmovementmap_load() {
     InvisibleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <- 3068, -10203, 17703 > , < 90, 0, 0 > , true, 50000, -1, 1))
     MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11760, -7029.01, 14437.31 > , < 0, -90.0001, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_32_tjunk.rmdl", <- 3054.599, -10119.68, 17837.01 > , < 90, -89.936, 0 > , true, 50000, -1, 1)
-    MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 16328 > , < 0, 0, 89.9998 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_64.rmdl", <- 3055.995, -10483.68, 17567.09 > , < 0, 0.0639, 90 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/beacon/beacon_fence_sign_01.rmdl", < 1383.499, -10766.6, 15957.68 > , < 0, -89.9999, 90 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/slum_city/slumcity_girdering_32x16_dirty_d.rmdl", < 11740, -5720.378, 15323 > , < 0, -90.0001, 0 > , true, 50000, -1, 1)
@@ -336,7 +339,6 @@ function Gymmovementmap_load() {
     MapEditor_CreateProp($"mdl/slum_city/slumcity_girdering_128x16_dirty_d.rmdl", < 11707.02, -5061.51, 15435.58 > , < 0, -90.0001, 89.9893 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11738.71, -4037.81, 15108.2 > , <- 90, 89.9999, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_32_tjunk.rmdl", <- 3054.382, -10313.68, 17868.01 > , < 90, -89.936, 0 > , true, 50000, -1, 1)
-    MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 15975 > , < 0, 0, 89.9998 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < 6065.093, -11081.11, 15486.35 > , < 0, -135.0001, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/desertlands/indust_struct_gondola_platform_fence_01.rmdl", <- 3561.144, -10560.32, 17607.22 > , < 0, 89.9824, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_256.rmdl", <- 3055.448, -9974.807, 17437.17 > , < 0, 0.064, 0 > , true, 50000, -1, 1)
@@ -372,7 +374,6 @@ function Gymmovementmap_load() {
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_128.rmdl", <- 3253.147, -10557.99, 17567.09 > , < 0, 90.0003, 90 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/desertlands/railing_metal_dirty_64_panel_01.rmdl", < 7414.022, -10740, 15487.91 > , < 0, 89.9998, 0 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/desertlands/city_steps_metal_grate_double_128_01.rmdl", < 5890.731, -10732.38, 15822 > , < 0, -90.0001, 0 > , true, 50000, -1, 1)
-    MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 15625 > , < 0, 0, 89.9998 > , true, 50000, -1, 1)
     MapEditor_CreateProp($"mdl/beacon/modular_hose_yellow_32_01.rmdl", <- 681.5537, -10665, 16579.6 > , < 0, -90.0166, 0 > , true, 50000, -1, 1)
     InvisibleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <- 3408.001, -10564, 17703 > , < 89.972, 89.9998, 0 > , true, 50000, -1, 1))
     MapEditor_CreateProp($"mdl/pipes/pipe_modular_painted_grey_128.rmdl", <- 3055.519, -10152, 17836.57 > , < 0, 0.0639, 90 > , true, 50000, -1, 1)
@@ -445,6 +446,11 @@ function Gymmovementmap_load() {
         ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
     }
     foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+    foreach(entity ent in ClipNoGrappleNoClimb) {
+        ent.kv.solid = 3
+        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+        ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
+    }
 
     // Jumppads
     MapEditor_CreateJumpPad(MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 11584.53, -10092.91, 15025.6 > , < 0, 149.9999, 0 > , true, 50000, -1, 1))
