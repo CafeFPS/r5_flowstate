@@ -1814,17 +1814,17 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								continue
 
 							player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
-
-							if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
+							entity currentWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+							if( IsValid( currentWeapon ) && !newGroup.IsFinished && !currentWeapon.IsWeaponOffhand() )
 							{
-								entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-								int ammoType = weapon.GetWeaponAmmoPoolType()
+								int ammoType = currentWeapon.GetWeaponAmmoPoolType()
 								player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
 								
-								if( weapon.UsesClipsForAmmo() )
-									weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+								if( currentWeapon.UsesClipsForAmmo() )
+									currentWeapon.SetWeaponPrimaryClipCountNoRegenReset( currentWeapon.GetWeaponPrimaryClipCountMax() )
 								
-								player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+								if( currentWeapon.Anim_HasActivity( "ACT_VM_DRAWFIRST" ) )
+								currentWeapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
 							}
 
 							player.MovementEnable()
