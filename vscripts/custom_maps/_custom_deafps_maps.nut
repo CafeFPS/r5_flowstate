@@ -1143,7 +1143,9 @@ void function de_NCanals_precache()
 void function de_NCanals()
 {
     //Starting Origin, Change this to a origin in a map 
-    vector startingorg = < -7193.846, -16898.95, 2000 >
+    vector startingorg 
+	if( Gamemode() == eGamemodes.fs_snd )
+		startingorg = < -7193.846, -16898.95, 2000 >
 
     // Props Array
     array < entity > ClipArray; 
