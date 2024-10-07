@@ -433,19 +433,18 @@ bool function ShouldHighlightForPing( entity wp, entity pingedEnt )
 	
 	if ( pingedEnt.GetScriptName() == "editor_placed_prop" )
 		return false
-	
+
 	int pingType = Waypoint_GetPingTypeForWaypoint( wp )
 	switch( pingType )
 	{
 		case ePingType.ABILITY_DRONEMEDIC:
 		case ePingType.ABILITY_DOMESHIELD:
-#if(false)
-
-
-
-#endif
+		return true
 	}
 
+	if( MapName() == eMaps.mp_rr_construct )
+		return false
+	
 	return true
 }
 
