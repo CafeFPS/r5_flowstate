@@ -382,7 +382,7 @@ void function OnWeaponChargeEnd_weapon_phase_tunnel( entity weapon )
 		if ( player in file.hasLockedWeaponsAndMelee && file.hasLockedWeaponsAndMelee[player]  )
 		{
 			if ( IsValid(player) )
-				UnlockWeaponsAndMelee( player ) //, "phase_tunnel" )
+				UnlockWeaponsAndMelee( player )
 			file.hasLockedWeaponsAndMelee[player] <- false
 		}
 	#endif
@@ -482,7 +482,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 
 	player.SetExtraWeaponMods( mods )
 	ForceAutoSprintOn( player )
-	LockWeaponsAndMelee( player ) //, "phase_tunnel" )
+	LockWeaponsAndMelee( player )
 	file.hasLockedWeaponsAndMelee[player] <- true
 
 	array<int> ids
@@ -517,7 +517,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 
 				if ( player in file.hasLockedWeaponsAndMelee && file.hasLockedWeaponsAndMelee[player]  )
 				{
-					UnlockWeaponsAndMelee( player ) //, "phase_tunnel" )
+					UnlockWeaponsAndMelee( player )
 					file.hasLockedWeaponsAndMelee[player] <- false
 				}
 				//RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, PhaseTunnel_CancelPlacement )

@@ -21,7 +21,7 @@ WeaponData
     "hide_holstered_sidearm_when_active"			"1"
     "zoom_effects"                                  "0"
 
-	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_ability_phase_walk"
+	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_ability_phase_walk"
 	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_ability_phase_walk"
 	"OnWeaponChargeEnd"								"OnWeaponChargeEnd_ability_phase_walk"
 	"OnWeaponActivate"								"OnWeaponActivate_ability_phase_walk"
