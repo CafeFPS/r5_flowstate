@@ -21,7 +21,7 @@ playlists
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
 
-				enable_mirage_revive_cloak_upgrade					1
+				enable_mirage_revive_cloak_upgrade					0
 
 				redish_highlight_los								1 //Enables redish highlight at player range
 				redish_highlight_los_range							20
