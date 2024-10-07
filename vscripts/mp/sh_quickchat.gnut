@@ -152,6 +152,7 @@ void function RegisterCustomComs()
 
 	// creatures
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_SPIDER, "ping_spotSpider", icon, iconasset, chattext, shorttext, menutext)
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_INFECTED, "ping_spotInfected", icon, iconasset, chattext, shorttext, menutext)
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_PROWLER, "ping_spotProwler", icon, iconasset, chattext, shorttext, menutext)
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_GOLIATH, "ping_spotGoliath", icon, iconasset, chattext, shorttext, menutext)
 
