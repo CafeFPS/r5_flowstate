@@ -5216,7 +5216,7 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
         ent.SetAngles(direction)
         ent.SetVelocity(<0, 0, 0>)
 
-        if (message.len())
+        if (message.len() || submessage.len())
 			LocalMsg(ent, token, "", type, duration, message, submessage, "", false)
     })
 
