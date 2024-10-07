@@ -64,6 +64,7 @@ global struct scenariosGroupStruct
 	int trackedEntsArrayIndex
 	float lastTimeRingDamagedGroup = 0
 	bool isLastGameFromRound
+	bool isForcedGame
 }
 
 struct doorsData
@@ -118,9 +119,8 @@ struct
 	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
 
-	// float fs_scenarios_max_queuetime = 150
+	float fs_scenarios_max_queuetime = 30.0
 	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
-	// int fs_scenarios_maximum_team_allowed = 3
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
@@ -146,10 +146,9 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
 	settings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
 	settings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
-	// settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
-	// settings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
-	// settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
-
+	
+	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 30.0 )
+	
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
@@ -1015,6 +1014,9 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		}
 
 		player.p.scenariosTeamsMatched = 0
+		
+		player.p.scenariosTimePlayerEnteredInLobby = -1
+		
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
 		LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
@@ -1453,13 +1455,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		if( GetScoreboardShowingState() || file.scenariosStopMatchmaking )
 			continue
 
-		// Hay suficientes jugadores para crear un equipo?
-		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
-			continue		
-
-		table<int, soloPlayerStruct> waitingPlayersShuffledTable = FS_1v1_GetPlayersWaiting()
+		table<int, soloPlayerStruct> waitingPlayersShuffledTable = clone FS_1v1_GetPlayersWaiting()
 		array<entity> waitingPlayers
-
+		int playersThatForceMatchmaking
+		
 		foreach ( playerHandle, eachPlayerStruct in waitingPlayersShuffledTable )
 		{	
 			if( !IsValid(eachPlayerStruct) )
@@ -1473,23 +1472,37 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( IsBotEnt( player ) ) //temporary messagebot bullcrap hack ( all of these need removed )
 				continue
 
-			if( Time() < eachPlayerStruct.waitingTime )
-				continue
-				
 			// if( player.p.InDeathRecap ) //Has player closed Death Recap? //Not reliable until we solve all the death recap. Cafe
 				// continue
+			#if DEVELOPER
+				Warning( "Checking for player " + (Time() - player.p.lastRequeueUsedTime) )
+			#endif
 			
-			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // A window so player can see death recap. TEMP? Cafe Penalizar el jugador si muere, los que ganan van a conseguir matchmaking más rápido = más partidas
+			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
 				continue
+			
+			if( Time() - player.p.scenariosTimePlayerEnteredInLobby > settings.fs_scenarios_max_queuetime )
+				playersThatForceMatchmaking++
 			
 			waitingPlayers.append( player )
 		}
-
+		
+		bool forceGame = playersThatForceMatchmaking >= settings.fs_scenarios_teamAmount && playersThatForceMatchmaking == waitingPlayers.len() //playersThatForceMatchmaking == waitingPlayers.len() is to do the force logic only when there are barely players in the server. If there are games runnings, should be fast enough for players to wait in the timeout. Cafe
+		
+		#if DEVELOPER
+		if( forceGame )
+			Warning( "Force game because players have waited a long time " + playersThatForceMatchmaking )
+		#endif
+		
 		// Hay suficientes jugadores para crear un equipo?
-		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
+		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) && !forceGame )
+		{
+		
 			continue	
+		}
 
 		scenariosGroupStruct newGroup //Creates a new game
+		newGroup.isForcedGame = forceGame //Todo something with e.e. Cafe
 		
 		float maxEndTime = settings.fs_scenarios_characterselect_enabled == true ? ( 7.0 + settings.fs_scenarios_characterselect_time_per_player*settings.fs_scenarios_playersPerTeam ) : 0.0
 		maxEndTime += Time() + settings.fs_scenarios_ringclosing_maxtime + 7

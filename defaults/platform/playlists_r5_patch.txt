@@ -1796,9 +1796,9 @@ playlists
 				fs_scenarios_ringclosing_maxtime				100
 				flowstateBubble 								"111, 66, 245"	
 				fs_scenarios_matchmaking_delay_after_dying		8.0
-				// fs_scenarios_max_queuetime 					150.0 //not implemented atm
-				// fs_scenarios_minimum_team_allowed 			1 // used only when max_queuetime is triggered
-				// fs_scenarios_maximum_team_allowed 			3
+				
+				fs_scenarios_max_queuetime 						30.0 //Force a scenarios game after this time.
+				
 				block_ammo_spawning								0
 				
 				/////////////////////////

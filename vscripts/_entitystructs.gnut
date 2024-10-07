@@ -1128,6 +1128,7 @@ global struct ServerPlayerStruct
 	array<DropWeaponData> weaponsToDropData
 	
 	int scenariosTeamsMatched = 0
+	float scenariosTimePlayerEnteredInLobby = -1
 
 	//Bleedout update
 	int numSelfRevivesUsed = 0

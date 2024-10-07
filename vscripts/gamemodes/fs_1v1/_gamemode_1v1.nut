@@ -2579,6 +2579,8 @@ void function soloModePlayerToWaitingList( entity player )
 			Signal( player, "BleedOut_OnRevive" )
 
 		Signal(player, "InterruptSyncedMelee")
+		
+		player.p.scenariosTimePlayerEnteredInLobby = Time()
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.
@@ -2591,9 +2593,7 @@ void function soloModePlayerToWaitingList( entity player )
 	playerStruct.player = player
 	playerStruct.handle = player.p.handle
 	
-	if( settings.is3v3Mode )
-		playerStruct.waitingTime = Time() + 5
-	else
+	if( !settings.is3v3Mode )
 		playerStruct.waitingTime = Time() + 2
 		
 	
