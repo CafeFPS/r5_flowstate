@@ -1474,9 +1474,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 			// if( player.p.InDeathRecap ) //Has player closed Death Recap? //Not reliable until we solve all the death recap. Cafe
 				// continue
-			#if DEVELOPER
-				Warning( "Checking for player " + (Time() - player.p.lastRequeueUsedTime) )
-			#endif
+			// #if DEVELOPER
+				// Warning( "Checking for player " + (Time() - player.p.lastRequeueUsedTime) )
+			// #endif
 			
 			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
 				continue
