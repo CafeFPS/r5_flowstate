@@ -1824,7 +1824,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 									currentWeapon.SetWeaponPrimaryClipCountNoRegenReset( currentWeapon.GetWeaponPrimaryClipCountMax() )
 								
 								if( currentWeapon.Anim_HasActivity( "ACT_VM_DRAWFIRST" ) )
-								currentWeapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+									currentWeapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
 							}
 
 							player.MovementEnable()

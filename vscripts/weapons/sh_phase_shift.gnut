@@ -235,228 +235,6 @@ int function PhaseShift( entity ent, float warmupTime, float duration, int shift
 
 #if SERVER
 
-void function BurnCard_PhaseRewind_OnDamage( entity player, var damageInfo )
-{
-	if ( player.IsTitan() )
-		return
-
-	// can't escape executions and such
-	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	if ( IsInstantDeath( damageInfo ) )
-		return
-
-	DamageInfo_SetDamage( damageInfo, 0 )
-	BurnMeter_PhaseRewind( player )
-}
-
-void function BurnMeter_PhaseRewind( entity player )
-{
-	if ( PhaseShift( player, 0.0, 999 ) )
-		thread BurnMeter_PhaseRewind_threaded( player )
-}
-
-void function BurnMeter_PhaseRewind_threaded( entity player )
-{
-	player.EndSignal( "OnDeath" )
-
-	player.SetPredictionEnabled( false )
-	HolsterAndDisableWeapons( player )
-
-	entity mover = CreateScriptMover( player.GetOrigin(), player.GetAngles() )
-
-	PhaseRewindData rewindData
-	rewindData.origin = player.GetOrigin()
-	rewindData.angles = player.GetAngles()
-	rewindData.wasInContextAction = player.ContextAction_IsActive()
-	rewindData.wasCrouched = player.IsCrouched()
-
-	vector originAtStart = player.GetOrigin()
-
-	OnThreadEnd(
-		function() : ( player, mover, rewindData, originAtStart )
-		{
-			if ( IsValid( player ) )
-			{
-				player.SetPredictionEnabled( true )
-				CancelPhaseShift( player )
-				DeployAndEnableWeapons( player )
-				player.ClearParent()
-				player.SetVelocity( <0, 0, 10> )
-				player.SetOrigin( rewindData.origin )
-				player.SetAngles( rewindData.angles )
-				// if ( rewindData.wasCrouched )
-				// {
-				// 	thread PhaseRewindCrouchPlayer( player )
-				// }
-
-				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
-				player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave = true
-
-				if ( rewindData.wasInContextAction && !PutEntityInSafeSpot( player, null, null, originAtStart, player.GetOrigin() ) )
-					//Only do PutEntityInSafeSpot check() if the last saved position they were in a context action, since context actions can put you in normally illegal spots, e.g. behind geo. If you do the PutEntityInSafeSpot() check all the time you get false positives if you always use start position as safe starting spot
-				{
-					player.TakeDamage( player.GetHealth() + 1, player, player, { damageSourceId = eDamageSourceId.phase_shift, scriptType = DF_GIB | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
-				}
-			}
-
-			if ( IsValid( mover ) )
-				mover.Destroy()
-		}
-	)
-
-	player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave = false
-
-	WaitEndFrame() // wait for the last save
-
-	EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_phaserewind_1p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "pilot_phaserewind_3p" )
-
-	player.SetParent( mover, "REF", false )
-	ViewConeZeroInstant( player )
-	array<PhaseRewindData> savedPositions = player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions
-
-	for ( int i = savedPositions.len() - 1; i >= 0; i-- )
-	{
-		mover.NonPhysicsMoveTo( savedPositions[i].origin, RECONSTRUCT_REWIND_TICK, 0, 0 )
-		mover.NonPhysicsRotateTo( savedPositions[i].angles, RECONSTRUCT_REWIND_TICK, 0, 0 )
-		rewindData.origin = savedPositions[i].origin
-		rewindData.angles = savedPositions[i].angles
-		player.SetVelocity( savedPositions[i].velocity )
-		rewindData.velocity = savedPositions[i].velocity
-		rewindData.wasInContextAction = savedPositions[i].wasInContextAction
-		rewindData.wasCrouched = savedPositions[i].wasCrouched
-		
-		#if DEVELOPER
-			printt( "wasCrouched?" + rewindData.wasCrouched )
-		#endif 
-		
-		if ( rewindData.wasCrouched )
-		{
-			#if DEVELOPER
-				printt( "PhaseRewindCrouchPlayer" )
-			#endif 
-			
-			thread PhaseRewindCrouchPlayer( player )
-		}
-
-		WaitFrame()
-	}
-}
-
-void function PhaseRewindCrouchPlayer( entity player )
-{
-	Signal( player, "PhaseRewindCrouchPlayer" )
-	EndSignal( player, "OnDeath" )
-	EndSignal( player, "PhaseRewindCrouchPlayer" )
-	player.ForceCrouch()
-	OnThreadEnd(
-		function() : ( player )
-		{
-			if ( IsValid( player ) )
-			{
-				player.UnforceCrouch()
-			}
-		}
-	)
-	wait 0.2
-}
-
-void function TitanBecomesPilot_TryStartTrackingPositions( entity playerPilot, entity npcTitan )
-{
-	TryStartTrackingPositions( playerPilot )
-}
-
-void function PilotBecomesTitan_EndTrackingPositions( entity playerTitan, entity npcTitan )
-{
-	EndTrackingPositions( playerTitan )
-}
-
-void function OnPlayerRespawn_TryStartTrackingPositions( entity player )
-{
-	TryStartTrackingPositions( player )
-}
-
-void function TryStartTrackingPositions( entity player )
-{
-	if ( player.IsTitan() )
-		return
-
-	if ( !IsAlive( player ) )
-		return
-
-	if ( player.IsPhaseShifted() )
-		//Might already be phase rewinded, don't clear out phaseRetreatSavedPositions array
-		return
-
-	thread StartTrackingPositions( player )
-}
-
-void function EndTrackingPositions( entity player )
-{
-	player.Signal( "EndTrackingPositions" )
-}
-
-void function StartTrackingPositions( entity player )
-{
-	player.EndSignal( "EndTrackingPositions" )
-	player.Signal( "StartTrackingPositions" )
-	player.EndSignal( "StartTrackingPositions" )
-	player.EndSignal( "OnDeath" )
-
-	OnThreadEnd(
-		function() : ( player )
-		{
-			if ( IsValid( player ) )
-			{
-				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
-			}
-		}
-	)
-
-	int maxSaves = 60
-
-	while ( 1 )
-	{
-		if ( player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave && !player.IsTitan() )
-		{
-			vector origin = player.GetOriginOutOfTraversal()
-			vector angles = player.GetAngles()
-			angles = <0, player.CameraAngles().y, 0>
-
-			PhaseRewindData data
-			data.origin = origin
-			data.angles = angles
-			data.velocity = player.GetVelocity()
-			data.wasInContextAction = player.ContextAction_IsActive()
-			data.wasCrouched = player.IsCrouched()
-			data.time = Time()
-
-			// printt( "----------" + data.wasCrouched + "----------" )
-
-			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.append( data )
-			if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() > maxSaves )
-				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.remove( 0 )
-		}
-		// wait RECONSTRUCT_REWIND_SAVE_TICK
-		WaitFrame()
-	}
-}
-
-
-void function PlayPhaseShiftLoopFX( entity ent, float duration )
-{
-	ent.EndSignal( "OnDeath" )
-	ent.EndSignal( "ForceStopPhaseShift" )
-
-	float startTime = Time()
-	while ( Time() - startTime < duration )
-	{
-		entity fx = PlayPhaseShiftDisappearFX( ent )
-		thread PhaseShiftDisappearEffectCleanup( ent, fx, duration )
-		wait 1.0
-	}
-}
-
 void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float shiftTime, int shiftStyle )
 {
 	ent.EndSignal( "OnDeath" )
@@ -466,8 +244,6 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 
 	if ( ent.IsPlayer() )
 	{
-		ent.EndSignal( "player_embarks_titan" )
-
 		Leech_Disallow( ent )
 		//	EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_PRE_SOUND_3P )
 
@@ -475,25 +251,9 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 		if ( proxy != null )
 			proxy.SetForceVisibleInPhaseShift( true )
 
-		/*if ( RodeoState_GetIsPlayerRodeoing( ent ) ) // RodeoState_GetIsPlayerRodeoing no longer exist in S3
-		{
-			if ( ent.GetParent() != null && ent.GetParent().IsPhaseShifted() )
-				keepAnimActive = true
-			else
-				Rodeo_TriggerRiderRodeoEnd( ent, true )
-		}*/
-
 		if ( ent.IsTitan() )
 		{
 			UntrackAllToneMarks( ent )
-			entity titanSoul = ent.GetTitanSoul()
-			if ( titanSoul != null )
-			{
-				if ( titanSoul.soul.batteryContainer != null )
-				{
-					titanSoul.soul.batteryContainer.SetForceVisibleInPhaseShift( true )
-				}
-			}
 		}
 	}
 	else
@@ -607,6 +367,8 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 
 	if ( ent.IsPlayer() )
 	{
+		ent.GrappleDetach()
+
 		PlayerDropsScriptedItems( ent )
 		if ( ent.IsTitan() )
 		{
@@ -950,17 +712,6 @@ void function ClientPhaseShiftFirstPersonFXThread()
 
 				Chroma_PhaseShiftEnding()
 			}
-			else if ( IsValid( localViewPlayer ) && localViewPlayer.IsPhaseShifted() )
-			{
-				if ( !endSoundPlayed && (localViewPlayer.PhaseShiftTimeRemaining() <= SHIFTER_OUTRO_TIME_BEFORE_END) )
-				{
-					endSoundPlayed = true
-					if ( localViewPlayer.IsTitan() )
-						EmitSoundOnEntity( localViewPlayer, SHIFTER_PRE_END_SOUND_1P_TITAN )
-					else
-						EmitSoundOnEntity( localViewPlayer, SHIFTER_PRE_END_SOUND_1P )
-				}
-			}
 		}
 
 		if ( !effectsAreActive )
@@ -971,7 +722,8 @@ void function ClientPhaseShiftFirstPersonFXThread()
 			{
 				// FX
 				{
-					int fxIndex   = GetParticleSystemIndex( SHIFTER_PERSONAL_FX )
+					int fxIndex = GetParticleSystemIndex( SHIFTER_PERSONAL_FX )
+					
 					int attachIdx = localViewPlayer.LookupAttachment( "CHESTFOCUS" )
 					effectSparkles = StartParticleEffectOnEntity( localViewPlayer, fxIndex, FX_PATTACH_POINT_FOLLOW, attachIdx )
 				}
@@ -1009,14 +761,15 @@ void function ClientPhaseShiftFirstPersonFXThread()
 				ClientPhaseShift_SCRIPT_HACKS_ON()
 
 				if ( localViewPlayer.IsTitan() )
+				{
 					EmitSoundOnEntity( localViewPlayer, SHIFTER_START_SOUND_1P_TITAN )
-				else
-					EmitSoundOnEntity( localViewPlayer, SHIFTER_START_SOUND_1P )
-
-				if ( localViewPlayer.IsTitan() )
 					EmitSoundOnEntity( localViewPlayer, SHIFTER_LOOP_SOUND_1P_TITAN )
+				}
 				else
+				{
+					EmitSoundOnEntity( localViewPlayer, SHIFTER_START_SOUND_1P )
 					EmitSoundOnEntity( localViewPlayer, SHIFTER_LOOP_SOUND_1P )
+				}
 
 				effectsAreActive = true
 				ourPlayer = localViewPlayer

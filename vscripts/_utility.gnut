@@ -5423,3 +5423,59 @@ void function RestoreChargesForPlayer( entity player )
 		}
 	}
 }
+
+void function ForceAutoSprintOn( entity player )
+{
+	// printt( FUNC_NAME( 0 ) + " from " + FUNC_NAME( 1 ) )
+	// printt( "Player = " + player.GetPlayerName() + ", current count = " + player.p.forceAutoSprintCount )
+	Assert( player.p.forceAutoSprintCount >= 0 )
+
+	player.p.forceAutoSprintCount += 1
+
+	if ( player.p.forceAutoSprintCount == 1 )
+	{
+		player.ForceAutoSprintOn()
+	}
+}
+
+void function ForceAutoSprintOff( entity player )
+{
+	// printt( FUNC_NAME( 0 ) + " from " + FUNC_NAME( 1 ) )
+	// printt( "Player = " + player.GetPlayerName() + ", current count = " + player.p.forceAutoSprintCount )
+	Assert( player.p.forceAutoSprintCount > 0 )
+
+	player.p.forceAutoSprintCount -= 1
+
+	if ( player.p.forceAutoSprintCount == 0 )
+	{
+		player.UnforceAutoSprint()
+	}
+}
+
+void function ChargeTactical_ForceEnd( entity player )
+{
+	entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
+	if ( IsValid( tactical ) )
+	{
+		if ( tactical.IsChargeWeapon() )
+		{
+			if ( tactical.IsWeaponCharging() )
+			{
+				tactical.ForceChargeEndNoAttack()
+				tactical.SetWeaponPrimaryClipCount( 0 )
+			}
+			else
+			{
+				array <entity> activeWeapons = player.GetAllActiveWeapons()
+				if ( activeWeapons.len() > 1 )
+				{
+					entity offhandWeapon = activeWeapons[1]
+					if ( offhandWeapon == tactical )
+					{
+						player.ClearOffhand( eActiveInventorySlot.altHand )
+					}
+				}
+			}
+		}
+	}
+}
