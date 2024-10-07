@@ -104,6 +104,7 @@ struct {
 	array<var> allyTeamCards
 	array<var> enemyTeamCards
 	array<var> enemyTeamCards2
+	
 	array<int> allyTeamHandles
 	array<int> enemyTeamHandles
 	array<int> enemyTeamHandles2
@@ -2187,6 +2188,7 @@ void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 		}()
 	}
 
+	
 	if( file.enemyTeamHandles.len() > 0 && file.allyTeamHandles.len() > 0 && !onlyUpdate )
 		FS_Scenarios_TogglePlayersCardsVisibility( true, false )
 }
@@ -2219,6 +2221,34 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show, bool reset )
 		Hud_SetVisible( button, show )
 	}
 
+	if( show ) 
+	{
+		//hide the player cards that are not going to be used
+		for( int i = 0; i < file.allyTeamCards.len(); i++ )
+		{
+			if( i < file.allyTeamHandles.len() )
+				continue
+			
+			Hud_SetVisible( file.allyTeamCards[i], false )
+		}
+
+		for( int i = 0; i < file.enemyTeamCards.len(); i++ )
+		{
+			if( i < file.enemyTeamHandles.len() )
+				continue
+			
+			Hud_SetVisible( file.enemyTeamCards[i], false )
+		}
+
+		for( int i = 0; i < file.enemyTeamCards2.len(); i++ )
+		{
+			if( i < file.enemyTeamHandles2.len() )
+				continue
+			
+			Hud_SetVisible( file.enemyTeamCards2[i], false )
+		}
+	} 
+		
 	if( !show && reset )
 	{
 		file.allyTeamHandles.clear()
