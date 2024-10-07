@@ -900,9 +900,10 @@ bool function ShouldDrawHealRopeToPlayer( entity player, entity droneMedic )
 		return false
 
 	// No rope if the drone is healing through a vehicle:
-	PopulationInfoForTarget pi = GetPopulationInfoForPlayer( droneMedic, player )
-	if ( pi.activeMethods[ePopulationMethod.SHARING_VEHICLE] )
-		return false
+	// PopulationInfoForTarget pi = GetPopulationInfoForPlayer( droneMedic, player )
+	// if ( pi.activeMethods[ePopulationMethod.SHARING_VEHICLE] )
+		// return false
+
 	return true
 }
 
