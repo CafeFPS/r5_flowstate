@@ -1,4 +1,4 @@
-//Updated by @CafeFPS base on S21 scripts
+//Updated by @CafeFPS based on S21 scripts
 
 global function MpWeaponPhaseTunnel_Init
 global function OnWeaponActivate_weapon_phase_tunnel
