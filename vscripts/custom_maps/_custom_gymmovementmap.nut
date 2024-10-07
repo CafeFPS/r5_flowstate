@@ -91,29 +91,31 @@ function GymMovementMapEntitiesDidLoad() {
 
 void
 function Gymmovementmap_player_setup(entity player) {
-    array < ItemFlavor > characters = GetAllCharacters()
+    if (!IsValidPlayer(player))
+		return
+
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[8] )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives(player)
+    player.SetPlayerNetBool("pingEnabled", false)
+    player.SetPersistentVar("gen", 0)
 
     file.cp_table[player] <- file.first_cp
     file.cp_angle[player] <-  < 0, 180, 0 >
-        file.last_cp[player] <- false
+    file.last_cp[player] <- false
 
     player.SetOrigin(file.cp_table[player])
     player.SetAngles(file.cp_angle[player])
-    CharacterSelect_AssignCharacter(ToEHI(player), characters[8]) // Wraith
-
-    player.SetPlayerNetBool("pingEnabled", false)
-    player.SetPersistentVar("gen", 0)
     LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "Gym Map", "By: Loy Takian", "", false)
-
     TakeAllPassives(player)
     TakeAllWeapons(player)
-    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-    player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-    player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-
     if (!player.HasPassive(ePassives.PAS_PILOT_BLOOD))
         GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-
     thread Gymmovementmap_SpawnInfoText(player)
 }
 

@@ -81,22 +81,25 @@ function grapplemap_SpawnInfoText(entity player) {
 
 void
 function grapplemap_player_setup(entity player) {
-    array < ItemFlavor > characters = GetAllCharacters()
+    if (!IsValidPlayer(player))
+		return
 
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[7] )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+    player.SetPlayerNetBool("pingEnabled", false)
+    player.SetPersistentVar("gen", 0)
     player.SetOrigin(file.first_cp)
-    CharacterSelect_AssignCharacter(ToEHI(player), characters[7])
-
     TakeAllPassives(player)
     TakeAllWeapons(player)
-    player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-    player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-    player.SetPlayerNetBool("pingEnabled", false)
-
     player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
     player.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
     player.SetSuitGrapplePower(100)
     player.SetAngles( < 0, -90, 0 > )
-    player.SetPersistentVar("gen", 0)
     LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "It Hurts Map", "By: Loy Takian", "", false)
 
     thread grapplemap_SpawnInfoText(player)
@@ -420,7 +423,6 @@ function grapplemap_load() {
             if (IsValidPlayer(user)) {
                 array < ItemFlavor > characters = GetAllCharacters()
                 CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
-                user.TakeOffhandWeapon(OFFHAND_TACTICAL)
                 user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 
                 if (user.GetPersistentVar("gen") == 0) {

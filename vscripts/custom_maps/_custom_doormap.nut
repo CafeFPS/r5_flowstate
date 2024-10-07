@@ -61,20 +61,20 @@ function DoorMapEntitiesDidLoad() {
 
 void
 function TeleportPlayer(entity player) {
-    if (!IsValid(player))
-        return
-    array < ItemFlavor > characters = GetAllCharacters()
+    if (!IsValidPlayer(player))
+		return
 
-    player.SetOrigin(file.first_cp)
-    CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[8] )
 
-    TakeAllPassives(player)
-    TakeAllWeapons(player)
-    player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-    player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives(player)
     player.SetPlayerNetBool("pingEnabled", false)
     player.SetPersistentVar("gen", 0)
-
+    player.SetOrigin(file.first_cp)
     LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "Door Map", "By: Loy & Treeree", "", false)
     SpawnInfoText(player)
 }

@@ -128,18 +128,23 @@ function mantlemap_reset_doors() {
 
 void
 function mantlemap_player_setup(entity player) {
-    array < ItemFlavor > characters = GetAllCharacters()
-    player.SetOrigin(file.first_cp)
-    CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
+    if (!IsValidPlayer(player))
+		return
 
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[8] )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives(player)
+    player.SetPlayerNetBool("pingEnabled", false)
+    player.SetPersistentVar("gen", 0)
+    player.SetOrigin(file.first_cp)
     TakeAllPassives(player)
     TakeAllWeapons(player)
-    player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-    player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-    player.SetPlayerNetBool("pingEnabled", false)
-
     player.SetAngles( < 0, 0, 0 > )
-    player.SetPersistentVar("gen", 0)
     LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "Mantle Jump Map", "By: Loy & Treeree", "", false)
     mantlemap_SpawnInfoText(player)
 }
