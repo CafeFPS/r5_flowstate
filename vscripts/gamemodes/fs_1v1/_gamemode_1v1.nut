@@ -2536,41 +2536,21 @@ void function soloModePlayerToWaitingList( entity player )
 		
 		if( IsValid( playerGroup ) )
 		{
-			foreach( splayer in playerGroup.team1Players )
+			foreach( scenariosTeamStruct team in playerGroup.teams )
 			{
-				if( splayer == player )
+				int maxIter = team.players.len() - 1
+				
+				for( int i = maxIter; i >= 0; i-- )
 				{
-					#if DEVELOPER
-						printt( "removed player from team 1 ", player )
-					#endif 
+					entity splayer = team.players[i]
 					
-					playerGroup.team1Players.removebyvalue( player )
-				}
-			}
-			
-			foreach( splayer in playerGroup.team2Players )
-			{
-				if( splayer == player )
-				{
-					#if DEVELOPER
-						printt( "removed player from team 2 ", player )
-					#endif
-					
-					playerGroup.team2Players.removebyvalue( player )
+					if( !IsValid( splayer ) || splayer == player )
+					{
+						team.players.remove( i ) //cafe
+					}
 				}
 			}
 
-			foreach( splayer in playerGroup.team3Players )
-			{
-				if( splayer == player )
-				{
-					#if DEVELOPER
-						printt( "removed player from team 3 ", player )
-					#endif 
-					
-					playerGroup.team3Players.removebyvalue( player )
-				}
-			}
 			if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
 				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 			
@@ -3508,16 +3488,17 @@ void function Gamemode1v1_Init( int eMap )
 	
 	g_randomWaitingSpawns = SpawnSystem_GenerateRandomSpawns( getWaitingRoomLocation().origin, getWaitingRoomLocation().angles, file.waitingRoomRadius, .22, 60 ) //todo(dw): scenarios origin waiting area offset is not centered for polished effect
 
-	if( settings.is3v3Mode )
+	if( settings.is3v3Mode ) //modular mode
 	{
-		for ( int i = 0; i < allSoloLocations.len(); i=i+3 )
+		for ( int i = 0; i < allSoloLocations.len(); i = i + SPAWNS_MAX_TEAMS ) // read SPAWNS_MAX_TEAMS from spawns?? Cafe
 		{
 			soloLocStruct p
 
-			p.respawnLocations.append( allSoloLocations[i].spawn )
-			p.respawnLocations.append( allSoloLocations[i+1].spawn )
-			p.respawnLocations.append( allSoloLocations[i+2].spawn )
-			
+			for ( int j = 0; j < SPAWNS_MAX_TEAMS; j++  ) //Read block of i+GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ) lines of spawns 
+			{
+				p.respawnLocations.append( allSoloLocations[ i + j ].spawn )
+			}
+
 			p.Center = GetCenterOfCircle( p.respawnLocations )
 			
 			if( allSoloLocations[i].name != "" )
@@ -3528,7 +3509,7 @@ void function Gamemode1v1_Init( int eMap )
 			soloLocations.append(p)
 		}
 	}
-	else
+	else //1v1 legacy mode
 	{
 		for ( int i = 0; i < allSoloLocations.len(); i=i+2 )
 		{

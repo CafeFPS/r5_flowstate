@@ -16,12 +16,12 @@ global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_GetAmountOfTeams
 global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
-global function FS_Scenarios_GetDropshipEnabled //?
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
 global function FS_Scenarios_HandleGroupIsFinished
 global function FS_Scenarios_SetStopMatchmaking
+global function FS_Scenarios_GetAllPlayersForGroup
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -29,25 +29,25 @@ global function Cafe_EndAllRounds
 global function Mkos_ForceCloseRecap
 #endif
 
+global struct scenariosTeamStruct
+{
+	array<entity> players
+	int team
+}
+
 global struct scenariosGroupStruct
 {
 	entity dummyEnt
 	int groupHandle
-	array<entity> team1Players
-	array<entity> team2Players
-	array<entity> team3Players
 
-	// save legends indexes ?
-
+	array<scenariosTeamStruct> teams //changed to be modular. Cafe
+	
 	soloLocStruct &groupLocStruct
 	entity ring
 	float calculatedRingRadius
 	float currentRingRadius
 	vector calculatedRingCenter
-	int slotIndex
-	int team1Index = -1
-	int team2Index = -1
-	int team3Index = -1
+	int slotIndex //realm slot
 
 	bool IsFinished = false
 	float startTime
@@ -91,6 +91,8 @@ struct lootbinsData
 	vector angles
 }
 
+global const int SPAWNS_MAX_TEAMS = 3
+
 struct {
 	table<int, scenariosGroupStruct> scenariosPlayerToGroupMap = {} //map for quick assessment
 	table<int, scenariosGroupStruct> scenariosGroupsInProgress = {} //group map to group
@@ -109,7 +111,6 @@ struct {
 
 struct
 {
-	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = -1
 	int fs_scenarios_teamAmount = -1
 
@@ -142,7 +143,6 @@ array< bool > teamSlots
 
 void function Init_FS_Scenarios()
 {
-	settings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
 	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
 	settings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
 	settings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
@@ -948,11 +948,6 @@ bool function FS_Scenarios_GetInventoryEmptyEnabled()
 	return settings.fs_scenarios_inventory_empty
 }
 
-bool function FS_Scenarios_GetDropshipEnabled() // ?
-{
-	return settings.fs_scenarios_dropshipenabled
-}
-
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
 {
 	if( team == -1 )
@@ -1053,29 +1048,16 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 
 			file.scenariosGroupsInProgress[ groupHandle ] <- newGroup
 
-			foreach( player in newGroup.team1Players )
+			//Cafe
+			foreach( scenariosTeamStruct team in newGroup.teams )
 			{
-				if( !IsValid( player ) )
-					continue
+				foreach( player in team.players )
+				{
+					if( !IsValid( player ) )
+						continue
 
-				SetTeam( player, newGroup.team1Index )
-			}
-
-			foreach( player in newGroup.team2Players )
-			{
-				if( !IsValid( player ) )
-					continue
-
-				SetTeam( player, newGroup.team2Index )
-			}
-			
-			if( settings.fs_scenarios_teamAmount > 2 )
-			foreach( player in newGroup.team3Players )
-			{
-				if( !IsValid( player ) )
-					continue
-
-				SetTeam( player, newGroup.team3Index )
+					SetTeam( player, team.team )
+				}
 			}
 		}
 		else 
@@ -1302,12 +1284,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( !IsValid( group ) )
 				continue
 
-			array<entity> players
-			players.extend( group.team1Players )
-			players.extend( group.team2Players )
-			players.extend( group.team3Players )
-			ArrayRemoveInvalid( players )
-			
+			array<entity> players = FS_Scenarios_GetAllPlayersForGroup( group )
+
 			if( group.isReady && !group.IsFinished )
 			{
 				bool shouldRingDoDamageThisFrame = false
@@ -1403,9 +1381,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				ClearActiveProjectilesForRealm( group.slotIndex )
 
 				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
-				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
-				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team2Index, false )
-				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team3Index, false )
+				foreach( scenariosTeamStruct team in group.teams )
+				{
+					FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
+				}
 
 				//Some abilities designed to stay like, bombardments, zipline, care package, decoy, grenades
 				//should be destroyed when the scenarios round ends and not when the player dies
@@ -1478,7 +1457,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 			continue		
 
-		scenariosGroupStruct newGroup
 		table<int, soloPlayerStruct> waitingPlayersShuffledTable = FS_1v1_GetPlayersWaiting()
 		array<entity> waitingPlayers
 
@@ -1511,6 +1489,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 			continue	
 
+		scenariosGroupStruct newGroup //Creates a new game
+		
 		float maxEndTime = settings.fs_scenarios_characterselect_enabled == true ? ( 7.0 + settings.fs_scenarios_characterselect_time_per_player*settings.fs_scenarios_playersPerTeam ) : 0.0
 		maxEndTime += Time() + settings.fs_scenarios_ringclosing_maxtime + 7
 
@@ -1537,29 +1517,32 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		waitingPlayers.sort( FS_SortPlayersByPriority )
 
+		//Create required team structs and request team slot
+		for( int i = 0; i < settings.fs_scenarios_teamAmount; i++ )
+		{
+			Assert( newGroup.teams.len() == settings.fs_scenarios_teamAmount )
+			scenariosTeamStruct team
+			team.team = FS_Scenarios_GetAvailableTeamSlotIndex()
+			
+			newGroup.teams.append( team )
+		} //if there are less players than minx total ( max queue time triggered ) some of this slots could remain unused. They have to be cleaned up. Cafe
+		//limpiar
+		
 		int maxIter = waitingPlayers.len() - 1
-
+		
+		//This iterates over all players in lobby to assign them a team ( a game has to be created )
 		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
 		for( int i = maxIter; i >= 0; i-- )
 		{
 			entity player = waitingPlayers[i]
-			//Temp !FIXME
-			if( newGroup.team1Players.len() < settings.fs_scenarios_playersPerTeam )
+
+			scenariosTeamStruct team = FS_GetBestTeamToFillForGroup( newGroup.teams )
+			if( team.players.len() < settings.fs_scenarios_playersPerTeam )
 			{
-				newGroup.team1Players.append( player )
+				team.players.append( player )
 				waitingPlayers.remove( i )
-			}
-			else if( newGroup.team2Players.len() < settings.fs_scenarios_playersPerTeam )
-			{
-				newGroup.team2Players.append( player )
-				waitingPlayers.remove( i )
-			}
-			else if( newGroup.team3Players.len() < settings.fs_scenarios_playersPerTeam && settings.fs_scenarios_teamAmount > 2 )
-			{
-				newGroup.team3Players.append( player )
-				waitingPlayers.remove( i )
-			} else
-				break //Stop iteration. Cafe
+			}else
+				break //Stop iteration. No more teams to fill. Break
 		}
 
 		#if DEVELOPER
@@ -1576,25 +1559,21 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, maxEndTime - Time() )
 		}
 
-		newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
-		newGroup.team2Index = FS_Scenarios_GetAvailableTeamSlotIndex()
-		if( settings.fs_scenarios_teamAmount > 2 )
-			newGroup.team3Index = FS_Scenarios_GetAvailableTeamSlotIndex()
-
-		array<entity> players
-		players.extend( newGroup.team1Players )
-		players.extend( newGroup.team2Players )
-		players.extend( newGroup.team3Players )
+		array<entity> players = FS_Scenarios_GetAllPlayersForGroup( newGroup )
 
 		bool success = FS_Scenarios_GroupToInProgressList( newGroup, players )
 
 		if( !success )
 		{
 			FS_Scenarios_RemoveGroup( newGroup )
-
-			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team1Index, false )
-			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team2Index, false )
-			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team3Index, false )
+			
+			foreach( team in newGroup.teams )
+			{
+				FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
+			}
+			
+			// FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team2Index, false )
+			// FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team3Index, false )
 
 			foreach( player in players )
 			{
@@ -1622,63 +1601,74 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
 		#endif
 		
+		//fix this to iterate over all group.teams teams
 		//Scenarios_CleanupMiscProperties( [ newGroup.team1Players, newGroup.team2Players, newGroup.team3Players ] )
-
-		// Setup HUD
-		foreach( player in newGroup.team1Players )
-		{
-			foreach( splayer in newGroup.team1Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
-			}
-			foreach( splayer in newGroup.team2Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
-			}
-			foreach( splayer in newGroup.team3Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
-			}
-		}
 		
-		foreach( player in newGroup.team2Players )
+		//Leave it this way to avoid issues with cards. They only support 2 or 3 teams.
+		if( settings.fs_scenarios_teamAmount == 2 || settings.fs_scenarios_teamAmount == 3 )
 		{
-			foreach( splayer in newGroup.team1Players )
+			array<entity> team1 = newGroup.teams[0].players
+			array<entity> team2 = newGroup.teams[1].players
+			array<entity> team3
+			
+			if( settings.fs_scenarios_playersPerTeam == 3 )
+				team3 = newGroup.teams[2].players
+			// Setup HUD
+			foreach( player in team1 )
 			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+				foreach( splayer in team1 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team2 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team3 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+				}
 			}
-			foreach( splayer in newGroup.team2Players )
+			
+			foreach( player in team2 )
 			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+				foreach( splayer in team1 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team2 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team3 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+				}
 			}
-			foreach( splayer in newGroup.team3Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
-			}
-		}
 
-		foreach( player in newGroup.team3Players )
-		{
-			foreach( splayer in newGroup.team1Players )
+			foreach( player in team3 )
 			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
-			}
-			foreach( splayer in newGroup.team2Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
-			}
-			foreach( splayer in newGroup.team3Players )
-			{
-				if( IsValid( player ) && IsValid( splayer ) )
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+				foreach( splayer in team1 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team2 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+				}
+				foreach( splayer in team3 )
+				{
+					if( IsValid( player ) && IsValid( splayer ) )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+				}
 			}
 		}
 
@@ -1730,34 +1720,35 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			foreach ( int i, entity player in players )
 			{
 				if( !IsValid( player ) )
-					return
+					continue
 
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )			
 				
 				int amountPlayersPerTeam
 
-				if( player.GetTeam() == newGroup.team1Index )
+				foreach( int k, scenariosTeamStruct team in newGroup.teams )
 				{
-					spawnSlot = 0
-					amountPlayersPerTeam = newGroup.team1Players.len()
+					if( player.GetTeam() == team.team )
+					{
+						spawnSlot = k
+						amountPlayersPerTeam = team.players.len()
+						break
+					}
 				}
-				else if( player.GetTeam() == newGroup.team2Index )
-				{
-					spawnSlot = 1
-					amountPlayersPerTeam = newGroup.team2Players.len()
-				}
-				else if( player.GetTeam() == newGroup.team3Index )
-				{
-					spawnSlot = 2
-					amountPlayersPerTeam = newGroup.team3Players.len()
-				}
+				
+				printw("spawning player in slot", spawnSlot, player )
 
 				if ( spawnSlot == -1 ) 
 				{
 					soloModePlayerToWaitingList( player )
 					continue
 				}
-
+				
+				if( spawnSlot >= SPAWNS_MAX_TEAMS ) //TODO change this based on read spawns, get a way to get a team id for the spawns? I'm making this because the default spawns are designed for three teams, if server puts for example 5 teams, it will read a spawn from the next location, making the ring super big (bug). Go to allSoloLocations in 1v1 to read those (temp) changes. Cafe
+				{
+					spawnSlot = 0
+				}
+				
 				if( spawnSlot != oldSpawnSlot )
 					j = 0
 				
@@ -1766,7 +1757,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 
-				if( !settings.fs_scenarios_dropshipenabled  ) //deprecated var
 				{
 					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
 					player.MovementDisable()
@@ -1793,6 +1783,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					player.SnapFeetToEyes()
 					j++
 				}
+
 				oldSpawnSlot = spawnSlot
 				//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 				Remote_CallFunction_ByRef( player, "UpdateRUITest" )
@@ -1991,53 +1982,39 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 	if( !IsValid( group ) || group.IsFinished || !group.isReady )
 		return
 
-	int aliveCount1
-	array<entity> winners
-	foreach( splayer in group.team1Players )
-	{
-		if( !IsValid( splayer ) )
-			continue
-		
-		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) ) //Give points to the downed alive players as well. So being alive and not skipping the knockdown stage will be more rewardable. Bleeding players can win the game if the remaining enemy dies to something first. Cafe
-		{
-			aliveCount1++
-			winners.append( splayer )
-		}
-	}
+	int aliveTeamCount
+	int lastTeamAlive //to count for alive 
 	
-	int aliveCount2
-	foreach( splayer in group.team2Players )
+	array<entity> winners
+	
+	foreach( scenariosTeamStruct team in group.teams )
 	{
-		if( !IsValid( splayer ) )
-			continue
-		
-		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) )
+		foreach( splayer in team.players )
 		{
-			aliveCount2++
-			winners.append( splayer )
+			if( !IsValid( splayer ) )
+				continue
+			
+			if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) ) //Give points to the downed alive players as well. So being alive and not skipping the knockdown stage will be more rewardable. Bleeding players can win the game if the remaining enemy dies to something first. Cafe
+			{
+				if( lastTeamAlive != team.team )
+					aliveTeamCount++
+				
+				lastTeamAlive = team.team
+
+				winners.append( splayer )
+			}
 		}
 	}
 
-	int aliveCount3
-	foreach( splayer in group.team3Players )
+	if( aliveTeamCount == 1 )
 	{
-		if( !IsValid( splayer ) )
-			continue
+		bool success = false
+		//todo if there are players in the winners array from different teams, return. Cafe
 		
-		if( IsAlive( splayer ) ) //&& !Bleedout_IsBleedingOut( splayer ) )
-		{
-			aliveCount3++
-			winners.append( splayer )
-		}
-	}
-
-	if( FS_Scenarios_GetAmountOfTeams() > 2 && ( aliveCount1 == 0 && aliveCount2 == 0 || aliveCount1 == 0 && aliveCount3 == 0 || aliveCount2 == 0 && aliveCount3 == 0 ) || FS_Scenarios_GetAmountOfTeams() == 2 && ( aliveCount1 == 0 || aliveCount2 == 0 ) )
-	{
 		float elapsedTime = Time() - group.startTime
 
-		if( winners.len() > 1 )
+		if( winners.len() > 1 ) //These players should be from the same team, if not, game hasn't finished
 		{
-			//it should be only one team
 			foreach( winner in winners )
 			{
 				FS_Scenarios_UpdatePlayerScore( winner, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
@@ -2068,9 +2045,11 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		return
 
 	table< int, array< entity > > groupedPlayers
-	groupedPlayers[0] <- group.team1Players
-	groupedPlayers[1] <- group.team2Players
-	groupedPlayers[2] <- group.team3Players
+	
+	foreach( int i, scenariosTeamStruct team in group.teams )
+	{
+		groupedPlayers[i] <- team.players
+	}
 
 	#if DEVELOPER
 	printt( "GIVING LOCKSTEP ORDER FOR PLAYERS GROUP", group.groupHandle, "IN REALM", group.slotIndex )
@@ -2207,11 +2186,7 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-	array<entity> players
-	players.extend( group.team1Players )
-	players.extend( group.team2Players )
-	players.extend( group.team3Players )
-	ArrayRemoveInvalid( players )
+	array<entity> players = clone FS_Scenarios_GetAllPlayersForGroup( group )
 
 	foreach( player in  players )
 	{
@@ -2230,10 +2205,7 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 	while ( group.currentRingRadius > -1 )
 	{
 		players.clear()
-		players.extend( group.team1Players )
-		players.extend( group.team2Players )
-		players.extend( group.team3Players )
-		ArrayRemoveInvalid( players )
+		players = clone FS_Scenarios_GetAllPlayersForGroup( group )
 
 		float radius = group.currentRingRadius
 
@@ -2527,28 +2499,10 @@ LocPairData function CustomSpawns()
 
 void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 {
-	foreach( Team1Player in group.team1Players )
+	//Cafe
+	foreach( player in FS_Scenarios_GetAllPlayersForGroup( group ) )
 	{
-		if( !IsValid( Team1Player ) )
-			continue 
-			
-		ScenariosPersistence_SendStandingsToClient( Team1Player )
-	}
-	
-	foreach( Team2Player in group.team2Players )
-	{
-		if( !IsValid( Team2Player ) )
-			continue 
-			
-		ScenariosPersistence_SendStandingsToClient( Team2Player )
-	}
-	
-	foreach( Team3Player in group.team3Players )
-	{
-		if( !IsValid( Team3Player ) )
-			continue
-			
-		ScenariosPersistence_SendStandingsToClient( Team3Player )
+		ScenariosPersistence_SendStandingsToClient( player )
 	}
 }
 
@@ -2582,4 +2536,36 @@ void function FS_Scenarios_OnSquadWipe( entity victim, entity attacker )
 void function FS_Scenarios_OnRatEliminated( entity victim, entity attacker )
 {
 	FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+}
+
+array<entity> function FS_Scenarios_GetAllPlayersForGroup( scenariosGroupStruct group )
+{
+	array<entity> players
+	foreach( team in group.teams )
+	{
+		ArrayRemoveInvalid( team.players )
+		foreach( player in team.players )
+		{
+			players.append( player )
+		}
+	}
+	return players
+}
+
+int function FS_SortTeamsByLessPlayersAmount( scenariosTeamStruct a, scenariosTeamStruct b )
+{
+	if ( a.players.len() > b.players.len() )
+		return 1
+	if ( a.players.len() < b.players.len() )
+		return -1
+
+	return 0
+}
+
+//This allows us to fill teams one by one instead of all members of one team first by getting the team with less players
+scenariosTeamStruct function FS_GetBestTeamToFillForGroup( array<scenariosTeamStruct> teams )
+{
+	teams.sort( FS_SortTeamsByLessPlayersAmount )
+	// printt( "selected a team with less players", teams[0].players.len() )
+	return teams[0]
 }

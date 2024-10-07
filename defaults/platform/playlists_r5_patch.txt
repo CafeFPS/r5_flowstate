@@ -21,6 +21,8 @@ playlists
 				//// General Flowstate Custom Settings										///////
 				///////////////////////////////////////////////////////////////////////////////////
 
+				enable_mirage_revive_cloak_upgrade					1
+
 				redish_highlight_los								1 //Enables redish highlight at player range
 				redish_highlight_los_range							20
 				redish_highlight_los_color							"190 20 20"
@@ -1710,11 +1712,6 @@ playlists
 				
 				Admins											"admin"
 
-				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
-				max_team_size									3
-				max_players										120
-				min_players										0
-				
 				//Skip Intros:
 				character_select_time_min		  				0
 				character_select_time_max		  				0
@@ -1767,12 +1764,19 @@ playlists
 				flowstate_disable_all_map_triggers				0
 
 				flowstate_seconds_to_wait_without_players_before_restarting		3600 // 3600 : 1 hour
-					
-				fs_scenarios_dropshipenabled 					0
+
 				fs_scenarios_start_skydiving 					1 //only works when dropship is enabled
 				fs_scenarios_maxIndividualMatchTime				300
-				fs_scenarios_playersPerTeam						3
-				fs_scenarios_teamAmount							3
+				
+				//Teams Distribution
+				fs_scenarios_playersPerTeam						3 //Max is 3 (or disable character select)
+				fs_scenarios_teamAmount							3 //This have to be defined from spawns
+
+				// don't change this
+				max_team_size									1
+				max_players										120
+				min_players										0
+								
 				fs_scenarios_ground_loot						1
 				fs_scenarios_inventory_empty					0 	// 0 will give weapons, 1 won't give wepons
 				fs_scenarios_deathboxes_enabled					1
