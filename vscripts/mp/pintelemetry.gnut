@@ -3600,7 +3600,7 @@ int function GetPlayerMetricsIndexByUID( string uid )
 	if ( uid in PlayerIdMap ) 
         return PlayerIdMap[ uid ]
 	
-    return -1
+    return InitializePlayerMetricsStructForPlayer( player )
 }
 
 #if DEVELOPER
