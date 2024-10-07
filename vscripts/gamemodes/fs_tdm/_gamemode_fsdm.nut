@@ -3204,12 +3204,12 @@ void function SimpleChampionUI()
 	}
 	else
 	{
-		// #if TRACKER //onboarding handles tracker persistence multi-server based winner
-			// FlagSet( "DeterminePreviousChampion" )
-			// FlagWait( "PreviousChampionDetermined" )
-		// #else
+		#if TRACKER //onboarding handles tracker persistence multi-server based winner
+			FlagSet( "DeterminePreviousChampion" )
+			FlagWait( "PreviousChampionDetermined" )
+		#else
 			FSDM_ReturnBestPlayers_FromChampions( GetPlayerArray() )
-		// #endif
+		#endif
 	}
 	
 	bool presentChampion = false

@@ -3543,13 +3543,12 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 		}
 	}
 	
-	int index = byID ? -1 : GetPlayerMetricsIndex( player ); //to prevent reinitialization
-	
-	if ( index != -1 ) 
+	if ( IsPlayerMetricsInitialized( player.p.UID ) ) 
 	{	
 		#if DEVELOPER
-			sqerror("Metrics already initialized for player: " + ( byID ? playerID : player.GetPlayerName() ) )
+			sqerror( "Metrics already initialized for player: " + ( byID ? playerID : player.GetPlayerName() ) )
 		#endif
+		
 		return -1
 	}
 	
@@ -3570,7 +3569,7 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 	NewMetrics.ignore_sync_flag = false
 	
 	PlayerMetricsArray.append( NewMetrics )
-	return UpdatePlayerMap( ID )	
+	return PlayerMap_Insert( ID )	
 }
 
 //////////////////////////////////////
@@ -3583,26 +3582,25 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 int function GetPlayerMetricsIndex( entity player ) 
 {	
 	if( !IsValid( player ) )
-	{
-		return -1;
-	}
+		return -1
 	
     if ( player.p.UID in PlayerIdMap ) 
-	{
         return PlayerIdMap[ player.p.UID ]
-    }
 	
-    return -1; 
+	return InitializePlayerMetricsStructForPlayer( player )
 }
 
+bool function IsPlayerMetricsInitialized( string uid )
+{
+	return ( uid in PlayerIdMap )
+}
 
 int function GetPlayerMetricsIndexByUID( string uid )
 {
 	if ( uid in PlayerIdMap ) 
-	{
         return PlayerIdMap[ uid ]
-    }
-    return -1; 
+	
+    return -1
 }
 
 #if DEVELOPER
@@ -3612,12 +3610,11 @@ int function GetPlayerMetricsIndexByUID( string uid )
 	}
 #endif 
 
-int function UpdatePlayerMap( string uid ) 
+int function PlayerMap_Insert( string uid ) 
 {
     int index = PlayerMetricsArray.len() - 1
     
-	PlayerIdMap[ uid ] <- index
-	
+	PlayerIdMap[ uid ] <- index	
 	return index
 }
 
@@ -3633,14 +3630,8 @@ void function RecordPlayerJump( entity player )
 {
 	float time = Time()
  
-    int index = GetPlayerMetricsIndex( player )
-	
-    if ( index == -1 ) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-    PlayerMetricsArray[index].JumpTimestamps.append(time)
+    int index = GetPlayerMetricsIndex( player )	
+    PlayerMetricsArray[ index ].JumpTimestamps.append(time)
 }
 
 
@@ -3649,12 +3640,6 @@ void function RecordPlayerSuperglides( entity player )
 	float time = Time()
  
     int index = GetPlayerMetricsIndex( player )
-	
-    if ( index == -1 ) 
-	{	
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
     PlayerMetricsArray[ index ].SuperglideTimestamps.append( time )
 }
 
@@ -3663,32 +3648,21 @@ void function RecordPlayerShot( entity player, int weaponSource )
 {
     int index = GetPlayerMetricsIndex( player )
 	float time = Time()
-	
-    if ( index == -1 ) 
+
+	if ( !(weaponSource in PlayerMetricsArray[ index ].WeaponShotsTimestamps) ) 
 	{
-		index = InitializePlayerMetricsStructForPlayer( player )		
-    } 
-	
-	if ( !(weaponSource in PlayerMetricsArray[index].WeaponShotsTimestamps) ) 
-	{
-		PlayerMetricsArray[ index ].WeaponShotsTimestamps[weaponSource] <- [ time ]
+		PlayerMetricsArray[ index ].WeaponShotsTimestamps[ weaponSource ] <- [ time ]
 	} 
 	else 
 	{
-		PlayerMetricsArray[ index ].WeaponShotsTimestamps[weaponSource].append( time )
+		PlayerMetricsArray[ index ].WeaponShotsTimestamps[ weaponSource ].append( time )
 	}
 }
 
 
 void function AddToPlayerKills( string playerID )
 {
-	int index = GetPlayerMetricsIndexByUID( playerID )
-	
-    if ( index == -1 ) 
-	{
-		index = InitializePlayerMetricsStructForPlayerByUID( playerID )
-    } 
-	
+	int index = GetPlayerMetricsIndexByUID( playerID )	
 	PlayerMetricsArray[ index ].kills += 1		
 }
 
@@ -3698,13 +3672,7 @@ void function AddToPlayerDeaths( entity player )
 	if( !player.IsPlayer() )
 		return 
 		
-	int index = GetPlayerMetricsIndex( player )
-	
-    if ( index == -1 ) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )	
-    } 
-	
+	int index = GetPlayerMetricsIndex( player )	
 	PlayerMetricsArray[ index ].deaths += 1		
 }
 
@@ -3712,12 +3680,6 @@ void function AddToPlayerDeaths( entity player )
 void function AddToPlayerDamage( string playerID, float damage )
 {	
 	int index = GetPlayerMetricsIndexByUID( playerID )
-	
-    if ( index == -1 ) 
-	{	
-		index = InitializePlayerMetricsStructForPlayerByUID( playerID )		
-    }
-	
 	PlayerMetricsArray[ index ].damage += damage	
 }
 
@@ -3741,11 +3703,11 @@ void function UpdateFromLocalPersistence( entity player )
 {		
 	SetIgnoreSyncFlag( player )
 	
-	player.p.IBMM_grace_period = GetPlayer_wait_time( player )
-	player.p.weapon_loadout = GetPlayer_saved_weapons( player )
-	player.p.lock1v1_setting = GetPlayer_lock1v1_setting( player )	
-	player.p.start_in_rest_setting = GetPlayer_start_in_rest_setting( player )
-	player.p.enable_input_banner = GetPlayer_enable_input_banner_setting( player )
+	player.p.IBMM_grace_period 		= GetPlayer_wait_time( player )
+	player.p.weapon_loadout 		= GetPlayer_saved_weapons( player )
+	player.p.lock1v1_setting		= GetPlayer_lock1v1_setting( player )	
+	player.p.start_in_rest_setting 	= GetPlayer_start_in_rest_setting( player )
+	player.p.enable_input_banner 	= GetPlayer_enable_input_banner_setting( player )
 	
 	player.SetPlayerNetInt( "kills", GetPlayerKills( player ) )
 	player.SetPlayerNetInt( "deaths", GetPlayerDeaths( player ) )
@@ -4024,12 +3986,7 @@ void function UpdateRoundStats_GlobalsCarryOver()
 void function SetIgnoreSyncFlag( entity player )
 {
 	int index = GetPlayerMetricsIndex( player )
-	
-	if( index == -1 ) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
+
 	try
 	{
 		PlayerMetricsArray[ index ].ignore_sync_flag = true;
@@ -4056,12 +4013,7 @@ void function SetPlayerLeftFlag( entity player )
 	//we double set/check this function 
 	//to make sure leaving player has flag set
 	int index = GetPlayerMetricsIndex( player )
-	
-    if ( index == -1 ) 
-	{
-		InitializePlayerMetricsStructForPlayer( player )				
-    }
-	
+
 	index = GetPlayerMetricsIndex( player )
 	
 	if ( index != -1 ) 

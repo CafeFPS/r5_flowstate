@@ -1140,6 +1140,8 @@ global struct ServerPlayerStruct
 	
 	//Cloak
 	float lastCloakTime
+	
+	int forceAutoSprintCount
 }
 
 global struct ChallengeScore

@@ -1092,7 +1092,7 @@ void function StatsHook_GameEnd()
 #if SERVER
 void function StatsHook_OnPlayerConnected( entity player )
 {
-	PIN_AddPlayer( player ) //Called in pin init, since we don't use retail stats system due to varying game modes, rules, and conditions + StatsHook_OnPlayerConnected is not called. ~mkos
+	//PIN_AddPlayer( player ) //Called in pin init, since we don't use retail stats system due to varying game modes, rules, and conditions + StatsHook_OnPlayerConnected is not called. ~mkos
 
 	// Triggered in lobby and maps
 	int installTime = expect int( player.GetPersistentVar( "installUnixTime" ) )

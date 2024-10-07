@@ -4750,9 +4750,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		printt( "FS_Scenarios_GiveWeaponsToGroup" )
 	#endif
 
-	string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
-	string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
-
 	if( players.len() == 0 )
 		return
 
@@ -4775,6 +4772,9 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 
 		if( !FS_Scenarios_GetInventoryEmptyEnabled() )
 		{
+			string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+			string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+		
 			EquipHostSetInventoryAttachments( player )
 			GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 			GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )

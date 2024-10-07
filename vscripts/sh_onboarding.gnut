@@ -138,6 +138,8 @@ void function SV_CL_Onboarding_Init()
 		#if TRACKER
 			if( Flowstate_IsTrackerSupportedMode() && bLog() )
 				AddCallback_OnBatchStatsLoaded( Tracker_SetChampionOnPersistenceLoad )
+			else 
+				FlagSet( "PreviousChampionDetermined" )
 		#endif
 
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
