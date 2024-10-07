@@ -1640,8 +1640,9 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 					switch( badgeIndex ) //test itemflavors
 					{
 						case 0:
-						badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00097219464" ) )
-						// overrideDataIntegerOrNull = 1
+						if( IsValidPlayerForR5RDevBadge( FromEHI( handle.currentOwnerEHI ) ) )
+							badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00097219464" ) )
+						
 						break
 
 						case 1:
@@ -1843,6 +1844,23 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 	}
 
 	handle.updateQueued = false
+}
+
+bool function IsValidPlayerForR5RDevBadge( entity player )
+{
+	if( !IsValid( player ) )
+		return false
+	
+	
+	switch( player.GetPlatformUID() )
+	{
+		case "1007946891142":
+		case "1011657326453": 
+		
+		return true
+	}
+	
+	return false
 }
 #endif
 
