@@ -55,6 +55,7 @@ global function Tracker_FetchPlayerData
 global function Tracker_SavePlayerData
 global function SetAfkToRest
 global function ArrayRemoveBot //todo move to code
+global function ClientCommand_RequestStat
 
 #if TRACKER
 	global const bool STUB = false
@@ -1414,6 +1415,8 @@ void function PIN_Init()
 	Tracker_Init()
 	PlayerDataCallbacks_Init()
 	WeaponSettings_Init()
+	
+	AddClientCommandCallbackNew( "requestStat", ClientCommand_RequestStat )
 	
 	if( !bRunTracker )
 		file.LogOn = false
@@ -3542,8 +3545,12 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 			byID = true 
 		}
 	}
+	else 
+	{
+		playerID = player.p.UID
+	}
 	
-	if ( IsPlayerMetricsInitialized( player.p.UID ) ) 
+	if ( !empty( playerID ) && IsPlayerMetricsInitialized( playerID ) ) 
 	{	
 		#if DEVELOPER
 			sqerror( "Metrics already initialized for player: " + ( byID ? playerID : player.GetPlayerName() ) )
@@ -5196,6 +5203,11 @@ float function Tracker_DecideTimeRemaining()
 
 void function SetAfkToRest( bool setting ){ file.afk_to_rest_enabled = setting }
 bool function bAfkToRest(){ return file.afk_to_rest_enabled }
+
+void function ClientCommand_RequestStat( entity player, array<string> args )
+{
+	
+}
 
 #if HAS_TRACKER_DLL
 //do nothing
