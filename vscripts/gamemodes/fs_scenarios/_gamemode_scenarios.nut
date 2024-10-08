@@ -1505,10 +1505,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		
 		// Hay suficientes jugadores para crear un equipo?
 		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) && !forceGame )
-		{
-		
 			continue	
-		}
 
 		scenariosGroupStruct newGroup //Creates a new game
 		newGroup.isForcedGame = forceGame //Todo something with e.e. Cafe
@@ -1539,6 +1536,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		waitingPlayers.sort( FS_SortPlayersByPriority )
 
+
 		//Create required team structs and request team slot
 		for( int i = 0; i < settings.fs_scenarios_teamAmount; i++ )
 		{
@@ -1549,8 +1547,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			newGroup.teams.append( team )
 		} 
 
-		//Limpiar equipos sobrantes
-		int CALCULATED_TEAMS = int( ceil( (waitingPlayers.len() / settings.fs_scenarios_playersPerTeam) + 0.5 ) )
+
+		//Limpiar equipos sobrantes.
+		int CALCULATED_TEAMS = maxint( int( ceil( ( minint( waitingPlayers.len(), ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) ) / settings.fs_scenarios_playersPerTeam ) + 0.5 ) ), settings.fs_scenarios_teamAmount ) //Cafe was here
 		
 		for( int i = newGroup.teams.len() - 1; i >= 0 ; i-- )
 		{
@@ -1561,11 +1560,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				newGroup.teams.remove( i )
 		}
 
-		int maxIter = waitingPlayers.len() - 1
-		
+	
 		//This iterates over all players in lobby to assign them a team ( a game has to be created )
 		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
-		for( int i = maxIter; i >= 0 ; i-- )
+		for( int i = waitingPlayers.len() - 1; i >= 0 ; i-- )
 		{
 			entity player = waitingPlayers[i]
 
