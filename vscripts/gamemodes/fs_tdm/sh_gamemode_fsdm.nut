@@ -1999,7 +1999,10 @@ void function RedishThingo_GetPlayersToHighlight( entity player, array<entity> o
 			continue
 		
 		if ( !IsEnemyTeam( playerTeam, otherPlayer.GetTeam() ) )
+		{
+			outPlayersToNotHighlight.append( otherPlayer )
 			continue
+		}
 		
 		if( StatusEffect_GetSeverity( otherPlayer, eStatusEffect.smokescreen ) > 0.0 )
 		{
