@@ -89,6 +89,9 @@ global function SURVIVAL_Loot_GetByType_InLevel
 global function SURVIVAL_Loot_GetByType_FixedTier
 global function SURVIVAL_Loot_DisableNetworkDistanceCullingManaged
 global function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged
+global function SURVIVAL_ConsolidateInventoryItems
+global function SURVIVAL_ClearExcessInventoryItems
+
 #if DEVELOPER
 global function Dev_GetNextBotLootWeapon
 global function Dev_SpawnBotWithIncapShieldToView
@@ -998,16 +1001,20 @@ bool function CodeCallback_WeaponModCommandCheckMods( entity player, entity weap
 		"akimbo",
 		"vertical_firestar",
 		"double_link_mod",
-		"altfire_selectfire",
 		"altfire",
-		"altfire_highcal",
-		"altfire_double_tap",
-		"hopup_paintball",
-		"choke"
 	]
 
 	if ( alwaysAllowedMods.contains( mod ) )
 		return true
+
+	if ( ToggleModNeedsAttachments( mod ) )
+	{
+#if DEV
+		return true //Allows debug command 'weapon_mod' to apply attachment-based mods
+#else
+		return ToggleModHasRequiredAttachments( mod, weapon.GetMods() )
+#endif
+	}
 
 	if ( Consumable_IsValidModCommand( player, weapon, mod, isAdd ) )
 		return true
@@ -1031,14 +1038,18 @@ void function SURVIVAL_Loot_DisableNetworkDistanceCullingManaged( entity loot )
 	if ( loot in file.lootNetworkDistanceCullingState )
 		file.lootNetworkDistanceCullingState[ loot ] += 1
 	else
-		file.lootNetworkDistanceCullingState[ loot ] <- 0
+		file.lootNetworkDistanceCullingState[ loot ] <- 1
 
 	loot.SetNetworkDistanceCull( false )
 }
 
 void function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged( entity loot )
 {
-	Assert ( loot in file.lootNetworkDistanceCullingState, "Loot is not in managed distance culling table." )
+	if( !(loot in file.lootNetworkDistanceCullingState) )
+	{
+		return
+	}
+
 	file.lootNetworkDistanceCullingState[ loot ] -= 1
 
 	if ( file.lootNetworkDistanceCullingState[ loot ] <= 0 )
@@ -1053,6 +1064,9 @@ array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxT
 	array<LootData> lootOfType = []
 	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
 	{
+		if ( !IsLootTypeValid( lootData.lootType ) )
+			continue
+
 		if ( lootData.lootType != lootType )
 			continue
 
@@ -1628,17 +1642,32 @@ array<ConsumableInventoryItem> function ClonePlayerInventory( array<ConsumableIn
 
 array<ConsumableInventoryItem> function SURVIVAL_GetPlayerInventory( entity player )
 {
-	#if(false)
-
-
-
-
-#endif
+	#if SERVER
+		if ( player.p.cachedInventory != null )
+		{
+			return ClonePlayerInventory( expect array<ConsumableInventoryItem>( player.p.cachedInventory ) )
+		}
+	#endif
 
 	array<ConsumableInventoryItem> playerInventory = player.ConsumableInventory_Get()
 
 	return playerInventory
 }
+
+array< string > function SURVIVAL_ConsumableInventoryItems_To_ItemRefs( array< ConsumableInventoryItem > itemsArray )
+{
+	array< string > result
+	foreach( item in itemsArray )
+	{
+		LootData lData = SURVIVAL_Loot_GetLootDataByIndex( item.type )
+		for( int i = 0; i < item.count; i++ )
+		{
+			result.append( lData.ref )
+		}
+	}
+	return result
+}
+
 
 int function SURVIVAL_GetCountToFillStack( entity player, string ref )
 {
@@ -1769,18 +1798,14 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 	return numAdded
 }
 
-void function SURVIVAL_RemoveFromPlayerInventory( entity player, string ref, int count = 1 )
+
+void function SURVIVAL_RemoveFromInventory( entity player, array<ConsumableInventoryItem> inventory, LootData itemLootFlav, int itemCount )
 {
-	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	int type = data.index
-	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-
-	int numToRemove = count
-
-	for ( int i=playerInventory.len()-1; i>=0; i-- )
+	int numToRemove = itemCount
+	for ( int i = inventory.len() - 1; i >= 0; i-- )
 	{
-		ConsumableInventoryItem invItem = playerInventory[i]
-		if ( invItem.type == type )
+		ConsumableInventoryItem invItem = inventory[i]
+		if ( invItem.type == itemLootFlav.index )
 		{
 			int numToRemoveHere = minint( invItem.count, numToRemove )
 			numToRemove -= numToRemoveHere
@@ -1788,17 +1813,25 @@ void function SURVIVAL_RemoveFromPlayerInventory( entity player, string ref, int
 
 			if ( invItem.count == 0 )
 			{
-				playerInventory.remove( i )
+				inventory.remove( i )
 			}
 
 			if ( numToRemove == 0 )
 				break
 		}
 	}
+	SURVIVAL_ConsolidateInventoryItems( player, inventory )
+}
+
+
+void function SURVIVAL_RemoveFromPlayerInventory( entity player, string ref, int count = 1 )
+{
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	SURVIVAL_RemoveFromInventory( player, playerInventory, data, count )
 
 	#if SERVER
-		playerInventory = SURVIVAL_ConsolidateInventoryItems( player, playerInventory )
-
 		SetPlayerInventory( player, playerInventory )
 
 		if ( data.lootType == eLootType.HEALTH )
@@ -1814,13 +1847,13 @@ void function SURVIVAL_RemoveFromPlayerInventory( entity player, string ref, int
 }
 
 
-array<ConsumableInventoryItem> function SURVIVAL_ConsolidateInventoryItems( entity player, array<ConsumableInventoryItem> playerInventory )
+void function SURVIVAL_ConsolidateInventoryItems( entity player, array<ConsumableInventoryItem> inventory )
 {
 	int INVENTORY_EMPTY = SURVIVAL_Loot_GetLootDataTable().len()
 
-	for ( int i=0; i<playerInventory.len()-1; i++ )
+	for ( int i = 0; i < inventory.len() - 1; i++ )
 	{
-		ConsumableInventoryItem invItem1 = playerInventory[i]
+		ConsumableInventoryItem invItem1 = inventory[i]
 
 		if ( invItem1.type == INVENTORY_EMPTY )
 			continue
@@ -1828,12 +1861,12 @@ array<ConsumableInventoryItem> function SURVIVAL_ConsolidateInventoryItems( enti
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem1.type )
 		int slotCount = SURVIVAL_GetInventorySlotCountForPlayer( player, data )
 
-		if ( slotCount == invItem1.count || invItem1.count == 0 )
+		if ( slotCount <= invItem1.count || invItem1.count == 0 )
 			continue
 
-		for ( int j=i+1; j<playerInventory.len(); j++ )
+		for ( int j = i + 1; j < inventory.len(); j++ )
 		{
-			ConsumableInventoryItem invItem2 = playerInventory[j]
+			ConsumableInventoryItem invItem2 = inventory[j]
 
 			if ( invItem1.type == invItem2.type )
 			{
@@ -1848,25 +1881,42 @@ array<ConsumableInventoryItem> function SURVIVAL_ConsolidateInventoryItems( enti
 		}
 	}
 
-	for ( int i=playerInventory.len()-1; i>=0; i-- )
+	for ( int i = inventory.len() - 1; i >= 0; i-- )
 	{
-		ConsumableInventoryItem invItem = playerInventory[i]
+		ConsumableInventoryItem invItem = inventory[i]
 
 		if ( invItem.count == 0 )
 		{
-			playerInventory.remove( i )
+			inventory.remove( i )
 		}
 	}
-
-	return playerInventory
 }
+
+void function SURVIVAL_ClearExcessInventoryItems( entity player, array<ConsumableInventoryItem> inventory )
+{
+	int INVENTORY_EMPTY = SURVIVAL_Loot_GetLootDataTable().len()
+
+	for ( int i = 0; i < inventory.len(); i++ )
+	{
+		ConsumableInventoryItem item = inventory[i]
+
+		if ( item.type == INVENTORY_EMPTY )
+			continue
+
+		LootData data = SURVIVAL_Loot_GetLootDataByIndex( item.type )
+		int slotCount = SURVIVAL_GetInventorySlotCountForPlayer( player, data )
+
+		if( item.count > slotCount )
+			item.count = slotCount
+	}
+}
+
 
 #if CLIENT || SERVER
 
 #if SERVER
 void function SetPlayerInventory( entity player, array<ConsumableInventoryItem> playerInventory )
 {
-	//printt("SetPlayerInventory")
 	//playerInventory.sort( SortByPriorityThenTier ) // SortByInventoryIndexAndCount )
 
 	foreach ( index, item in playerInventory )
@@ -1874,9 +1924,31 @@ void function SetPlayerInventory( entity player, array<ConsumableInventoryItem> 
 		item.slot = index
 	}
 
+	player.p.cachedInventory = clone playerInventory
+
+	thread _SetPlayerInventory( player )
+}
+
+void function _SetPlayerInventory( entity player )
+{
+	Signal( player, "_SetPlayerInventory" )
+	EndSignal( player, "_SetPlayerInventory" )
+	EndSignal( player, "OnDestroy" )
+
+	WaitEndFrame()
+
+	Assert( player.p.cachedInventory != null )
+
+	if ( player.p.cachedInventory == null )
+		return
+
+	array<ConsumableInventoryItem> playerInventory = expect array<ConsumableInventoryItem>( player.p.cachedInventory )
+
 	player.ConsumableInventory_Set( playerInventory )
 
-	foreach( func in file.inventoryChangeCallbacks )
+	player.p.cachedInventory = null
+
+	foreach ( func in file.inventoryChangeCallbacks )
 		func( player, playerInventory )
 }
 
@@ -2062,7 +2134,7 @@ int function CompareHealData( KitHealData a, KitHealData b )
 	else if ( b.totalAppliedHeal > 0 && a.totalAppliedHeal == 0 )
 		return 1
 
-	if ( !a.possibleShieldAdd && !b.possibleShieldAdd )
+	if ( a.possibleShieldAdd == 0 && b.possibleShieldAdd == 0 )
 	{
 		if ( a.possibleHealthAdd > b.possibleHealthAdd )
 			return -1
@@ -2150,45 +2222,35 @@ string function SURVIVAL_GetHighlightForTier( int tier, bool longerHighlightDist
 	return result
 }
 
-array<entity> function SURVIVAL_GetPrimaryWeapons( entity player )
-{
-	array<entity> results
-
-	const int[2] PRIMARY_SLOTS_TO_CHECK = [WEAPON_INVENTORY_SLOT_PRIMARY_0, WEAPON_INVENTORY_SLOT_PRIMARY_1]
-	foreach( int slot in PRIMARY_SLOTS_TO_CHECK )
-	{
-		entity weapon = player.GetNormalWeapon( slot )
-		if ( !IsValid( weapon ) )
-			continue
-			
-		Assert( SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
-
-		results.append( weapon )
-	}
-
-	return results
-}
-
-array<entity> function SURVIVAL_GetPrimaryWeaponsSorted( entity player )
+array<entity> function GetPrimaryWeapons_( entity player, bool doSorted )
 {
 	array<entity> results
 
 	entity latestMain = player.GetLatestPrimaryWeaponForIndexZeroOrOne( eActiveInventorySlot.mainHand )
 	const int[2] PRIMARY_SLOTS_TO_CHECK = [WEAPON_INVENTORY_SLOT_PRIMARY_0, WEAPON_INVENTORY_SLOT_PRIMARY_1]
-	foreach( int slot in PRIMARY_SLOTS_TO_CHECK )
+	foreach ( int slot in PRIMARY_SLOTS_TO_CHECK )
 	{
 		entity weapon = player.GetNormalWeapon( slot )
 		if ( !IsValid( weapon ) )
 			continue
-		Assert( SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
+		Assert( SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ), format( "Weapon '%s' is in primary slot #%d, but is not a valid loot ref.", weapon.GetWeaponClassName(), slot ) )
 
-		if ( weapon == latestMain )
+		if ( doSorted && (weapon == latestMain) )
 			results.insert( 0, weapon )
 		else
 			results.append( weapon )
 	}
 
 	return results
+}
+array<entity> function SURVIVAL_GetPrimaryWeapons( entity player )
+{
+	return GetPrimaryWeapons_( player, false )
+}
+
+array<entity> function SURVIVAL_GetPrimaryWeaponsSorted( entity player )
+{
+	return GetPrimaryWeapons_( player, true )
 }
 
 bool function SURVIVAL_CanReplaceWeapon( entity player, entity prop )
@@ -2901,6 +2963,9 @@ bool function SURVIVAL_IsLootRefAnUpgrade( entity player, LootData lootData )
 
 bool function SURVIVAL_IsLootAnUpgrade( entity player, entity lootItem, LootData lootData, int lootContext )
 {
+	if ( !IsValid( lootItem ) )
+		return false
+	
 	bool irrelevant = SURVIVAL_IsLootIrrelevant( player, lootItem, lootData, lootContext )
 
 	if ( irrelevant )
@@ -3764,7 +3829,19 @@ bool function SurvivalLoot_PlayerLookingAtLine( entity player, entity ent )
 	expect vector( pointOnLinePlane )
 
 	if ( pointOnLinePlane.z > topPos.z )
-		return false
+	{
+		vector entToViewVector = viewPos - entPos
+		if( DotProduct( entToViewVector, planeAngles ) < 0 )
+			return false
+
+		vector viewPos2D = viewPos
+		viewPos2D.z = 0
+		vector entPos2D = entPos
+		entPos2D.z = 0
+		float entBehindOffset2DSqr = 400
+		if( DistanceSqr( viewPos2D, entPos2D ) > entBehindOffset2DSqr )
+			return false
+	}
 
 	bool isMainWeapon = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() ).lootType == eLootType.MAINWEAPON
 	bool lookingBelow = pointOnLinePlane.z < botPos.z
@@ -3799,8 +3876,9 @@ bool function SurvivalLoot_PlayerLookingAtLine( entity player, entity ent )
 	vector pointOnLine = GetClosestPointOnLineSegment( topPos, botPos, pointOnLinePlane )
 
 	float minDist = 14.0
+	float maxAngle = 80
 
-	if ( Distance( pointOnLinePlane, pointOnLine ) > minDist )
+	if ( viewAngles.x <= maxAngle && Distance( pointOnLinePlane, pointOnLine ) > minDist )
 		return false
 
 	//DebugDrawSphere( pointOnLine, 1.0, 255, 0, 0, true, 0.1 )
@@ -3869,9 +3947,15 @@ table< string, array<string> > function GetToggleModsRequiredAttachmentsList()
 {
 	return file.toggleModsRequiredAttachments
 }
+
+bool function ToggleModNeedsAttachments( string modCommand )
+{
+	return modCommand in GetToggleModsRequiredAttachmentsList()
+}
+
 bool function ToggleModHasRequiredAttachments( string toggleMod, array<string> mods )
 {
-	if ( !(toggleMod in GetToggleModsRequiredAttachmentsList()) )                                                             
+	if ( !(toggleMod in GetToggleModsRequiredAttachmentsList()) )    //not having any attachment requirements counts as a pass
 		return true
 
 	array<string> attachmentMods = file.toggleModsRequiredAttachments[ toggleMod ]

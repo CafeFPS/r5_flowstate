@@ -1143,6 +1143,8 @@ global struct ServerPlayerStruct
 	float lastCloakTime
 	
 	int forceAutoSprintCount
+	
+	array<ConsumableInventoryItem> ornull cachedInventory
 }
 
 global struct ChallengeScore

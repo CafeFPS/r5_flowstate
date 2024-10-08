@@ -555,13 +555,13 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_SINGLE", true )
 		}
 	}
-	// else if ( weapon.HasMod( "hopup_energy_choke" ) )
-	// {
-		 // if ( weapon.HasMod( "choke" ) )
-			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
-		 // else
-			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
-	// }
+	 else if ( weapon.HasMod( "hopup_energy_choke" ) )
+	 {
+		  if ( weapon.HasMod( "choke" ) )
+			  SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
+		  else
+			  SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
+	}
 	else
 	{
 		if ( IsWeaponInSingleShotMode( weapon ) )

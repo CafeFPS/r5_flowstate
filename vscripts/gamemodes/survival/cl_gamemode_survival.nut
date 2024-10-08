@@ -1878,11 +1878,11 @@ void function ToggleFireSelect( entity player )
 		return
 	}
 	
-	if( DoesModExist( weapon, "choke" ) )
-	{
-		WeaponModCommand_Toggle( "choke" )
-		return
-	}
+	// if( DoesModExist( weapon, "choke" ) )
+	// {
+		// WeaponModCommand_Toggle( "choke" )
+		// return
+	// }
 }
 
 
