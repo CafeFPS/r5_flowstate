@@ -245,15 +245,13 @@ void function RemoteFunctions_Init_Begin()
 		Remote_RegisterClientFunction( "ServerCallback_SpawnClientSideDynamicLight", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 255, "float", 0.0, 32000.0, 8, "float", 0.0, 32000.0, 8 )
 
 	// R5R Sword
-	if( Playlist() != ePlaylists.fs_scenarios ) //temp change need a SNVT_TIME SNDC_PLAYER_EXCLUSIVE slot for scenarios
-	{
-		RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
-		RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )
-		Remote_RegisterClientFunction( "ServerCallback_TitanSword_SuperReady", "entity" )
-		Remote_RegisterClientFunction( "ServerCallback_StopDash" )
-		Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
-	}
-
+	RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+	if( Playlist() != ePlaylists.fs_scenarios )
+		RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )//temp change need a SNVT_TIME SNDC_PLAYER_EXCLUSIVE slot for scenarios
+	Remote_RegisterClientFunction( "ServerCallback_TitanSword_SuperReady", "entity" )
+	Remote_RegisterClientFunction( "ServerCallback_StopDash" )
+	Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
+	
 	// Falling Forever Custom Timer
 	if( Playlist() == ePlaylists.fs_fallingforever )
 		Remote_RegisterClientFunction("ServerCallback_SetTimer", "int", 0, INT_MAX)
