@@ -2438,7 +2438,8 @@ void function UpdateButtonStates()
 				int playerPickIndex = player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" )
 				if ( playerPickIndex <= MAX_TEAM_FOCUS_INDEX )
 				{
-					RuiSetBool( buttonRui, "teamFocused" + playerPickIndex, true )
+					if( Playlist() != ePlaylists.fs_scenarios )
+						RuiSetBool( buttonRui, "teamFocused" + playerPickIndex, true )
 					RuiSetInt( buttonRui, "teamColorIndex" + playerPickIndex, player.GetTeamMemberIndex() )
 				}
 			}

@@ -1465,6 +1465,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		
 		foreach ( playerHandle, eachPlayerStruct in waitingPlayersShuffledTable )
 		{	
+			if( waitingPlayers.len() >= ( settings.fs_scenarios_teamAmount * settings.fs_scenarios_playersPerTeam ) ) //No need to add more than the max total players per game
+				break
+			
 			if( !IsValid(eachPlayerStruct) )
 				continue				
 			
@@ -1491,7 +1494,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			waitingPlayers.append( player )
 		}
 		
-		bool forceGame = playersThatForceMatchmaking >= settings.fs_scenarios_teamAmount && playersThatForceMatchmaking == waitingPlayers.len() //playersThatForceMatchmaking == waitingPlayers.len() is to do the force logic only when there are barely players in the server. If there are games runnings, should be fast enough for players to wait in the timeout. Cafe
+		bool forceGame = playersThatForceMatchmaking >= settings.fs_scenarios_teamAmount && playersThatForceMatchmaking >= FS_1v1_GetPlayersWaiting().len() 
+		//if there a 3 players and they are two seconds left to start and a player joins, this will make wait for the new player to reach the time again ( 30s )
+		//playersThatForceMatchmaking == waitingPlayers.len() is to do the force logic only when there are barely players in the server. If there are games runnings, should be fast enough for players to wait in the timeout. Cafe
 		
 		#if DEVELOPER
 		if( forceGame )
@@ -1542,23 +1547,36 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			team.team = FS_Scenarios_GetAvailableTeamSlotIndex()
 			
 			newGroup.teams.append( team )
-		} //if there are less players than minx total ( max queue time triggered ) some of this slots could remain unused. They have to be cleaned up. Cafe
-		//limpiar
+		} 
+
+		//Limpiar equipos sobrantes
+		int CALCULATED_TEAMS = int( ceil( (waitingPlayers.len() / settings.fs_scenarios_playersPerTeam) + 0.5 ) )
 		
+		for( int i = newGroup.teams.len() - 1; i >= 0 ; i-- )
+		{
+			if( i < CALCULATED_TEAMS )
+				continue
+			
+			if( newGroup.teams[i].players.len() == 0 )
+				newGroup.teams.remove( i )
+		}
+
 		int maxIter = waitingPlayers.len() - 1
 		
 		//This iterates over all players in lobby to assign them a team ( a game has to be created )
 		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
-		for( int i = maxIter; i >= 0; i-- )
+		for( int i = maxIter; i >= 0 ; i-- )
 		{
 			entity player = waitingPlayers[i]
 
 			scenariosTeamStruct team = FS_GetBestTeamToFillForGroup( newGroup.teams )
+			
 			if( team.players.len() < settings.fs_scenarios_playersPerTeam )
 			{
 				team.players.append( player )
 				waitingPlayers.remove( i )
-			}else
+			}
+			else
 				break //Stop iteration. No more teams to fill. Break
 		}
 
