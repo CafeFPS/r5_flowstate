@@ -334,6 +334,12 @@
 			"lower_time"                               "0.4"
 			"raise_time"                               "0.4"
 		}
+		
+		"9k"
+		{
+			"spread_air_hip"	"0"
+			"spread_air_ads"  	"0"
+		}
 	}
 
 	// RUI

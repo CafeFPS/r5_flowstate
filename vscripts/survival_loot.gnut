@@ -2462,7 +2462,13 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 	// }
 	if( Gamemode() == eGamemodes.fs_duckhunt && newWeapon.GetWeaponClassName() == "mp_weapon_sniper" )
 		newWeapon.AddMod("duckhunt")
-
+		
+	if( Playlist() == ePlaylists.fs_9k && newWeapon.GetWeaponClassName() == "mp_weapon_sniper" )
+		newWeapon.AddMod("9k")
+	
+	if( weaponclass == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
+		weaponNew.AddMod( "noauto" )
+	
 	if( InfiniteAmmoEnabled() && newWeapon.UsesClipsForAmmo() ) //Flowstate infinite ammo
 	{
 		int clipCount = pickup.GetClipCount()
