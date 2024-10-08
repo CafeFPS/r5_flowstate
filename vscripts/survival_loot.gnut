@@ -2466,8 +2466,8 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 	if( Playlist() == ePlaylists.fs_9k && newWeapon.GetWeaponClassName() == "mp_weapon_sniper" )
 		newWeapon.AddMod("9k")
 	
-	if( weaponclass == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
-		weaponNew.AddMod( "noauto" )
+	if( newWeapon.GetWeaponClassName() == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
+		newWeapon.AddMod( "noauto" )
 	
 	if( InfiniteAmmoEnabled() && newWeapon.UsesClipsForAmmo() ) //Flowstate infinite ammo
 	{

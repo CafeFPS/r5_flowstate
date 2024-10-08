@@ -2004,7 +2004,7 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 			if( weaponclass == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
 				weaponNew.AddMod( "noauto" )
 			
-			if( newWeapon.GetWeaponClassName() == "mp_weapon_sniper" && Playlist() == ePlaylists.fs_9k )
+			if( weaponNew.GetWeaponClassName() == "mp_weapon_sniper" && Playlist() == ePlaylists.fs_9k )
 				weaponNew.AddMod("9k")
 		}
 		else if(IsValid(player) && isGungame)

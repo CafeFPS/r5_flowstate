@@ -2104,12 +2104,28 @@ void function ChangeFullMapZoomFactor( float delta )
 }
 
 
+bool function FS_ShouldHookMapKey() 
+{
+	if( Flowstate_IsHaloMode() && GetGameState() == eGameState.Playing
+		|| Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing 
+		|| Playlist() == ePlaylists.fs_1v1 
+		|| Playlist() == ePlaylists.fs_lgduels_1v1  
+		|| Playlist() == ePlaylists.fs_snd 
+		|| Playlist() == ePlaylists.fs_dm
+		|| Playlist() == ePlaylists.fs_dm_fast_instagib
+		// || Playlist() == ePlaylists.fs_scenarios
+	)
+		return true
+	
+	return false
+}
+
 void function Sur_OnScoreboardShow()
 {
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	if( Flowstate_IsHaloMode() && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd || Playlist() == ePlaylists.fs_scenarios )
+	if( FS_ShouldHookMapKey() )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2141,12 +2157,11 @@ void function Sur_OnScoreboardShow()
 	file.mapContextPushed = true
 }
 
-
 void function Sur_OnScoreboardHide()
 {
 	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 
-	if( Flowstate_IsHaloMode() && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd )
+	if( FS_ShouldHookMapKey() )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2924,7 +2939,7 @@ void function OpenSurvivalMenu()
 void function PROTO_OpenInventoryOrSpecifiedMenu( entity player )
 {
 	HideScoreboard()
-	OpenSurvivalInventory( player )
+	// OpenSurvivalInventory( player )
 }
 
 
