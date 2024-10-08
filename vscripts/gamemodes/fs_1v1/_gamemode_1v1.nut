@@ -2580,7 +2580,7 @@ void function soloModePlayerToWaitingList( entity player )
 
 		Signal(player, "InterruptSyncedMelee")
 		
-		player.p.scenariosTimePlayerEnteredInLobby = Time()
+		player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.

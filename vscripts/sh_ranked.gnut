@@ -778,11 +778,11 @@ void function SetRankedIcon( int score, int ladderPos )
 	RuiSetBool( rui, "showRanked", IsRankedGame() ) //
 	PopulateRuiWithRankedBadgeDetails( rui, score, ladderPos )
 	
-	if ( GetLocalViewPlayer() != null  )
-	{
-		RuiTrackInt( rui, "inMatchRankScoreProgress", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "inMatchRankScoreProgress" ) )
-		RuiTrackInt( rui, "rankedKillAssistMultiplier", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "rankedKillAssistMultiplier" ) )
-	}
+	// if ( GetLocalViewPlayer() != null  )
+	// {
+		// RuiTrackInt( rui, "inMatchRankScoreProgress", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "inMatchRankScoreProgress" ) )
+		// RuiTrackInt( rui, "rankedKillAssistMultiplier", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "rankedKillAssistMultiplier" ) )
+	// }
 }
 #endif
 

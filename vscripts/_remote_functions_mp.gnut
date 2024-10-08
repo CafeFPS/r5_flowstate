@@ -245,11 +245,14 @@ void function RemoteFunctions_Init_Begin()
 		Remote_RegisterClientFunction( "ServerCallback_SpawnClientSideDynamicLight", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 255, "float", 0.0, 32000.0, 8, "float", 0.0, 32000.0, 8 )
 
 	// R5R Sword
-	RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
-	RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )
-	Remote_RegisterClientFunction( "ServerCallback_TitanSword_SuperReady", "entity" )
-	Remote_RegisterClientFunction( "ServerCallback_StopDash" )
-	Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
+	if( Playlist() == ePlaylists.fs_scenarios ) //temp change need a SNVT_TIME SNDC_PLAYER_EXCLUSIVE slot for scenarios
+	{
+		RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+		RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )
+		Remote_RegisterClientFunction( "ServerCallback_TitanSword_SuperReady", "entity" )
+		Remote_RegisterClientFunction( "ServerCallback_StopDash" )
+		Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
+	}
 
 	// Falling Forever Custom Timer
 	if( Playlist() == ePlaylists.fs_fallingforever )
@@ -311,6 +314,7 @@ void function RemoteFunctions_Init_Begin()
 				RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_gameStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+				RegisterNetworkedVariable( "FS_Scenarios_timePlayerEnteredInLobby", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 			
 				Scenarios_RegisterNetworking() //mkos
 			}
@@ -812,8 +816,8 @@ void function RemoteFunctions_Init_Begin()
 
 	RegisterNetworkedVariable( "playerObservedCount", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 
-	RegisterNetworkedVariable( "inMatchRankScoreProgress", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, -1 )
-	RegisterNetworkedVariable( "rankedKillAssistMultiplier", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 10 )
+	// RegisterNetworkedVariable( "inMatchRankScoreProgress", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, -1 )
+	// RegisterNetworkedVariable( "rankedKillAssistMultiplier", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 10 )
 
 	#if CLIENT
 		ShRanked_RegisterNetworkFunctions()
@@ -948,7 +952,6 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "reviveEndTime", SNDC_PLAYER_GLOBAL, SNVT_TIME, 0.0 )
 	RegisterNetworkedVariable( "reviveType", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
 	RegisterNetworkedVariable( "revivePlayerHealer", SNDC_PLAYER_GLOBAL, SNVT_ENTITY )
-	RegisterNetworkedVariable( "xpMultiplier", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 0 )
 	RegisterNetworkedVariable( "tutorialContext", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, -1 )
 	RegisterNetworkedVariable( "spectatorTargetCount", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 

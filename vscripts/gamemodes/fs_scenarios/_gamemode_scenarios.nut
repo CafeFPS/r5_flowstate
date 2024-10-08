@@ -1019,7 +1019,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 
 		player.p.scenariosTeamsMatched = 0
 		
-		player.p.scenariosTimePlayerEnteredInLobby = -1
+		player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", -1 )
 		
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
@@ -1485,7 +1485,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
 				continue
 			
-			if( Time() - player.p.scenariosTimePlayerEnteredInLobby > settings.fs_scenarios_max_queuetime )
+			if( Time() - player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) > settings.fs_scenarios_max_queuetime )
 				playersThatForceMatchmaking++
 			
 			waitingPlayers.append( player )
