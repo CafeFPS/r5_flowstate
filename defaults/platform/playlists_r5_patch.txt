@@ -1740,6 +1740,8 @@ playlists
 				lootbin_loot_enable								0
 				survival_infinite_ammo   		   				0 	//Disable if using groundloot / stack counts
 				
+				desertlands_script_train_stoppanel_enabled  	0 //Disable train button in scenarios
+				
 				survival_jumpkit_enabled		   				0
 				survival_wallrun_enabled		   				0
 				
@@ -1798,6 +1800,7 @@ playlists
 				fs_scenarios_matchmaking_delay_after_dying		8.0
 				
 				fs_scenarios_max_queuetime 						30.0 //Force a scenarios game after this time.
+				fs_scenarios_min_players_forced_match			3
 				
 				block_ammo_spawning								0
 				
@@ -2568,7 +2571,7 @@ playlists
 				flowstateAutoreloadSecondary 					0
 				flowstateKillshotEnabled 						1	//enables the killshot sound when killing
 
-				flowstate_modified_movement						8 	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
+				flowstate_modified_movement						12 	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW
 
 			}
 			gamemodes { fs_dm { maps {
@@ -2709,7 +2712,7 @@ playlists
 				flowstateExtrashieldValue 						150 //extrashield actual value
 		
 				teammate_huds_enabled							0	//Enables teammate huds
-				flowstate_modified_movement						8	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
+				flowstate_modified_movement						12	// 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW
 			}
 			gamemodes { fs_dm { maps {
 				mp_flowstate									1
@@ -2784,7 +2787,7 @@ playlists
 				////CTF Score And Round time:
 				max_score									  	3	//Set max amount of flag captures
 				round_time									 	30   //Sets time limit for rounds in minutes
-				flowstate_modified_movement 				   	8 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode
+				flowstate_modified_movement						12 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW
 			}
 			gamemodes { custom_ctf { maps {
 				mp_flowstate									1

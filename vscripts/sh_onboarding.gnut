@@ -106,7 +106,8 @@ global enum eMovementType
 	HALO_MOVEMENT,
 	SUPERGLIDE_BOOST_SETTINGS,
 	INSTAGIB_PLAYER_SETTINGS,
-	HAVEFUN_PLAYER_SETTINGS
+	HAVEFUN_PLAYER_SETTINGS,
+	HALO_MOVEMENT_NEW
 }
 
 global bool script_bGiveskins = false
@@ -1429,6 +1430,19 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 				printt( "Player movement changed to Have Fun Settings " + player )
 			#endif
 		break
+	
+
+		case eMovementType.HALO_MOVEMENT_NEW: //HALO BETTER
+
+			SetPlayerSettings( player, HALO_MOVEMENT_NEW )
+			player.SetMoveSpeedScale( 1.1 )
+			player.DisableMantle()
+			
+			#if DEVELOPER
+				printw( "Player movement changed to Halo New " + player )
+			#endif
+		break
+		
 	}
 }
 #endif
