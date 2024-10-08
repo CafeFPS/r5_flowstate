@@ -1473,9 +1473,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			
 			if( !IsValid( player ) )
 				continue
-				
+			
+			#if TRACKER
 			if( IsBotEnt( player ) ) //temporary messagebot bullcrap hack ( all of these need removed )
 				continue
+			#endif
 
 			// if( player.p.InDeathRecap ) //Has player closed Death Recap? //Not reliable until we solve all the death recap. Cafe
 				// continue
@@ -1548,9 +1550,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			newGroup.teams.append( team )
 		} 
 
-
+		int playersN = minint( waitingPlayers.len(), ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
+		
 		//Limpiar equipos sobrantes.
-		int CALCULATED_TEAMS = maxint( int( ceil( ( minint( waitingPlayers.len(), ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) ) / settings.fs_scenarios_playersPerTeam ) + 0.5 ) ), settings.fs_scenarios_teamAmount ) //Cafe was here
+		int CALCULATED_TEAMS = minint( int( ceil( playersN / settings.fs_scenarios_playersPerTeam + 0.5 ) ), settings.fs_scenarios_teamAmount ) //Cafe was here
 		
 		for( int i = newGroup.teams.len() - 1; i >= 0 ; i-- )
 		{
@@ -1580,7 +1583,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 
 		#if DEVELOPER
-			printt( "[Scenarios]", waitingPlayers.len(), " players didn't join to this match and will be still waiting. " )
+			printt( "[Scenarios]", waitingPlayers.len(), " players didn't join to this match and will be still waiting. Calculated Teams: " + CALCULATED_TEAMS )
 		#endif
 
 		foreach( player in waitingPlayers ) //players that didn't get into a match this frame
@@ -1639,13 +1642,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		//Scenarios_CleanupMiscProperties( [ newGroup.team1Players, newGroup.team2Players, newGroup.team3Players ] )
 		
 		//Leave it this way to avoid issues with cards. They only support 2 or 3 teams.
-		if( settings.fs_scenarios_teamAmount == 2 || settings.fs_scenarios_teamAmount == 3 )
+		if( newGroup.teams.len() == 2 || newGroup.teams.len() == 3 )
 		{
 			array<entity> team1 = newGroup.teams[0].players
 			array<entity> team2 = newGroup.teams[1].players
 			array<entity> team3
 			
-			if( settings.fs_scenarios_playersPerTeam == 3 )
+			if( newGroup.teams.len() == 3 )
 				team3 = newGroup.teams[2].players
 			// Setup HUD
 			foreach( player in team1 )
