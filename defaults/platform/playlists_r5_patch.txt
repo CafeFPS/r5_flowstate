@@ -24,8 +24,8 @@ playlists
 				enable_mirage_revive_cloak_upgrade					0
 
 				redish_highlight_los								1 //Enables redish highlight at player range
-				redish_highlight_los_range							20
-				redish_highlight_los_color							"190 20 20"
+				redish_highlight_los_range							20 //Highlight range, in meters
+				redish_highlight_los_color							"190 20 20" //Server hosters can modify highlight color, so cool
 				
 				lifeline_shield_revive_enabled						0 //Enables Lifeline's Season 3 shield
 				circular_hud										0 //Pilot HUD
@@ -1769,11 +1769,11 @@ playlists
 				fs_scenarios_maxIndividualMatchTime				300
 				
 				//Teams Distribution
-				fs_scenarios_playersPerTeam						3 //Max is 3 (or disable character select)
-				fs_scenarios_teamAmount							3 //This have to be defined from spawns
+				fs_scenarios_playersPerTeam						3 //Max is 5
+				fs_scenarios_teamAmount							5 //Then we can just hardcode this //This should be consistent with the designed spawns to avoid issues.
 
 				// don't change this
-				max_team_size									1
+				max_team_size									5
 				max_players										120
 				min_players										0
 								
@@ -1839,15 +1839,16 @@ playlists
 				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
 				
 				spawnsets_mp_rr_canyonlands_64k_x_64k			"1"
+				spawnsets_mp_rr_desertlands_64k_x_64k			"1,2"
 				spawnsets_mp_rr_aqueduct 						"1"
 				spawnsets_mp_rr_arena_composite 				"1"
 				spawnsets_mp_rr_arena_phase_runner				"1"
 				spawnsets_mp_rr_olympus_mu1						"1"
 				
-				spawnpaks_use_sets 								0	// bool, enables using other than stock spawn paks
+				spawnpaks_use_sets 								1	// bool, enables using other than stock spawn paks
 				spawnpaks_use_random							0	// bool, loads random configured pak on mapstart
-				spawnpaks_prefer								0	// bool, enables the below setting 
-				spawnpaks_preferred_pak							0 	//integer, pak number 
+				spawnpaks_prefer								1	// bool, enables the below setting 
+				spawnpaks_preferred_pak							2 	//integer, pak number 
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_desertlands_64k_x_64k 					1

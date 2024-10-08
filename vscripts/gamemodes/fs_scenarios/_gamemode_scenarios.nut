@@ -93,8 +93,6 @@ struct lootbinsData
 	vector angles
 }
 
-global const int SPAWNS_MAX_TEAMS = 3
-
 struct {
 	table<int, scenariosGroupStruct> scenariosPlayerToGroupMap = {} //map for quick assessment
 	table<int, scenariosGroupStruct> scenariosGroupsInProgress = {} //group map to group
@@ -1763,9 +1761,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					continue
 				}
 				
-				if( spawnSlot >= SPAWNS_MAX_TEAMS ) //TODO change this based on read spawns, get a way to get a team id for the spawns? I'm making this because the default spawns are designed for three teams, if server puts for example 5 teams, it will read a spawn from the next location, making the ring super big (bug). Go to allSoloLocations in 1v1 to read those (temp) changes. Cafe
+				//avoid to grab spawns from other locations by forcing it adding the location a random one of the availables
+				//spawns should be desgined for settings.fs_scenarios_teamAmount
+				//in case there are more teams than the designed spawns, choose a random spawn for that team /solves a bug where it grabs locations from other zones
+				
+				if( spawnSlot >= settings.fs_scenarios_teamAmount )
 				{
-					spawnSlot = 0
+					spawnSlot = RandomIntRangeInclusive( 0, settings.fs_scenarios_teamAmount - 1 )
 				}
 				
 				if( spawnSlot != oldSpawnSlot )
@@ -2563,10 +2565,7 @@ array<entity> function FS_Scenarios_GetAllPlayersForGroup( scenariosGroupStruct 
 	foreach( team in group.teams )
 	{
 		ArrayRemoveInvalid( team.players )
-		foreach( player in team.players )
-		{
-			players.append( player )
-		}
+		players.extend( team.players )
 	}
 	return players
 }

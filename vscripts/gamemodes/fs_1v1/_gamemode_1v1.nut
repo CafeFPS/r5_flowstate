@@ -3490,11 +3490,11 @@ void function Gamemode1v1_Init( int eMap )
 
 	if( settings.is3v3Mode ) //modular mode
 	{
-		for ( int i = 0; i < allSoloLocations.len(); i = i + SPAWNS_MAX_TEAMS ) // read SPAWNS_MAX_TEAMS from spawns?? Cafe
+		for ( int i = 0; i < allSoloLocations.len(); i = i + GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ) ) // read SPAWNS_MAX_TEAMS from spawns?? Cafe Who cares.
 		{
 			soloLocStruct p
 
-			for ( int j = 0; j < SPAWNS_MAX_TEAMS; j++  ) //Read block of i+GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ) lines of spawns 
+			for ( int j = 0; j < GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ); j++  )
 			{
 				p.respawnLocations.append( allSoloLocations[ i + j ].spawn )
 			}
