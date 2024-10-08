@@ -119,7 +119,7 @@ struct
 	float fs_scenarios_maxIndividualMatchTime = 300
 
 	float fs_scenarios_max_queuetime = 30.0
-	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
+	int fs_scenarios_min_players_forced_match = 2 // used only when max_queuetime is triggered
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
@@ -147,6 +147,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
 	
 	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 30.0 )
+	settings.fs_scenarios_min_players_forced_match =  GetCurrentPlaylistVarInt( "fs_scenarios_min_players_forced_match", 2 )
 	
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
@@ -1494,7 +1495,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			waitingPlayers.append( player )
 		}
 		
-		bool forceGame = playersThatForceMatchmaking >= 3 && playersThatForceMatchmaking >= waitingPlayers.len() && waitingPlayers.len() > 1
+		bool forceGame = playersThatForceMatchmaking >= settings.fs_scenarios_min_players_forced_match && playersThatForceMatchmaking >= waitingPlayers.len() && waitingPlayers.len() > 1
 		//if there a 3 players and they are two seconds left to start and a player joins, this will make wait for the new player to reach the time again ( 30s )
 		//playersThatForceMatchmaking == waitingPlayers.len() is to do the force logic only when there are barely players in the server. If there are games runnings, should be fast enough for players to wait in the timeout. Cafe
 		
