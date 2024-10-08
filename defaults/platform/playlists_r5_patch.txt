@@ -1445,7 +1445,7 @@ playlists
 				flowstateBattleLogEnable 						0
 				flowstateChatLogEnable 							0
 				
-				default_shield_hp				  				75
+				default_shield_hp				  				0
 				survival_shields				   				1
 				skydive_ziplines_enabled		   				1
 				ground_loot_enable 				   				0
