@@ -1465,9 +1465,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		
 		foreach ( playerHandle, eachPlayerStruct in waitingPlayersShuffledTable )
 		{	
-			if( waitingPlayers.len() >= ( settings.fs_scenarios_teamAmount * settings.fs_scenarios_playersPerTeam ) ) //No need to add more than the max total players per game
-				break
-			
 			if( !IsValid(eachPlayerStruct) )
 				continue				
 			
@@ -1488,13 +1485,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
 				continue
 			
+			if( player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) == -1 ) //shouldn't happen but just in case
+				player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
+			
 			if( Time() - player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) > settings.fs_scenarios_max_queuetime )
 				playersThatForceMatchmaking++
 			
 			waitingPlayers.append( player )
 		}
 		
-		bool forceGame = playersThatForceMatchmaking >= settings.fs_scenarios_teamAmount && playersThatForceMatchmaking >= FS_1v1_GetPlayersWaiting().len() 
+		bool forceGame = playersThatForceMatchmaking >= 3 && playersThatForceMatchmaking >= waitingPlayers.len() && waitingPlayers.len() > 1
 		//if there a 3 players and they are two seconds left to start and a player joins, this will make wait for the new player to reach the time again ( 30s )
 		//playersThatForceMatchmaking == waitingPlayers.len() is to do the force logic only when there are barely players in the server. If there are games runnings, should be fast enough for players to wait in the timeout. Cafe
 		
