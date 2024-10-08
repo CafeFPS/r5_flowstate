@@ -328,8 +328,6 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 
 	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
 	{
-		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
-		
 		if( victim.IsZiplining() || victim.IsMountingZipline() )
 			victim.Zipline_Stop()
 		

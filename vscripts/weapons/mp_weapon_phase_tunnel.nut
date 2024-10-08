@@ -30,7 +30,7 @@ global function PhaseTunnel_WaitForPhaseTunnelExpiration
 global function PhaseTunnel_PhaseEntity
 global function PhaseTunnel_SanitizeWeaponMods
 
-#if DEV
+#if DEVELOPER
 global function DEV_PhaseTunnel_DestroyAll
 #endif
 #endif
@@ -813,7 +813,7 @@ void function PhaseTunnel_OpenTunnel( PhaseTunnelData tunnelData, entity player 
 	waitthread PhaseTunnel_WaitForPhaseTunnelExpiration( player, tunnelData, PHASE_TUNNEL_LIFETIME, DEBUG_DRAW_PHASE_TUNNEL_WAIT )
 }
 
-#if DEV
+#if DEVELOPER
 void function DEV_PhaseTunnel_DestroyAll()
 {
 	foreach ( ent, portal in file.tunnelData )

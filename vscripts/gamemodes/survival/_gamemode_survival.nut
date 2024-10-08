@@ -1249,11 +1249,6 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
-
-	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
-	{
-		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
-	}
 }
 
 //Centralized start bleedout
