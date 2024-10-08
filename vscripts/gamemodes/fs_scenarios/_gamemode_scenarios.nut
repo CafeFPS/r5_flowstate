@@ -22,6 +22,7 @@ global function FS_Scenarios_SaveBigDoorData
 global function FS_Scenarios_HandleGroupIsFinished
 global function FS_Scenarios_SetStopMatchmaking
 global function FS_Scenarios_GetAllPlayersForGroup
+global function FS_Scenarios_GetScenariosTeamCount
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -194,6 +195,11 @@ void function Init_FS_Scenarios()
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
 	FS_Scenarios_Score_System_Init()
+}
+
+int function FS_Scenarios_GetScenariosTeamCount()
+{
+	return settings.fs_scenarios_teamAmount
 }
 
 bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )

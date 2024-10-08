@@ -3912,11 +3912,12 @@ bool function ValidateSpawns( array<SpawnData> allSoloLocations )
 		allSoloLocations.resize(0)
 		return false
 	}
-	else if( settings.is3v3Mode )
+	else if( settings.is3v3Mode ) //(scenarios)
 	{
-		if( allSoloLocations.len() % 3 != 0 )
+		int modeTeamCount = FS_Scenarios_GetScenariosTeamCount()
+		if( ( allSoloLocations.len() % modeTeamCount ) != 0 ) 
 		{
-			Warning( warningmsg + " ( locpair must be multiples of 3 )" )
+			Warning( warningmsg + " ( locpair must be multiples of " + modeTeamCount + " )" )
 			allSoloLocations.resize(0)
 			return false
 		}

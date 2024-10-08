@@ -159,7 +159,7 @@ void function __PlayAnim( entity guy, string animation_name, reference = null, o
 	}
 	else
 	{
-		Assert( optionalTag == null, "Reference was null, but optionalTag was not. Did you mean to set the tag?" )
+		mAssert( optionalTag == null, "Reference was null, but optionalTag was not. Did you mean to set the tag?" )
 	}
 
 	if ( reference != null && guy.GetParent() == reference )
