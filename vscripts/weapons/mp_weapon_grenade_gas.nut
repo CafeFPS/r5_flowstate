@@ -5,7 +5,7 @@ global function OnWeaponTossReleaseAnimEvent_weapon_greande_gas
 global function OnWeaponDeactivate_weapon_grenade_gas
 
 const float WEAPON_GAS_GRENADE_DELAY = 1.0
-const float WEAPON_GAS_GRENADE_DURATION = 20.0
+const float WEAPON_GAS_GRENADE_DURATION = 15.0
 const vector WEAPON_GAS_GRENADE_OFFSET = <0,0,16>
 
 const string GAS_GRENADE_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep"
@@ -66,16 +66,9 @@ void function OnProjectileCollision_weapon_grenade_gas( entity projectile, vecto
 	{
 		return
 	}
-	else if ( IsValid( hitEnt ) && ( hitEnt.IsPlayer() || hitEnt.IsTitan() || hitEnt.IsNPC() ) )
-	{
-		projectile.NotSolid()
-		thread DeployGas( projectile )
-	}
-	else
-	{
-		projectile.NotSolid()
-		thread DeployGas( projectile )
-	}
+
+	projectile.NotSolid()
+	thread DeployGas( projectile )
 	#endif
 
 	projectile.GrenadeIgnite()
@@ -88,15 +81,41 @@ void function DeployGas( entity projectile )
 	Assert ( IsNewThread(), "Must be threaded off." )
 	projectile.EndSignal( "OnDestroy" )
 
+	OnThreadEnd(
+		function() : ( projectile )
+		{
+			if ( IsValid( projectile ) )
+				projectile.Destroy()
+		}
+	)
+
 	wait WEAPON_GAS_GRENADE_DELAY - 1.0
 
 	EmitSoundOnEntity( projectile, GAS_GRENADE_WARNING_SOUND )
 
 	wait 0.8
 
+	if ( !IsValid( projectile.GetThrower() ) )
+		return
+	if ( IsTeamEliminated( projectile.GetThrower().GetTeam() ) )
+		return
+
 	thread DeployGas_Internal( projectile )
 }
 
+
+float function GetGasDuration( entity owner )
+{
+	float result = WEAPON_GAS_GRENADE_DURATION
+
+	//if( IsValid( owner ) && owner.HasPassive( ePassives.PAS_ULT_UPGRADE_ONE ) ) // upgrade_caustic_gas_duration
+	//{
+	//	result *= GetUpgradedGasDurationMultiplier()
+	//}
+       
+
+	return result
+}
 void function DeployGas_Internal( entity projectile )
 {
 	vector origin = projectile.GetOrigin()
@@ -126,7 +145,10 @@ void function DeployGas_Internal( entity projectile )
 	}
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, dummyCloudSource, dummyCloudSource.GetOrigin(), dummyCloudSource.GetTeam(), dummyCloudSource )
-	CreateGasCloudLarge( dummyCloudSource, WEAPON_GAS_GRENADE_DURATION, WEAPON_GAS_GRENADE_OFFSET )
+	float gasDuration = GetGasDuration( owner )
+	CreateGasCloudLarge( dummyCloudSource, gasDuration, WEAPON_GAS_GRENADE_OFFSET )
+	
+	waitthread DelayedDestroy( dummyCloudSource, gasDuration )
 }
 
 #endif
