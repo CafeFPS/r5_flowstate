@@ -172,7 +172,7 @@ global function SpawnSystem_CreateLocPairObject
 					["............"] = "",
 					[" ==== GENERATE FILE ===="] = "",
 					["............."] = "",
-					[" script DEV_WriteSpawnFile()"] = "Write current locations to file in the current format, use printt( DEV_SpawnType() ) to see current type.",
+					[" script DEV_WriteSpawnFile( type = \"\" )"] = "Write current locations to file in the current format or specified format ( csv | sq ), use printt( DEV_SpawnType() ) to see current type.",
 					[".............."] = "",
 					["..............."] = "",
 					["................"] = "",
@@ -1600,7 +1600,7 @@ void function DEV_SpawnHelp()
 	printt( helpinfo )
 }
 
-void function DEV_WriteSpawnFile( bool bAutoSave = false )
+void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 {
 	if( file.dev_positions.len() <= 0 )
 	{
@@ -1608,6 +1608,9 @@ void function DEV_WriteSpawnFile( bool bAutoSave = false )
 		printm( "No spawn positions to write stdout" )
 		return 
 	}
+	
+	if( !empty( type ) )
+		DEV_SpawnType( type )
 	
 	DevTextBufferClear()
 	
@@ -1870,6 +1873,9 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 		usePlaylist = true
 	}
 
+	if( !settings.bOptionsAreSet )
+		Flowstate_SpawnSystem_InitGamemodeOptions()
+		
 	table<string,bool> spawnOptions = {}
 	
 	spawnOptions["use_sets"] <- true
@@ -1877,7 +1883,6 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["prefer"] <- false
 	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
-	settings.bOptionsAreSet = true
 	
 	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : SpawnSystem_ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
@@ -1886,12 +1891,14 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 		DEV_ClearSpawns()
 		
 		string str 
-		int iter = 0
 		string name
+		string dataName
 		
+		int iter = 0
 		foreach( spawnInfo in devLocations )
 		{
-			name = "spawn_" + iter
+			dataName = spawnInfo.name
+			name = !empty( dataName ) ? dataName : "spawn_" + iter
 			
 			switch( DEV_SpawnType() )
 			{
@@ -2427,7 +2434,7 @@ void function CheckAutoSave()
 	if( SpawnCount() == 0 )
 		return
 		
-	DEV_WriteSpawnFile( true )
+	DEV_WriteSpawnFile( "", true )
 }
 
 void function DEV_SetAutoSave( bool bSave = true )
