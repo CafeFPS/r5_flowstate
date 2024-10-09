@@ -238,11 +238,27 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	void function FS_Scenarios_ForceUpdatePlayerCount() //getting rid of networked int for this game mode, so we can show proper enemy player count (each team should have a different value, networked int will show only one value) Colombia
 	{
 		var statusRui = ClGameState_GetRui()
-		if( statusRui != null )
+		
+		if( IsValid( GetLocalClientPlayer() ) && GetLocalClientPlayer().GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" ) != 0 && statusRui != null )
 		{
+			RuiSetString( statusRui, "gameModeString", "FS ZONE WARS" )
+			RuiSetString( statusRui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
+			RuiSetString( statusRui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
+			
 			array<entity> players = GetPlayerArrayOfEnemies_Alive( GetLocalClientPlayer().GetTeam() )
 			ArrayRemoveOutOfRealmAndLobbyPlayers( players )
-			// printt( "FS_Scenarios_ForceUpdatePlayerCount", players.len() )
+			printt( "FS_Scenarios_ForceUpdatePlayerCount", players.len() )
+			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
+			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )
+		} else if( statusRui != null )
+		{
+			RuiSetString( statusRui, "gameModeString", "FS ZONE WARS" )
+			RuiSetString( statusRui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( statusRui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			
+			array<entity> players = GetPlayerArray()
+			
+			printt( "setting to ", GetPlayerArray().len() )
 			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
 			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )
 		}

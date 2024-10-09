@@ -243,7 +243,13 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	{
 		if( group.isValid )
 			foreach( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) )
+			{
 				Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
+				
+				//Revivir a los knockeados
+				if( Bleedout_IsBleedingOut( splayer ) )
+					Signal( splayer, "BleedOut_OnRevive" )
+			}
 		
 		ScenariosPersistence_SendStandingsToClient( victim )
 
@@ -251,7 +257,7 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 		
 		if( settings.fs_scenarios_show_death_recap_onkilled )
 		{
-			Remote_CallFunction_ByRef( victim, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+			Remote_CallFunction_ByRef( victim, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" ) //Fixme
 		}
 
 		EndSignal( victim, "OnDestroy" )

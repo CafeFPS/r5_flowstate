@@ -175,9 +175,9 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 			
 			case ePlaylists.fs_scenarios:
-			RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
+			// RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
+			// RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
+			// RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
 			break
 			
 			case ePlaylists.fs_movementgym:
