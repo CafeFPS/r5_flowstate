@@ -65,7 +65,7 @@ struct {
     var scoreRui
 
 	table< entity, table<entity, bool> > highlightedPlayersInArea
-	float highlightDistance = 20 * METERS_TO_INCHES
+	float highlightDistance = 30 * METERS_TO_INCHES
 } file
 
 int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
@@ -78,7 +78,7 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 void function Sh_CustomTDM_Init()
 {
 
-	file.highlightDistance = GetCurrentPlaylistVarFloat( "redish_highlight_los_range", 20 ) * METERS_TO_INCHES
+	file.highlightDistance = GetCurrentPlaylistVarFloat( "redish_highlight_los_range", 30 ) * METERS_TO_INCHES
 	
     // Map locations
 

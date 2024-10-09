@@ -24,7 +24,7 @@ playlists
 				enable_mirage_revive_cloak_upgrade					0
 
 				redish_highlight_los								1 //Enables redish highlight at player range
-				redish_highlight_los_range							20 //Highlight range, in meters
+				redish_highlight_los_range							30 //Highlight range, in meters
 				redish_highlight_los_color							"190 20 20" //Server hosters can modify highlight color, so cool
 				
 				lifeline_shield_revive_enabled						0 //Enables Lifeline's Season 3 shield
