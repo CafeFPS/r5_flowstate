@@ -114,6 +114,8 @@ global function GetFullMapScale
 global function Survival_SetVictorySoundPackageFunction
 global function UpdateDpadHud_Copy
 
+global function ServerCallback_Scenarios_MatchEndAnnouncement
+
 global struct NextCircleDisplayCustomData
 {
 	float  circleStartTime
@@ -4309,6 +4311,24 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 	
 	if ( clientPlayer.GetTeam() == winningTeam || IsAlive( clientPlayer ) || isPureSpectator )
 		ShowChampionVictoryScreen( winningTeam )
+}
+
+void function ServerCallback_Scenarios_MatchEndAnnouncement()
+{
+	// DeathScreenCreateNonMenuBlackBars()
+	// DeathScreenUpdate()
+	thread function () : ()
+	{
+		entity clientPlayer = GetLocalClientPlayer()
+
+		if ( IsAlive( clientPlayer ) )
+			ShowChampionVictoryScreen( GetLocalClientPlayer().GetTeam() )
+			
+		wait 4
+
+		ForceDestroyBlackBarRui()
+		ForceDestroyChampionScreenRui()
+	}()
 }
 
 void function ServerCallback_DestroyEndAnnouncement()

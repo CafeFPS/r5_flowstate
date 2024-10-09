@@ -415,13 +415,67 @@ void function UpdateSystemPanel( var panel )
 			Hud_SetNavDown( file.buttons[ panel ][i], null )
 	}
 
-	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
-		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
-	else
-		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+	string msgonbottom = ""
+	
+	if( IsConnected() )
+	{
+		switch( Playlist() )
+		{
+			case ePlaylists.fs_aimtrainer:
+			msgonbottom = "Flowstate Aim Trainer by @CafeFPS"
+			break
+
+			case ePlaylists.fs_scenarios:
+			msgonbottom = "Flowstate Zone Wars - " + MyPing() + " ms."
+			break
+
+			case ePlaylists.fs_1v1:
+			case ePlaylists.fs_vamp_1v1:
+			case ePlaylists.fs_1v1_headshots_only:
+			msgonbottom = "Flowstate 1V1 - Ping: " + MyPing() + " ms."
+			break
+
+			case ePlaylists.movementrecorder:
+			msgonbottom = "FS Movement Recorder - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.fs_snd:
+			msgonbottom = "Flowstate S&D - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.winterexpress:
+			msgonbottom = "FS Winter Express - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.fs_dm:
+			msgonbottom = "FS DM - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.fs_lgduels_1v1:
+			msgonbottom = "Flowstate LGDuels - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.fs_dm_fast_instagib:
+			msgonbottom = "Cafe's Instagib - Ping: " + MyPing() + " ms."
+			break
+
+			case ePlaylists.fs_haloMod:
+			case ePlaylists.fs_haloMod_ctf:
+			case ePlaylists.fs_haloMod_oddball:
+			msgonbottom = "FS Halo Mod - Ping: " + MyPing() + " ms."
+			break
+		}
 		
+		if( IsConnected() && GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+			msgonbottom = "Practice Map - Ping: " + MyPing() + " ms."
+	}
+	else
+		msgonbottom = "R5Reloaded Server: Ping: " + MyPing() + " ms."
+		
+	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
+	Hud_SetText( dataCenterElem, msgonbottom)
 }
+
 
 void function ToggleSetHunter(bool enable)
 {

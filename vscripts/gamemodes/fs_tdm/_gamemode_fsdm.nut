@@ -102,7 +102,7 @@ const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
-global const int FLOWSTATE_START_TIME_DELAY = 7
+global const int FLOWSTATE_START_TIME_DELAY = 9
 bool debugging = false
 global bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true

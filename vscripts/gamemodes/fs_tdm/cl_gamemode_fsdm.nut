@@ -71,6 +71,7 @@ global function Gamemode1v1_ForceLegendSelector_Deprecated
 global function Tracker_ShowChampion
 
 global function Flowstate_ShowRespawnTimeUI
+global function Flowstate_ShowMatchFoundUI
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -609,6 +610,24 @@ void function Flowstate_StartTime_Thread( float endtime )
 	}
 }
 
+
+
+void function Flowstate_ShowMatchFoundUI( int timeUntilRespawn )
+{
+	if( timeUntilRespawn == -1 )
+	{
+		Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), false )
+		// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+		return
+	}
+
+	Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Center" ), true )
+	// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
+	// RuiSetImage( Hud_GetRui( HudElement( "FS_Respawn_Countdown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
+	
+	thread Flowstate_RespawnTimer_Thread( timeUntilRespawn, 2 )
+}
+
 void function Flowstate_ShowRespawnTimeUI( int timeUntilRespawn )
 {
 	if( timeUntilRespawn == -1 )
@@ -622,10 +641,10 @@ void function Flowstate_ShowRespawnTimeUI( int timeUntilRespawn )
 	// Hud_SetVisible( HudElement( "FS_Respawn_Countdown_Frame_Center" ), false )
 	// RuiSetImage( Hud_GetRui( HudElement( "FS_Respawn_Countdown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
 	
-	thread Flowstate_RespawnTimer_Thread( timeUntilRespawn )
+	thread Flowstate_RespawnTimer_Thread( timeUntilRespawn, 1 )
 }
 	
-void function Flowstate_RespawnTimer_Thread( int timeUntilRespawn )
+void function Flowstate_RespawnTimer_Thread( int timeUntilRespawn, int type )
 {
 	clGlobal.levelEnt.EndSignal( "LocalClientPlayerRespawned" )
 	entity player = GetLocalClientPlayer()
@@ -646,6 +665,13 @@ void function Flowstate_RespawnTimer_Thread( int timeUntilRespawn )
 	
 	string msg = "Respawning in "
 
+	if( Playlist() == ePlaylists.fs_scenarios )
+		msg = "Lobby in "
+	
+	if( type == 2 )
+	{
+		msg = "Match Found "
+	}
 	while ( timeUntilRespawn > 0 )
 	{
 		Hud_SetText( HudElement( "FS_Respawn_Countdown_Center"), msg + string( timeUntilRespawn ) )

@@ -229,20 +229,39 @@ bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> ar
 void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	#if DEVELOPER
-		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
+		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker, " sent to waiting room and added to waiting list" )
 	#endif
 
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 
-	if( settings.fs_scenarios_show_death_recap_onkilled )
-	{
-		// fix var. Cafe
-	}
-
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+
+	thread function () : ( group, victim ) 
+	{
+		if( group.isValid )
+			foreach( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) )
+				Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
+		
+		ScenariosPersistence_SendStandingsToClient( victim )
+
+		WaitFrame()
+		
+		if( settings.fs_scenarios_show_death_recap_onkilled )
+		{
+			Remote_CallFunction_ByRef( victim, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+		}
+
+		EndSignal( victim, "OnDestroy" )
+		
+		Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", 3 )
+		wait 3 //delay before sending to lobby
+		
+		// victim.p.lastRequeueUsedTime = Time()
+		soloModePlayerToWaitingList( victim )
+	}()
 	
-	if( !group.isValid ) //Do not calculate stats for players not in a round
+	if( !group.isValid || !group.isReady ) //Do not calculate stats for players not in a round
 		return
 	
 	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
@@ -255,14 +274,16 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	}
 
 	FS_Scenarios_HandleGroupIsFinished( victim )
-	
-	if( IsValid( group ) && group.IsFinished )
-		return
 
 	if( FS_Scenarios_GetDeathboxesEnabled() )
 	{
 		thread SURVIVAL_Death_DropLoot( victim, damageInfo )
 	}
+
+	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+	
+	if( IsValid( group ) && group.IsFinished )
+		return
 
 	if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 1 )
 	{
@@ -273,8 +294,6 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 			FS_Scenarios_UpdatePlayerScore( soloPlayer, FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER )
 		}
 	}
-
-	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
 }
 
 bool function FS_Scenarios_IsFullTeamBleedout( entity attacker, entity victim ) 
@@ -369,7 +388,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 	{
 		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
 		
-		if( FS_Scenarios_GetDeathboxesEnabled() )
+		if( FS_Scenarios_GetDeathboxesEnabled() && group.isReady )
 		{
 			Dev_ForceDropDeathbox( player )
 		}
@@ -1327,40 +1346,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				foreach( player in players )
 				{
-					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) 
+					if( !IsValid( player ) || IsValid( player.p.respawnPod ) || !IsAlive( player ) ) 
 						continue
-					
-					//Se murió, a la sala de espera
-					if( !IsAlive( player ) )
-					{
-						soloModePlayerToWaitingList( player )
-						
-						foreach( splayer in players )
-							Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
-
-						if( settings.fs_scenarios_show_death_recap_onkilled )
-						{
-							// player.p.InDeathRecap = true
-							Remote_CallFunction_ByRef( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
-							//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
-						} 
-						// else
-						// {
-							// player.p.InDeathRecap = false
-						// }
-						player.p.lastRequeueUsedTime = Time()
-						ScenariosPersistence_SendStandingsToClient( player )
-
-						#if DEVELOPER
-							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-						#endif
-						continue
-					}
 
 					if ( player.IsPhaseShifted() )
 						continue
 
-					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && shouldRingDoDamageThisFrame && !group.IsFinished )
+					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && shouldRingDoDamageThisFrame && !group.IsFinished && group.isReady )
 					{
 						Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 						player.TakeDamage( settings.fs_scenarios_ring_damage, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -1371,13 +1363,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 
 			// Acabó la ronda, todos los jugadores de un equipo murieron
-			if ( group.isReady && group.IsFinished )
+			if ( group.IsFinished )
 			{
 				#if DEVELOPER
 					printt( "Group has finished!", group.groupHandle )
-				#endif 
-				group.IsFinished = true
-				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+				#endif
 
 				FS_Scenarios_SendRecapData( group )
 
@@ -1492,8 +1482,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				// Warning( "Checking for player " + (Time() - player.p.lastRequeueUsedTime) )
 			// #endif
 			
-			if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
-				continue
+			// if( Time() - player.p.lastRequeueUsedTime < settings.fs_scenarios_matchmaking_delay_after_dying ) // Penalizar a los que mueren.
+				// continue
 			
 			if( player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) == -1 ) //shouldn't happen but just in case
 				player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
@@ -1719,6 +1709,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		thread function () : ( newGroup, players )
 		{
 			EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+			//Match found.. show msg wait a bit. Cafe
+			foreach ( entity player in players )
+			{
+				if( !IsValid( player ) )
+					return
+				LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
+				Remote_CallFunction_Replay( player, "Flowstate_ShowMatchFoundUI", 3 )
+			}			
+			wait 3
 
 			FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
@@ -2063,7 +2063,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 		}
 	}
 
-	if( aliveTeamCount == 1 )
+	if( aliveTeamCount == 1 && winners.len() > 0 )
 	{
 		bool success = false
 		//todo if there are players in the winners array from different teams, return. Cafe
@@ -2086,12 +2086,36 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 			player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", player.GetPlayerNetInt( "FS_Scenarios_MatchesWins" ) + 1 )
 		}
 
-		group.IsFinished = true //tell solo thread this round has finished
-	
+		//End the game delayed.. Cafe
+		thread function () : ( group )
+		{
+			group.isReady = false //Stop ring
+			foreach ( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) )
+			{
+				MakeInvincible(splayer)
+				Remote_CallFunction_ByRef( splayer, "ServerCallback_Scenarios_MatchEndAnnouncement" )
+			}
+			
+			wait 4
+
+			foreach ( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) ) //before is finished to avoid issues
+			{
+				ClearInvincible(splayer)
+			}
+			group.IsFinished = true //tell thread this round has finished
+			
+			if( IsValid( group.dummyEnt ) )
+			{
+				Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+				group.dummyEnt.Destroy()
+			}
+			printt( "Group has finished delayed" )
+		}()
+
 		if( group.isLastGameFromRound )
 		{
 			g_fCurrentRoundEndTime = Time() //Set the global flowstate end time to end right now if this group was the last group from the round and everyone was waiting for them
-			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
+			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime + 3 + 1 ) //3 from champion screen
 		}
 	}
 } 
@@ -2263,6 +2287,12 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 	while ( group.currentRingRadius > -1 )
 	{
+		if( !group.isReady )
+		{
+			WaitFrame()
+			continue
+		}
+		
 		players.clear()
 		players = clone FS_Scenarios_GetAllPlayersForGroup( group )
 
