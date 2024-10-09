@@ -143,7 +143,8 @@ global enum e1v1State
 	WAITING, 
 	MATCHING,
 	RESTING,
-	RECAP	
+	RECAP,
+	CHARSELECT
 }
 
 struct ChallengesStruct
@@ -5232,25 +5233,28 @@ void function Init_IBMM( entity player )
 		if( player == GetMessageBotEnt() ) //Todo: nuke.
 			return 
 	#endif
-		
-	thread NotificationThread( player )
-	
-	if( player.p.IBMM_grace_period == -1 )
-	{
-		SetDefaultIBMM( player )
-	}
-	
+			
 	player.p.messagetime = 0
 	thread Thread_CheckInput( player ) //move to code ~mkos
-	AddClientCommandCallback("wait", ClientCommand_mkos_IBMM_wait )
-	AddClientCommandCallback("lock1v1", ClientCommand_mkos_lock1v1_setting )
-	AddClientCommandCallback("start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
-	AddClientCommandCallback("enable_input_banner", ClientCommand_enable_input_banner )
-	AddClientCommandCallback("challenge", ClientCommand_mkos_challenge )
+	
 	AddButtonPressedPlayerInputCallback( player, IN_MOVELEFT, SetInput_IN_MOVELEFT )
 	AddButtonPressedPlayerInputCallback( player, IN_MOVERIGHT, SetInput_IN_MOVERIGHT )
 	AddButtonPressedPlayerInputCallback( player, IN_BACK, SetInput_IN_BACK )
 	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )	
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return 
+		
+	thread NotificationThread( player )
+	
+	if( player.p.IBMM_grace_period == -1 )
+		SetDefaultIBMM( player )
+	
+	AddClientCommandCallback( "wait", ClientCommand_mkos_IBMM_wait )
+	AddClientCommandCallback( "lock1v1", ClientCommand_mkos_lock1v1_setting )
+	AddClientCommandCallback( "start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
+	AddClientCommandCallback( "enable_input_banner", ClientCommand_enable_input_banner )
+	AddClientCommandCallback( "challenge", ClientCommand_mkos_challenge )
 }
 
 

@@ -175,7 +175,7 @@ void function Init_FS_Scenarios()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
-	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
+	AddClientCommandCallback( "rest", Scenarios_ClientCommand_Maki_SoloModeRest )
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
@@ -194,6 +194,15 @@ void function Init_FS_Scenarios()
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
 	FS_Scenarios_Score_System_Init()
+}
+
+bool function Scenarios_ClientCommand_Maki_SoloModeRest( entity player, array<string> args )
+{
+	if( IsCurrentState( player, e1v1State.CHARSELECT ) )
+		return true 
+		
+	ClientCommand_Maki_SoloModeRest( player, args )
+	return true
 }
 
 int function FS_Scenarios_GetScenariosTeamCount()
@@ -2016,7 +2025,8 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 	if( !IsValid( player ) )
 		return
 
-	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+	Gamemode1v1_SetPlayerGamestate( player, e1v1State.WAITING )
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
 
 	if( !IsValid( group ) || group.IsFinished || !group.isReady )
 		return
@@ -2113,6 +2123,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		int i = 0
 		foreach( entity player in players )
 		{
+			Gamemode1v1_SetPlayerGamestate( player, e1v1State.CHARSELECT )
 			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
 			player.SetPlayerNetTime( "pickLoadoutGamestateStartTime", startime + CharSelect_GetIntroTransitionDuration() )
 			player.SetPlayerNetTime( "pickLoadoutGamestateEndTime", startime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
@@ -2193,12 +2204,14 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 
 	foreach( int team, array<entity> players in groupedPlayers )
 	{
+		ArrayRemoveInvalid( players )
+		
 		if ( players.len() == 0 )
 			continue
-
-		ArrayRemoveInvalid( players )
+			
 		foreach( entity player in players )
 		{
+			Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCHING )
 			Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 			//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
