@@ -1117,11 +1117,12 @@ CreateZiplineAAA( <17247,31823,2500>, <17248,31824,-890> )
 //CreateFloor(14673, 29719, 155, 20, 20)
 
 //Mesas para las granadas (spawn de granadas y armas en EntitiesDidLoad() function)
-if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){
-CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <19040,33360,-852>, <0,90,0>, true, 8000 )
-CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <18912,29968,-852>, <0,-90,0>, true, 8000 )
-CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <15376,30144,-852>, <0,90,0>, true, 8000 )
-CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <15376,33600,-852>, <0,90,0>, true, 8000 )
+if( !GetCurrentPlaylistVarBool( "flowstatePROPHUNT", false ) )
+{
+	CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <19040,33360,-852>, <0,90,0>, true, 8000 )
+	CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <18912,29968,-852>, <0,-90,0>, true, 8000 )
+	CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <15376,30144,-852>, <0,90,0>, true, 8000 )
+	CreateEditorProp( $"mdl/colony/farmland_domicile_table_02.rmdl", <15376,33600,-852>, <0,90,0>, true, 8000 )
 }
 //Escudos de Spawn
 CreateFRProp( $"mdl/fx/turret_shield_wall_02.rmdl", <15008, 30032, -950>, <0,-135,0>)

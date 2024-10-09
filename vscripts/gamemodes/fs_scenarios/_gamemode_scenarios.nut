@@ -2000,6 +2000,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				wait settings.fs_scenarios_game_start_time_delay
 				
 				Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
+				
+				SetGamestateForPlayers( players, e1v1State.MATCHING )
 
 				newGroup.startTime = Time()
 				newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
@@ -2009,6 +2011,12 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 	}//while(true)
 
 }//thread
+
+void function SetGamestateForPlayers( array<entity> players, int state)
+{
+	foreach( player in players )
+		Gamemode1v1_SetPlayerGamestate( player, state )
+}
 
 int function FS_SortPlayersByPriority( entity a, entity b )
 {
@@ -2211,7 +2219,6 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			
 		foreach( entity player in players )
 		{
-			Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCHING )
 			Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 			//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
