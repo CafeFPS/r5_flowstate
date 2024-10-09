@@ -172,7 +172,7 @@ global function SpawnSystem_CreateLocPairObject
 					["............"] = "",
 					[" ==== GENERATE FILE ===="] = "",
 					["............."] = "",
-					[" script DEV_WriteSpawnFile()"] = "Write current locations to file in the current format, use printt( DEV_SpawnType() ) to see current type.",
+					[" script DEV_WriteSpawnFile( type = \"\" )"] = "Write current locations to file in the current format or specified format ( csv | sq ), use printt( DEV_SpawnType() ) to see current type.",
 					[".............."] = "",
 					["..............."] = "",
 					["................"] = "",
@@ -1600,7 +1600,7 @@ void function DEV_SpawnHelp()
 	printt( helpinfo )
 }
 
-void function DEV_WriteSpawnFile( bool bAutoSave = false )
+void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 {
 	if( file.dev_positions.len() <= 0 )
 	{
@@ -1608,6 +1608,9 @@ void function DEV_WriteSpawnFile( bool bAutoSave = false )
 		printm( "No spawn positions to write stdout" )
 		return 
 	}
+	
+	if( !empty( type ) )
+		DEV_SpawnType( type )
 	
 	DevTextBufferClear()
 	
@@ -2431,7 +2434,7 @@ void function CheckAutoSave()
 	if( SpawnCount() == 0 )
 		return
 		
-	DEV_WriteSpawnFile( true )
+	DEV_WriteSpawnFile( "", true )
 }
 
 void function DEV_SetAutoSave( bool bSave = true )
