@@ -176,7 +176,7 @@ struct
 	float droneMaxZ = 100000
 	int   droneHealth
 	bool  ForceExitDroneView = false
-	bool crypto_tactical_auto_reload_weapons
+	bool crypto_tactical_auto_reload_weapons = true
 
 	array<void functionref()> onEnterDroneViewCallbacks
 	array<void functionref()> onLeaveDroneViewCallbacks
@@ -196,14 +196,20 @@ void function MpAbilityCryptoDrone_Init()
 	PrecacheParticleSystem( SCREEN_FAST_FX )
 	PrecacheParticleSystem( CAMERA_HIT_FX )
 	PrecacheParticleSystem( CAMERA_HIT_ENEMY_FX )
-
 	PrecacheParticleSystem( CRYPTO_DRONE_SIGHTBEAM_FX )
+	
 	//PrecacheParticleSystem( CRYPTO_DRONE_RANGE_NO_INTRO )
-      
 	//PrecacheParticleSystem( $"lootpoint_far_beam_close_small" )
-
 	// Remote_RegisterServerFunction( "ClientCallback_AttemptDroneRecall" )
-
+	
+	file.neurolinkRange = GetCurrentPlaylistVarFloat( "crypto_neurolink_range", EMP_RANGE )
+	file.droneHealth = GetCurrentPlaylistVarInt( "crypto_drone_health", CRYPTO_DRONE_HEALTH_PROJECTILE )
+	file.crypto_tactical_auto_reload_weapons = GetCurrentPlaylistVarBool( "crypto_tactical_auto_reload_weapons", true )	
+	
+	#if SERVER 
+	file.crypto_drone_upgraded_health = GetCurrentPlaylistVarInt( "crypto_drone_upgraded_health", 100 )
+	#endif
+	
 	#if SERVER
 		RegisterSignal( "ExitCameraView" )
 		RegisterSignal( "FinishDroneRecall" )
@@ -247,24 +253,15 @@ void function MpAbilityCryptoDrone_Init()
 	if ( AutoReloadWhileInCryptoDroneCameraView() )
 		Remote_RegisterClientFunction( "ServerToClient_CryptoDroneAutoReloadDone", "entity" )
 
-	file.neurolinkRange = GetCurrentPlaylistVarFloat( "crypto_neurolink_range", EMP_RANGE )
-
 	//testing different method for confirming immediate camera access
 	RegisterSignal( "Crypto_Immediate_Camera_Access_Confirmed" )
 	RegisterSignal( "Crypto_StopSendPointThink" )
-	file.droneHealth = GetCurrentPlaylistVarInt( "crypto_drone_health", CRYPTO_DRONE_HEALTH_PROJECTILE )
 
 	#if SERVER
 	// AddCallback_OnPassiveChanged( ePassives.PAS_STOWED_DRONE_SCAN, StowedDroneScan_OnPassiveChanged )
-
 	RegisterSignal( "RemoveStowedDrone" )
 	#endif
-	
-	#if SERVER 
-	file.crypto_drone_upgraded_health = GetCurrentPlaylistVarInt( "crypto_drone_upgraded_health", 100 )
-	#endif
-	
-	file.crypto_tactical_auto_reload_weapons = GetCurrentPlaylistVarBool( "crypto_tactical_auto_reload_weapons", true )
+
 }
 
 #if SERVER
@@ -3434,12 +3431,7 @@ void function ServerToClient_CryptoDroneAutoReloadDone( entity weapon )
 	if ( file.cameraRui == null )
 		return
 
-	// string weaponName = weapon.GetWeaponSettingString( eWeaponVar.shortprintname )
-	// asset weaponIcon  = weapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
-	// RuiSetString( file.cameraRui, "weaponReloadedHintText", format( "%s %%$%s%%",
-		// Localize( "#CRYPTO_AUTO_RELOAD_DONE", Localize( weaponName ) ),
-		// string(weaponIcon) ) )
-	// RuiSetGameTime( file.cameraRui, "weaponReloadedHintChangeTime", Time() )
+	AnnouncementMessageRight( GetLocalClientPlayer(), Localize( "#CRYPTO_AUTO_RELOAD_DONE", Localize( weapon.GetWeaponClassName() ) ), "", <1, 1, 1>, $"", 1.0 )
 }
 #endif
 
