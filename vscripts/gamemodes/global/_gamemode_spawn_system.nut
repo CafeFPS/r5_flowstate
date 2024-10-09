@@ -1870,6 +1870,9 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 		usePlaylist = true
 	}
 
+	if( !settings.bOptionsAreSet )
+		Flowstate_SpawnSystem_InitGamemodeOptions()
+		
 	table<string,bool> spawnOptions = {}
 	
 	spawnOptions["use_sets"] <- true
@@ -1877,7 +1880,6 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["prefer"] <- false
 	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
-	settings.bOptionsAreSet = true
 	
 	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : SpawnSystem_ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
@@ -1886,12 +1888,14 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 		DEV_ClearSpawns()
 		
 		string str 
-		int iter = 0
 		string name
+		string dataName
 		
+		int iter = 0
 		foreach( spawnInfo in devLocations )
 		{
-			name = "spawn_" + iter
+			dataName = spawnInfo.name
+			name = !empty( dataName ) ? dataName : "spawn_" + iter
 			
 			switch( DEV_SpawnType() )
 			{
