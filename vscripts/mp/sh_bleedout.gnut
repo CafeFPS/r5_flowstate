@@ -37,7 +37,7 @@ global function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged
 global function Bleedout_TryToRemoveInfiniteSelfResOnDownedSquad
 #endif // SERVER
 
-#if DEV
+#if DEVELOPER
 global function Bleedout_OverrideBleedoutTime
 #endif
 
@@ -367,9 +367,9 @@ void function OnPlayerRespawned_ResetSelfResDelay(entity player )
 // If we have enabled the infinite self res feature, apply the self res passive to players entering a downed state
 void function GivePlayerInfiniteSelfRes_Delayed_Thread( entity player )
 {
-	#if DEV
+	#if DEVELOPER
 		Assert( IsNewThread(), "Must be threaded off" )
-	#endif // DEV
+	#endif // DEVELOPER
 
 	if ( !IsValid( player ) )
 		return
@@ -444,7 +444,7 @@ bool function Bleedout_GetIsBleedoutDamageBlocked()
 	return GetCurrentPlaylistVarBool( "bleedout_downedplayers_invulnerable", false )
 }
 
-#if DEV
+#if DEVELOPER
 void function Bleedout_OverrideBleedoutTime( entity player, float time )
 {
 	int type = player.GetPlayerNetInt( "bleedoutType" )

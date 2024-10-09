@@ -226,7 +226,7 @@ void function HoverTankPrintReport( HoverTank ht )
 	printf( "===================" )
 	printf( "" )
 }
-#endif // DEV
+#endif // DEVELOPER
 
 struct FlyPathData
 {

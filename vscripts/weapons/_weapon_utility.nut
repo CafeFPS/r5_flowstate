@@ -4801,7 +4801,7 @@ void function ToggleZeroingMode()
 		printt( "ENTERED ZEROING MODE" )
 	}
 }
-#endif //DEV
+#endif //DEVELOPER
 
 
 #endif // SERVER

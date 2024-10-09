@@ -1414,10 +1414,10 @@ void function InstanceLocationPing_Thread( entity wp )
 		return
 	}
 
-	#if DEV
+	#if DEVELOPER
 		if ( viewPlayer.GetTeamMemberIndex() < 0 )
 			Warning( "%s(): team member index was invalid.", FUNC_NAME() )
-	#endif // DEV
+	#endif // DEVELOPER
 
 	// This can happen through reconnect or late join, the teammember index is not valid, need to wait until it is before instancing the waypoint on the Client
 	while ( IsValid( viewPlayer ) && viewPlayer.GetTeamMemberIndex() < 0 )

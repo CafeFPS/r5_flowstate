@@ -1009,7 +1009,7 @@ bool function CodeCallback_WeaponModCommandCheckMods( entity player, entity weap
 
 	if ( ToggleModNeedsAttachments( mod ) )
 	{
-#if DEV
+#if DEVELOPER
 		return true //Allows debug command 'weapon_mod' to apply attachment-based mods
 #else
 		return ToggleModHasRequiredAttachments( mod, weapon.GetMods() )

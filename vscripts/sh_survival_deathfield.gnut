@@ -843,7 +843,7 @@ void function DEV_ResetSurveyZones()
 	file.surveyMinimapEnts.clear()
 }
 
-#endif //DEV
+#endif //DEVELOPER
 
 
 void function SURVIVAL_AddOverrideCircleLocation( vector origin, float radius, bool forcePreciseLocation = false )

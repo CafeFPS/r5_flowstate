@@ -1280,12 +1280,12 @@ void function Cl_ManageAmbientSound_Thread( entity trigger, entity clientAG )
 	OnThreadEnd(
 		function () : ( trigger, clientAG )
 		{
-			#if DEV
+			#if DEVELOPER
 				printf( "mini gravity skydive launcher thread end" )
 			#endif
 			if ( IsValid( clientAG ) )
 			{
-				#if DEV
+				#if DEVELOPER
 					printf( "DESTROYING AG" )
 				#endif
 				clientAG.SetEnabled( false )

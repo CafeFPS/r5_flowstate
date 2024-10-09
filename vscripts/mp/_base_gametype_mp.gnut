@@ -331,7 +331,7 @@ void function SetIntroCameraSettings( IntroCameraSettings viewSettings )
 #if SERVER
 void function ObserverThread( entity player )
 {
-	#if DEV
+	#if DEVELOPER
 		//printt( "DS: ObserverThread", player )
 	#endif
 
@@ -358,7 +358,7 @@ void function ObserverThread( entity player )
 		}
 	)
 
-	#if DEV
+	#if DEVELOPER
 		//printt( "DS: ObserverThread - after wait", player, player.IsWatchingSpecReplay() )
 	#endif
 
