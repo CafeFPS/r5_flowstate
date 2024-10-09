@@ -343,7 +343,7 @@ void function _CustomTDM_Init()
 	if ( !Flowstate_IsMovementGym() )
 		SurvivalFreefall_Init() //Enables freefall/skydive
 	
-	if( !is1v1EnabledAndAllowed() )
+	if( !is1v1EnabledAndAllowed() && Playlist() != ePlaylists.fs_scenarios )
 	{
 		PrecacheCustomMapsProps()
 		de_NCanals_precache()
@@ -2923,103 +2923,104 @@ void function SimpleChampionUI()
 	if( file.selectedLocation.spawns.len() > 0 )
 		spawnone = file.selectedLocation.spawns[0].origin
 
-	switch( file.selectedLocation.name )
-	{
-		case "Skill trainer By CafeFPS":
-		thread SkillTrainerLoad()
-		break
-		
-		case "Brightwater By Zer0bytes":
-		//printt("Flowstate DEBUG - creating props for Brightwater.")
-		isBrightWaterByZer0 = true
-		thread WorldEntities()
-		wait 1
-		thread BrightwaterLoad()
-		wait 1.5
-		thread BrightwaterLoad2()
-		wait 1.5
-		thread BrightwaterLoad3()
-		break
-		
-		case "Cave By BlessedSeal":
-		thread SpawnEditorPropsSeal()
-		break
-		
-		case "Gaunlet":
-		if(FlowState_ExtrashieldsEnabled())
-			CreateFlowStateGroundMedKit( <-21289, -12030, 3060>, ZERO_VECTOR, 3 , FlowState_ExtrashieldsSpawntime() )
-		break
-		
-		case "White Forest By Zer0Bytes":
-		thread SpawnWhiteForestProps()
-		break
-		
-		case "Custom map by Biscutz":
-		thread LoadMapByBiscutz1()
-		thread LoadMapByBiscutz2()
-		break
-		
-		case "Shipment By AyeZee":
-		thread Shipment()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Killhouse By AyeZee":
-		thread Killhouse()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Nuketown By AyeZee":
-		thread nuketown()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Killyard":
-		thread Killyard()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Dustment by DEAFPS":
-		thread Dustment()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Shoothouse by DEAFPS":
-		thread Shoothouse()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Rust By DEAFPS":
-		thread Rust()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Noshahr Canals by DEAFPS":
-		thread de_NCanals()
-		FS_Hack_CreateBulletsCollisionVolume( spawnone )
-		break
-		
-		case "Movement Gym":
-		thread MovementGym()
-		break
-		
-		case "The Pit":
-		thread SpawnCyberdyne()
-		break
-		
-		case "Lockout":
-		thread SpawnLockout()
-		break
+	if( Playlist() != ePlaylists.fs_scenarios )
+		switch( file.selectedLocation.name )
+		{
+			case "Skill trainer By CafeFPS":
+			thread SkillTrainerLoad()
+			break
+			
+			case "Brightwater By Zer0bytes":
+			//printt("Flowstate DEBUG - creating props for Brightwater.")
+			isBrightWaterByZer0 = true
+			thread WorldEntities()
+			wait 1
+			thread BrightwaterLoad()
+			wait 1.5
+			thread BrightwaterLoad2()
+			wait 1.5
+			thread BrightwaterLoad3()
+			break
+			
+			case "Cave By BlessedSeal":
+			thread SpawnEditorPropsSeal()
+			break
+			
+			case "Gaunlet":
+			if(FlowState_ExtrashieldsEnabled())
+				CreateFlowStateGroundMedKit( <-21289, -12030, 3060>, ZERO_VECTOR, 3 , FlowState_ExtrashieldsSpawntime() )
+			break
+			
+			case "White Forest By Zer0Bytes":
+			thread SpawnWhiteForestProps()
+			break
+			
+			case "Custom map by Biscutz":
+			thread LoadMapByBiscutz1()
+			thread LoadMapByBiscutz2()
+			break
+			
+			case "Shipment By AyeZee":
+			thread Shipment()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Killhouse By AyeZee":
+			thread Killhouse()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Nuketown By AyeZee":
+			thread nuketown()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Killyard":
+			thread Killyard()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Dustment by DEAFPS":
+			thread Dustment()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Shoothouse by DEAFPS":
+			thread Shoothouse()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Rust By DEAFPS":
+			thread Rust()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Noshahr Canals by DEAFPS":
+			thread de_NCanals()
+			FS_Hack_CreateBulletsCollisionVolume( spawnone )
+			break
+			
+			case "Movement Gym":
+			thread MovementGym()
+			break
+			
+			case "The Pit":
+			thread SpawnCyberdyne()
+			break
+			
+			case "Lockout":
+			thread SpawnLockout()
+			break
 
-		case "Narrows":
-		thread SpawnChill()
-		break
+			case "Narrows":
+			thread SpawnChill()
+			break
 
-		case "Beaver Creek":
-		thread SpawnBeavercreek()
-		break
-	}
-	
+			case "Beaver Creek":
+			thread SpawnBeavercreek()
+			break
+		}
+		
 	if( file.currentRound > 1 )
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
 
