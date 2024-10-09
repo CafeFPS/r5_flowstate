@@ -2044,13 +2044,6 @@ void function FS_Scenarios_InitPlayersCards()
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
 
-	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) == 3 || Gamemode() == eGamemodes.WINTEREXPRESS )
-	{
-		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )	
-		UISize screenSize = GetScreenSize()
-		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 165 * screenSize.width / 1920.0, wepSelectorBasePos.y + 2 * screenSize.height / 1080.0 )
-	}
-
 	for(int i = 0; i<3; i++ )
 	{
 		var button = HudElement( "TestCharacterL" + i )
@@ -2273,6 +2266,14 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show, bool reset )
 			
 			Hud_SetVisible( file.enemyTeamCards2[i], false )
 		}
+		
+		if( file.allyTeamCards.len() != 0 && file.enemyTeamCards.len() != 0 && file.enemyTeamCards2.len() != 0 || Gamemode() == eGamemodes.WINTEREXPRESS )
+		{
+			UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )	
+			UISize screenSize = GetScreenSize()
+			Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 165 * screenSize.width / 1920.0, wepSelectorBasePos.y + 2 * screenSize.height / 1080.0 )
+		}
+		
 	} 
 		
 	if( !show && reset )
