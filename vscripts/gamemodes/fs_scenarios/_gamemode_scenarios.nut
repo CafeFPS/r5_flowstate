@@ -1886,7 +1886,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							
 							if( settings.fs_scenarios_characterselect_enabled )
 							{
-								player.SetPlayerNetInt( "characterSelectLockstepIndex", 1 )
+								player.SetPlayerNetInt( "characterSelectLockstepIndex", -1 )
 								player.SetPlayerNetBool( "hasLockedInCharacter", true )
 							}
 							
