@@ -2430,19 +2430,17 @@ void function UpdateButtonStates()
 		if ( fileLevel.isBrowseMode && Gamemode() != eGamemodes.WINTEREXPRESS )
 			continue
 
-		// Team Focused
+		// Team Focused - Focused logic don't work for more than three players, disable if there are more than three players to avoid rui crash
+		// buttonRui don't have more than 3 slots
 		foreach( entity player in players )
 		{
 			if ( PlayerHasCharacterLockedInOrFocused( player, character ) && Gamemode() != eGamemodes.WINTEREXPRESS )
 			{
 				int playerPickIndex = player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" )
-				if ( playerPickIndex <= MAX_TEAM_FOCUS_INDEX )
+				if ( playerPickIndex <= MAX_TEAM_FOCUS_INDEX && playerPickIndex > -1 )
 				{
-					if( Playlist() != ePlaylists.fs_scenarios ) //!FIXME TEMP
-					{
-						RuiSetBool( buttonRui, "teamFocused" + playerPickIndex, true )
-						RuiSetInt( buttonRui, "teamColorIndex" + playerPickIndex, player.GetTeamMemberIndex() )
-					}
+					RuiSetBool( buttonRui, "teamFocused" + playerPickIndex, true )
+					RuiSetInt( buttonRui, "teamColorIndex" + playerPickIndex, player.GetTeamMemberIndex() )
 				}
 			}
 		}
