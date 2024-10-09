@@ -24,6 +24,8 @@ global function FS_Scenarios_SetStopMatchmaking
 global function FS_Scenarios_GetAllPlayersForGroup
 global function FS_Scenarios_GetScenariosTeamCount
 
+global function FS_Scenarios_getWaitingRoomLocation
+
 #if DEVELOPER
 global function Cafe_KillAllPlayers
 global function Cafe_EndAllRounds
@@ -1218,7 +1220,7 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 			#endif
 		}
 	
-		LocPair waitingRoomLocation = getWaitingRoomLocation()
+		LocPair waitingRoomLocation = FS_Scenarios_getWaitingRoomLocation()
 		if (!IsValid(waitingRoomLocation)) return
 		
 		// GivePlayerCustomPlayerModel( player )
@@ -2654,4 +2656,30 @@ scenariosTeamStruct function FS_GetBestTeamToFillForGroup( array<scenariosTeamSt
 	teams.sort( FS_SortTeamsByLessPlayersAmount )
 	// printt( "selected a team with less players", teams[0].players.len() )
 	return teams[0]
+}
+
+LocPair function FS_Scenarios_getWaitingRoomLocation()
+{
+	array<LocPair> locs
+
+	locs.append( NewLobbyPair( <-24658.5098, -20805.4355, -4072.05835>, <0, -61.8279648, 0> ) )
+	locs.append( NewLobbyPair( <-495.617645, 1285.12402, 50272.0625> , <0, -42.2699738, 0>))
+	locs.append( NewLobbyPair( <-460.676514, 20.4265499, 50272.0625> , <0, 49.0330009, 0>))
+	locs.append( NewLobbyPair( <962.6203, 217.382111, 50016.0625> , <0, 143.405518, 0>))
+	locs.append( NewLobbyPair( <1037.58313, 1008.25964, 50016.0625> , <0, -128.112335, 0>))
+	locs.append( NewLobbyPair( <-14.3175983, 1255.98291, 50016.0625> , <0, -91.0898666, 0>))
+	locs.append( NewLobbyPair( <-127.673027, 60.6526756, 50016.0625> , <0, 89.0122375, 0>))
+	locs.append( NewLobbyPair( <-1051.12842, 477.404785, 50016.0625> , <0, 35.1141701, 0>))
+	locs.append( NewLobbyPair( <891.747009, 641.80957, 50054.5352> , <0, 179.900742, 0> ))
+	
+	return locs.getrandom()
+}
+
+LocPair function NewLobbyPair(vector origin, vector angles)
+{
+	LocPair locPair
+	locPair.origin = origin
+	locPair.angles = angles
+
+	return locPair
 }
