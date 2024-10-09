@@ -267,7 +267,7 @@ void function SPDialogueInit()
 		// When a character is loaded from bakery, add their currently registered voice value
 		// to the list of voices to be verified by VerifyExistenceOfNongenericAliases
 		AddCallback_OnItemFlavorRegistered( eItemType.character, OnCharacterRegistered )
-	#endif //DEV
+	#endif //DEVELOPER
 #endif //SERVER
 
 	AddCallback_OnItemFlavorRegistered( eItemType.character, OnCharacterRegistered )
@@ -713,7 +713,7 @@ void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity play
 		if ( milesAlias.find( "%voice%" ) >= 0 )
 			milesAlias = StringReplace( milesAlias, "%voice%", voice )
 
-		// #if DEV
+		// #if DEVELOPER
 			// if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
 			// {
 				// if ( !DoesAliasExist( milesAlias ) )
@@ -724,7 +724,7 @@ void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity play
 					// }
 				// }
 			// }
-		// #endif // DEV
+		// #endif // DEVELOPER
 
 		if ( milesAlias.find( "%perspective%" ) >= 0 )
 			milesAlias = StringReplace( milesAlias, "%perspective%", "3p" )
@@ -1613,9 +1613,9 @@ string function SpecifyAliasFromGeneric( DialogueData data, string alias, entity
 
 	if ( milesAlias.find( "%perspective%" ) >= 0 )
 	{
-		// #if DEV
+		// #if DEVELOPER
 			// Assert( specifiedPerspective != "", "Dialogue with generic perspective specified in CSV alias without specifying intended perspective!" )
-		// #endif // DEV
+		// #endif // DEVELOPER
 
 		milesAlias = StringReplace( milesAlias, "%perspective%", specifiedPerspective )
 	}
@@ -1626,7 +1626,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, string alias, entity
 	if ( milesAlias.find( "%voice%" ) >= 0 )
 		milesAlias = StringReplace( milesAlias, "%voice%", voice )
 
-	// #if DEV
+	// #if DEVELOPER
 		// if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
 		// {
 			// if ( !DoesAliasExist( milesAlias ) )
@@ -1644,7 +1644,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, string alias, entity
 				// }
 			// }
 		// }
-	// #endif // DEV
+	// #endif // DEVELOPER
 
 	if ( specifiedPerspective == "solo" && !DoesAliasExist( milesAlias ) )
 	{

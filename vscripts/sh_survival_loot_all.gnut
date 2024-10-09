@@ -1187,7 +1187,7 @@ void function SURVIVAL_Loot_AddDisabledRef( string ref )
 		file.disabledRefs.append( ref )
 	}
 }
-#if DEV
+#if DEVELOPER
 void function DEV_PrintDisabledLoot()
 {
 	printf("Dumping Disabled Loot")
@@ -1196,7 +1196,7 @@ void function DEV_PrintDisabledLoot()
 		printf( ref )
 	}
 }
-#endif//DEV
+#endif//DEVELOPER
 #if CLIENT
 vector function GetRarityColor( entity ent )
 {

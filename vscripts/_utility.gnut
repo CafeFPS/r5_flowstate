@@ -2581,7 +2581,7 @@ void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int
 }
 
 #if DEVELOPER
-// DEV function to toggle player view between the skybox and the real world.
+// DEVELOPER function to toggle player view between the skybox and the real world.
 void function ToggleSkyboxView( float scale = 0.001 )
 {
 	entity player = GetEntByIndex( 1 )
@@ -4580,10 +4580,10 @@ void function KillPlayersUnderMap_Thread( float kill_depth )
 			{
 				Assert( IsAlive(player) )
 
-				#if DEV
+				#if DEVELOPER
 					if ( player.IsPlayer() && player.IsNoclipping() )
 						continue
-				#endif //DEV
+				#endif //DEVELOPER
 
 				float playerZ = player.GetLocalOrigin().z
 

@@ -299,7 +299,7 @@ bool function ShouldStompConAltForLine( string conversationType, entity speaking
 		{
 			if ( foundConAlt != "" )
 			{
-				#if DEV
+				#if DEVELOPER
 					if ( !duplicateLegendsOnSquad )
 						Assert( false, "More then one condPlayer exists for con alt " + conversationType + " for speaker " + GetPlayerVoice( speakingPlayer ) + " , this is not currently supported." )
 				#endif

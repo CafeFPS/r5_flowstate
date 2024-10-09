@@ -35,7 +35,7 @@ global function InitXP
 global function XP_GameStartedPlaying
 #if DEVELOPER
 global function DEV_PopulatePostGame
-#endif //DEV
+#endif //DEVELOPER
 #else
 global const asset PLAYER_LEVELUP_FX = $"P_levelup_screen"
 #endif
@@ -402,7 +402,7 @@ void function DEV_PopulatePostGame( entity player, int level = -1 )
 
 	g_trackXP = true
 }
-#endif //DEV
+#endif //DEVELOPER
 
 array<RewardData> function GetRewardsForAccountLevel( int levelIndex )
 {

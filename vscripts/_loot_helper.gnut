@@ -1856,7 +1856,7 @@ void function LootHelper_TestAmmoGrant( entity player, vector radiusCenter, floa
 		// thread FakePhysicsThrow( player, itemEnt, <vel.x, vel.y, 200>, true )
 		// throwData = SURVIVAL_DropLoot_IncrementThrowAngle( throwData )
 	// }
-	#endif // DEV
+	#endif // DEVELOPER
 }
 
 void function LootHelper_TestCompatibleScopes( entity player )
