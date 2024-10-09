@@ -1877,6 +1877,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["prefer"] <- false
 	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
+	settings.bOptionsAreSet = true
 	
 	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : SpawnSystem_ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
