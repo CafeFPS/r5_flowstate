@@ -128,8 +128,8 @@ void function JumpPad_consumeDoubleJump( entity player )
 
 	RestorePlayerSettings( player )
 
-	EmitSoundOnEntityOnlyToPlayer( player, player, "jumpjet_jet_body_1p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "jumpjet_jet_body_3p_enemy" )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "JumpPad_DoubleJump_1P" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_DoubleJump_3P" )
 }
 
 void function RestorePlayerSettings( entity player )
@@ -505,10 +505,17 @@ void function FSCannon_JumpJetsWhileAirborne( entity player )
 		friendlyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		jumpJetFXs.append( friendlyFX )
 
+		friendlyFX.RemoveFromAllRealms()
+		friendlyFX.AddToOtherEntitysRealms( player )
+		
 		int enemyID    = GetParticleSystemIndex( ENEMY_JUMPJET_DBL )
 		entity enemyFX = StartParticleEffectOnEntity_ReturnEntity( player, enemyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
 		SetTeam( enemyFX, team )
 		enemyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+
+		enemyFX.RemoveFromAllRealms()
+		enemyFX.AddToOtherEntitysRealms( player )
+		
 		jumpJetFXs.append( enemyFX )
 	}
 

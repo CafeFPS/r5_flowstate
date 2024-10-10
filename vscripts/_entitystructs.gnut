@@ -1075,12 +1075,6 @@ global struct ServerPlayerStruct
 
 	int movementRecorderCharacter = 0
 
-	// NOT IMPLEMENTED!!!!!!!!!!!
-	
-	// array< var > recordingAnims
-	// array< LocPair > recordingAnimsCoordinates
-	//v2. Café
-	
 	/* table< int, array< var > > recordingAnims
 	table< int, array< LocPair > > recordingAnimsCoordinates
 	array< int > recordingAnimsChosenCharacters */
@@ -1128,7 +1122,6 @@ global struct ServerPlayerStruct
 	array<DropWeaponData> weaponsToDropData
 	
 	int scenariosTeamsMatched = 0
-	float scenariosTimePlayerEnteredInLobby = -1
 
 	//Bleedout update
 	int numSelfRevivesUsed = 0
@@ -1145,6 +1138,8 @@ global struct ServerPlayerStruct
 	int forceAutoSprintCount
 	
 	array<ConsumableInventoryItem> ornull cachedInventory
+	
+	float lastTimeUsedRailjump
 }
 
 global struct ChallengeScore
@@ -1440,3 +1435,4 @@ global struct ServerFirstPersonProxyStruct
 {
 	entity battery
 }
+	
