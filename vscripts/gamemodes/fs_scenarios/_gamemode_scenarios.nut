@@ -1926,6 +1926,10 @@ void function FS_Scenarios_Main_Thread()
 							
 							Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
 							Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+							
+							array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "mp_weapon_thermite_grenade", "health_pickup_combo_full", "health_pickup_combo_large", "health_pickup_combo_large", "health_pickup_health_large", "health_pickup_health_large", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_health_small", "health_pickup_health_small"]
+								foreach(item in loot)
+									SURVIVAL_AddToPlayerInventory(player, item)
 						}
 					}
 				)
