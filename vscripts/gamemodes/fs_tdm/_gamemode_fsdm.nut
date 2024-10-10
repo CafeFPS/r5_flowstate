@@ -1197,7 +1197,10 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 				}
 
 				if( Flowstate_IsFastInstaGib() )
+				{
+					attacker.p.lastTimeUsedRailjump = -1 //todo change in client too or maybe not necessary if the actual wait is low
 					victim.Gib( <0,0,100> )
+				}
 
 				wait DEATHCAM_TIME_SHORT
 

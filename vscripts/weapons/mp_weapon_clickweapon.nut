@@ -28,6 +28,8 @@ global function Clickweapon_Init
 	global function LGDuels_UpdateSettings
 	global function LGDuels_SaveToServerPersistence
 
+	global function ServerCallback_CreatesLaserFXFromServer
+	
 	#if DEVELOPER 
 		global function DEV_PrintBeams
 	#endif 
@@ -47,8 +49,11 @@ global function Clickweapon_Init
 
 const asset TheBestAssetInTheGame 	= $"P_tesla_trap_link_CP"
 const asset expAsset = $"P_plasma_exp_SM"
-const float LG_SINGLE_FIRE_DEBOUNCE = 0.75 //Incrased fire rate
-const float LG_DRAG_TIME			= 0.35 //Increased the time the fx is alive 
+const asset railjumpAsset = $"P_plasma_exp_SM"
+const float LG_SINGLE_FIRE_DEBOUNCE = 0.6 //Increased fire rate
+const float LG_DRAG_TIME			= 0.45 //Increased the time the fx is alive 
+const float LG_MAX_DISTANCE_RAILJUMP_TRACE = 400
+const float LG_RAILJUMP_COOLDOWN = 1.0
 
 struct BeamSettings 
 {
@@ -83,7 +88,9 @@ void function Clickweapon_Init()
 	RegisterSignal( "EndLaser" )
 	RegisterSignal( "EndNoAutoThread" )
 	RegisterSignal( "PlayerStartShotingLightningGun" )
+	RegisterSignal( "RestartAirborne" )
 	PrecacheParticleSystem( expAsset )
+	PrecacheParticleSystem( railjumpAsset )
 	
 	#if CLIENT
 		AddCreateCallback( "player", FS_LG_OnPlayerCreated )
@@ -96,12 +103,12 @@ void function Clickweapon_Init()
 		SetConVarInt( "fs_lightning_gun_color_b", DesiredB )
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 		
-		if( Playlist() == ePlaylists.fs_dm_fast_instagib )
-			RegisterNetworkedVariableChangeCallback_time( "lastLightningGunShotTime", OnPlayerShoot )
+		RegisterConCommandTriggeredCallback( "+zoom", LGUN_TryRailJump ) //improve this by registering/deregistering properly in activate/deactivate. Cafe
 	#endif
 	
 	#if SERVER
 		AddCallback_OnWeaponAttack( FS_LG_PlayerStartShooting )
+		AddClientCommandCallback("PlayerTryRailJump", ClientCommand_FS_LG_TryRailJump )
 	#endif
 	
 	#if SERVER || CLIENT 
@@ -120,12 +127,150 @@ void function DEV_PrintBeams()
 }
 #endif //DEVELOPER && CLIENT
 
-#if CLIENT
-void function OnPlayerShoot( entity player, float old, float new, bool actuallyChanged )
+#if SERVER
+bool function ClientCommand_FS_LG_TryRailJump(entity player, array<string> args )
 {
-	if ( player == GetLocalViewPlayer() || !actuallyChanged )
+	if( !LGUN_CanPlayerRailjump( player ) )
+		return true
+
+	return true
+}
+
+
+void function LGUN_Airborne( entity player )
+{
+	if ( !IsValid( player ) || !player.IsPlayer() )
 		return
 
+	Signal( player, "RestartAirborne" )
+	EndSignal( player, "RestartAirborne" )
+	
+	player.SetOneHandedWeaponUsageOn()
+	EmitSoundOnEntityExceptToPlayer( player, player, "boost_freefall_body_3p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_Ascent_Windrush" )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "boost_freefall_body_1p" )
+
+	array<entity> jumpJetFXs
+	array<string> attachments = [ "vent_left", "vent_right" ]
+	int team                  = player.GetTeam()
+	foreach ( attachment in attachments )
+	{
+		int friendlyID    = GetParticleSystemIndex( TEAM_JUMPJET_DBL )
+		entity friendlyFX = StartParticleEffectOnEntity_ReturnEntity( player, friendlyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		friendlyFX.SetOwner( player )
+		SetTeam( friendlyFX, team )
+		
+		friendlyFX.RemoveFromAllRealms()
+		friendlyFX.AddToOtherEntitysRealms( player )
+		
+		friendlyFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)
+		jumpJetFXs.append( friendlyFX )
+
+		int enemyID    = GetParticleSystemIndex( ENEMY_JUMPJET_DBL )
+		entity enemyFX = StartParticleEffectOnEntity_ReturnEntity( player, enemyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		enemyFX.SetOwner( player )
+		SetTeam( enemyFX, team )
+		enemyFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)
+
+		enemyFX.RemoveFromAllRealms()
+		enemyFX.AddToOtherEntitysRealms( player )
+		
+		jumpJetFXs.append( enemyFX )
+	}
+	
+	OnThreadEnd(
+		function() : ( jumpJetFXs, player )
+		{
+			if ( IsValid( player ) )
+			{
+				StopSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
+				StopSoundOnEntity( player, "boost_freefall_body_3p" )
+				StopSoundOnEntity( player, "boost_freefall_body_1p" )
+				
+				player.SetOneHandedWeaponUsageOff()
+			}
+			
+			// if( IsValid( mover ) )
+				// mover.Destroy()
+			
+			foreach ( fx in jumpJetFXs )
+			{
+				if ( IsValid( fx ) )
+					fx.Destroy()
+			}
+		}
+	)
+
+	WaitFrame()
+	wait 0.1
+	
+	while( IsValid(player) && !player.IsOnGround() )
+	{
+		WaitFrame()
+	}
+}
+#endif
+
+bool function LGUN_CanPlayerRailjump( entity player ) //Cafe
+{
+	if( !IsValid( player ) || !IsAlive( player ) || player.ContextAction_IsActive() )
+		return false
+	
+	if( GetGameState() != eGameState.Playing )
+		return false
+	
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+		return false
+
+	if( !file.isInstaGib ) //Fixme. Cafe
+		return false
+	
+	if( Time() - player.p.lastTimeUsedRailjump < LG_RAILJUMP_COOLDOWN )
+		return false
+	
+	vector viewVec = player.GetViewVector()
+	viewVec.Normalize()
+	
+	if( viewVec.z > 0 )
+		return false
+	
+	vector traceEnd = player.EyePosition() + ( player.GetViewVector() * 50000)
+	TraceResults trace = TraceLineHighDetail( player.EyePosition(), traceEnd, [player], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+	float traceDistance = Distance( player.EyePosition(), trace.endPos )
+	
+	
+	if( traceDistance > LG_MAX_DISTANCE_RAILJUMP_TRACE )
+		return false
+	
+	float distanceValue = min( traceDistance, LG_MAX_DISTANCE_RAILJUMP_TRACE )
+	distanceValue = distanceValue / LG_MAX_DISTANCE_RAILJUMP_TRACE
+	printw( "Distance to the endPos", traceDistance, distanceValue )
+	
+	if( distanceValue < 0.1 )
+		return false
+
+	player.p.lastTimeUsedRailjump = Time()
+	
+	weapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+	player.KnockBack( player.GetViewVector() * -1000 * ( 1 - distanceValue ) , 0.1 )
+	
+	StartParticleEffectInWorld( GetParticleSystemIndex( railjumpAsset ), trace.endPos, <0, 0, 0> ) //Explosion
+	
+	#if SERVER
+	thread LGUN_Airborne( player )
+	#endif
+	
+	return true
+}
+
+#if CLIENT
+void function LGUN_TryRailJump( entity player )
+{
+	if( player != GetLocalClientPlayer() )
+		return
+	
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	
 	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
@@ -134,13 +279,104 @@ void function OnPlayerShoot( entity player, float old, float new, bool actuallyC
 	if( !file.isInstaGib ) //Fixme. Cafe
 		return
 	
+	if( !LGUN_CanPlayerRailjump( player ) )
+		return
+	
+	//temp
+	OnLocalPlayerShoot( player, player.EyePosition(), player.GetViewVector(), true )
+			
+	
+	printw("railjump")
+	player.ClientCommand("PlayerTryRailJump")
+}
+
+void function ServerCallback_CreatesLaserFXFromServer( entity fromPlayer, vector origin, vector direction )
+{
+	if( fromPlayer != GetLocalViewPlayer() )
+	{
+		OnEnemyPlayerShoot( fromPlayer, origin, direction ) //this method should ensure correct endpos for the laser (the actual hitscan weapon endpos and not a predicted one) Cafe
+	}
+}
+
+void function OnLocalPlayerShoot( entity player, vector origin, vector direction, bool isRailjump = false )
+{
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+		return
+
+	if( !file.isInstaGib || player != GetLocalViewPlayer() )
+		return
+
+	vector traceEnd = origin + (direction * 50000)
+	TraceResults trace = TraceLineHighDetail( origin, traceEnd, player, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+	entity moverForLaserEnt = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+	moverForLaserEnt.SetOrigin( ClampToWorldspace( trace.endPos ) )
+	
+	entity moverForHand = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+
+	entity viewmodel = weapon.GetWeaponViewmodel()
+
+	if( IsValid( viewmodel ) )
+	{
+		if( weapon.LookupViewModelAttachment( "CAFEWASHERE" ) > 0 )
+			moverForHand.SetParent( viewmodel, "CAFEWASHERE" ) //I'm insane
+	}
+	
+	if( player.IsThirdPersonShoulderModeOn() || !IsValid( viewmodel ) )
+	{
+		if( player.LookupAttachment( "R_HAND" ) > 0 )
+			moverForHand.SetParent( player, "R_HAND" )
+	}
+	
+	int fxIDTeam = GetParticleSystemIndex( TheBestAssetInTheGame )
+
+	int localFx = StartParticleEffectOnEntityWithPos( moverForHand, fxIDTeam, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+	EffectSetDontKillForReplay( localFx )
+	EffectAddTrackingForControlPoint( localFx, 1, moverForLaserEnt, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0> )
+	if( !isRailjump )
+		EffectSetControlPointVector( localFx, 2, chosenColor )
+	else
+		EffectSetControlPointVector( localFx, 2, <255,255,255> )
+	
+	moverForHand.ClearParent() //to leave the fx alive for a moment
+	
+	if( !isRailjump )
+		StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( expAsset ), trace.endPos, <0, 0, 0> ) //Explosion
+	// else
+		// StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( railjumpAsset ), trace.endPos, <0, 0, 0> ) //Explosion
+	
+	thread function () : ( localFx )
+	{
+		float endtime = Time() + LG_DRAG_TIME
+		
+		while( Time() < endtime )
+			WaitFrame()
+		
+		EffectStop( localFx, false, true )
+	}()
+}
+
+void function OnEnemyPlayerShoot( entity player, vector origin, vector direction )
+{
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+		return
+
+	if( !file.isInstaGib ) //Fixme. Cafe
+		return
+
+	vector traceEnd = origin + (direction * 50000)
+
+	TraceResults trace = TraceLineHighDetail( origin, traceEnd, player, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
 	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-	if( player in file.beammover && IsValid( file.beammover[player] ) )
-		mover.SetOrigin( file.beammover[player].GetOrigin() )
+	mover.SetOrigin( ClampToWorldspace( trace.endPos ) )
 	
 	entity handmover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-	if( player in file.handmover && IsValid( file.handmover[player] ) )
-		handmover.SetOrigin( file.handmover[player].GetOrigin() )
+	handmover.SetOrigin( origin )
 
 	int laserStoreMe = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
 	StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( expAsset ), mover.GetOrigin(), <0, 0, 0> ) //Explosion
@@ -168,7 +404,7 @@ void function OnPlayerShoot( entity player, float old, float new, bool actuallyC
 	EffectAddTrackingForControlPoint( laserStoreMe, 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
 
 	#if DEVELOPER
-	Warning( player + " 3p shot fx created " + new )
+	Warning( player + " 3p shot fx created" )
 	#endif
 }
 
@@ -270,7 +506,6 @@ void function CheckBeamSettingsExist()
 }
 #endif
 
-
 // #if CLIENT 
 	// void function DEV_DebuggerThread( entity player, entity weapon )
 	// {
@@ -299,7 +534,27 @@ void function CheckBeamSettingsExist()
 			// }
 		// }
 	// }
-// #endif 
+// #endif
+
+void function OnWeaponCustomActivityStart_weapon_lightninggun( entity weapon )
+{
+	if ( !IsValid( weapon ) )
+		return
+
+	entity player = weapon.GetWeaponOwner()
+	if ( !IsValid( player ) )
+		return 
+
+	printt( "OnWeaponCustomActivityStart_weapon_lightninggun" )
+}
+
+void function OnWeaponCustomActivityEnd_weapon_lightninggun( entity weapon )
+{
+	if ( !IsValid( weapon ) )
+		return
+
+	printt( "OnWeaponCustomActivityEnd_weapon_lightninggun" )
+}
 
 void function OnWeaponActivate_Clickweapon( entity weapon ) 
 {
@@ -307,35 +562,38 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 		if ( InPrediction() && !IsFirstTimePredicted() )
 			return
 
-		entity sPlayer = weapon.GetWeaponOwner()
+		entity player = GetLocalViewPlayer()
 
 		if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
 			return
-		
-		bool isAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
 
-		thread function () : ( weapon, sPlayer, isAuto ) 
+		bool isAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto ) //same ile.isInstaGibwhich will be replaced with no auto weapon.
+		
+		//This logic is only for the auto weapon
+		thread function () : ( weapon, player, isAuto ) 
 		{
-			Signal( sPlayer, "EndLaser" )
-			EndSignal( sPlayer, "EndLaser" )
-			
-			if( sPlayer.p.lightningGunReady == false ) //to sync effect from weapon swap.
+			Signal( player, "EndLaser" )
+			EndSignal( player, "EndLaser" )
+
+			EndSignal( weapon, "OnDestroy" )
+			EndSignal( player, "OnDeath" )
+			EndSignal( player, "OnDestroy" )
+				
+			if( player.p.lightningGunReady == false ) //to sync effect from weapon swap.
 			{
 				while( !weapon.IsReadyToFire() )
 					WaitFrame()
 			}
 
-			while( IsValid( sPlayer ) && IsValid( sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && sPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) == weapon )
+			while( true )
 			{
-				if( weapon.IsReadyToFire() || sPlayer.p.lightningGunReady )
+				if( weapon.IsReadyToFire() || player.p.lightningGunReady )
 				{
 					// Warning( "CHECK FOR ATTACK , allowed= " + currentAttackTime + " ,weaponnext= " + weapon.GetNextAttackAllowedTime() + " ,Time= " + Time() )
 					// DEV_SetBreakPoint()
 					
-					if( sPlayer.IsInputCommandHeld( IN_ATTACK ) && isAuto || isSettingsMenuOpen && modifyingLocalBeam || !isAuto && sPlayer.IsInputCommandPressed( IN_ATTACK ) )
-					{	
-						entity player = GetLocalViewPlayer()
-
+					if( player.IsInputCommandHeld( IN_ATTACK ) && isAuto || isSettingsMenuOpen && modifyingLocalBeam )
+					{
 						vector origin = ClampToWorldspace( player.GetCrosshairTraceEndPos() )
 						
 						entity moverForLaserEnt 
@@ -386,7 +644,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 						
 						if( !isAuto ) //maintains visual for single activate.
 						{
-							sPlayer.p.lightningGunReady = false //for effect sync
+							player.p.lightningGunReady = false //for effect sync
 							
 							float endtime = Time() + LG_DRAG_TIME
 							
@@ -398,12 +656,12 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 					} 
 					else
 					{
-						StopEffectForPlayer( sPlayer )
+						StopEffectForPlayer( player )
 					}
 				}
 				else 
 				{
-					StopEffectForPlayer( sPlayer )
+					StopEffectForPlayer( player )
 				}
 
 				WaitFrame()
@@ -435,15 +693,33 @@ var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAtta
 		// return
 	
 	bool bAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
-	
+	entity player = weapon.GetWeaponOwner()
+		
 	if( file.isInstaGib || !bAuto )
 	{
 		weapon.OverrideNextAttackTime( Time() + LG_SINGLE_FIRE_DEBOUNCE )
 	
 		#if CLIENT 
+			//Better place to create the local player fx
+			if( player == GetLocalViewPlayer() )
+				OnLocalPlayerShoot( GetLocalViewPlayer(), attackParams.pos, attackParams.dir )
+			
 			weapon.GetWeaponOwner().p.lightningGunReady = true //for effect sync
 		#endif
+		
+		#if SERVER
+		foreach( splayer in GetPlayerArray() )
+			Remote_CallFunction_NonReplay( splayer, "ServerCallback_CreatesLaserFXFromServer", player, attackParams.pos, attackParams.dir ) //to send correct end laser pos to the client
+		#endif
 	}
+
+	thread function () : ( weapon ) //Don't allow weapon activation while in cooldown. Cafe
+	{
+		EndSignal( weapon, "OnDestroy" )
+		weapon.AllowUse( false )
+		wait LG_SINGLE_FIRE_DEBOUNCE + 0.1
+		weapon.AllowUse( true )
+	}()
 	
 	return weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, weapon.GetWeaponDamageFlags() )
 	
@@ -454,8 +730,6 @@ var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAtta
 	//This should be moved to aimtrainer ondamaged callback
 	if( !file.isAimTrainer ) //Gamemode() != eGamemodes.fs_aimtrainer ) 
 		return
-
-	entity player = weapon.GetWeaponOwner()
 
 	if(!player.p.isChallengeActivated) 
 		return
@@ -508,16 +782,17 @@ void function FS_LG_PlayerStartShooting( entity player, entity weapon, string we
 {
 	if ( !IsValid( player ) || !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
 		return
-	
-	thread FS_LG_PlayerStartShooting_Thread( player, weapon ) 
+		
+	#if DEVELOPER
+	printw( "LGUN - LASER CREATED", player, weapon, weaponName, ammoUsed, attackOrigin, attackDir )
+	#endif
+
+	thread FS_LG_PlayerStartShooting_Thread( player, weapon ) //change no auto to a remote funct to play fx, use attackDir instead. Cafe
 }
 
 void function FS_LG_PlayerStartShooting_Thread( entity player, entity weapon )
 {
 	player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
-	
-	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
-		player.SetPlayerNetTime( "lastLightningGunShotTime", Time() )
 	
 	Signal( player, "PlayerStartShotingLightningGun" )
 	EndSignal( player, "PlayerStartShotingLightningGun" )

@@ -273,9 +273,12 @@ void function RemoteFunctions_Init_Begin()
 
 	//Lightning Gun
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
+	Remote_RegisterClientFunction( "ServerCallback_CreatesLaserFXFromServer", "entity", "vector", -66000.0, 66000.0, 32, "vector", -32000.0, 32000.0, 32 )
 	
+	//Sentinel
 	Remote_RegisterClientFunction( "Flowstate_SentinelChargeHUD", "float", 0.0, 999999.0, 32 )
 
+	
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
 	Remote_RegisterUIFunction( "UICallback_ForceCloseDeathScreenMenu" )
