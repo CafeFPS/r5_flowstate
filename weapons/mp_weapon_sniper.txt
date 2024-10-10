@@ -337,8 +337,16 @@
 		
 		"9k"
 		{
-			"spread_air_hip"	"0"
-			"spread_air_ads"  	"0"
+			"spread_stand_hip"                                "0"
+			"spread_stand_hip_run"                            "0"
+			"spread_stand_hip_sprint"                         "0"
+			"spread_stand_ads"                                "0.0"
+			"spread_crouch_ads"                               "0.0"
+			"spread_crouch_hip"                               "0"
+
+
+			"spread_air_hip"                                  "0"
+			"spread_air_ads"                                  "0.0"
 		}
 	}
 
