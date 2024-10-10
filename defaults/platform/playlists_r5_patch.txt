@@ -1823,6 +1823,23 @@ playlists
 																	// if player tries to rest, it will send them to rest after fight 
 																	// and tell them they can try again in (n) seconds. 
 						
+				enable_challenges								0 //Disable challenges in scenarios to prevent crash
+						
+				///////////////////////////////////////
+				// The following can be used to create custom loadouts 
+				// "weapon_name attachment atachment, weapon_name2"
+				// https://discord.com/channels/873158454850756638/876944169594159105
+				
+				// Each string you place here can only be 1000 characters long, 
+				// use _continue respectively for large lists
+				
+				custom_1v1_weapons_primary 						""
+				custom_1v1_weapons_primary_continue 			""
+				
+				custom_1v1_weapons_secondary 					""
+				custom_1v1_weapons_secondary_continue 			""
+				
+				customAttachments 								"optic_cq_hcog_classic"
 						
 				// extra		
 				default_start_in_rest_setting					0 // players default to starting in rest if 1 and player has no prior saved preference
