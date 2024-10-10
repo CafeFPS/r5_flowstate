@@ -426,7 +426,7 @@ void function UpdateSystemPanel( var panel )
 			break
 
 			case ePlaylists.fs_scenarios:
-			msgonbottom = "Flowstate Zone Wars - " + MyPing() + " ms."
+			msgonbottom = "Flowstate Zone Wars - Ping: " + MyPing() + " ms."
 			break
 
 			case ePlaylists.fs_1v1:
@@ -435,7 +435,7 @@ void function UpdateSystemPanel( var panel )
 			msgonbottom = "Flowstate 1V1 - Ping: " + MyPing() + " ms."
 			break
 
-			case ePlaylists.movementrecorder:
+			case ePlaylists.fs_movementrecorder:
 			msgonbottom = "FS Movement Recorder - Ping: " + MyPing() + " ms."
 			break
 			
