@@ -3540,7 +3540,7 @@ void function Gamemode1v1_Init( int eMap )
 	if( settings.is3v3Mode )
 	{
 		forbiddenZoneInit( GetMapName() )
-		thread FS_Scenarios_Main_Thread( FS_Scenarios_getWaitingRoomLocation() )
+		thread FS_Scenarios_Main_Thread( )
 		return
 	}
 	
