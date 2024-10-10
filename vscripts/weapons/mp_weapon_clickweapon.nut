@@ -254,7 +254,7 @@ bool function LGUN_CanPlayerRailjump( entity player ) //Cafe
 	player.p.lastTimeUsedRailjump = Time()
 	
 	weapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
-	player.KnockBack( player.GetViewVector() * -1000 * ( 1 - distanceValue ) , 0.1 )
+	player.KnockBack( player.GetViewVector() * -800 * ( 1 - distanceValue ) , 0.1 )
 	
 	StartParticleEffectInWorld( GetParticleSystemIndex( railjumpAsset ), trace.endPos, <0, 0, 0> ) //Explosion
 	
