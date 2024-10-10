@@ -5188,7 +5188,7 @@ entity function Create_Invis_Button(vector pos, vector ang, bool up)
     return button
 }
 
-void function Invis_Button(vector pos, vector ang, bool up, vector destination, vector direction, string message = "") {
+void function Invis_Button(vector pos, vector ang, bool up, vector destination, vector direction, string message = "", string submessage = "", int type = 4, float duration = 5.0, string token = "#FS_STRING_VAR") {
     // arrow
     vector offset_pos = <0,0,100>
     vector offset_angle = <90,-90,0>
@@ -5202,13 +5202,13 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
     // button
     entity panel = Create_Invis_Button(pos, ang, up)
 
-    AddCallback_OnUseEntity( panel, void function(entity panel, entity ent, int input) : (destination, direction, message)
+    AddCallback_OnUseEntity( panel, void function(entity panel, entity ent, int input) : (destination, direction, message, submessage, type, duration, token)
     {
         if (!IsValid(ent) || !ent.IsPlayer())
             return
 
         if (ent.p.isTimerActive) {
-          Message(ent, "Can't use it while timer is running")
+			LocalMsg(ent, token, "", type, duration, "Can't use it while timer is running", "", "", false)
           return
         }
 
@@ -5216,8 +5216,8 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
         ent.SetAngles(direction)
         ent.SetVelocity(<0, 0, 0>)
 
-        if (message.len())
-            Message(ent, message)
+        if (message.len() || submessage.len())
+			LocalMsg(ent, token, "", type, duration, message, submessage, "", false)
     })
 
 }
