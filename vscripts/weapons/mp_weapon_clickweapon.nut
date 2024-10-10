@@ -144,6 +144,7 @@ void function LGUN_Airborne( entity player )
 
 	Signal( player, "RestartAirborne" )
 	EndSignal( player, "RestartAirborne" )
+	EndSignal( player, "OnDeath" )
 	
 	player.SetOneHandedWeaponUsageOn()
 	EmitSoundOnEntityExceptToPlayer( player, player, "boost_freefall_body_3p" )
