@@ -1930,6 +1930,8 @@ void function FS_Scenarios_Main_Thread()
 							array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "mp_weapon_thermite_grenade", "health_pickup_combo_full", "health_pickup_combo_large", "health_pickup_combo_large", "health_pickup_health_large", "health_pickup_health_large", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_health_small", "health_pickup_health_small"]
 								foreach(item in loot)
 									SURVIVAL_AddToPlayerInventory(player, item)
+							
+							SURVIVAL_AutoEquipOrdnanceFromInventory( player, false )
 						}
 					}
 				)
