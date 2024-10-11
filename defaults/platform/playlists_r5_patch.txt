@@ -1791,7 +1791,7 @@ playlists
 				fs_scenarios_zonewars_ring_mode					1
 				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
 				fs_scenarios_ring_damage_step_time				1.5
-				fs_scenarios_game_start_time_delay				7.0
+				fs_scenarios_game_start_time_delay				5.0
 				fs_scenarios_ring_damage						25.0
 				fs_scenarios_characterselect_enabled			1
 				fs_scenarios_characterselect_time_per_player	3.5
@@ -1811,7 +1811,7 @@ playlists
 				disable_core_stats								0
 				COMMAND_RATE_LIMIT								0.200 //Rate limiting for all custom client commands
 						
-				afk_to_rest_bool								1 // makes player rest when afk instead of kick
+				afk_to_rest_bool								0 // dont enable until rest is fixed for scenarios. makes player rest when afk instead of kick
 				enable_ping_kick								0 // 0 disables ping kick for this mode
 				enable_afk_thread 								1 //0 disables afk thread for this mode
 				superglide_counter_msg							1 // Shows players superglide count
