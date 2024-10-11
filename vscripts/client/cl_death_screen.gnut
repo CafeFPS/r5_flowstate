@@ -208,6 +208,8 @@ void function ServerCallback_ShowDeathScreen()
 
 void function ServerCallback_ShowFlowstateDeathRecapNoSpectate()
 {
+	// CloseAllMenus()
+	Warning( "ShowFlowstateDeathRecapNoSpectate" )
 	entity player = GetLocalClientPlayer()
 
 	file.isOpen = true
@@ -1174,13 +1176,13 @@ int function GetCurrentTabIndex()
 
 void function SetCurrentAttackerEHandle( EncodedEHandle attackerEHandle )
 {
-	// file.currentAttackerEHandle = attackerEHandle
+	file.currentAttackerEHandle = attackerEHandle
 
-	// entity clientPlayer          = GetLocalClientPlayer()
-	// EncodedEHandle clientEHandle = clientPlayer.GetEncodedEHandle()
-	// bool canReport               = attackerEHandle != EncodedEHandle_null && attackerEHandle != clientEHandle
+	entity clientPlayer          = GetLocalClientPlayer()
+	EncodedEHandle clientEHandle = clientPlayer.GetEncodedEHandle()
+	bool canReport               = false
 
-	// RunUIScript( "UI_DeathScreenSetCanReportPlayer", canReport )
+	RunUIScript( "UI_DeathScreenSetCanReportPlayer", canReport )
 }
 
 void function SetClearDeathRecapOnClose( bool shouldClear )
@@ -1441,6 +1443,9 @@ void function UpdateBlackBarRui()
 	if ( file.blackBarRui == null )
 		return
 	
+	entity player               = GetLocalClientPlayer()
+	if ( ! IsValid ( player ) )
+		return	
 	
 	if ( GetGameState() == eGameState.Epilogue )
 	{
@@ -1449,7 +1454,6 @@ void function UpdateBlackBarRui()
 		return
 	}
 
-	entity player = GetLocalClientPlayer()
 	entity playerSpectateTarget = player.GetObserverTarget()
 
 	//
@@ -2005,27 +2009,21 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 
 void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, EncodedEHandle killerEHandle )
 {
-	thread function() : ( gotKnockedDown, killerEHandle )
-	{
-		if ( file.deathRecapDamageBlocks.len() == 0 )
-			return
-		
-		file.deathRecapDamageBlocks.reverse()
-		
-		wait 0.1
-		
-		file.deathRecapDataUpdated = true
+	if ( file.deathRecapDamageBlocks.len() == 0 )
+		return
 
-		file.killerEHandle = killerEHandle
-		if ( !EHIHasValidScriptStruct( killerEHandle ) )
-			file.killerEHandle = EncodedEHandle_null
+	file.deathRecapDataUpdated = true
 
-		entity clientPlayer = GetLocalClientPlayer()
-		if ( IsValid( clientPlayer ) )
-			Signal( clientPlayer, "DeathRecapDataUpdated" )
-		
-		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true ) 
-	}()	
+	file.killerEHandle = killerEHandle
+	if ( !EHIHasValidScriptStruct( killerEHandle ) )
+		file.killerEHandle = EncodedEHandle_null
+
+	entity clientPlayer = GetLocalClientPlayer()
+	if ( IsValid( clientPlayer ) )
+		Signal( clientPlayer, "DeathRecapDataUpdated" )
+
+	
+	EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
 }
 
 void function DeathScreen_UpdateRespawnTime( float startTime, float endTime )
@@ -2102,7 +2100,6 @@ void function SignalUpdate()
 	wait 0.1
 	file.deathRecapDataUpdated = true
 	Signal( GetLocalClientPlayer(), "DeathRecapDataUpdated" )
-	ServerCallback_ShowDeathScreen()
 }
 
 array<DeathRecapDamageData> function CreateFakeRecapData( entity victim, array<entity> enemyArray )

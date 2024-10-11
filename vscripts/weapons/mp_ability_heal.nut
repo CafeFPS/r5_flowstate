@@ -3,10 +3,13 @@ global function OnWeaponPrimaryAttack_ability_heal
 global function OnWeaponChargeEnd_ability_heal
 global function OnWeaponAttemptOffhandSwitch_ability_heal
 
+const float STIM_DURATION = 6.0
+const int 	STIM_HEALTH_COST = 20
+
 bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 {
 	entity player = weapon.GetWeaponOwner()
-	float duration     = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
+	float duration     = STIM_DURATION
 	StimPlayerWithOffhandWeapon( player, duration, weapon )
 
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_loop_1P", "octane_stimpack_loop_3P" )
@@ -16,12 +19,21 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 
 	#if SERVER
 	player.p.lastDamageTime = Time()
-	int stimDamage = int(weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance ))
-	player.SetHealth( player.GetHealth() - stimDamage < 1 ? 1 : player.GetHealth() - stimDamage )
+	
+	int currentHealth    = player.GetHealth()
+	int healthToSubtract = GetCurrentPlaylistVarInt( "octane_health_cost", STIM_HEALTH_COST )
+	float newHealth      = max( 1, currentHealth - healthToSubtract )
+	float damage         = currentHealth - newHealth
 
-	if( Time() - player.p.lastStimChatterTime >= 30 )
+	player.SetHealth( newHealth )
+	
+	// store damage taken to damage histroy so that it shows up in the death recap.
+	int scriptDamageType = DF_INSTANT | DF_BYPASS_SHIELD //| DF_NO_HITBEEP | DF_NO_INDICATOR
+	StoreDamageHistoryAndUpdate( player, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME  ), damage, player.GetCenter(), scriptDamageType, eDamageSourceId.mp_ability_heal, player )
+
+	if( Time() > player.p.lastStimChatterTime )
 	{
-		player.p.lastStimChatterTime = Time()
+		player.p.lastStimChatterTime = Time() + RandomFloatRange( 20.0, 40.0 )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
 	}
 
@@ -46,14 +58,10 @@ void function OnWeaponChargeEnd_ability_heal( entity weapon )
 	if ( !IsValid( weapon ) )
 		return
 
-	entity player = weapon.GetWeaponOwner()
-
-	#if CLIENT
-	if( !IsValid( player ) || player != GetLocalClientPlayer() )
-		return
+	#if SERVER
+		int ammoAfterFiring = weapon.GetWeaponPrimaryClipCount() - weapon.GetAmmoPerShot()
+		weapon.SetWeaponPrimaryClipCount( maxint( ammoAfterFiring, 0 ) )
 	#endif
-
-	weapon.SetWeaponPrimaryClipCount( 0 )
 }
 
 
@@ -65,13 +73,11 @@ var function OnWeaponPrimaryAttack_ability_heal( entity weapon, WeaponPrimaryAtt
 
 bool function OnWeaponAttemptOffhandSwitch_ability_heal( entity weapon )
 {
-	entity player = weapon.GetWeaponOwner()
-
-	if ( !IsValid( player ) )
-		return false
-
-	if ( !player.IsPlayer() )
-		return false
-
+	entity ownerPlayer = weapon.GetWeaponOwner()
+	if ( IsValid( ownerPlayer ) )
+	{
+		if ( StatusEffect_GetSeverity( ownerPlayer, eStatusEffect.stim_visual_effect ) )
+			return false
+	}
 	return true
 }

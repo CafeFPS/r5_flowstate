@@ -575,8 +575,7 @@ void function DeathScreen_OnPlayerDeath( entity player, var damageInfo )
 		StoreDamageHistoryAndUpdate( player, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME ), damage, damageOrigin, scriptDamageType, damageSourceId, attacker )
 
 	//printt( "DR: DeathScreen_OnPlayerDeath", player, sameDamageEvent )
-	//thread SendDeathRecapDataToPlayer( player ) 	//don't send this here, it is managed via 
-													//Bleedout_AddCallback_OnPlayerStartBleedout ~mkos
+	thread SendDeathRecapDataToPlayer( player ) //required for death recap to work
 }
 
 

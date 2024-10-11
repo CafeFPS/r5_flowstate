@@ -207,6 +207,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		return
 	}
 
+	if( ( ent.IsNPC() && !ent.IsNonCombatAI() ) && ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) in level._empForcedCallbacks ) )
+	{
+		EMP_DamagedPlayerOrNPC( ent, damageInfo )
+	}
 	// HACK helps trap/grenade weapons do damage to the correct entities (player who deployed it as well as the team opposite his)
 	if ( IsValid( inflictor ) && "originalOwner" in inflictor.s )
 	{
@@ -239,8 +243,8 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			// Don't take damage from projectiles created before you where spawned.
 			// if ( inflictor.GetProjectileCreationTime() < ent.s.respawnTime && ( Time() - ent.s.respawnTime ) < 2.0 )
 			// {
-			// 	DamageInfo_SetDamage( damageInfo, 0 )
-			// 	return
+				// DamageInfo_SetDamage( damageInfo, 0 )
+				// return
 			// }
 		}
 
@@ -263,11 +267,13 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	#endif
 
 	HandleLocationBasedDamage( ent, damageInfo )
+	DamageInfo_SetDamage( damageInfo, floor( DamageInfo_GetDamage( damageInfo ) + 0.5 ) )
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after location based damage:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
 	RunClassDamageCallbacks( ent, damageInfo )
+	DamageInfo_SetDamage( damageInfo, floor( DamageInfo_GetDamage( damageInfo ) + 0.5 ) )
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after class damage callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
@@ -324,6 +330,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		foreach ( callbackFunc in shGlobal.damageSourceIdCallbacks[ damageSourceId ] )
 		{
 			callbackFunc( ent, damageInfo )
+			damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo ) //callback may have changed the damageSourceId, so let's get that again.
 		}
 	}
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -332,13 +339,19 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
 		return
 
-	RunClassDamageFinalCallbacks( ent, damageInfo )
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after class damage final callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
 		return
+	// save a bunch of stuff because bleedout messes with health
 
+	float savedDamage = DamageInfo_GetDamage( damageInfo )
+	int savedHealth = ent.GetHealth()
+	bool wasBleedingOut = entIsPlayer && Bleedout_IsBleedingOut( ent )
+	
+	RunClassDamageFinalCallbacks( ent, damageInfo )
+	
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
 		DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
 
@@ -346,16 +359,12 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			__TrackerStatsHook_Damage( ent, damageInfo )
 	#endif
 
-	float savedDamage = DamageInfo_GetDamage( damageInfo )
-
 	if ( entIsPlayer )
 	{		
 		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId )
 
 		if ( attackerIsPlayer )
 			PlayerDamageFeedback( ent, damageInfo )
-			
-		//savedDamage = DamageInfo_GetDamage( damageInfo )//again..?
 
 		ent.SetCloakFlicker( 0.5, 0.65 )
 	}
@@ -503,12 +512,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	}
 
 	UpdateLastDamageTime( ent )
-
-	//pain sounds _base_gametype.nut, death sounds in _death_package.nut
-	UpdateDamageState( ent, damageInfo )
-	HandlePainSounds( ent, damageInfo )
-
+	
 	UpdateAttackerInfo( ent, attacker, savedDamage )
+
+	
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
 	{
@@ -524,12 +531,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		}
 	}
 
-	//EarnMeterDamageConversion( damageInfo, attacker, ent, savedDamage ) //function is commented
-
-	//flinch was removed s22 apex legends
-	// if ( entIsPlayer )
-		// PilotDamageFlinch( ent, damageInfo )
-
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    final damage done:", DamageInfo_GetDamage( damageInfo ) )
 		printt( "	 health: " + ent.GetHealth() )
@@ -537,6 +538,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	RunClassPostDamageCallbacks( ent, damageInfo )
 
+	//pain sounds _base_gametype.nut, death sounds in _death_package.nut
+	// this is after "post damage callbacks" so that it runs after battle chatter, thus battle chatter takes priority
+	HandlePainSounds( ent, damageInfo )
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "	 health after postdamage: " + ent.GetHealth() )
 		PrintDamageFlags( DamageInfo_GetCustomDamageType( damageInfo ) )
@@ -563,88 +567,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 void function EarnMeterDamageConversion( var damageInfo, entity attacker, entity ent, float savedDamage )
 {
-	// if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
-	// {
-	// 	bool shouldGiveTimerCredit = file.ShouldGiveTimerCreditGameModeRules( attacker, ent, damageInfo )
-	// 	if ( attacker.IsPlayer() )
-	// 	{
-	// 		float titanSpawnDelay = GetTitanBuildTime( attacker )
-	// 		float timerCredit = 0.0
 
-	// 		if ( shouldGiveTimerCredit )
-	// 		{
-	// 			file.earnMeterOnDamageGameModeRulesCallback( attacker, ent, titanDamage, savedDamage )
-
-	// 			// Timer Credit seems unused. Need to investigate if all DecrementBuildTimer functions are worthless.
-	// 			if ( titanSpawnDelay && IsAlive( ent ) && GetCurrentPlaylistVarInt( "titan_build_credit_enabled", 1 ) == 1 )
-	// 			{
-	// 				if ( ent.IsTitan() )
-	// 				{
-	// 					timerCredit = GetCurrentPlaylistVarFloat( "titan_kill_credit", 0.5 )
-	// 					if ( PlayerHasServerFlag( attacker, SFLAG_HUNTER_TITAN ) )
-	// 						timerCredit *= 2.0
-	// 				}
-	// 				else
-	// 				{
-	// 					if ( ent.IsPlayer() )
-	// 					{
-	// 						timerCredit = GetCurrentPlaylistVarFloat( "player_kill_credit", 0.5 )
-	// 						if ( PlayerHasServerFlag( attacker, SFLAG_HUNTER_PILOT ) )
-	// 							timerCredit *= 2.5
-	// 					}
-	// 					else
-	// 					{
-	// 						if ( IsGrunt( ent ) )
-	// 						{
-	// 							timerCredit = GetCurrentPlaylistVarFloat( "ai_kill_credit", 0.5 )
-	// 							if ( PlayerHasServerFlag( attacker, SFLAG_HUNTER_GRUNT ) )
-	// 								timerCredit *= 2.5
-	// 						}
-	// 						else
-	// 						if ( IsSpectre( ent ) )
-	// 						{
-	// 							timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
-	// 							if ( PlayerHasServerFlag( attacker, SFLAG_HUNTER_SPECTRE ) )
-	// 								timerCredit *= 2.5
-	// 						}
-	// 						else
-	// 						if ( IsTurret( ent ) )
-	// 						{
-
-	// 							timerCredit = GetCurrentPlaylistVarFloat( "megaturret_kill_credit", 0.5 )
-	// 							//No 2x burn card for shooting mega turret
-	// 						}
-	// 						#if HAS_EVAC
-	// 						else
-	// 						if ( IsEvacDropship( ent ) )
-	// 						{
-	// 							timerCredit = GetCurrentPlaylistVarFloat( "evac_dropship_kill_credit", 0.5 )
-	// 						}
-	// 						#endif
-	// 					}
-	// 				}
-
-	// 				float dealtDamage = min( ent.GetHealth(), (savedDamage + titanDamage.shieldDamage) )
-	// 				timerCredit = timerCredit * (dealtDamage / ent.GetMaxHealth().tofloat())
-	// 			}
-
-	// 			if ( IsPilot( attacker ) && PlayerHasPassive( attacker, ePassives.PAS_AT_HUNTER ) )
-	// 				timerCredit *= 1.1
-
-	// 			if ( timerCredit && (!TitanDamageRewardsTitanCoreTime() || !attacker.IsTitan() ) )
-	// 				DecrementBuildTimer( attacker, timerCredit )
-	// 		}
-	// 	}
-
-	// 	if ( shouldGiveTimerCredit //Primary Check
-	// 		&& TitanDamageRewardsTitanCoreTime() //Playlist var check
-	// 		&& ent.IsTitan()
-	// 		&& attacker.IsTitan()
-	// 		&& attacker.GetTeam() != ent.GetTeam()
-	// 		&& !attacker.ContextAction_IsMeleeExecution() // Some melee executions deal A LOT of damage
-	// 		)
-	// 		AddCreditToTitanCoreBuilderForTitanDamageInflicted( attacker, savedDamage + titanDamage.shieldDamage )
-	// }
 }
 
 
@@ -664,31 +587,7 @@ bool function ShouldUseNonTitanHeavyArmorDamageScale( entity victim )
 
 void function GameModeRulesEarnMeterOnDamage_Default( entity attacker, entity victim, TitanDamage titanDamage, float savedDamage )
 {
-	// #if MP
-	// if ( victim.IsTitan() && !attacker.IsTitan() && !IsValid( attacker.GetPetTitan() ) )
-	// {
-	// 	float damage = min( victim.GetHealth(), (savedDamage + titanDamage.shieldDamage) )
-	// 	float meterAmount = damage * file.titanMeterGainScale
-	// 	if ( PlayerHasPassive( attacker, ePassives.PAS_AT_HUNTER ) )
-	// 		meterAmount *= 1.1
-	// 	PlayerEarnMeter_AddOwnedFrac( attacker, meterAmount )
 
-	// 	AccumulatedDamageData damageData = file.playerAccumulatedDamageData[attacker]
-	// 	damageData.lastDamageTime = Time()
-	// 	damageData.accumulatedDamage += meterAmount
-
-	// 	if ( damageData.accumulatedDamage >= 0.01 )
-	// 	{
-	// 		attacker.Signal( "UpdateAccumulatedDamageAfterDelay" )
-	// 		AddPlayerScore( attacker, "DamageTitan", null, "", int( damageData.accumulatedDamage * 100 ) )
-	// 		damageData.accumulatedDamage = 0
-	// 	}
-	// 	else
-	// 	{
-	// 		thread UpdateAccumulatedDamageAfterDelay( attacker )
-	// 	}
-	// }
-	// #endif
 }
 
 void function SetTitanMeterGainScale( float scalar )
@@ -858,10 +757,10 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( isKillShot )
 		damageType = (damageType | DF_KILLSHOT)
 
-	//vector attackerOrigin = Vector( 0, 0, 0 )
+	vector attackerOrigin = <0,0,0>
+	if ( IsValid( attacker ) )
+		attackerOrigin = attacker.GetOrigin()
 	
-		//attackerOrigin = attacker.GetOrigin()
-		
 	//Fake evo shields
 	if( file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL && isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
 	{
