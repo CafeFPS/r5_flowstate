@@ -954,7 +954,7 @@ void function MovePlayerThroughWarpGate( entity trigger, entity player )
 				// TODO: COMMENTED OUT TO PREVENT COMPILE SRE
 				if ( data.screenFlashIndexes[ idx_startTrig ][ idx_chain ].contains( idx_node ) )
 				{
-					Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+					Remote_CallFunction_ByRef( player, "ServerCallback_FlashScreenForPlayer" )
 
 					// If it's a flash node that's not first or last
 					if ( !AreWarpTunnelIndecesFirstNode( idx_chain, idx_node ) && !AreWarpTunnelIndecesLastNode( idx_chain, idx_node, warpTunnelData ) )
