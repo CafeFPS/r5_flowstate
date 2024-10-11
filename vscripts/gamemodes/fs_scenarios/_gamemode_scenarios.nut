@@ -266,10 +266,6 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 			foreach( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) )
 			{
 				Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
-				
-				//Revivir a los knockeados
-				if( Bleedout_IsBleedingOut( splayer ) )
-					Signal( splayer, "BleedOut_OnRevive" )
 			}
 		
 		ScenariosPersistence_SendStandingsToClient( victim )
@@ -2136,6 +2132,10 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 			{
 				MakeInvincible(splayer)
 				Remote_CallFunction_ByRef( splayer, "ServerCallback_Scenarios_MatchEndAnnouncement" )
+
+				//Revivir a los knockeados
+				if( Bleedout_IsBleedingOut( splayer ) )
+					Signal( splayer, "BleedOut_OnRevive" )
 			}
 			
 			wait 4
