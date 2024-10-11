@@ -1653,6 +1653,11 @@ void function FS_Scenarios_Main_Thread()
 			newGroup.isValid = true
 
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
+	
+		//Randomize spawns if there are less than max teams
+		if( CALCULATED_TEAMS <= settings.fs_scenarios_teamAmount )
+			groupLocStruct.respawnLocations.randomize() //todo make an algo that grabs the spawns with the furthest distance between them. Cafe
+		
 		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
 
 		#if DEVELOPER
@@ -1822,7 +1827,7 @@ void function FS_Scenarios_Main_Thread()
 				//avoid to grab spawns from other locations by forcing it adding the location a random one of the availables
 				//spawns should be desgined for settings.fs_scenarios_teamAmount
 				//in case there are more teams than the designed spawns, choose a random spawn for that team /solves a bug where it grabs locations from other zones
-				
+
 				if( spawnSlot >= settings.fs_scenarios_teamAmount )
 				{
 					spawnSlot = RandomIntRangeInclusive( 0, settings.fs_scenarios_teamAmount - 1 )
