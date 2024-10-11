@@ -104,6 +104,7 @@ void function Clickweapon_Init()
 		chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
 		
 		RegisterConCommandTriggeredCallback( "+zoom", LGUN_TryRailJump ) //improve this by registering/deregistering properly in activate/deactivate. Cafe
+		RegisterConCommandTriggeredCallback( "+toggle_zoom", LGUN_TryRailJump )
 	#endif
 	
 	#if SERVER

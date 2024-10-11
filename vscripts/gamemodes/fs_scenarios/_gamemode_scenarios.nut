@@ -189,7 +189,7 @@ void function Init_FS_Scenarios()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
-	AddClientCommandCallback( "rest", Scenarios_ClientCommand_Maki_SoloModeRest )
+	// AddClientCommandCallback( "rest", Scenarios_ClientCommand_Maki_SoloModeRest )
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
@@ -1655,7 +1655,7 @@ void function FS_Scenarios_Main_Thread()
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 	
 		//Randomize spawns if there are less than max teams
-		if( CALCULATED_TEAMS <= settings.fs_scenarios_teamAmount )
+		if( CALCULATED_TEAMS < settings.fs_scenarios_teamAmount )
 			groupLocStruct.respawnLocations.randomize() //todo make an algo that grabs the spawns with the furthest distance between them. Cafe
 		
 		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia

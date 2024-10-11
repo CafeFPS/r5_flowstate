@@ -1791,7 +1791,7 @@ playlists
 				fs_scenarios_zonewars_ring_mode					1
 				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
 				fs_scenarios_ring_damage_step_time				1.5
-				fs_scenarios_game_start_time_delay				3.0
+				fs_scenarios_game_start_time_delay				7.0
 				fs_scenarios_ring_damage						25.0
 				fs_scenarios_characterselect_enabled			1
 				fs_scenarios_characterselect_time_per_player	3.5
