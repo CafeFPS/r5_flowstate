@@ -1211,6 +1211,7 @@ void function PhaseTunnel_PhaseEntity( entity ent, entity tunnelEnt, PhaseTunnel
 	}
 
 	Signal( ent, "PhaseTunnel_PhaseTunnelEntered" )
+	Signal( ent, "OnChargeEnd" )
 
 	OnThreadEnd(
 		function() : ( ent, tunnelData )

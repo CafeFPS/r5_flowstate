@@ -1542,6 +1542,10 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 		{
 			if ( useData.useFinished )
 			{
+				//Cafe check if item still exists
+				if( SURVIVAL_CountItemsInInventory( player, info.lootData.ref ) == 0 )
+					return
+				
 				StatusEffect_Stop( player, useData.healthStatusHandle )
 				if ( info.healTime == 0 )
 				{
@@ -1584,6 +1588,10 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 		{
 			if ( useData.useFinished )
 			{
+				//Cafe check if item still exists
+				if( SURVIVAL_CountItemsInInventory( player, info.lootData.ref ) == 0 )
+					return
+				
 				if ( info.healTime > 0 )
 				{
 					if ( useData.healAmountRemaining > 0  )
