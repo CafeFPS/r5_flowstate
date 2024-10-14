@@ -11,8 +11,25 @@ const float CREEPING_BOMBARDMENT_WEAPON_DETONATION_DELAY = 6.0
 
 const asset CREEPING_BOMBARDMENT_WEAPON_BOMB_MODEL = $"mdl/weapons_r5/misc_bangalore_rockets/bangalore_rockets_projectile.rmdl"
 
+const CREEPING_BOMBARDMENT_WEAPON_NAME = "mp_weapon_creeping_bombardment_weapon"
 const CREEPING_BOMBARDMENT_WEAPON_BOMB_IMPACT_TABLE = "exp_creeping_barrage_detonation"
 global const CREEPING_BOMBARDMENT_TARGETNAME = "creeping_bombardment_projectile"
+
+#if SERVER
+
+const table<string, bool> scriptNamesForValidCreepingBombardmentEntsTable =
+{
+	["_hover_tank_interior"] = true,
+	[ "_hover_tank_mover" ] = true,
+	[ "train_brush"  ] = true,
+	[ "risable_wall_brush" ] = true,
+	[ "silo_door_left" ] = true,
+	[ "silo_door_right" ] = true,
+	[ "grow_tower_01" ] = true,
+	[ "sniper_tower_brush" ] = true,
+	[ "gondola_func_brush" ] = true,
+} //Really this is an array optimized for lookup
+#endif
 
 void function MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 {
@@ -30,36 +47,21 @@ void function MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 
 void function OnProjectileCollision_WeaponCreepingBombardmentWeapon( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
 {
-	entity player = projectile.GetOwner()
-
-	if ( !IsValid( player ) )
-		return
-
-	if ( hitEnt == player )
-		return
-
-	if ( !EntityShouldStick( projectile, hitEnt ) )
-		return
-
-	if ( hitEnt.IsProjectile() )
-		return
-
-	if ( !LegalOrigin( pos ) )
-		return
-
 	#if SERVER
-		//JFS HACK!!!: We need this to hit loot tanks ( needs to be cleaned up to support other moving geo ).
-		array<string> lootTankParts = [
-			"_hover_tank_interior"
-			"_hover_tank_mover"
-		]
+		entity player = projectile.GetOwner()
 
-		bool isLootTank = lootTankParts.contains( hitEnt.GetScriptName() )
+		if ( !IsValid( player ) )
+			return
 
-		if ( IsValid( hitEnt ) && ( hitEnt.IsWorld() || isLootTank ) )
-		{
-			thread CreepingBombardmentWeapon_Detonation( pos, -projectile.GetAngles(), normal, hitEnt, player, projectile )
-		}
+		if ( !LegalOrigin( pos ) )
+			return
+
+		if ( !EntityShouldStick( projectile, hitEnt ) )
+			return
+
+		PlayBombardmentImpactSoundIfNeeded( player )
+
+		thread CreepingBombardmentWeapon_Detonation( pos, -projectile.GetAngles(), normal, hitEnt, player, projectile )
 	#endif
 }
 
@@ -100,6 +102,20 @@ void function CreepingBombardmentWeapon_Detonation( vector origin, vector angles
 	shake.RemoveFromAllRealms()
 	shake.AddToOtherEntitysRealms( bombModel )
 	shake.kv.spawnflags = 4 // SF_SHAKE_INAIR
+}
+
+#endif //SERVER
+
+#if SERVER
+bool function ShouldCreepingBombardmentDetonateOnHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return false
+
+	if ( hitEnt.IsWorld() )
+		return true
+
+	return (hitEnt.GetScriptName() in scriptNamesForValidCreepingBombardmentEntsTable)
 }
 #endif //SERVER
 

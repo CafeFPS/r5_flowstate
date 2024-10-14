@@ -1144,14 +1144,6 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	}
 }
 
-vector function MapAngleToRadius( float angle, float radius )
-{
-	float offsetX = radius * cos( angle * ( PI / 180 ) )
-	float offsetY = radius * sin( angle * ( PI / 180 ) )
-	vector offset = ( < offsetX, offsetY, 0 > )
-	return offset
-}
-
 void function MakeEntityAsGasEmitter( entity ent )
 {
 	AddToScriptManagedEntArray( file.gasEmitterEntArrayID, ent )

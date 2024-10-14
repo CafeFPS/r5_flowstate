@@ -3669,7 +3669,8 @@ void function SetTeam( entity ent, int team )
 	#if SERVER
 		if( ent.IsPlayer() )
 		{
-			AssignTeamIndexToPlayer( ent )
+			if( team != oldTeam )
+				AssignTeamIndexToPlayer( ent )
 			
 			foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
 			{
@@ -5871,4 +5872,12 @@ bool function Tracker_IsStatsReadyFor( entity player )
 int function GetConnectedPlayerCount()
 {
 	return GetGlobalNetInt( "connectedPlayerCount" )
+}
+
+vector function MapAngleToRadius( float angle, float radius )
+{
+	float offsetX = radius * cos( angle * ( PI / 180 ) )
+	float offsetY = radius * sin( angle * ( PI / 180 ) )
+	vector offset = ( < offsetX, offsetY, 0 > )
+	return offset
 }

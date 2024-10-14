@@ -18,14 +18,21 @@ const float CREEPING_BOMBARDMENT_BOMBS_PER_STEP = 6
 const int 	CREEPING_BOMBARDMENT_STEP_COUNT		= 6//16 //The bombardment will advance a total of 10 steps before it ends.
 const float CREEPING_BOMBARDMENT_STEP_INTERVAL 	= 0.75//1.0 //The bombardment will advance 1 step every 2.5 seconds.
 const float CREEPING_BOMBARDMENT_DELAY 			= 2.0 //The bombardment will wait 2.0 seconds before firing the first shell.
-
-const float CREEPING_BOMBARDMENT_SHELLSHOCK_DURATION = 8.0
+const float CREEPING_BOMBARDMENT_SHELLSHOCK_DURATION = 6.0
 
 const asset FX_CREEPING_BOMBARDMENT_FLARE = $"P_bFlare"
 const asset FX_CREEPING_BOMBARDMENT_GLOW_FP = $"P_bFlare_glow_FP"
 const asset FX_CREEPING_BOMBARDMENT_GLOW_3P = $"P_bFlare_glow_3P"
 
 const string CREEPING_BOMBARDMENT_FLARE_SOUND 	= "Bangalore_Ultimate_Flare_Hiss"
+
+struct
+{
+	#if SERVER
+		table<entity, WeaponPrimaryAttackParams> playerLaunchParams
+	#endif
+
+} file
 
 void function MpWeaponGrenadeCreepingBombardment_Init()
 {
@@ -68,12 +75,8 @@ var function OnWeaponTossReleaseAnimEvent_WeaponCreepingBombardment( entity weap
 		entity bombardmentWeapon = weaponOwner.GetOffhandWeapon( OFFHAND_RIGHT )
 		if ( !IsValid( bombardmentWeapon ) )
 			weaponOwner.GiveOffhandWeapon( CREEPING_BOMBARDMENT_MISSILE_WEAPON, OFFHAND_RIGHT, [] )
-
-	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( weaponOwner ), Loadout_CharacterClass() )
-	string charRef = ItemFlavor_GetHumanReadableRef( character )
-
-	if( charRef == "character_bangalore")
 		PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_super" )
+		file.playerLaunchParams[ weaponOwner ] <- attackParams
 	#endif
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
@@ -161,50 +164,22 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 
 	int fxid = GetParticleSystemIndex( fx )
 	entity signalFX = StartParticleEffectOnEntityWithPos_ReturnEntity( projectile, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, projectile.LookupAttachment( "FX_TRAIL" ), <0,0,0>, <0,0,0> )
-	signalFX.RemoveFromAllRealms()
-	signalFX.AddToOtherEntitysRealms( owner )
-
-	OnThreadEnd(
-		function() : ( signalFX )
-		{
-			if ( IsValid( signalFX ) )
-			{
-				if ( IsValid( signalFX ) )
-					EffectStop( signalFX )
-			}
-		}
-	)
-
-	vector dir = Normalize ( FlattenVector ( projectile.GetOrigin() - owner.GetOrigin() ) )
-	//float explosionRadius = bombardmentWeapon.GetWeaponSettingFloat( eWeaponVar.explosionradius )
+	vector dir
+	if ( owner in file.playerLaunchParams )
+		dir = Normalize ( FlattenVec( file.playerLaunchParams[ owner ].dir ) )
+	else
+		dir = Normalize ( FlattenVec(  projectile.GetOrigin() - owner.GetOrigin() ) ) //should NEVER happen, the way that this is set up, but being extra careful
+	float explosionRadius = bombardmentWeapon.GetWeaponSettingFloat( eWeaponVar.explosionradius )
 
 	EmitSoundOnEntity( projectile, CREEPING_BOMBARDMENT_FLARE_SOUND )
 
-	if( GetCurrentPlaylistVarBool( "lsm_mod5", false ) )
-	{
-		
-		for (int cur = 0; cur < 60; cur++) {
-			wait 1
-			thread function () : ( bombardmentWeapon, dir, origin, signalFX )
-			{
-				thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, origin,
-					CREEPING_BOMBARDMENT_WIDTH,
-					CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP,
-					CREEPING_BOMBARDMENT_STEP_COUNT,
-					CREEPING_BOMBARDMENT_STEP_INTERVAL,
-					CREEPING_BOMBARDMENT_DELAY )
+	float bombardmentHeight
+	if ( !StatusEffect_GetSeverity( owner, eStatusEffect.bombardment_uses_extended_height ) )
+		bombardmentHeight = DEFAULT_BOMBARDMENT_HEIGHT
+	else
+		bombardmentHeight = EXTENDED_BOMBARDMENT_HEIGHT
 
-				float duration = CREEPING_BOMBARDMENT_STEP_COUNT * CREEPING_BOMBARDMENT_STEP_INTERVAL
-				wait duration + CREEPING_BOMBARDMENT_DELAY
-
-				if ( IsValid( signalFX ) )
-					EffectStop( signalFX )
-			}()
-		}
-		return
-	}
-
-	thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, projectile.GetOrigin(),
+	thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, owner.GetOrigin() + <0,0,bombardmentHeight>, origin,
 		CREEPING_BOMBARDMENT_WIDTH,
 		CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP,
 		CREEPING_BOMBARDMENT_STEP_COUNT,
@@ -213,5 +188,8 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 
 	float duration = CREEPING_BOMBARDMENT_STEP_COUNT * CREEPING_BOMBARDMENT_STEP_INTERVAL
 	wait duration + CREEPING_BOMBARDMENT_DELAY
+
+	if ( IsValid( signalFX ) )
+		EffectStop( signalFX )
 }
 #endif

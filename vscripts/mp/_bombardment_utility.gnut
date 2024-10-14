@@ -1,167 +1,1033 @@
-// stub script
-
+//Ship Bombardment Wrapper Functions
 global function Bombardment_Init
-global function VerifyBombardmentWeapon
-global function Bombardment_MortarBarrageFocused
-global function Bombardment_MortarBarrageDetCord
 
+global function Bombardment_MortarBarrageFocused
+global function Bombardment_MortarBarrageCreeping
+global function Bombardment_MortarBarrageDetCord
+global function Bombardment_MortarAirBurstFocused
+
+global function Bombardment_GetRandomGroundPosInCircle
+global function Bombardment_GetRandomGroundPosInRing
+global function Bombardment_GetWeightedGroundPosInRadius
+
+global function VerifyBombardmentWeapon
+
+global function PlayBombardmentImpactSoundIfNeeded
+global function PlayBombardmentExposionSoundIfNeeded
+
+const asset PHYS_ROCK_TRAIL = $"Rocket_Smoke_Trail_Large"
+// const asset PHYS_ROCK_GLOW				= $"Rocket_Smoke_Trail_Large"
+
+const asset MFLASH = $"P_muzzleflash_MaltaGun_Low_NoTracer"
+
+const SFX_BOMBARDMENT_EXPLOSION = "DefensiveBombardment_Explosions_Generic"
+
+const asset MORTAR_ROUND = $"mdl/Weapons/bullets/projectile_rocket_launcher_sram.rmdl"
+
+const bool BOMBARDMENT_DEBUG = false
+
+global const float DEFAULT_BOMBARDMENT_HEIGHT = 10000.0
+global const float EXTENDED_BOMBARDMENT_HEIGHT = 25000.0
+global const float BOMBARDMENT_IMPACT_DEBOUNCE_TIME = 12.0
+global const float BOMBARDMENT_EXPLOSION_DEBOUNCE_TIME = 12.0
+
+global enum eBombardmentType
+{
+	DEFENSIVE,
+	CREEPING,
+}
+
+struct bombardmentInfo
+{
+	vector pos
+	float impactDebounceEndTime
+	float explosionDebounceEndTime
+	int type
+}
+
+struct
+{
+	table< entity, bombardmentInfo > playerLastBombardmentInfo
+} file
+
+/*
+   _____ _     _           ____                  _                   _                      _      _                 _
+  / ____| |   (_)         |  _ \                | |                 | |                    | |    | |               (_)
+ | (___ | |__  _ _ __     | |_) | ___  _ __ ___ | |__   __ _ _ __ __| |_ __ ___   ___ _ __ | |_   | |     ___   __ _ _  ___
+  \___ \| '_ \| | '_ \    |  _ < / _ \| '_ ` _ \| '_ \ / _` | '__/ _` | '_ ` _ \ / _ \ '_ \| __|  | |    / _ \ / _` | |/ __|
+  ____) | | | | | |_) |   | |_) | (_) | | | | | | |_) | (_| | | | (_| | | | | | |  __/ | | | |_   | |___| (_) | (_| | | (__
+ |_____/|_| |_|_| .__/    |____/ \___/|_| |_| |_|_.__/ \__,_|_|  \__,_|_| |_| |_|\___|_| |_|\__|  |______\___/ \__, |_|\___|
+                | |                                                                                             __/ |
+                |_|                                                                                            |___/
+*/
+//INIT FUNCTION
 void function Bombardment_Init()
 {
+	PrecacheParticleSystem( PHYS_ROCK_TRAIL )
+	PrecacheParticleSystem( MFLASH )
 
+	PrecacheModel( MORTAR_ROUND )
 }
 
-entity function VerifyBombardmentWeapon( entity owner, string weapon )
+entity function VerifyBombardmentWeapon( entity player, string weaponName )
 {
-	foreach(entity w in GetAllPlayerWeapons(owner))
+	entity weapon = player.GetOffhandWeapon( OFFHAND_RIGHT )
+	if ( IsValid( weapon ) && weapon.GetWeaponClassName() != weaponName )
+		player.TakeOffhandWeapon( OFFHAND_RIGHT )
+
+	if ( !IsValid( player.GetOffhandWeapon( OFFHAND_RIGHT ) ) )
 	{
-		if(w.GetWeaponClassName() == weapon)
-			return w
+		player.GiveOffhandWeapon( weaponName, OFFHAND_RIGHT )
 	}
-    return null
+
+	return player.GetOffhandWeapon( OFFHAND_RIGHT )
 }
 
-void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vector origin, float radius, int intensity, float duration, float delay )
+//This type of bombardment drops concentrated shell fire within the specifed radius of a focal point. It is intended to soften a single position with focused fire.
+void function Bombardment_MortarBarrageFocused( entity weapon, asset marker, vector gunOrigin, vector targetOrigin, float radius, int density, float duration, float delay = 0 )
 {
-	wait delay
+	weapon.EndSignal( "OnDestroy" )
+	if( IsValid( weapon.GetWeaponOwner() ) )
+		EndSignal( weapon.GetWeaponOwner(), "CleanUpPlayerAbilities" )
 	
-	if( !IsValid(weapon) )
-		return
-		
-	entity owner = weapon.GetOwner()
-	
-	if ( !IsValid(owner) )
-		return
+	var activateSound = weapon.GetWeaponInfoFileKeyField( "sound_incoming_first" )
+	if ( activateSound != null )
+	{
+		expect string( activateSound )
+		EmitSoundAtPosition( TEAM_ANY, <gunOrigin.x, gunOrigin.y, targetOrigin.z + DEFAULT_BOMBARDMENT_HEIGHT>, activateSound, weapon ) //Play activationSound at same height regardless of height of actual bombardment
+	}
 
-	EndSignal( owner, "CleanUpPlayerAbilities" )
-	
-	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
-	string sound_incoming = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "sound_incoming")
-	float projectile_launch_speed = GetWeaponInfoFileKeyField_GlobalFloat(weapon.GetWeaponClassName(), "projectile_launch_speed")
-	
-	int damageFlags = weapon.GetWeaponDamageFlags()
-	WeaponFireGrenadeParams fireGrenadeParams
-	fireGrenadeParams.pos = origin+<0,0,10000>
-	fireGrenadeParams.vel = <0,0,0>
-	fireGrenadeParams.angVel = <0,0,0>
-	fireGrenadeParams.fuseTime = 8
-	fireGrenadeParams.scriptTouchDamageType = (damageFlags & ~DF_EXPLOSION) // when a grenade "bonks" something, that shouldn't count as explosive.explosive
-	fireGrenadeParams.scriptExplosionDamageType = damageFlags
-	fireGrenadeParams.clientPredicted = false
-	fireGrenadeParams.lagCompensated = true
-	fireGrenadeParams.useScriptOnDamage = true
-	
+	Assert( IsNewThread(), "Must be threaded off" )
+	if ( delay > 0 )
+		wait(delay)
+
 	float endTime = Time() + duration
-	
-	bool isFirst = true
-	
-	while(Time() < endTime)
-	{		
-		wait 1.0/intensity
-		
-		if (weapon == null || !IsValid(weapon))
-			return
-		
-		vector landRadiusOffset = <RandomFloatRange(-radius,radius)/2,RandomFloatRange(-radius,radius)/2,0>
-		
-		entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
-		if(!IsValid(projectile)) return
+	float verticalOffset = gunOrigin.z - targetOrigin.z
+	float calculationOffset = 2000 //
 
-		AddToUltimateRealm( owner, projectile )
-		AddToTrackedEnts( owner, projectile )
+	//array< array<vector> > bombardmentZones
+	array< vector > bombardmentZones = Bombardment_GetDistributedRandomGroundPositionsInCircle( targetOrigin, radius, density, verticalOffset - calculationOffset )
+	array< array<vector> > bombardmentZoneTargets
+	foreach ( vector zoneCenter in bombardmentZones )
+	{
+		array<vector> zoneTargets = Bombardment_GetDistributedRandomGroundPositionsInCircle( zoneCenter, radius / 2, density, calculationOffset )
+		bombardmentZoneTargets.append( zoneTargets )
+	}
 
-		if (isFirst)
+	int times = 0
+
+	float startTime = Time()
+
+	while ( Time() < endTime )
+	{
+		//Randomize order of bombardment zones
+		bombardmentZoneTargets.randomize()
+
+		//Randomize order of targets in each bombardment zone.
+		foreach ( array<vector> zoneTargets in bombardmentZoneTargets  )
 		{
-			EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
-			isFirst = false
+			zoneTargets.randomize()
 		}
-		EmitSoundOnEntity( projectile, sound_incoming )
-		
-		TraceResults trace = TraceLine( fireGrenadeParams.pos + landRadiusOffset, origin+landRadiusOffset - <0,0,8000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-		vector skyOriginToGround = trace.endPos - fireGrenadeParams.pos;
-		// The reason we are going from the sky to (sky + sky->ground + (norm(sky->ground) * 100)) is that if we just went to ground (trace.endPos), we would rarely get markers because it would 
-		// rarely actually "hit" the ground and instead just stop there, not hitting anything, not making a marker.
-		TraceResults trace2 = TraceLine (fireGrenadeParams.pos, fireGrenadeParams.pos + skyOriginToGround + (Normalize(skyOriginToGround) * 100), null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE)
-		vector groundPos2 = trace2.endPos
 
-		vector velocity = Normalize(trace2.endPos - fireGrenadeParams.pos) * projectile_launch_speed
+		string fireSound = weapon.GetWeaponSettingString( eWeaponVar.fire_sound_1_player_3p )
 
-		projectile.SetAngles(<90,0,0>)
-		projectile.SetOrigin(fireGrenadeParams.pos)
-		projectile.SetVelocity(velocity)
-		projectile.kv.gravity = 0
+		bool soundPlayed = false
 
-		if ( IsValid( trace2.hitEnt ) )
+		for ( int i = 0; i < density; i++ )
 		{
-			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace2.endPos, <0,0,0> )
-			AddToUltimateRealm( owner, marker )
-			EntFireByHandle( marker, "Kill", "", 2, null, null ) // kill after 2s
+			EmitSoundAtPosition( TEAM_ANY, <gunOrigin.x, gunOrigin.y, targetOrigin.z + DEFAULT_BOMBARDMENT_HEIGHT>, fireSound, weapon ) //Play fireSound at same height regardless of height of actual bombardment
+
+			foreach( array<vector> zoneTargets in bombardmentZoneTargets )
+			{
+				vector target = zoneTargets[ i ]
+				vector driftTarget = Bombardment_GetRandomGroundPosInCircle( target, radius / 4, calculationOffset )
+				float randDelay = RandomFloatRange( 0.25, 1.0 )
+				thread MortarFromWeapon( weapon, marker, randDelay, gunOrigin, target, "", verticalOffset )
+
+				if ( !soundPlayed )
+				{
+					EmitSoundAtPosition( TEAM_ANY, targetOrigin + <0, 0, 2000>, "Gibraltar_DefensiveBombardment_Incomings_Comp_3P", weapon )
+					soundPlayed = true
+
+					bombardmentInfo playerBombInfo
+					playerBombInfo.pos = targetOrigin
+					playerBombInfo.type = eBombardmentType.DEFENSIVE
+					file.playerLastBombardmentInfo[ weapon.GetOwner() ] <- playerBombInfo
+				}
+			}
+
+			wait 1.0
 		}
+
+		times++
 	}
 }
 
-void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
+//This type of bombardment drops a cluster of mortars on a target from a single origin point in a single burst. It is meant to dislodge enemies from elevated positions.
+void function Bombardment_MortarAirBurstFocused( entity weapon, asset marker, vector gunOrigin, vector targetOrigin, float radius, int density, float delay = 0 )
 {
-	wait delay
+	weapon.EndSignal( "OnDestroy" )
+	if( IsValid( weapon.GetWeaponOwner() ) )
+		EndSignal( weapon.GetWeaponOwner(), "CleanUpPlayerAbilities" )
 	
-	if( !IsValid(weapon) )
-		return
-		
-	entity owner = weapon.GetOwner()
-	
-	if ( !IsValid(owner) )
-		return
+	var activateSound = weapon.GetWeaponInfoFileKeyField( "sound_incoming_first" )
+	if ( activateSound != null )
+	{
+		expect string( activateSound )
+		EmitSoundAtPosition( TEAM_ANY, <gunOrigin.x, gunOrigin.y, targetOrigin.z + DEFAULT_BOMBARDMENT_HEIGHT>, activateSound, weapon ) //Play activationSound at same height regardless of height of actual bombardment
+	}
 
-	EndSignal( owner, "CleanUpPlayerAbilities" )
-	
-	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
-    // todo sound effects for warnings ("incoming!")
-	float projectile_launch_speed = GetWeaponInfoFileKeyField_GlobalFloat(weapon.GetWeaponClassName(), "projectile_launch_speed")
-	
-	int damageFlags = weapon.GetWeaponDamageFlags()
-	WeaponFireMissileParams fireGrenadeParams
-	fireGrenadeParams.pos = origin+<0,0,10000>
-	fireGrenadeParams.dir = <0, 0, 0>
-	fireGrenadeParams.speed = 2
-	fireGrenadeParams.scriptTouchDamageType = (damageFlags & ~DF_EXPLOSION) // when a grenade "bonks" something, that shouldn't count as explosive.explosive
-	fireGrenadeParams.scriptExplosionDamageType = damageFlags
-	fireGrenadeParams.doRandomVelocAndThinkVars = false
-	fireGrenadeParams.clientPredicted = false
+	Assert( IsNewThread(), "Must be threaded off" )
+	if ( delay > 0 )
+		wait(delay)
 
-	bool isFirst = true
+	float verticalOffset = gunOrigin.z - targetOrigin.z
+	float calculationOffset = 200 //200 offset is arbitrary, just needs to be non-zero and positive to avoid successive calls to Bombardment_GetDistributedRandomGroundPositionsInCircle pushing up vertical origin of the bombardment
 
-	float bombCount = width / perStep
-	vector missileOrigin = projectileOrigin + (direction * perStep * ((count / 2) + 1)) + <0, 0, 15000>
-	for (int cur = 0; cur < count; cur++) {
-		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
-		vector rot270 = <direction.y, -direction.x, direction.z> * (width / 2)
-		bool even = cur % 2 == 0;
-		vector lineStart = even ? (stepCenter - rot270) : (stepCenter + rot270)
-		vector lineDirection = Normalize(rot270)
-		lineDirection = <-lineDirection.x, -lineDirection.y, lineDirection.z>
-		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
-			wait (interval / (2 * bombCount))
-			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep) - (lineDirection * (perStep / 2))) : (lineStart + (lineDirection * perStep * curStep) + (lineDirection * (perStep / 2)))
-			
-			if(!IsValid(weapon)) return
-			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
-			
-			if(!IsValid(projectile)) return
-		
-			AddToUltimateRealm( owner, projectile )
-			AddToTrackedEnts( owner, projectile )
+	//array< array<vector> > bombardmentZones
+	array< vector > bombardmentZones = Bombardment_GetDistributedRandomGroundPositionsInCircle( targetOrigin, radius, density, verticalOffset - calculationOffset )
+	array< array<vector> > bombardmentZoneTargets
+	foreach ( vector zoneCenter in bombardmentZones )
+	{
+		array<vector> zoneTargets = Bombardment_GetDistributedRandomGroundPositionsInCircle( zoneCenter, radius / 3, density, calculationOffset )
+		bombardmentZoneTargets.append( zoneTargets )
+	}
 
-			if (isFirst)
+	int times = 0
+
+	//Randomize order of bombardment zones
+	bombardmentZoneTargets.randomize()
+
+	//Randomize order of targets in each bombardment zone.
+	foreach ( array<vector> zoneTargets in bombardmentZoneTargets  )
+	{
+		zoneTargets.randomize()
+	}
+
+	string fireSound = weapon.GetWeaponSettingString( eWeaponVar.fire_sound_1_player_3p )
+
+	for ( int i = 0; i < density; i++ )
+	{
+		EmitSoundAtPosition( TEAM_ANY, <gunOrigin.x, gunOrigin.y, targetOrigin.z + DEFAULT_BOMBARDMENT_HEIGHT>, fireSound, weapon ) //Play fireSound at same height regardless of height of actual bombardment
+
+		bool soundPlayed = false
+
+		foreach( array<vector> zoneTargets in bombardmentZoneTargets )
+		{
+			string projectileSound
+
+			if ( !soundPlayed )
 			{
-				EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
-				isFirst = false
+				var weaponSound = weapon.GetWeaponInfoFileKeyField( "sound_incoming" )
+				if ( weaponSound != null )
+				{
+					projectileSound = expect string( weaponSound )
+					soundPlayed = true
+				}
 			}
-			// todo sounds for incoming warning EmitSoundOnEntity( projectile, sound_incoming )
-			
-			projectile.SetAngles(<90,0,0>)
-			projectile.SetOrigin(missileOrigin)
-			vector velocity = Normalize(targetPosition - missileOrigin) * projectile_launch_speed
-			projectile.kv.gravity = 0
-			projectile.SetVelocity(velocity)
+
+			vector target = zoneTargets[ i ]
+			vector driftTarget = target //Bombardment_GetRandomGroundPosInCircle( target, radius / 4, calculationOffset )
+
+			thread MortarFromWeapon( weapon, marker, 0.0, gunOrigin, driftTarget, projectileSound, verticalOffset )
+		}
+
+		times++
+	}
+}
+
+//This type of bombardment begins at a starting point and progresses in a specified direction bombarding along the given width of a line perpendicular to its direction of advance.
+//It is intended to be used offensively.
+void function Bombardment_MortarBarrageCreeping( entity weapon, asset markerFx, vector dir, vector gunOrigin, vector targetOrigin, float width, float stepLength, int stepCount, float stepInterval, float delay = 0 )
+{
+	weapon.EndSignal( "OnDestroy" )
+
+	Assert( IsNewThread(), "Must be threaded off" )
+
+	if ( delay > 0 )
+		wait(delay)
+
+	float creepDist = stepLength * stepCount
+	float duration  = stepInterval * stepCount
+	//printt( "TOTAL DISTANCE: " + creepDist )
+	//printt( "TOTAL DURATION: " + duration )
+
+	//Get direction bombardment should creep.
+	vector cross        = CrossProduct( dir, <0, 0, 1> )
+	int mortarsPerStep  = int ( floor( width / stepLength ) )
+	float mortarSpacing = width / mortarsPerStep
+	vector stepOrigin   = targetOrigin
+
+	float verticalOffset = gunOrigin.z - targetOrigin.z
+
+	if ( BOMBARDMENT_DEBUG )
+	{
+		DebugDrawLine( targetOrigin, targetOrigin + (dir * creepDist), COLOR_RED, true, 20.0 )
+		DebugDrawLine( targetOrigin, targetOrigin + (cross * (width / 2)), COLOR_GREEN, true, 20.0 )
+	}
+
+	//Generate a battry of gun positions to fire from.
+	array< vector > gunOrigins
+	vector gunStartingPoint = (gunOrigin + (cross * (width / 2)))
+	for ( int i = 0; i < mortarsPerStep; i++ )
+	{
+		vector testPos = gunStartingPoint - (cross * (mortarSpacing * i))
+		vector gunPos  = (testPos + < 0, 0, 4000 >)
+		gunOrigins.append( gunPos )
+	}
+
+	//Get targets along bombarment line
+	array< array<vector> > bombardmentSteps
+	for ( int i = 0; i < stepCount; i++ )
+	{
+		vector startingPoint      = (stepOrigin + (cross * (width / 2)))
+		array<vector> stepTargets = []
+		for ( int j = 0; j < mortarsPerStep; j++ )
+		{
+			//Create a sawtooth bombardment pattern
+			//On Even Steps Even Targets Step Forward
+			//On Odd Steps Odd Targets Step Backward
+			vector staggerOffset = <0,0,0>
+			if ( IsEven( j ) )
+			{
+				staggerOffset = ( dir * stepLength )
+			}
+
+			vector testPos      = ( startingPoint + staggerOffset ) - (cross * (mortarSpacing * j))
+			vector mortarTarget = (testPos + < 0, 0, 4000 >)
+			mortarTarget = OriginToGround( mortarTarget )
+
+			stepTargets.append( mortarTarget )
+		}
+		//Randomize the order of the bombardment line so that they don't land in the same order.
+		//stepTargets.randomize()
+		bombardmentSteps.append( stepTargets )
+
+		//Advance the bombardment forward
+		stepOrigin += (dir * stepLength)
+	}
+
+	//walk through the barrage.
+	foreach ( int i, array<vector> stepTargets in bombardmentSteps )
+	{
+		Assert ( stepTargets.len() == gunOrigins.len(), "There are not enough gun origins for the number of mortars we are firing." )
+
+		var projectileSound = weapon.GetWeaponInfoFileKeyField( "sound_incoming" )
+		if ( projectileSound != null )
+		{
+			expect string( projectileSound )
+			EmitSoundAtPosition( TEAM_ANY, gunOrigin, projectileSound, weapon )
+		}
+
+		thread CreepingBarrage_BombardLineStep( weapon, markerFx, gunOrigins, stepTargets, verticalOffset )
+		wait stepInterval
+	}
+}
+
+void function CreepingBarrage_BombardLineStep( entity weapon, asset markerFx, array<vector> gunOrigins, array<vector> stepTargets, float verticalOffset )
+{
+	weapon.EndSignal( "OnDestroy" )
+
+	Assert( IsNewThread(), "Must be threaded off." )
+
+	foreach ( int i, vector mortarTarget in stepTargets )
+	{
+		EmitSoundAtPosition( TEAM_ANY, gunOrigins[ i ], "SmokeWall_Launch", weapon )
+
+		float randDelay = RandomFloatRange( 0.125, 0.5 )
+
+		//Add a little random drift to shells.
+		vector targetFinal = Bombardment_GetRandomGroundPosInCircle( mortarTarget, 128, verticalOffset )
+		thread MortarFromWeapon( weapon, markerFx, randDelay, gunOrigins[ i ], targetFinal, "", verticalOffset )
+	}
+}
+
+//This type of bombardment begins at a starting point and progresses in a specified direction bombarding along the given width of a line perpendicular to its direction of advance. Shells detonate on a delay after they land.
+//It is intended to be used offensively.
+const bool DETCORD_ZIGZAG_PATTERN = true
+void function Bombardment_MortarBarrageDetCord( entity weapon, asset markerFx, vector dir, vector gunOrigin, vector targetOrigin, float width, float stepLength, int stepCount, float stepInterval, float delay = 0 )
+{
+	weapon.EndSignal( "OnDestroy" )
+
+	var activateSound = weapon.GetWeaponInfoFileKeyField( "sound_incoming_first" )
+	if ( activateSound != null )
+	{
+		expect string( activateSound )
+		EmitSoundAtPosition( TEAM_ANY, gunOrigin, activateSound, weapon )
+	}
+
+	Assert( IsNewThread(), "Must be threaded off" )
+
+	if ( delay > 0 )
+		wait(delay)
+
+	float creepDist = stepLength * stepCount
+	float duration  = stepInterval * stepCount
+	//printt( "TOTAL DISTANCE: " + creepDist )
+	//printt( "TOTAL DURATION: " + duration )
+
+	//Get direction bombardment should creep.
+	vector cross        = CrossProduct( dir, <0, 0, 1> )
+	int mortarsPerStep  = int ( floor( width / stepLength ) )
+	float mortarSpacing = width / mortarsPerStep
+	vector stepOrigin   = targetOrigin
+	vector offsetGunOrigin = gunOrigin + dir * creepDist / 2
+
+	float verticalOffset = gunOrigin.z - targetOrigin.z
+
+	if ( BOMBARDMENT_DEBUG )
+	{
+		DebugDrawLine( targetOrigin, targetOrigin + (dir * creepDist), COLOR_RED, true, 20.0 )
+		DebugDrawLine( targetOrigin, targetOrigin + (cross * (width / 2)), COLOR_GREEN, true, 20.0 )
+	}
+
+	//Get targets along bombarment line
+	array< array<vector> > bombardmentSteps
+	for ( int i = 0; i < stepCount; i++ )
+	{
+		vector startingPoint      = (stepOrigin + (cross * (width / 2)))
+		array<vector> stepTargets = []
+		for ( int j = 0; j < mortarsPerStep; j++ )
+		{
+			vector testPos      = ( startingPoint ) - (cross * (mortarSpacing * j))
+			vector mortarTarget = (testPos + < 0, 0, 4000 >)
+			mortarTarget = OriginToGround( mortarTarget )
+
+			stepTargets.append( mortarTarget )
+		}
+
+		if ( DETCORD_ZIGZAG_PATTERN )
+		{
+			//Alternate shell order running from right to left and left to right.
+			if ( IsOdd( i ) )
+				stepTargets.reverse()
+		}
+
+		bombardmentSteps.append( stepTargets )
+
+		//Advance the bombardment forward
+		stepOrigin += (dir * stepLength)
+	}
+
+	bombardmentInfo playerBombInfo
+	playerBombInfo.pos = targetOrigin + (dir * (creepDist / 2.0))
+	playerBombInfo.type = eBombardmentType.CREEPING
+	file.playerLastBombardmentInfo[ weapon.GetOwner() ] <- playerBombInfo
+
+	//walk through the barrage.
+	foreach ( int i, array<vector> stepTargets in bombardmentSteps )
+	{
+		float fireInterval = ( stepInterval / mortarsPerStep )
+		thread DetCordBarrage_BombardLineStep( weapon, markerFx, offsetGunOrigin, stepTargets, fireInterval, verticalOffset )
+
+		wait stepInterval
+	}
+}
+
+void function DetCordBarrage_BombardLineStep( entity weapon, asset markerFx, vector gunOrigin, array<vector> stepTargets, float fireInterval, float verticalOffset )
+{
+	weapon.EndSignal( "OnDestroy" )
+
+	Assert( IsNewThread(), "Must be threaded off." )
+
+	foreach ( int i, vector mortarTarget in stepTargets )
+	{
+		float delay = ( i * fireInterval )
+
+		//Add a little random drift to shells.
+		vector targetFinal = Bombardment_GetRandomGroundPosInCircle( mortarTarget, 128, verticalOffset )
+		thread MortarFromWeapon( weapon, markerFx, delay, gunOrigin, targetFinal, "Bangalore_Ultimate_Rocket_Trails", verticalOffset )
+	}
+}
+
+void function MortarFromWeapon( entity weapon, asset markerFx, float delay, vector gunOrigin, vector target, string projectileSound = "", float verticalOffset = DEFAULT_BOMBARDMENT_HEIGHT  )
+{
+	weapon.EndSignal( "OnDestroy" )
+	if( IsValid( weapon.GetWeaponOwner() ) )
+		EndSignal( weapon.GetWeaponOwner(), "CleanUpPlayerAbilities" )
+	
+	wait delay
+
+	//DebugDrawSphere( target, 25, <210, 0, 0>, true, 2.0 )
+	bool isWeaponPlayerOffhand = false
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( IsValid( weaponOwner ) && weaponOwner.IsPlayer() && IsWeaponOffhand( weapon ) )
+		isWeaponPlayerOffhand = true
+
+
+	vector fwd = Normalize( target - gunOrigin )
+	WeaponFireMissileParams fireMissileParams
+	fireMissileParams.pos = gunOrigin
+	fireMissileParams.dir = fwd
+	fireMissileParams.speed = 1
+	fireMissileParams.scriptTouchDamageType = damageTypes.projectileImpact// | DF_IMPACT
+	fireMissileParams.scriptExplosionDamageType = damageTypes.explosive
+	fireMissileParams.doRandomVelocAndThinkVars = false
+	fireMissileParams.clientPredicted = false
+	entity missile = weapon.FireWeaponMissile( fireMissileParams )
+
+	if ( !IsValid( missile ) )
+		return
+
+	float delayForFX = ( verticalOffset - DEFAULT_BOMBARDMENT_HEIGHT )/DEFAULT_BOMBARDMENT_HEIGHT * 2.1
+
+
+	thread PlayMarkerFXForMortarWithDelay( markerFx, target, weapon.GetOwner(), isWeaponPlayerOffhand, missile, delayForFX  )
+
+	if ( isWeaponPlayerOffhand )
+		AddToUltimateRealm( weapon.GetWeaponOwner(), missile )
+
+	if( IsValid( weapon.GetWeaponOwner() ) )
+		AddToTrackedEnts( weapon.GetWeaponOwner(), missile )
+
+	if ( projectileSound != "" )
+		thread PlaySoundForMortarWithDelay( projectileSound, missile, delayForFX  )
+
+	missile.WaitSignal( "OnDestroy" )
+
+	entity shake = CreateShake( target, 5, 150, 1, 1000 )
+	shake.kv.spawnflags = 4 // SF_SHAKE_INAIR
+
+	if ( isWeaponPlayerOffhand )
+		AddToUltimateRealm( weapon.GetWeaponOwner(), shake )
+}
+
+void function PlayMarkerFXForMortarWithDelay( asset markerFx, vector target, entity weaponOwner, bool isWeaponPlayerOffHand, entity missile, float delay = 0.0  )
+{
+	missile.EndSignal( "OnDestroy"  )
+
+	if ( delay > 0.0  )
+		wait delay
+
+	int index = GetParticleSystemIndex( markerFx )
+	if ( index != 0 )
+	{
+		entity targetEffect = StartParticleEffectInWorld_ReturnEntity( index, target, <0, 0, 1> )
+		EffectSetControlPointVector( targetEffect, 1, <BURN_R, BURN_G, BURN_B> )
+
+		if ( isWeaponPlayerOffHand )
+			AddToUltimateRealm( weaponOwner, targetEffect )
+
+		OnThreadEnd(
+			function() : ( targetEffect )
+			{
+				EffectStop( targetEffect )
+			}
+		)
+	}
+
+	missile.WaitSignal( "OnDestroy" )
+}
+
+void function PlaySoundForMortarWithDelay( string projectileSound, entity missile, float delay = 0.0 )
+{
+	missile.EndSignal( "OnDestroy"  )
+
+	if ( delay > 0.0  )
+		wait delay
+
+	EmitSoundOnEntity( missile, projectileSound )
+}
+
+/*
+ ____   ____  __  __ ____          _____  _____  __  __ ______ _   _ _______   _    _ _______ _____ _      _____ _________     __  ______ _    _ _   _  _____ _______ _____ ____  _   _  _____
+|  _ \ / __ \|  \/  |  _ \   /\   |  __ \|  __ \|  \/  |  ____| \ | |__   __| | |  | |__   __|_   _| |    |_   _|__   __\ \   / / |  ____| |  | | \ | |/ ____|__   __|_   _/ __ \| \ | |/ ____|
+| |_) | |  | | \  / | |_) | /  \  | |__) | |  | | \  / | |__  |  \| |  | |    | |  | |  | |    | | | |      | |    | |   \ \_/ /  | |__  | |  | |  \| | |       | |    | || |  | |  \| | (___
+|  _ <| |  | | |\/| |  _ < / /\ \ |  _  /| |  | | |\/| |  __| | . ` |  | |    | |  | |  | |    | | | |      | |    | |    \   /   |  __| | |  | | . ` | |       | |    | || |  | | . ` |\___ \
+| |_) | |__| | |  | | |_) / ____ \| | \ \| |__| | |  | | |____| |\  |  | |    | |__| |  | |   _| |_| |____ _| |_   | |     | |    | |    | |__| | |\  | |____   | |   _| || |__| | |\  |____) |
+|____/ \____/|_|  |_|____/_/    \_\_|  \_\_____/|_|  |_|______|_| \_|  |_|     \____/   |_|  |_____|______|_____|  |_|     |_|    |_|     \____/|_| \_|\_____|  |_|  |_____\____/|_| \_|_____/
+
+*/
+
+//Function gets a random point within the given radius of the given point that can be hit from the sky.
+vector function Bombardment_GetRandomGroundPosInCircle( vector centerOrigin, float radius, float verticalOffset )
+{
+	float a     = RandomFloatRange( 0, 1 )
+	float b     = RandomFloatRange( 0, 1 )
+	float theta = (PI * 2) * a
+	float r     = sqrt( b )
+
+	float offsetX = (r * cos( theta )) * radius
+	float offsetY = (r * sin( theta )) * radius
+
+	vector clusterTarget = (centerOrigin + < offsetX, offsetY, verticalOffset >)
+	clusterTarget = OriginToGround( clusterTarget )
+
+	return clusterTarget
+}
+
+array<vector> function Bombardment_GetDistributedRandomGroundPositionsInCircle( vector centerOrigin, float radius, int density, float verticalOffset )
+{
+	float angle = 360.0 / density
+
+	float subRadius = radius / 2
+
+	//Get Sub-circle origins
+	array<vector> circleOrigins
+	for ( int i = 1; i <= density; i++ )
+	{
+		vector offset = MapAngleToRadius( angle * i, subRadius )
+		vector target = ( centerOrigin + < offset.x, offset.y, verticalOffset > )
+		target = OriginToGround( target )
+		circleOrigins.append( target )
+	}
+
+	if ( BOMBARDMENT_DEBUG )
+	{
+		DebugDrawCircle( centerOrigin, <0, 0, 0>, radius, COLOR_RED, true, 10.0, 16 )
+		foreach ( vector circleOrigin in  circleOrigins )
+		{
+			DebugDrawCircle( circleOrigin, <0, 0, 0>, subRadius, COLOR_GREEN, true, 10.0, 16 )
 		}
 	}
+
+	return circleOrigins
+}
+
+//Function gets a random point within a ring around a central point that can be hit from the sky given a min and max radius.
+vector function Bombardment_GetRandomGroundPosInRing( vector centerOrigin, float innerRadius, float outerRadius, float verticalOffset )
+{
+	float bRange = GraphCapped( (outerRadius * outerRadius) - (innerRadius * innerRadius), 0.0, outerRadius * outerRadius, 1.0, 0.0 )
+
+	//printt( bRange )
+
+	float a     = RandomFloatRange( 0, 1 )
+	float b     = RandomFloatRange( bRange, 1 )
+	float theta = (PI * 2) * a
+	float r     = sqrt( b )
+
+	float offsetX = (r * cos( theta )) * outerRadius
+	float offsetY = (r * sin( theta )) * outerRadius
+
+	vector clusterTarget = (centerOrigin + < offsetX, offsetY, verticalOffset >)
+	clusterTarget = OriginToGround( clusterTarget )
+
+	if ( BOMBARDMENT_DEBUG )
+	{
+		DebugDrawCircle( centerOrigin, <0, 0, 0>, innerRadius, COLOR_RED, true, 10.0, 16 )
+		DebugDrawCircle( centerOrigin, <0, 0, 0>, outerRadius, COLOR_RED, true, 10.0, 16 )
+		DebugDrawSphere( clusterTarget, 32.0, COLOR_RED, true, 10.0 )
+	}
+
+	return clusterTarget
+}
+
+//Function gets an array of points that can be hit from the sky at regular intervals around the edge of a circle of a give radius.
+array<vector> function Bombardment_GetGroundPositionsOnCircleEdge( vector centerOrigin, float radius, int pointCount, float verticalOffset )
+{
+	array<vector> targets
+	for ( int i = 0; i < pointCount; i++ )
+	{
+		//Get our position
+		float aStep = GraphCapped( i, 0, pointCount, 0.0, 1.0 )
+		printt( aStep )
+
+		float a     = aStep
+		float b     = 1
+		float theta = (PI * 2) * a
+		float r     = sqrt( b )
+
+		float offsetX = (r * cos( theta )) * radius
+		float offsetY = (r * sin( theta )) * radius
+
+		vector clusterTarget = (centerOrigin + < offsetX, offsetY, verticalOffset >)
+		clusterTarget = OriginToGround( clusterTarget )
+
+		if ( BOMBARDMENT_DEBUG )
+		{
+			DebugDrawCircle( centerOrigin, <0, 0, 0>, radius, COLOR_RED, true, 10.0, 16 )
+			DebugDrawSphere( clusterTarget, 32.0, COLOR_RED, true, 10.0 )
+		}
+
+		targets.append( clusterTarget )
+	}
+
+	return targets
+}
+
+//Function gets an array of points that can be hit from the sky at regular intervals around the edge of a circle of a give radius.
+array<vector> function Bombardment_GetGroundPositionsForRingOfCircles( vector centerOrigin, float circleRadius, float maxRingRadius )
+{
+	int circleCount = int ( RoundToNearestInt( PI / asin( circleRadius / maxRingRadius ) ) )
+	float centerAngle = 2 * PI / ( circleCount - 1 )
+	float ringRadius = circleRadius / sin( centerAngle / 2 )
+
+	//Debug draw our max radius and our actual radius
+	if ( BOMBARDMENT_DEBUG )
+	{
+		DebugDrawCircle( centerOrigin, <0, 0, 0>, maxRingRadius, COLOR_RED, true, 10.0, 16 )
+		DebugDrawCircle( centerOrigin, <0, 0, 0>, ringRadius, COLOR_CYAN, true, 10.0, 16 )
+	}
+
+	//Determine number of radians to rotate per circle.
+	float radiansPerCircle = ( PI * 2 ) / circleCount
+
+	//Generate Circle Origins
+	array<vector> circleOrigins
+	for ( int i = 0; i < circleCount; i++ )
+	{
+		float angle = i * radiansPerCircle
+
+		float circleX = sin( angle ) * ringRadius
+		float circleY = cos( angle ) * ringRadius
+		vector circleOrigin = centerOrigin + < circleX, circleY, 0 >
+		vector circleToGround = OriginToGround( circleOrigin )
+		circleOrigins.append( circleToGround )
+
+		if ( BOMBARDMENT_DEBUG )
+			DebugDrawCircle( circleToGround, <0, 0, 0>, circleRadius, COLOR_RED, true, 10.0, 16 )
+	}
+
+	return circleOrigins
+}
+
+struct GroundPosData
+{
+	float  weight
+	vector origin
+}
+
+//Given an ideal location, and xy axis weight, a z axis weight, and a hull. This function should return a ground point that can accomidate the hull and be struck from the sky.
+vector function Bombardment_GetWeightedGroundPosInRadius( vector idealPos, float xyWeight, float zUpWeight, float zDownWeight, int hull, float radius, float stepDist,
+		int stepCount, int searchDensity )
+{
+	//Evaluate our ideal point
+	int solidMask            = TRACE_MASK_SOLID
+	int collisionGroup       = TRACE_COLLISION_GROUP_NONE
+	array<entity> ignoreEnts = []
+
+	float minFrac = 1.0//0.99
+	float maxZUp  = 96.0
+	vector mins   = GetBoundsMin( hull ) + < -96, -96, 0 >
+	vector maxs   = GetBoundsMax( hull ) + < 96, 96, 0 >
+	//printt( "MINS: " + mins )
+	//printt( "MAXS: " + maxs )
+
+	TraceResults result
+	float testZOffset = maxs.z / 2
+	vector tracePoint = idealPos + <0, 0, testZOffset>
+	result = TraceHull( tracePoint + <0, 0, 10000>, tracePoint, mins, maxs, ignoreEnts, solidMask, collisionGroup )
+	//	PrintTraceResults( result )
+
+	//Ideal position is will do just fine.
+	if ( result.fraction >= minFrac )
+		return idealPos
+
+	if ( BOMBARDMENT_DEBUG )
+		DebugDrawCircle( idealPos, <0, 0, 0>, radius, COLOR_RED, true, 60.0, 16 )
+
+	//Handle the case where our ideal position is no good.
+	array<vector> testPoints = Bombardment_GetGroundPositionsOnCircleEdge( idealPos, radius, searchDensity, testZOffset )
+
+	//Test and weight our initial test points.
+	GroundPosData bestData = Bombardment_TestWeightedPoints( idealPos, testPoints, xyWeight, zUpWeight, zDownWeight, mins, maxs, minFrac, -1.0 )
+
+	//If we found a real point, return that point.
+	float bestZOffset = bestData.origin.z - idealPos.z
+	//	printt( "IDEAL Z: " + idealPos.z )
+	//	printt( "BEST Z: " + bestPoint.z )
+	//	printt( "BEST Z OFFSET: " + bestZOffset )
+	if ( bestData.origin != idealPos && bestZOffset <= maxZUp )
+		return bestData.origin
+
+	array<GroundPosData> bestDataArray = []
+	bestDataArray.append( bestData )
+
+	//Expand search ring if needed.
+	float currentInner  = radius
+	float currentOuter  = radius
+	int currentDensity  = 1
+	float currentWeight = bestData.weight
+	for ( int i = 0; i < stepCount; i++ )
+	{
+		currentInner = currentOuter
+		currentOuter += stepDist
+
+		//Expand search density based on the expansion size of the the circle radius.
+		currentDensity = int ( floor ( searchDensity * (currentOuter / radius) ) )
+		//printt( "CURRENT SEARCH DENSITY: " + currentDensity )
+
+		if ( BOMBARDMENT_DEBUG )
+			DebugDrawCircle( idealPos, <0, 0, 0>, currentOuter, COLOR_RED, true, 60.0, 16 )
+
+		//Get test points for this step
+		array<vector> stepTestPoints = Bombardment_GetGroundPositionsOnCircleEdge( idealPos, currentOuter, currentDensity, bestZOffset )
+		GroundPosData bestStepData   = Bombardment_TestWeightedPoints( idealPos, stepTestPoints, xyWeight, zUpWeight, zDownWeight, mins, maxs, minFrac, currentWeight )
+
+		//If we found a real point, return that point.
+		float bestStepZOffset = bestStepData.origin.z - idealPos.z
+		//	printt( "BEST STEP Z OFFSET: " + bestStepZOffset )
+		if ( bestStepData.origin != idealPos && bestStepZOffset <= maxZUp )
+			return bestStepData.origin
+
+		//Update our best weight.
+		currentWeight = bestStepData.weight
+
+		bestDataArray.append( bestStepData )
+	}
+
+	//If we still don't have a good point go back through the best of our previous searches.
+	GroundPosData bestOfAllData = Bombardment_GetBestWeightedPoint( bestDataArray )
+	if ( bestOfAllData.origin != idealPos )
+		return bestOfAllData.origin
+
+	//Handle case where no point can be found.
+	return idealPos
+}
+
+
+GroundPosData function Bombardment_TestWeightedPoints( vector idealPos, array<vector> testPoints, float xyWeight, float zUpWeight, float zDownWeight,
+		vector hullMins, vector hullMaxes, float minFrac, float bestWeight = -1.0 )
+{
+	int solidMask            = TRACE_MASK_PLAYERSOLID//TRACE_MASK_SOLID
+	int collisionGroup       = TRACE_COLLISION_GROUP_PLAYER//TRACE_COLLISION_GROUP_NONE
+	array<entity> ignoreEnts = []
+
+	//Get the highest of our vertical test points offset it slightly upward and use it as the starting point for all our traces to minimize the distance we need to trace our hulls.
+	float highestZPoint = Bombardment_GetHighestZPos( testPoints )
+	highestZPoint += 8.0
+
+	float testZOffset = hullMaxes.z / 2
+
+	//Test and weight our initial test points
+	GroundPosData bestData
+	bestData.weight = bestWeight
+	bestData.origin = idealPos
+
+	//Sort our test points relative to our ideal point so that we test points below the ideal z axis first, then points above the ideal z axis.
+	testPoints = Bombardment_SortTestPoints( idealPos, testPoints )
+	foreach ( vector testPoint in testPoints )
+	{
+
+		float finalWeight = Bombardment_RatePoint( idealPos, testPoint, xyWeight, zUpWeight, zDownWeight, hullMins, hullMaxes )
+		//printt( "BEST WEIGHT: " + bestData.weight )
+		//printt( "FINAL WEIGHT: " + finalWeight )
+
+		//Only trace the hull of this point if it looks like it could be better than out best point
+		if ( finalWeight < bestData.weight || bestData.weight == -1.0 )
+		{
+			//printt( "FOUND BETTER WEIGHT, TESTING HULL" )
+			vector tracePoint   = testPoint + <0, 0, testZOffset>
+			TraceResults result = TraceHull( tracePoint + <0, 0, highestZPoint>, tracePoint, hullMins, hullMaxes, ignoreEnts, solidMask, collisionGroup )
+			//PrintTraceResults( result )
+
+			/*
+			float zDif = fabs( tracePoint.z - result.endPos.z )
+			printt( "POINT Z DIF: " + zDif )
+			float zFull = fabs( tracePoint.z - (tracePoint.z + highestZPoint) )
+			printt( "POINT FULL Z: " + zFull )
+			float zFrac = (zFull - zDif) / zFull
+			printt( "Z FRAC: " + zFrac )
+			printt( "T FRAC: " + result.fraction )
+			*/
+
+			if ( BOMBARDMENT_DEBUG )
+				DebugDrawLine( tracePoint, result.endPos, COLOR_CYAN, true, 60.0 )
+
+			if ( result.fraction >= minFrac )
+			{
+				bestData.weight = finalWeight
+				bestData.origin = testPoint
+				//printt( "FOUND NEW BEST POINT" )
+				if ( BOMBARDMENT_DEBUG )
+				{
+					DebugDrawLine( tracePoint + <0, 0, highestZPoint>, result.endPos, COLOR_GREEN, true, 60.0 )
+					DebugDrawBox( result.endPos, hullMins, hullMaxes, COLOR_GREEN, 1, 60.0 )
+				}
+			}
+			else
+			{
+				if ( BOMBARDMENT_DEBUG )
+				{
+					DebugDrawLine( tracePoint + <0, 0, highestZPoint>, result.endPos, COLOR_YELLOW, true, 60.0 )
+					DebugDrawBox( result.endPos, hullMins, hullMaxes, COLOR_YELLOW, 1, 60.0 )
+				}
+			}
+		}
+		else
+		{
+			if ( BOMBARDMENT_DEBUG )
+				DebugDrawLine( testPoint + <0, 0, highestZPoint>, testPoint, COLOR_RED, true, 60.0 )
+		}
+	}
+
+	//If we found a real point, return that point. Otherwise this will just return our ideal point.
+	return bestData
+}
+
+
+float function Bombardment_RatePoint( vector idealPos, vector testPoint, float xyWeight, float zUpWeight, float zDownWeight, vector hullMins, vector hullMaxes )
+{
+	//evaluate the xy weight
+	float xyDistSqr = Distance2DSqr( idealPos, testPoint ) * xyWeight
+
+	//evaluate the z weight and determine if we should use the zUp or zDown weight.
+	//This allows us to weight points above and below the ideal position seperately.
+	float zDist    = fabs( testPoint.z - idealPos.z )
+	float zWeight  = testPoint.z - idealPos.z > 0 ? zUpWeight : zDownWeight
+	float zDistSqr = (zDist * zDist) * zWeight
+	float finalWeight = (xyDistSqr + zDistSqr) / 100
+
+	return finalWeight
+}
+
+
+GroundPosData function Bombardment_GetBestWeightedPoint( array<GroundPosData> dataArray )
+{
+	GroundPosData bestData
+	bestData.weight = -1.0
+	bestData.origin = <0, 0, 0>
+	foreach ( GroundPosData data in dataArray )
+	{
+		if ( data.weight < bestData.weight || bestData.weight == -1.0 )
+		{
+			bestData.weight = data.weight
+			bestData.origin = data.origin
+		}
+	}
+
+	return bestData
+}
+
+
+float function Bombardment_GetHighestZPos( array<vector> points )
+{
+	Assert ( points.len() > 0, "No points to test." )
+	float highestZPoint = points[ 0 ].z
+	foreach ( vector point in points )
+	{
+		if ( point.z > highestZPoint )
+			highestZPoint = point.z
+	}
+
+	//printt ( "HIGHEST Z POINT: " + highestZPoint )
+	return highestZPoint
+}
+
+
+array<vector> function Bombardment_SortTestPoints( vector idealPos, array<vector> testPoints )
+{
+	array<vector> highPoints
+	array<vector> lowPoints
+
+	foreach ( vector point in testPoints )
+	{
+		if ( point.z > idealPos.z )
+			highPoints.append( point )
+		else
+			lowPoints.append( point )
+	}
+
+	if ( highPoints.len() > 0 )
+		highPoints.sort( SortHighPoints )
+
+	if ( lowPoints.len() > 0 )
+		lowPoints.sort( SortLowPoints )
+
+	array<vector> sortedPoints
+	sortedPoints.extend( lowPoints )
+	sortedPoints.extend( highPoints )
+
+	/*
+	printt( "SORTED LOW Z POINTS" )
+	foreach( vector point in lowPoints )
+	{
+		printt( point.z )
+	}
+
+	printt( "SORTED HIGH Z POINTS" )
+	foreach( vector point in highPoints )
+	{
+		printt( point.z )
+	}
+
+	printt( "SORTED Z POINTS" )
+	foreach( vector point in sortedPoints )
+	{
+		printt( point.z )
+	}
+	*/
+
+	return sortedPoints
+}
+
+//Sort from low to high Z axis.
+int function SortHighPoints( vector a, vector b )
+{
+	if ( a.z > b.z )
+		return 1
+
+	if ( a.z < b.z )
+		return -1
+
+	return 0
+}
+
+//Sort from high to low Z axis.
+int function SortLowPoints( vector a, vector b )
+{
+	if ( a.z < b.z )
+		return 1
+
+	if ( a.z > b.z )
+		return -1
+
+	return 0
+}
+
+
+void function CleanupEntsAfterTime( array<entity> ents, float delay )
+{
+	wait(delay)
+
+	foreach ( ent in ents )
+	{
+		if ( IsValid( ent ) )
+			ent.Destroy()
+	}
+}
+
+bool function PlayBombardmentImpactSoundIfNeeded( entity bombardmentOwner )
+{
+	if ( !(bombardmentOwner in file.playerLastBombardmentInfo ) )
+		return false
+
+	bombardmentInfo info = file.playerLastBombardmentInfo[ bombardmentOwner ]
+
+	if ( Time() > info.impactDebounceEndTime )
+	{
+		if ( info.type == eBombardmentType.DEFENSIVE )
+		{
+			info.impactDebounceEndTime = Time() + BOMBARDMENT_IMPACT_DEBOUNCE_TIME
+			EmitSoundAtPosition( TEAM_ANY, info.pos, "explo_defensivebombardment_impact_sustained_3p_vs_3p", bombardmentOwner )
+		}
+		else if( info.type == eBombardmentType.CREEPING )
+		{
+			info.impactDebounceEndTime = Time() + BOMBARDMENT_IMPACT_DEBOUNCE_TIME
+			//EmitSoundAtPosition( TEAM_ANY, info.pos, "put_sustained_banglore_impact_here", bombardmentOwner )
+		}
+		return true
+	}
+
+	return false
+}
+
+bool function PlayBombardmentExposionSoundIfNeeded( entity bombardmentOwner )
+{
+	if ( !(bombardmentOwner in file.playerLastBombardmentInfo ) )
+		return false
+
+	bombardmentInfo info = file.playerLastBombardmentInfo[ bombardmentOwner ]
+
+	if ( Time() > info.explosionDebounceEndTime )
+	{
+		if( info.type == eBombardmentType.CREEPING )
+		{
+			info.explosionDebounceEndTime = Time() + BOMBARDMENT_EXPLOSION_DEBOUNCE_TIME
+			//EmitSoundAtPosition( TEAM_ANY, info.pos, "put_sustained_banglore_explosion_here" )
+		}
+		return true
+	}
+
+	return false
 }
