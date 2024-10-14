@@ -28,6 +28,8 @@ global function GetDecoyActiveCountForPlayer
 
 global const string DECOY_SCRIPTNAME = "controllable_decoy"
 global const string CONTROLLED_DECOY_SCRIPTNAME = "controlled_decoy"
+global const string DECOY_ULTIMATE_SCRIPTNAME = "ultimate_decoy"
+
 const DECOY_FLAG_FX = $"P_flag_fx_foe"
 const HOLO_EMITTER_CHARGE_FX_1P = $"P_mirage_holo_emitter_glow_FP"
 const HOLO_EMITTER_CHARGE_FX_3P = $"P_mirage_emitter_flash"
@@ -424,6 +426,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 		vector endvec = VectorToAngles( player.GetOrigin() - endPosition )
 		decoy = player.CreateMimicPlayerDecoy( ShortestRotation( startvec, endvec ).y ) //retail accurate ultimate mimic decoy :) Colombia
 		decoy.SetOrigin( endPosition )
+		decoy.SetScriptName( DECOY_ULTIMATE_SCRIPTNAME )
 		//thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
 	}
 	
@@ -609,6 +612,9 @@ void function SetupDecoy_Common( entity player, entity decoy, bool ultimateDecoy
 	decoy.decoy.fxHandles.append( holoPilotTrailFX )
 	decoy.SetFriendlyFire( false )
 	decoy.SetKillOnCollision( false )
+
+	decoy.RemoveFromAllRealms()
+	decoy.AddToOtherEntitysRealms( player )
 }
 
 vector function CalculateAngleSegmentForDecoy( int loopIteration, vector angleSegment )
