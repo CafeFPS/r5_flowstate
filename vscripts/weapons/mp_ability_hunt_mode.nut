@@ -400,7 +400,10 @@ bool function TargetShouldBeSonared( entity ent, entity looker )
 
 	if ( results.fraction < 0.99 )
 		return false
-
+	
+	if( StatusEffect_GetSeverity( ent, eStatusEffect.smokescreen ) > 0.0 )
+		return false
+	
 	return true
 }
 

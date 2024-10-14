@@ -44,7 +44,7 @@ global struct SmokescreenStruct
 	array<vector> fxOffsets
 
 	// r5 stuff
-	int traceBlockerTeam
+	int traceBlockerTeam = TEAM_ANY
 	string traceBlockerScriptName
 	int damageFlags
 	float damageTickRate
@@ -96,22 +96,21 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 	SmokescreenFXStruct fxInfo = Smokescreen_CalculateFXStruct( smokescreen )
 	file.allSmokescreenFX.append( fxInfo )
 
-	array<entity> thermiteBurns = GetActiveThermiteBurnsWithinRadius( fxInfo.center, fxInfo.radius )
-	foreach ( thermiteBurn in thermiteBurns )
-	{
-		entity owner = thermiteBurn.GetOwner()
+	//removed in s21
+	//array<entity> thermiteBurns = GetActiveThermiteBurnsWithinRadius( fxInfo.center, fxInfo.radius )
+	//foreach ( thermiteBurn in thermiteBurns )
+	//{
+	//	entity owner = thermiteBurn.GetOwner()
 
-		if ( IsValid( owner ) && owner.GetTeam() != smokescreen.ownerTeam )
-			thermiteBurn.Destroy()
-	}
+		//if ( IsValid( owner ) && owner.GetTeam() != smokescreen.ownerTeam )
+			//thermiteBurn.Destroy()
+	//}
 
 	entity traceBlocker
 
 	if ( smokescreen.blockLOS )
 	{
-		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
-		traceBlocker.RemoveFromAllRealms()
-		traceBlocker.AddToOtherEntitysRealms( player )
+		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo, player )
 	}
 
 #if DEVELOPER
@@ -256,21 +255,28 @@ void function SmokescreenAffectsEntitiesInArea( SmokescreenStruct smokescreen, S
 	}
 }
 
-entity function Smokescreen_CreateTraceBlockerVol( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo )
+entity function Smokescreen_CreateTraceBlockerVol( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo, entity ownerEnt )
 {
-	entity traceBlockerVol = CreateEntity( "trace_volume" )
-	traceBlockerVol.kv.targetname = UniqueString( "smokescreen_traceblocker_vol" )
-	traceBlockerVol.kv.origin = fxInfo.center
-	traceBlockerVol.kv.angles = smokescreen.angles
-	DispatchSpawn( traceBlockerVol )
-	traceBlockerVol.SetBox( fxInfo.mins * 0.9, fxInfo.maxs * 0.9 )
+	entity tbl = CreateEntity( "trace_volume" )
+	tbl.kv.targetname = UniqueString( "smokescreen_traceblocker_vol" )
+	tbl.kv.origin = fxInfo.center + <0,0,( fabs( fxInfo.maxs.z ) * 0.5 )>
+	tbl.kv.angles = smokescreen.angles
+	DispatchSpawn( tbl )
+	tbl.SetBox( fxInfo.mins * 0.9, fxInfo.maxs * 1.1 )
+	tbl.kv.contents = int( tbl.kv.contents ) | CONTENTS_OPAQUE
 
-#if DEVELOPER
-	if ( SMOKESCREEN_DEBUG )
-		DrawAngledBox( fxInfo.center, smokescreen.angles, fxInfo.mins, fxInfo.maxs, 255, 0, 0, true, smokescreen.lifetime - 0.6 )
-#endif
+	if ( smokescreen.traceBlockerTeam >= 0 )
+		SetTeam( tbl, smokescreen.traceBlockerTeam )
+	tbl.SetScriptName( smokescreen.traceBlockerScriptName )
+	tbl.SetIgnorePredictedTriggerTypes( TT_JUMP_PAD )
 
-	return traceBlockerVol
+	if ( IsValid( ownerEnt ) )
+	{
+		tbl.RemoveFromAllRealms()
+		tbl.AddToOtherEntitysRealms( ownerEnt )
+	}
+
+	return tbl
 }
 
 array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo )
@@ -286,15 +292,18 @@ array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, Smokescreen
 		int fxID = GetParticleSystemIndex( smokescreen.smokescreenFX )
 		vector angles = smokescreen.fxUseWeaponOrProjectileAngles ? smokescreen.weaponOrProjectile.GetAngles() : <0.0, 0.0, 0.0>
 		entity fxEnt = StartParticleEffectInWorld_ReturnEntity( fxID, position, angles )
+		entity ownerEnt = smokescreen.attacker
+		if ( ownerEnt != null )
+		{
+			fxEnt.RemoveFromAllRealms()
+			fxEnt.AddToOtherEntitysRealms( ownerEnt )
+		}
 		float fxLife = smokescreen.lifetime
 
 		EffectSetControlPointVector( fxEnt, 1, <fxLife, 0.0, 0.0> )
 
 		if ( !smokescreen.shouldHibernate )
 			fxEnt.DisableHibernation()
-
-		fxEnt.RemoveFromAllRealms()
-		fxEnt.AddToOtherEntitysRealms( smokescreen.attacker )
 
 		fxEntities.append( fxEnt )
 	}
@@ -305,6 +314,7 @@ array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, Smokescreen
 void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime, SmokescreenFXStruct fxInfo, entity traceBlocker, array<entity> fxEntities, entity player )
 {
 	player.EndSignal( "CleanUpPlayerAbilities" )
+	EndThreadOn_PlayerChangedClass( smokescreen.attacker )
 	
 	OnThreadEnd( function() : ( fxEntities, fxInfo, traceBlocker, smokescreen )
 		{
@@ -373,15 +383,6 @@ void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime,
 
 	timeToWait = max( ( lifetime + 0.1 ) - timeToWait, 0.0 )
 	wait( timeToWait )
-
-	foreach ( fxEnt in fxEntities )
-	{
-		if ( IsValid( fxEnt ) )
-		{
-			EffectStop( fxEnt )
-			fxEnt.Destroy()
-		}
-	}
 }
 
 bool function IsOriginTouchingSmokescreen( vector origin, int teamToIgnore = TEAM_UNASSIGNED )
