@@ -60,6 +60,11 @@ global function RemoveCallback_LootPhysicsParented
 global function Dev_ForceDropDeathbox
 global function SURVIVAL_Death_DropLoot_Internal
 
+global function Loot_AddCallback_OnGiveMainWeapon
+global function Loot_RemoveCallback_OnGiveMainWeapon
+global function Loot_AddCallback_OnWeaponDrop
+global function Loot_RemoveCallback_OnWeaponDrop
+
 //added 8/8/2024 ~mkos
 global function AddCallback_OnPlayerWeaponAttachmentChanged
 global function RemoveCallback_OnPlayerWeaponAttachmentChanged 
@@ -153,6 +158,8 @@ struct {
 
 	table< entity, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootPhysicsParented
 	table< string, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootSpawnParented
+	array< void functionref(entity, entity, entity) >								Callbacks_OnGiveMainWeapon
+	array< void functionref(entity, entity, entity) >								Callbacks_OnWeaponDrop
 
 	array<entity> playersThatShouldForceUseSafeSpotForDeathBox
 	
@@ -2375,10 +2382,28 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 
 	entity newWeapon = null
 	if ( isReplacingActiveWeapon )
-		newWeapon = player.ReplaceActiveWeapon( eActiveInventorySlot.mainHand, pickup.GetWeaponName(), [] )
+	{
+		try{
+			newWeapon = player.ReplaceActiveWeapon( eActiveInventorySlot.mainHand, pickup.GetWeaponName(), [] )
+		}catch(e420)
+		{
+			// newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
+			Warning( "GiveMainWeapon Error ReplaceActiveWeapon" )
+		}
+	}
 	else
-		newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
+	{
+		try{
+			newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
+		}catch(e69)
+		{
+			Warning( "GiveMainWeapon Error GiveWeapon_NoDeploy" )
+		}
+	}
 
+	if( !IsValid( newWeapon ) )
+		return null
+	
 	newWeapon.SetProScreenOwner( ( ( pickup.e.firstOwner == null) ? player : pickup.e.firstOwner) )
 	// TryRemoveExtraWeaponModsThatMustBeOnPlayer( player, newWeapon, mods ) //for rampart. Cafe
 
@@ -2551,10 +2576,10 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		}
 	}
 
-	// foreach( void functionref( entity, entity, entity ) callbackFunction in file.Callbacks_OnGiveMainWeapon )
-	// {
-		// callbackFunction( player, pickup, newWeapon )
-	// }
+	foreach( void functionref( entity, entity, entity ) callbackFunction in file.Callbacks_OnGiveMainWeapon )
+	{
+		callbackFunction( player, pickup, newWeapon )
+	}
 
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
@@ -2839,10 +2864,10 @@ void function WeaponDropBehavior( entity player, entity droppedProp, entity weap
 		#endif
 	}
 
-	// foreach( void functionref( entity, entity, entity ) callbackFunction in file.Callbacks_OnWeaponDrop )
-	// {
-		// callbackFunction( player, droppedProp, weaponToDrop )
-	// }
+	foreach( void functionref( entity, entity, entity ) callbackFunction in file.Callbacks_OnWeaponDrop )
+	{
+		callbackFunction( player, droppedProp, weaponToDrop )
+	}
 }
 
 void function ReturnWeaponAmmoToPlayer( entity player, entity dropWeapon )
@@ -5686,4 +5711,31 @@ void function SURVIVAL_RemoveOffhandFromInventory( entity player, entity offhand
 		StatsHook_PlayerUsedResource( player, offhandWeapon, lootRef )
 		thread Delayed_TryReplaceOrdnance( player, offhandWeapon )
 	}
+}
+
+void function Loot_AddCallback_OnWeaponDrop( void functionref(entity, entity, entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnWeaponDrop.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Loot_AddCallback_OnWeaponDrop" )
+	file.Callbacks_OnWeaponDrop.append( callbackFunc )
+}
+
+
+void function Loot_RemoveCallback_OnWeaponDrop( void functionref(entity, entity, entity) callbackFunc )
+{
+	Assert( file.Callbacks_OnWeaponDrop.contains( callbackFunc ), "Can't remove callback that wasn't added " + string( callbackFunc ) + " with Loot_RemoveCallback_OnWeaponDrop" )
+	file.Callbacks_OnWeaponDrop.fastremovebyvalue( callbackFunc )
+}
+
+
+void function Loot_AddCallback_OnGiveMainWeapon( void functionref(entity, entity, entity) callbackFunc )
+{
+	Assert( !file.Callbacks_OnGiveMainWeapon.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Loot_AddCallback_OnGiveMainWeapon" )
+	file.Callbacks_OnGiveMainWeapon.append( callbackFunc )
+}
+
+
+void function Loot_RemoveCallback_OnGiveMainWeapon( void functionref(entity, entity, entity) callbackFunc )
+{
+	Assert( file.Callbacks_OnGiveMainWeapon.contains( callbackFunc ), "Can't remove callback that wasn't added " + string( callbackFunc ) + " with Loot_RemoveCallback_OnGiveMainWeapon" )
+	file.Callbacks_OnGiveMainWeapon.fastremovebyvalue( callbackFunc )
 }
