@@ -4818,21 +4818,9 @@ void function DisableMantle( entity player )
 	player.DisableMantle()
 }
 
-void function LockWeaponsAndMelee( entity player )
-{
-	// HolsterViewModelAndDisableWeapons( player )
-	player.LockWeaponChange()
-}
-
 void function EnableMantle( entity player )
 {
 	player.EnableMantle()
-}
-
-void function UnlockWeaponsAndMelee( entity player )
-{
-	// DeployViewModelAndEnableWeapons( player )
-	player.UnlockWeaponChange()
 }
 
 void function DelayedDestroy( entity mover, float lifetime )
@@ -4925,6 +4913,107 @@ bool function IsSingleplayer()
 	#else
 		return GAMETYPE == GAMEMODE_SP
 	#endif
+}
+
+void function LockWeaponsAndMelee( entity player )
+{
+	printt( FUNC_NAME( 0 ) + " from " + FUNC_NAME( 1 ) )
+	printt( "Player = " + player.GetPlayerName() + ", current count = " + player.p.weaponsAndMeleeLockedCount )
+
+	if ( player.p.weaponsAndMeleeLockedCount == 0 )
+	{
+		player.LockWeaponChange()
+		DisableMeleeWeapons( player )
+	}
+	player.p.weaponsAndMeleeLockedCount++
+}
+
+void function UnlockWeaponsAndMelee( entity player )
+{
+	printt( FUNC_NAME( 0 ) + " from " + FUNC_NAME( 1 ) )
+	printt( "Player = " + player.GetPlayerName() + ", current count = " + player.p.weaponsAndMeleeLockedCount )
+
+	player.p.weaponsAndMeleeLockedCount--
+	Assert( player.p.weaponsAndMeleeLockedCount >= 0, "< 0 can cause bugs" )
+	if ( player.p.weaponsAndMeleeLockedCount == 0 )
+	{
+		player.UnlockWeaponChange()
+		EnableMeleeWeapons( player )
+	}
+}
+
+//Home made version of player.DisableWeaponTypes( WPT_MELEE ) code function that is used in s21
+//By Cafe
+void function DisableMeleeWeapons( entity player )
+{
+	player.SetMeleeDisabled()
+	
+	if( IsValid( player.GetOffhandWeapon( OFFHAND_MELEE ) ) )
+		player.GetOffhandWeapon( OFFHAND_MELEE ).AllowUse( false )
+
+	if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 ) ) )
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 ).AllowUse( false )
+}
+
+void function EnableMeleeWeapons( entity player )
+{
+	player.ClearMeleeDisabled()
+	
+	if( IsValid( player.GetOffhandWeapon( OFFHAND_MELEE ) ) )
+		player.GetOffhandWeapon( OFFHAND_MELEE ).AllowUse( true )
+
+	if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 ) ) )
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 ).AllowUse( true )
+}
+
+void function DisableAllWeaponsExceptHandsOrIncap( entity player )
+{
+	// DumpStack()
+	array<entity> weapons = player.GetMainWeapons()
+	weapons.extend( player.GetOffhandWeapons() )
+	weapons.extend( player.GetAllActiveWeapons() )
+
+	entity utilityWeapon = player.GetNormalWeapon( KNOCKDOWN_SHIELD_SLOT )
+	// entity hands = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+
+	foreach ( weaponEnt in weapons )
+	{
+		if( !IsValid( weaponEnt ) || IsValid( utilityWeapon ) && weaponEnt == utilityWeapon ) //|| IsValid( hands ) && weaponEnt == hands )
+			continue
+		
+		weaponEnt.AllowUse( false )
+	}
+	
+	if( IsValid( utilityWeapon ) )
+		utilityWeapon.AllowUse( true )
+	
+	// if( IsValid( hands ) )
+		// hands.AllowUse( true )
+}
+
+void function EnableAllWeaponsExceptHandsOrIncap( entity player )
+{
+	DumpStack()
+	array<entity> weapons = player.GetMainWeapons()
+	weapons.extend( player.GetOffhandWeapons() )
+	weapons.extend( player.GetAllActiveWeapons() )
+
+	entity utilityWeapon = player.GetNormalWeapon( KNOCKDOWN_SHIELD_SLOT )
+	// entity hands = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 ) //idk
+
+	foreach ( weaponEnt in weapons )
+	{
+		if( !IsValid( weaponEnt ) || IsValid( utilityWeapon ) && weaponEnt == utilityWeapon ) //|| IsValid( hands ) && weaponEnt == hands )
+			continue
+		
+		weaponEnt.AllowUse( true )
+	}
+	
+	if( IsValid( utilityWeapon ) )
+		utilityWeapon.AllowUse( false )
+	
+	// if( IsValid( hands ) )
+		// hands.AllowUse( true )
 }
 
 bool function NPC_GruntChatterSPEnabled( entity npc )

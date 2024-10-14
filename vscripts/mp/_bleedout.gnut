@@ -369,10 +369,9 @@ void function PlayerDying( entity player, entity attacker, var damageInfo )
 		
 		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, KNOCKDOWN_SHIELD_SLOT )
 
-		HolsterAndDisableWeapons( player ) //Revisit
-		// LockWeaponsAndMelee( player, "bleedout" )
-		// player.DisableWeaponTypes( BLEEDOUT_DISABLED_WEAPON_TYPES )
-
+		//Cafe
+		LockWeaponsAndMelee( player )
+		DisableAllWeaponsExceptHandsOrIncap( player )
 	}
 
 	OnThreadEnd(
@@ -404,12 +403,11 @@ void function PlayerDying( entity player, entity attacker, var damageInfo )
 
 				if ( forceHolster )
 				{
-					// UnlockWeaponsAndMelee( player, "bleedout" )
-					DeployAndEnableWeapons( player ) //revisit. Cafe
-					// player.EnableWeaponTypes( BLEEDOUT_DISABLED_WEAPON_TYPES )
+					//Cafe
+					UnlockWeaponsAndMelee( player )
+					EnableAllWeaponsExceptHandsOrIncap( player )
 
 					player.TakeNormalWeaponByIndexNow( KNOCKDOWN_SHIELD_SLOT )
-					//SURVIVAL_TryGivePlayerDefaultMeleePrimary( player )
 
 					if ( GetCurrentPlaylistVarBool( "mirage_rework_enabled", true ) && player.IsCloaked( true ) )
 					{

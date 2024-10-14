@@ -1141,6 +1141,8 @@ global struct ServerPlayerStruct
 	array<ConsumableInventoryItem> ornull cachedInventory
 	
 	float lastTimeUsedRailjump
+	
+	int  weaponsAndMeleeLockedCount
 }
 
 global struct ChallengeScore
