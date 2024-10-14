@@ -38,6 +38,7 @@ global function CreateWorkerDrone
 global function CreateZombieStalker
 global function CreateZombieStalkerMossy
 global function StopAssaultMoveTarget
+global function CreateLegend_ai_aimtrainer
 
 global const HACK_CAP_BACK1 = $"models/sandtrap/sandtrap_wall_bracket.mdl"
 global const HACK_CAP_BACK2 = $"models/pipes/pipe_modular_grey_bracket_cap.mdl"
@@ -295,6 +296,15 @@ entity function CreateDummy( int team, vector origin, vector angles )
 entity function CreateLegend_ai( int team, vector origin, vector angles, bool trainingdummie = false )
 {
 	array<string> aiSettings = ["npc_dummie_ballistic", "npc_dummie_valk", "npc_dummie_horizon", "npc_dummie_rampart", "npc_dummie_loba", "npc_dummie_catalyst" ]
+	
+	entity npc = CreateNPC( "npc_dummie", team, origin, angles )
+	SetSpawnOption_AISettings( npc, aiSettings.getrandom() )
+	return npc
+}
+
+entity function CreateLegend_ai_aimtrainer( int team, vector origin, vector angles, bool trainingdummie = false )
+{
+	array<string> aiSettings = ["npc_dummie_ballistic", "npc_dummie_valk", "npc_dummie_loba", "npc_dummie_catalyst", "npc_dummie_combat" ]
 	
 	entity npc = CreateNPC( "npc_dummie", team, origin, angles )
 	SetSpawnOption_AISettings( npc, aiSettings.getrandom() )

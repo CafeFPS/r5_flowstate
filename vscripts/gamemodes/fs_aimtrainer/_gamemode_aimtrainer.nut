@@ -262,7 +262,7 @@ void function StartStraferDummyChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		vector dummypos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
-		entity dummy = CreateLegend_ai( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0), true )
+		entity dummy = CreateLegend_ai_aimtrainer( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0), true )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
