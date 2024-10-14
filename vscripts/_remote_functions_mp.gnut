@@ -347,7 +347,8 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "FSDM_1v1_Enemy", SNDC_PLAYER_GLOBAL, SNVT_ENTITY )
 			RegisterNetworkedVariable( "FSDM_1v1_PositionInScoreboard", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
 			
-			Remote_RegisterClientFunction("DM_HintCatalog", "int", -100, 100, "int", INT_MIN, INT_MAX)
+			Remote_RegisterClientFunction("DM_HintCatalog", "int", -100, 100, "int", INT_MIN, INT_MAX)	
+			Remote_RegisterClientFunction( "Flowstate_ShowRespawnTimeUI", "int", -2, 1200 )
 
 			//Movement Gym
 			if( FlowState_EnableMovementGym() )
@@ -1028,9 +1029,7 @@ void function RemoteFunctions_Init_Begin()
 	
 	RegisterServerVar( "tracker_enabled", false )
 	Remote_RegisterUIFunction( "UI_Callback_MOTD" )
-	
-	Remote_RegisterClientFunction( "Flowstate_ShowRespawnTimeUI", "int", -2, 1200 )
-	
+
 	if ( IsLobby() )
 	{
 		//Register networked variables for the lobby

@@ -116,6 +116,9 @@ void function _CustomCTF_Init()
 	RegisterSignal( "ResetDropTimeout" )
 	RegisterSignal( "EndScriptedPropsThread" )
 	RegisterSignal( "FlagPhysicsEnd" )
+	
+	BannerAssets_Init()
+	
 	AddCallback_OnClientConnected( void function(entity player) { thread _OnPlayerConnected(player) } )
 	AddCallback_OnClientDisconnected( void function(entity player) { thread _OnPlayerDisconnected(player) } )
 	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread _OnPlayerDied(victim, attacker, damageInfo)})
