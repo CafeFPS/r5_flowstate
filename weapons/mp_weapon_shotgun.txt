@@ -103,10 +103,10 @@ WeaponData
 	"blast_pattern_npc_scale"            			"1.0"  // scales on top of the default scale
 
 	// Damage - When Used by Players
-	"damage_near_value"   							"6"
-    "damage_far_value"								"6"
-    "damage_near_value_titanarmor"					"6"
-    "damage_far_value_titanarmor" 					"6"
+	"damage_near_value"   							"7"
+	"damage_far_value"								"7"
+	"damage_near_value_titanarmor"					"7"
+	"damage_far_value_titanarmor" 					"7"
 	"damage_rodeo" 									"550"
 	"damage_near_distance"							"250"
 	"damage_far_distance" 							"850"
@@ -168,7 +168,7 @@ WeaponData
 	"dof_nearDepthEnd"								"0.0"
 
 	// Behavior
-	"fire_rate"   									"3"
+	"fire_rate"   									"2.4"
 	"reload_time" 									"2.75"
 	"reload_time_late1"								"1.45"
 	"reload_time_late2"								"0.25"
@@ -184,16 +184,15 @@ WeaponData
 	// View Kick
 	"viewkick_spring" 								"shotgun"
 
-                      
-	"viewkick_pitch_base" 							"-1.2"
-	"viewkick_pitch_random"   						"0.75"
-	"viewkick_pitch_softScale"						"0.3"
-	"viewkick_pitch_hardScale"						"1"
+	"viewkick_pitch_base" 							"-0.2"
+    "viewkick_pitch_random"   						"0"
+    "viewkick_pitch_softScale"						"0.3"
+    "viewkick_pitch_hardScale"						"1"
 
-	"viewkick_yaw_base"   							"-0.65"
-	"viewkick_yaw_random" 							"0.38"
-	"viewkick_yaw_softScale"  						"0.38"
-	"viewkick_yaw_hardScale"  						"1.2"
+    "viewkick_yaw_base"   							"-0.4"
+    "viewkick_yaw_random" 							"0.2"
+    "viewkick_yaw_softScale"  						"0.38"
+    "viewkick_yaw_hardScale"  						"1.2"
 
 	"viewkick_roll_base"  							"0"
 	"viewkick_roll_randomMin" 						"0.6"

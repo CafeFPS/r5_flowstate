@@ -214,7 +214,7 @@ WeaponData
 	"viewmodel_shake_up"							"0.0"
 	"viewmodel_shake_right"							"0.0"
 
-	"spread_decay_delay"  							"0.28"
+	//"spread_decay_delay"  							"0.28"
 
 
 
@@ -242,9 +242,6 @@ WeaponData
 
 	Mods
 	{
-		crate
-		{
-		}
         hopup_selectfire
        {
         // This mod is only used to indicate that the hop-up is active
