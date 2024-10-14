@@ -55,6 +55,7 @@ const array<string> REASON_ARG_ALIASES = [ "-r", "r", "-reason", "reason" ]
 struct 
 {
 	table<string,int> mutedPlayers //uid -> unix unmute time
+	array<string> ignoreUidList
 	
 	bool bGlobalMuteEnabled = true
 	bool opt_in_spam_mute	= true
@@ -138,6 +139,24 @@ void function MutedList_Remove( string uid )
 	if( Chat_InMutedList( uid ) )
 		delete GetMutedList()[ uid ]
 }
+
+// purpose: prevent 
+void function AddToChatMuteIgnoreList( string uid )
+{
+	if( !ChatMuteIgnoreList_Contains( uid ) )
+		file.ignoreUidList.append( uid )
+}
+
+bool function ChatMuteIgnoreList_Contains( string uid )
+{
+	return ( file.ignoreUidList.contains( uid ) )
+}
+
+void function RemoveFromChatMuteIgnoreList( string uid )
+{
+	file.ignoreUidList.fastremovebyvalue( uid )
+}
+//
 
 #if TRACKER && HAS_TRACKER_DLL
 void function SetUnmuteTime( entity player, string potentialTimestamp )
@@ -291,7 +310,7 @@ void function MuteFromPersistence( entity player, string setting )
 	
 	string uid = player.p.UID
 	
-	if( setting == YES )
+	if( setting == YES && !ChatMuteIgnoreList_Contains( uid ) )
 	{
 		if ( !Chat_InMutedList( uid ) )
 			MutedList_Update( uid, GetEntityUnmuteTimestamp( player ) )
@@ -333,7 +352,7 @@ void function CheckOnConnect( entity player )
 				thread AutoUnmuteAtTime( player, unmuteTime, uid )
 			}
 		}
-
+	
 		Chat_ToggleMuteForAll( player )
 	}
 }
@@ -377,6 +396,8 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 				
 			if( bSyncToPlayers )
 				SetUnmuteTime_Raw( player, timestamp )
+				
+			RemoveFromChatMuteIgnoreList( uid )
 		}
 		else if( bSyncToPlayers )
 		{
@@ -391,6 +412,9 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 	}
 	else
 	{
+		if( cmdLine )
+			AddToChatMuteIgnoreList( uid )
+			
 		MutedList_Remove( uid )
 	}
 	
