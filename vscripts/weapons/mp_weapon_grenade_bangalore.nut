@@ -25,7 +25,7 @@ const float BANGALORE_SMOKE_MIN_EXPLODE_DIST_SQR = 512 * 512
 const float BANGALORE_SMOKE_DISPERSAL_TIME = 3.0
 const float BANGALORE_TACTICAL_AGAIN_TIME = 4.0
 
-const bool BANGALORE_SMOKE_EXPLOSIONS = true
+const bool BANGALORE_SMOKE_EXPLOSIONS = false
 const asset SMOKE_SCREEN_FX = $"P_screen_smoke_bangalore_FP"
 
 const asset FX_MUZZLE_FLASH_FP = $"P_wpn_mflash_bang_rocket_FP"
@@ -237,6 +237,7 @@ void function Bangalore_DetonateSmokeGrenade( entity smokeGrenade, entity owner,
 	EndSignal( owner, "OnDestroy" )
 	EndSignal( owner, "CleanUpPlayerAbilities" )
 	EndSignal( smokeGrenade, "OnDestroy" )
+	EndThreadOn_PlayerChangedClass( owner )
 
 	OnThreadEnd(
 		function() : ( smokeGrenade )

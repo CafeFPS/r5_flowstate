@@ -441,10 +441,10 @@ DamageDefs
     }
     damagedef_loot_drone_explosion
     {
-        "damage" 					"80"
-        "damage_heavy_armor"		"80"
-        "inner_radius"				"200"
-        "radius"					"350"
+        "damage" 					"40"
+        "damage_heavy_armor"		"40"
+        "inner_radius"				"100"
+        "radius"					"250"
         "impulse_force"				"2000"
         "impulse_force_explosions"	"50000"
         "explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
