@@ -4,8 +4,9 @@ globalize_all_functions
 
 struct {
 
-	bool RegisterCoreStats = true
-	bool bStatsIs1v1Type = false
+	bool RegisterCoreStats 	= true
+	bool bStatsIs1v1Type 	= false
+	bool bOptInGlobalMute 	= true
 
 } file
 
@@ -20,6 +21,8 @@ void function Tracker_Init()
 	
 	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
 	SetRegisterCoreStats( bRegisterCoreStats )
+	
+	file.bOptInGlobalMute = GetCurrentPlaylistVarBool( "opt_in_global_mute", true )
 }
 
 //////////////////////////////////////////////////
@@ -67,8 +70,16 @@ void function Script_RegisterAllStats()
 	//	Stats registerd under 'recent_match_data' group in the backend do NOT aggregate.
 	//	These stats should be prefixed with 'previous_' for clarity.
 	
+	
+	//Script required stats
 	Tracker_RegisterStat( "settings" )
+	Tracker_RegisterStat( "isDev" )
+	
+	//Global mute ( helper controlled set via web panel/mod api only & actions logged )
+	if( file.bOptInGlobalMute )
+		Tracker_RegisterStat( "globally_muted", Chat_CheckGlobalMute )
 
+	//Core stats - can disable for gamemode purposes.
 	if( file.RegisterCoreStats )
 	{
 		Tracker_RegisterStat( "kills", null, Tracker_ReturnKills )
@@ -106,6 +117,10 @@ void function Script_RegisterAllStats()
 
 void function Callback_CoreStatInit( entity player )
 {
+	// setting frequently computed stats in player struct is cheaper than using 
+	// type matching/casting stat fetchers getting vars from untyped table.
+	// net ints also used in match making / stat display features.
+	
 	string uid = player.p.UID
 	
 	int player_season_kills = GetPlayerStatInt( uid, "kills" )
@@ -179,8 +194,20 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	// Tracker_SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
 	////////////////////////////////////////////////////////////////////
 	
+	AddCallback_PlayerData( "muted_reason" )
+	
 	if( file.bStatsIs1v1Type )
 		Gamemode1v1_PlayerDataCallbacks()
+		
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_scenarios:
+			Scenarios_PlayerDataCallbacks()
+		break
+		
+		default:
+			break
+	}
 		
 	//func
 }
@@ -202,6 +229,4 @@ void function Script_RegisterAllQueries()
 	//Gamemode1v1Queries_Init()
 	//etc...etc..
 }
-
-
 #endif //TRACKER && HAS_TRACKER_DLL

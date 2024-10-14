@@ -5862,3 +5862,13 @@ float function HermiteInterpolate( float y0, float y1, float y2, float y3, float
 
 	return(a0*y1+a1*m0+a2*m1+a3*y2)
 }
+
+bool function Tracker_IsStatsReadyFor( entity player )
+{
+	return player.GetPlayerNetBool( "stats_loaded" )
+}
+
+int function GetConnectedPlayerCount()
+{
+	return GetGlobalNetInt( "connectedPlayerCount" )
+}

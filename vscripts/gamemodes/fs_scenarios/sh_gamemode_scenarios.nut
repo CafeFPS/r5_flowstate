@@ -299,7 +299,9 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	{
 		//recap type, stat type, value, count
 		Remote_RegisterUIFunction( "ServerCallback_SendScenariosStandings", "int", 0, 3, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
+		
 		Remote_RegisterUIFunction( "ServerCallback_SignalScenariosStandings" )
+		Remote_RegisterUIFunction( "ServerCallback_UiConfirmRest" )
 	}
 	
 #endif //SERVER || CLIENT

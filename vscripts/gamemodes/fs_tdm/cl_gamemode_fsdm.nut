@@ -73,6 +73,8 @@ global function Tracker_ShowChampion
 global function Flowstate_ShowRespawnTimeUI
 global function Flowstate_ShowMatchFoundUI
 
+global function UiToClient_ConfirmRest
+
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
 struct {
@@ -2340,4 +2342,13 @@ void function Tracker_ShowChampion()
 	{
 		thread DoChampionSquadCardsPresentation()
 	}
+}
+
+void function UiToClient_ConfirmRest( string arg )
+{
+	entity player = GetLocalClientPlayer()
+	if( IsValid( player ) )
+		player.ClientCommand( arg )
+		
+	SpamWarning( 10, "confirmed rest? arg: \"" + arg + "\"" )
 }

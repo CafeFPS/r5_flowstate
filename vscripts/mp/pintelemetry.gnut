@@ -183,6 +183,7 @@ global function Tracker_SetPlayerAsChampion
 global function Tracker_GetMaxWaitForBatchLoad
 global function Tracker_Credits //not used
 global function Tracker_QueryInit
+global function Tracker_IsBatchFetchQueued
 
 global function bAfkToRest
 global function bGlobalStats
@@ -195,16 +196,13 @@ global function IsBotEnt //todo move to code
 global function SendServerMessage //todo move to code
 global function bBotEnabled //todo move to code
 global function isIntervalThreadRunning
+global function UpdateStartInRestSetting //move
 
 global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
 
 global function NULL_PDATA
 global function Gamemode1v1_PlayerDataCallbacks //TODO: this probably shouldn't be here, but a bit of logic needs sorted into it's gamemode file (will do soonTM)
-
-#if LOG_ERRORS
-	global function DEV_PrintAllTrackerErrors
-#endif
 
 const DEBUGDMG = false
 
@@ -383,6 +381,7 @@ struct
 	bool gamemode_type_1v1 // tell stat calculations only one attacker
 	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
 	bool superglideDetect = false
+	bool bBatchFetchInit = false
 	
 	bool sg_counter_msg
 	float FS_MaxHealth
@@ -512,7 +511,7 @@ void function DEV_ManualLogKill( bool ship )
 	}
 	
 	#if LOG_ERRORS
-		DEV_PrintAllTrackerErrors()
+		DEV_WriteAllTrackerErrors()
 		#if DEVELOPER 
 			Tracker_PrintAllPlayerMetrics(false) //console
 		#endif 
@@ -700,6 +699,11 @@ void function Tracker_RegisterAllSettings()
 	file._registerAllSettings = true
 }
 
+bool function Tracker_StatExists( string stat )
+{
+	return Stats__GetStatKeys().contains( stat )
+}
+
 ////////////////////////////////////////////
 ////////		QUERY Data			////////
 
@@ -785,8 +789,9 @@ void function INIT_Global_R5RDEV_VarTable()
 	if( empty( QueryDataString ) )
 	{
 		#if DEVELOPER
-			printt("No querydatastring was constructed. ")
-		#endif 
+			printt( "No querydatastring was constructed. " )
+		#endif
+		
 		return 
 	}
 	
@@ -1289,7 +1294,7 @@ void function __SetPlayerSyncData( entity player )
 void function __Tracker_SignalPlayerStatsReady( entity player )
 {
 	player.Signal( "SyncDataFullyLoaded" )
-	player.p.stats_done_loading = true
+	SetStatsReadyFlag( player, true )
 }
 
 void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player ) callbackFunc )
@@ -1377,7 +1382,6 @@ void function __CONTROLLED_LogInit()
 	}
 	
 	file.scriptLogthreadRunning = true
-	RegisterSignal( "TrackerNoLog" )
 	EndSignal( svGlobal.levelEnt, "TrackerNoLog" )
 	
 	OnThreadEnd
@@ -1410,6 +1414,7 @@ void function PIN_Init()
 	RegisterSignal( "BatchFetchComplete" )
 	RegisterSignal( "SyncDataFullyLoaded" )
 	RegisterSignal( "PlayerStatsReady" )
+	RegisterSignal( "TrackerNoLog" )
 	
 	Tracker_SettingsInit()
 	Tracker_Init()
@@ -1492,6 +1497,7 @@ void function PIN_Init()
 		
 		if( bRunTracker )
 		{	
+			file.bBatchFetchInit = true
 			Script_RegisterAllStats()
 			file.requestedStatsList = BuildRequestedStatsString()
 			file.requestedSettingsList = BuildRequestedSettingsString()
@@ -1504,6 +1510,11 @@ void function PIN_Init()
 	
 	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
+}
+
+bool function Tracker_IsBatchFetchQueued()
+{
+	return file.bBatchFetchInit
 }
 
 void function SetStartLog()
@@ -1536,9 +1547,9 @@ void function Tracker_SettingsInit()
 	//init stat bools (must be before string inits) todo: cleanup
 	file.global_stats 						= GetCurrentPlaylistVarBool( "use_global_stats", false )
 	file.restricted_server 					= GetCurrentPlaylistVarBool( "restricted_server", false )
-	file.DefaultLock1v1Setting 				= GetCurrentPlaylistVarBool("default_lock1v1_setting", true)
-	file.DefaultEnableInputBannerSetting 	= GetCurrentPlaylistVarBool("default_enable_input_banner_setting", false)
-	file.DefaultStartInRestSetting 			= GetCurrentPlaylistVarBool("default_start_in_rest_setting", false)
+	file.DefaultLock1v1Setting 				= GetCurrentPlaylistVarBool( "default_lock1v1_setting", true )
+	file.DefaultEnableInputBannerSetting 	= GetCurrentPlaylistVarBool( "default_enable_input_banner_setting", false )
+	file.DefaultStartInRestSetting 			= GetCurrentPlaylistVarBool( "default_start_in_rest_setting", false )
 
 	//restricted init 
 	file.restricted_gamesplayed 			= GetCurrentPlaylistVarInt( "restricted_gamesplayed", 0 )
@@ -1593,7 +1604,8 @@ void function PlayerConnectedCallback( entity player )
 	
     thread PIN_AddPlayer( player )
 	
-	if( pdata.playerName.find( "[" ) != -1 ) //hack, make sure player is not message bot entity (TODO: REMOVE)
+	string checkName = pdata.playerName.slice( 0, 1 )
+	if( checkName.find( "[" ) != -1 ) //hack, make sure player is not message bot entity (TODO: REMOVE)
 		return
 	
 	if( file.superglideDetect )
@@ -1627,10 +1639,10 @@ void function PIN_OnEntitiesLoaded_Chatbot()
 
 void function PlayerCounts( string state, string name, string OID, string count )
 {
+	//bad check for non fsdm gamemodes
 	if ( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS || GetNumHumanPlayers() == 1 )
 		_STATSHOOK_UpdatePlayerCount__internal( state, name, OID, count, file.DISCORD_PLAYERS_WEBHOOK )
 }
-
 
 void function EndOfMatch( string recap, string DISCORD_MATCHES_WEBHOOK )
 {
@@ -1910,7 +1922,7 @@ void function Init_NewGame()
 			WaitSignal( svGlobal.levelEnt, "BatchFetchComplete" )
 		}
 		
-		if( IsValid( player ) && !player.p.stats_done_loading )
+		if( IsValid( player ) && !Tracker_IsStatsReadyFor( player ) )
 		{	
 			WaitSignal( player, "SyncDataFullyLoaded" )
 		}
@@ -3809,8 +3821,6 @@ void function ThrowValidSaveType( ... )
 
 string function Tracker_FetchPlayerData( string UID, string setting )
 {
-	string notfound = "";
-	
 	if ( UID in file.PlayerData )
 	{
 		if ( setting in file.PlayerData[ UID ] )
@@ -3819,7 +3829,7 @@ string function Tracker_FetchPlayerData( string UID, string setting )
 		}
 	}
 	
-	return notfound
+	return ""
 }
 
 const table<int,string> hardcodedWorldspawnRefs =
@@ -4432,7 +4442,6 @@ void function OnJumped( entity player )
 	RecordPlayerJump( player )
 }
 
-//todo: string,bool table as list grows for lookups
 const table<string,bool> disabledForTracking = 
 {
 	mp_ability_consumable = true, /* surely .nut was a typo */
@@ -4456,7 +4465,8 @@ const table<string,bool> disabledForTracking =
 	mp_weapon_grenade_bangalore = true,
 	mp_weapon_grenade_creeping_bombardment = true,
 	mp_weapon_trophy_defense_system = true,
-	mp_weapon_bubble_bunker_master_chief = true
+	mp_weapon_bubble_bunker_master_chief = true,
+	mp_ability_cloak = true
 }
 
 bool function Tracker_ShouldRecordWeaponShot( string weaponRef )
@@ -4522,7 +4532,10 @@ bool function RegisterDamageDef( string weaponName, entity weapon )
 	
 	string errorString = format( "Appending new DamageDef with data: index[%d] = \"%s\" ----DEBUG: weaponName = %s, nameFromClass = %s ", newIndex, weaponName, weaponName, nameFromClass )
 	LogError( errorString )
-	printt( errorString )
+	
+	#if DEVELOPER
+		printw( errorString )
+	#endif
 	
 	TrackerWepTable()[ weaponName ] <- newIndex
 	DamageSourceIDToStringTable()[ newIndex ] <- weaponName
@@ -4540,21 +4553,18 @@ array<string> function GetTrackerErrorArray()
 	return file.errorArray
 }
 
-void function DEV_PrintAllTrackerErrors()
+void function DEV_WriteAllTrackerErrors()
 {
-	if( file.errorArray.len() <= 0 ){return}
+	if( file.errorArray.len() <= 0 )
+		return
 	
 	string data = "\n\n|#error ------ PRINTING ERRORS ------\n\n";
 	
 	foreach ( error in file.errorArray )
-	{
 		data += format( "|#error %s \n", error )
-	}
 	
 	if( file.LogOn && isLogging__internal() )
-	{
 		LogEvent__internal( data, false )
-	}
 }
 
 
@@ -4568,8 +4578,8 @@ void function DEV_PrintAllTrackerErrors()
 
 void function PlayerDisconnectedCallback( entity player ) 
 {	
-    string reason = "Disconnection";
-    PIN_PlayerLeft(player, reason);
+    string reason = "Disconnection"
+    PIN_PlayerLeft( player, reason )
 }
 
 void function PIN_GameStart()
@@ -4605,14 +4615,18 @@ void function FinishGameStatsRound()
 {
 	if( process_end_round_complete == true )
 	{
-		process_end_round_complete = false;
+		process_end_round_complete = false
 
 		if ( file.LogOn && isLogging__internal() )
 		{
-			if(!file.bSafeLog){ stopLogging__internal(false); return; }
+			if( !file.bSafeLog )
+			{
+				stopLogging__internal( false )
+				return
+			}
 			
 			#if LOG_ERRORS
-				DEV_PrintAllTrackerErrors()
+				DEV_WriteAllTrackerErrors()
 			#endif
 			
 			LogEvent__internal
@@ -4628,7 +4642,7 @@ void function FinishGameStatsRound()
 				
 			if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 			{
-				sqprint("No stats to ship...\n")
+				sqprint( "No stats to ship...\n" )
 				stopLogging__internal(false)
 			} 
 			else
@@ -4718,7 +4732,7 @@ void function PIN_AddPlayer( entity player )
 	InitializePlayerMetricsStructForPlayer( player )
 	
 	if( !file.global_stats || !bLog() )
-		player.p.stats_done_loading = true
+		SetStatsReadyFlag( player, true )
 	
 	if( GetPlayerLeftFlag( player ) )
 	{	
@@ -4727,7 +4741,7 @@ void function PIN_AddPlayer( entity player )
 	}
 	else 
 	{	
-		if( !player.p.stats_done_loading )
+		if( !Tracker_IsStatsReadyFor( player ) )
 		{	
 			waitthread WaitSignalOrTimeout( player, 15, "SyncDataFullyLoaded", "OnDestroy", "OnDisconnected" )
 			
@@ -5206,7 +5220,104 @@ bool function bAfkToRest(){ return file.afk_to_rest_enabled }
 
 void function ClientCommand_RequestStat( entity player, array<string> args )
 {
+	#if DEVELOPER
+		//PrintStringArray( args )
+	#endif
 	
+	if( args.len() < 2 )
+	{
+		StatFailed( player )
+		return
+	}
+		
+	string lookupEHandle = args[ 0 ]
+	if( !IsNumeric( lookupEHandle ) )
+	{
+		StatFailed( player )
+		
+		#if DEVELOPER
+			printw( "lookupEHandle not numeric" )
+		#endif 
+		
+		return 
+	}
+		
+	entity lookupPlayer = GetEntityFromEncodedEHandle( lookupEHandle.tointeger() )
+	if( !IsValid( lookupPlayer ) )
+	{
+		StatFailed( player )
+		
+		#if DEVELOPER 
+			printw( "lookup player not valid" )
+		#endif
+		
+		return
+	}
+	
+	if( !Tracker_IsStatsReadyFor( player ) )
+	{
+		#if DEVELOPER 
+			printw( "Tried to lookup stats on player ", player, "but stats are not available yet." )
+		#endif 
+		
+		StatFailed( player )
+		return 
+	}
+		
+	string statname = args[ 1 ]
+	if( empty( statname ) )
+	{
+		StatFailed( player )
+		
+		#if DEVELOPER 
+			print( "Statname was empty" )
+		#endif 
+		
+		return 
+	}
+		
+	if( !Tracker_StatExists( statname ) )
+	{
+		#if DEVELOPER
+			printw( "stat", statname, "does not exist." )
+		#endif
+		
+		StatFailed( player )
+		return
+	}
+		
+	string lookupPlayerUid = lookupPlayer.GetPlatformUID()
+	string type = typeof( Stats__RawGetStat( lookupPlayerUid, statname ) )
+	
+	switch( type )
+	{
+		case "bool":
+		
+			Remote_CallFunction_NonReplay( player, "Tracker_SetPlayerStatBool", lookupPlayer, GetPlayerStatBool( lookupPlayerUid, statname ) )
+			break 
+			
+		case "int":
+			
+			Remote_CallFunction_NonReplay( player, "Tracker_SetPlayerStatInt", lookupPlayer, GetPlayerStatInt( lookupPlayerUid, statname ) )
+			break 
+		
+		case "float":
+			
+			Remote_CallFunction_NonReplay( player, "Tracker_SetPlayerStatFloat", lookupPlayer, GetPlayerStatFloat( lookupPlayerUid, statname ) )
+			break 
+			
+		default:
+			StatFailed( player )
+			
+			#if DEVELOPER
+				printw( "Invalid stat type requested by client. Type was:", type, "stat was:", statname )
+			#endif
+	}
+}
+
+void function StatFailed( entity player )
+{
+	Remote_CallFunction_ByRef( player, "Tracker_StatRequestFailed" )
 }
 
 #if HAS_TRACKER_DLL
@@ -5267,9 +5378,11 @@ bool function bGlobalStats(){ return file.global_stats }
 bool function bBotEnabled(){ return file.bChatbotEnabled }
 
 //persistence
-void function Tracker_FetchPlayerData( string UID, string setting ){}
+string function Tracker_FetchPlayerData( string UID, string setting ){ return "" }
 void function Tracker_SavePlayerData( string UID, string setting, ... ){}
 void function SavePlayerData( entity player, string setting, ... ){}
+bool function Tracker_StatExists( string stat ){ return false }
+var function Stats__RawGetStat( string uid, string stat ){ return [] }
 
 //utility
 bool function IsBotEnt( entity _ ){ return false } //needs to go immediately... 

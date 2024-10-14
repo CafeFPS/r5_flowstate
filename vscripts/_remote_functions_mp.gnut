@@ -87,7 +87,8 @@ void function SetupRemoteFuncAliases()
 			ForceScoreboardLoseFocus,
 			ForceScoreboardFocus
 			UpdateDpadHud_Copy,
-			ServerCallback_Scenarios_MatchEndAnnouncement
+			ServerCallback_Scenarios_MatchEndAnnouncement,
+			Tracker_StatRequestFailed
 		]
 	#endif
 	
@@ -142,7 +143,8 @@ void function SetupRemoteFuncAliases()
 			"ForceScoreboardLoseFocus",
 			"ForceScoreboardFocus",
 			"UpdateDpadHud_Copy",
-			"ServerCallback_Scenarios_MatchEndAnnouncement"
+			"ServerCallback_Scenarios_MatchEndAnnouncement",
+			"Tracker_StatRequestFailed"
 		]
 	#endif
 	
@@ -992,12 +994,17 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 	
 	//r5r.dev player stats
+	Remote_RegisterClientFunction( "Tracker_SetPlayerStatBool", "entity", "bool" )
+	Remote_RegisterClientFunction( "Tracker_SetPlayerStatInt", "entity", "int", INT_MIN, INT_MAX )
+	Remote_RegisterClientFunction( "Tracker_SetPlayerStatFloat", "entity", "float", -999999.0, 999999.0, 32 )
+	
 	RegisterNetworkedVariable( "SeasonScore", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0  )
 	RegisterNetworkedVariable( "SeasonKills", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
 	RegisterNetworkedVariable( "SeasonDeaths", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
 	RegisterNetworkedVariable( "SeasonPlaytime", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
 	RegisterNetworkedVariable( "SeasonGamesplayed", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
-	//todo add wins
+	
+	RegisterNetworkedVariable( "stats_loaded", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
 	// ClientWorldImg -- Todo: Lower ranges.
 	if( Gamemode() != eGamemodes.fs_snd )

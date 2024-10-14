@@ -14,6 +14,7 @@ global function SpawnSystem_SetCustomPak
 global function SpawnSystem_SetCustomPlaylist
 global function SpawnSystem_SetPreferredPak
 global function SpawnSystem_SetRunCallbacks
+global function SpawnSystem_SetPanelLocation
 
 global function SpawnSystem_GetCurrentSpawnSet
 global function SpawnSystem_GetCurrentSpawnAsset
@@ -984,6 +985,19 @@ bool function CheckSpawn( vector origin )
 void function SpawnSystem_SetRunCallbacks( bool setting )
 {
 	file.bRunCallbacks = setting
+}
+
+void function SpawnSystem_SetPanelLocation( vector origin, vector angles )
+{
+	AddCallback_FlowstateSpawnsPostInit
+	(
+		LocPairData function() : ( origin, angles )
+		{
+			LocPair panels = NewLocPair( origin, angles )
+			return SpawnSystem_CreateLocPairObject( [], false, null, panels )
+		}
+	)
+
 }
 
 //////////////////////////////////////////////////////////////////////

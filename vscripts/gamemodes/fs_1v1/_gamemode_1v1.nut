@@ -42,7 +42,6 @@ global function IsCurrentState
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
-//global function GiveWeaponsToGroup
 global function deleteWaitingPlayer
 global function deleteSoloPlayerResting
 global function getAvailableRealmSlotIndex
@@ -51,7 +50,6 @@ global function GivePlayerCustomPlayerModel
 global function FS_ClearRealmsAndAddPlayerToAllRealms
 global function PlayerRestoreHP_1v1
 global function SetIsUsedBoolForRealmSlot
-global function processRestRequest
 global function FS_SetRealmForPlayer
 global function FS_1v1_GetPlayersWaiting
 global function FS_1v1_GetPlayersResting
@@ -60,10 +58,14 @@ global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
 global function ReloadTactical
 global function SetupPlayerReserveAmmo
+global function _3v3ModePlayerToRestingList
+global function Gamemode1v1_SetRestEnabled
+global function Gamemode1v1_CreatePanels
 
 //utility
 global function ValidateBlacklistedWeapons
 
+global typedef PanelTable table<string, entity>
 const bool TEST_WORLDDRAW = false
 
 //DEV 
@@ -1008,17 +1010,6 @@ bool function isPlayerInWaitingList( entity player )
 	return ( player.p.handle in file.soloPlayersWaiting )
 }
 
-bool function return_rest_state( entity player )
-{
-	if( !IsValid (player) || !Flowstate_IsFS1v1()  )
-		return false
-	
-	if ( isPlayerInRestingList( player ) )
-		return true
-	
-	return false
-}
-
 bool function isPlayerInRestingList( entity player )
 {	
 	if(!IsValid (player) )
@@ -1049,13 +1040,9 @@ void function addSoloPlayerResting( entity player )
 	}
 	
 	if( player.p.handle in file.soloPlayersResting )
-	{
 		file.soloPlayersResting[ player.p.handle ] = true
-	} 
 	else 
-	{
 		file.soloPlayersResting[ player.p.handle ] <- true
-	}
 }
 
 void function deleteWaitingPlayer( int handle )
@@ -1093,15 +1080,21 @@ void function mkos_Force_Rest( entity player )
 
 	if( player.p.handle in file.soloPlayersResting )
 	{	
-		HolsterAndDisableWeapons(player)
+		HolsterAndDisableWeapons( player )
 		return
 	} 
 	
-	if( isPlayerInWaitingList( player ) )
+	if( is3v3Mode() )
 	{
-		deleteWaitingPlayer( player.p.handle )
+		FS_Scenarios_ForceRest( player )
 	}
-	
+	else 
+	{
+		if( isPlayerInWaitingList( player ) )
+		{
+			deleteWaitingPlayer( player.p.handle )
+		}
+		
 		soloModePlayerToRestingList( player )
 		
 		try
@@ -1112,10 +1105,11 @@ void function mkos_Force_Rest( entity player )
 		{
 
 		}
-	
-	HolsterAndDisableWeapons( player )
-	//TakeAllWeapons( player )
-	player.p.lastRestUsedTime = Time()
+		
+		HolsterAndDisableWeapons( player )
+		//TakeAllWeapons( player )
+		player.p.lastRestUsedTime = Time()
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1771,10 +1765,8 @@ void function PrintDebug( entity player, int functioncall )
 bool function acceptChallenge( entity player, entity challenger )
 {
 	//todo, Assert? 
-	if( !IsValid( challenger) )
-	{
+	if( !IsValid( challenger ) )
 		return false
-	}
 	
 	if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ) )
 	{
@@ -2168,7 +2160,7 @@ void function sendGroupRecapsToPlayers( soloGroupStruct group )
 			serverMsg = format(" %s won a challenge vs %s,  %d - %d", winner, defeated, winnerKills, defeatedDeaths )
 		}
 		
-		SendServerMessage( serverMsg + ChatEffects()["SKULL"] )
+		SendServerMessage( serverMsg + Chat_GetAllEffects()["SKULL"] )
 	}
 	#endif
 	
@@ -2720,6 +2712,14 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
     } 
 }
 
+void function _3v3ModePlayerToRestingList( entity player )
+{
+	deleteWaitingPlayer( player.p.handle )
+	addSoloPlayerResting( player )
+	
+	Gamemode1v1_SetPlayerGamestate( player, e1v1State.RESTING )
+	LocalMsg( player, "#FS_RESTING", "", eMsgUI.EVENT, settings.roundTime )
+}
 
 void function soloModePlayerToRestingList(entity player)
 {
@@ -3484,7 +3484,16 @@ void function Gamemode1v1_Init( int eMap )
 		//SpawnSystem_SetRunCallbacks( false ) //for this mode, we wont disable re-running callbacks, as they may be needed to customize spawns again. If the gamemode dev has prop spawning or things that should only be done once, they should make sure it's only init once in their logic.
 		allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 		
-		mAssert( ValidateSpawns( allSoloLocations ), "No valid spawns were defined" )
+		//mAssert( ValidateSpawns( allSoloLocations ), "No valid spawns were defined" )
+		if( !ValidateSpawns( allSoloLocations ) )
+		{
+			printw( "No valid spawns defined" )
+			
+			foreach( player in GetPlayerArray() )
+				Message( player, "Map Config Error", "No valid spawns defined." )
+			
+			Tracker_GotoNextMap()
+		}
 	}
 	
 	g_randomWaitingSpawns = SpawnSystem_GenerateRandomSpawns( getWaitingRoomLocation().origin, getWaitingRoomLocation().angles, file.waitingRoomRadius, .22, 60 ) //todo(dw): scenarios origin waiting area offset is not centered for polished effect
@@ -3540,6 +3549,7 @@ void function Gamemode1v1_Init( int eMap )
 	if( settings.is3v3Mode )
 	{
 		forbiddenZoneInit( GetMapName() )
+		FS_Scenarios_SetupPanels()
 		thread FS_Scenarios_Main_Thread( )
 		return
 	}
@@ -3552,7 +3562,7 @@ void function Gamemode1v1_Init( int eMap )
 	
 	//resting room init ///////////////////////////////////////////////////////////////////////////////////////
 			
-	table<string, entity> panels = 
+	PanelTable panels = 
 	{
 		["%&use% Start spectating"] 					= null,
 		["%&use% Rest (or) Enter Queue"] 				= null,
@@ -3563,7 +3573,7 @@ void function Gamemode1v1_Init( int eMap )
 		//["add another"] = null,
 	};
 	
-	CreatePanels( g_waitingRoomPanelLocation.origin, g_waitingRoomPanelLocation.angles, panels )
+	Gamemode1v1_CreatePanels( g_waitingRoomPanelLocation.origin, g_waitingRoomPanelLocation.angles, panels )
 	DefinePanelCallbacks( panels )
 
 	forbiddenZoneInit( GetMapName() )
@@ -3629,7 +3639,12 @@ void function Gamemode1v1_Init( int eMap )
 	BannerImages_1v1Init()
 	
 	AddClientCommandCallback( "rest", ClientCommand_Maki_SoloModeRest )
-	file.bRestEnabled = true
+	Gamemode1v1_SetRestEnabled()
+}
+
+void function Gamemode1v1_SetRestEnabled( bool value = true )
+{
+	file.bRestEnabled = value
 }
 
 void function Gamemode1v1_soloModeThread( LocPair waitingRoom )
@@ -3661,7 +3676,7 @@ bool function g_bRestEnabled()
 	return file.bRestEnabled
 }
 
-void function CreatePanels( vector origin, vector angles, table<string, entity> panels )
+void function Gamemode1v1_CreatePanels( vector origin, vector angles, table<string, entity> panels )
 {
 	angles =  < ceil( angles.x ), ceil( angles.y ), ( angles.z * 0 ) > 
 	vector baseAngles = angles - <0,90,0> //Normalize( angles )
@@ -3709,7 +3724,7 @@ void function CreatePanels( vector origin, vector angles, table<string, entity> 
 	}
 }
 
-void function DefinePanelCallbacks( table<string, entity> panels )
+void function DefinePanelCallbacks( PanelTable panels )
 {
     // Resting room panel
     AddCallback_OnUseEntity( panels["%&use% Start spectating"], void function(entity panel, entity user, int input )

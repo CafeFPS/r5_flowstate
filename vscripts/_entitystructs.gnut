@@ -812,16 +812,15 @@ global struct ServerPlayerStruct
 	float IBMM_grace_period 	= -1 // <= 0 is disabled
 	float messagetime			= 0
 	int movevalue 				= 0
-	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name
-	int season_kills 			= 0
-	int season_deaths 			= 0
-	int season_glides 			= 0
-	int season_playtime 		= 0
-	int season_gamesplayed 		= 0
-	int season_score 			= 0
+	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name (TODO: DEPRECATE)
+	int season_kills 			= 0 //(TODO: DEPRECATE)
+	int season_deaths 			= 0 //(TODO: DEPRECATE)
+	int season_glides 			= 0 //(TODO: DEPRECATE)
+	int season_playtime 		= 0 //(TODO: DEPRECATE)
+	int season_gamesplayed 		= 0 //(TODO: DEPRECATE)
+	int season_score 			= 0 //(TODO: DEPRECATE)
 	string weapon_loadout 		= "NA"
 	bool lock1v1_setting 		= true
-	bool stats_done_loading 	= false
 	bool start_in_rest_setting 	= false
 	bool enable_input_banner 	= false
 	float ratelimit 			= 0.2
@@ -836,6 +835,8 @@ global struct ServerPlayerStruct
 	table< table<int, int> > groupTypeToRuiID = {}
 	KillHistoryArray killHistoryArray = []
 	array<int> audioQueue = []
+	int unmuteTime = -1
+	int msg
 	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks

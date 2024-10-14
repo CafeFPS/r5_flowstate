@@ -5479,3 +5479,8 @@ void function ChargeTactical_ForceEnd( entity player )
 		}
 	}
 }
+
+void function SetStatsReadyFlag( entity player, bool value )
+{
+	player.SetPlayerNetBool( "stats_loaded", value )
+}

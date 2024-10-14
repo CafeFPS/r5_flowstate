@@ -25,11 +25,17 @@ global function FS_Scenarios_GetAllPlayersForGroup
 global function FS_Scenarios_GetScenariosTeamCount
 
 global function FS_Scenarios_getWaitingRoomLocation
+global function FS_Scenarios_ForceRest
+global function FS_Scenarios_SetupPanels
+
+#if TRACKER 
+	global function Scenarios_PlayerDataCallbacks
+#endif 
 
 #if DEVELOPER
-global function Cafe_KillAllPlayers
-global function Cafe_EndAllRounds
-global function Mkos_ForceCloseRecap
+	global function Cafe_KillAllPlayers
+	global function Cafe_EndAllRounds
+	global function Mkos_ForceCloseRecap
 #endif
 
 global struct scenariosTeamStruct
@@ -95,7 +101,8 @@ struct lootbinsData
 	vector angles
 }
 
-struct {
+struct 
+{
 	table<int, scenariosGroupStruct> scenariosPlayerToGroupMap = {} //map for quick assessment
 	table<int, scenariosGroupStruct> scenariosGroupsInProgress = {} //group map to group
 	
@@ -109,6 +116,8 @@ struct {
 	array<entity> aliveItemDrops
 	
 	bool scenariosStopMatchmaking = true
+	entity pWorldSpawn
+	
 } file
 
 struct
@@ -142,6 +151,7 @@ struct
 	
 } settings
 
+const float TRANSFER_TIME = 3.0
 array< bool > teamSlots
 
 void function Init_FS_Scenarios()
@@ -185,11 +195,14 @@ void function Init_FS_Scenarios()
 	{
 		teamSlots[ i ] = false
 	}
+	
 	SurvivalFreefall_Init()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
-	// AddClientCommandCallback( "rest", Scenarios_ClientCommand_Maki_SoloModeRest )
+	
+	AddClientCommandCallback( "rest", Scenarios_ClientCommand_Rest )
+	Gamemode1v1_SetRestEnabled()
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
 	RegisterSignal( "FS_Scenarios_GroupFinished" )
@@ -206,7 +219,10 @@ void function Init_FS_Scenarios()
 	Survival_AddCallback_OnAttackerSoloRatEliminated( FS_Scenarios_OnRatEliminated )
 
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
-	// AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
+	//AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
+	
+	vector mapCenter = SURVIVAL_GetMapCenter()
+	SpawnSystem_SetPanelLocation( mapCenter + <0,0,50000>, ZERO_VECTOR )
 
 	FS_Scenarios_Score_System_Init()
 }
@@ -217,14 +233,137 @@ void function EntitiesDidLoad()
 	
 	Scenarios_SetWaitingRoomRadius( 3000 )
 	SpawnFlowstateLobbyProps( mapCenter + <0,0,50000> )
+	
+	file.pWorldSpawn = GetEnt( "worldspawn" )
 }
 
-bool function Scenarios_ClientCommand_Maki_SoloModeRest( entity player, array<string> args )
+void function FS_Scenarios_ForceRest( entity player )
 {
-	if( IsCurrentState( player, e1v1State.CHARSELECT ) )
-		return true 
+	if( IsBotEnt( player ) ) //Todo: Remove after mvoe to code
+		return
 		
-	ClientCommand_Maki_SoloModeRest( player, args )
+	_CleanupPlayerEntities( player )
+	FS_Scenarios_HandleGroupIsFinished( player )
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
+
+	if( IsValid( group ) && group.isValid && !group.IsFinished )
+		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )	
+	
+	if( !isPlayerInWaitingList( player ) )
+		soloModePlayerToWaitingList( player ) //logic that cleans up a player is contained here.
+	
+	_3v3ModePlayerToRestingList( player ) // Manually assign
+	
+	try
+	{
+		player.Die( file.pWorldSpawn, file.pWorldSpawn, { scriptType = DF_SKIPS_DOOMED_STATE, damageSourceId = eDamageSourceId.damagedef_despawn } )
+	}
+	catch (error) //despawn
+	{}
+
+	LocalMsg( player, "#FS_YouAreResting", "#FS_BASE_RestText" )
+	
+	HolsterAndDisableWeapons( player )
+	FS_Scenarios_RespawnIn3v3Mode( player ) //respawn
+	player.p.lastRestUsedTime = Time()
+}
+
+bool function Scenarios_ClientCommand_Rest( entity player, array<string> args )
+{
+	if( Time() < player.p.lastRestUsedTime + 3 )
+	{
+		LocalMsg( player, "#FS_RESTCOOLDOWN" )
+		return false
+	}
+	
+	if( IsCurrentState( player, e1v1State.CHARSELECT ) )
+	{
+		LocalEventMsg( player, "#FS_NOT_AVAILABLE" )
+		return true 
+	}
+		
+	if( IsCurrentState( player, e1v1State.MATCHING ) )
+	{
+		if( args.len() == 0 || !player.p.rest_request )
+		{
+			//LocalMsg( player, "#FS_WARNING", "#FS_REST_CONFIRM" )
+			Remote_CallFunction_UI( player, "ServerCallback_UiConfirmRest" )
+			player.p.rest_request = true
+			return true
+		}
+		else if( player.p.rest_request && args.len() > 0 && args[ 0 ] == "1" )
+		{
+			scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
+
+			if( IsValid( group ) && group.isValid && !group.IsFinished )
+			{
+				FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
+				
+				if( FS_Scenarios_GetDeathboxesEnabled() && group.isReady )
+				{
+					Dev_ForceDropDeathbox( player )
+				}
+			}
+			
+			player.p.rest_request = false 
+		}
+		else
+		{
+			return true
+		}
+	}		
+	
+	string restText = "#FS_BASE_RestText";
+
+	if( isPlayerInRestingList( player ) )
+	{
+		if( player.IsObserver() || IsValid( player.GetObserverTarget() ) )
+		{
+			player.SetSpecReplayDelay( 0 )
+			player.SetObserverTarget( null )
+			player.StopObserverMode()
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+			player.MakeVisible()
+			player.ClearInvulnerable()
+			player.SetTakeDamageType( DAMAGE_YES )
+		}
+
+		LocalMsg( player, "#FS_MATCHING" )
+		soloModePlayerToWaitingList( player )
+		
+		try
+		{
+			player.Die( file.pWorldSpawn, file.pWorldSpawn, { scriptType = DF_SKIPS_DOOMED_STATE, damageSourceId = eDamageSourceId.damagedef_despawn } )
+		}
+		catch ( error )
+		{}
+	}
+	else
+	{				
+		_CleanupPlayerEntities( player )
+		FS_Scenarios_HandleGroupIsFinished( player )
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
+
+		if( IsValid( group ) && group.isValid && !group.IsFinished )
+			FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )	
+		
+		soloModePlayerToWaitingList( player ) //logic that cleans up a player is contained here.
+		_3v3ModePlayerToRestingList( player ) // Manually assign
+		
+		try
+		{
+			player.Die( file.pWorldSpawn, file.pWorldSpawn, { scriptType = DF_SKIPS_DOOMED_STATE, damageSourceId = eDamageSourceId.damagedef_despawn } )
+		}
+		catch (error) //despawn
+		{}
+
+		LocalMsg( player, "#FS_YouAreResting", restText )
+	}
+	
+	HolsterAndDisableWeapons( player )
+	FS_Scenarios_RespawnIn3v3Mode( player ) //respawn
+	player.p.lastRestUsedTime = Time()
 	return true
 }
 
@@ -252,38 +391,55 @@ bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> ar
 void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	#if DEVELOPER
-		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker, " sent to waiting room and added to waiting list" )
+		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
 	#endif
 
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
+	{
+		#if DEVELOPER
+			printw( "player died but returned" )
+		#endif
 		return
+	}
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+	bool bDespawn = ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn ) //&& ( ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIPS_DOOMED_STATE ) > 0 )
 
-	thread function () : ( group, victim ) 
+	thread function () : ( group, victim, bDespawn ) 
 	{
 		if( group.isValid )
+		{
 			foreach( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) )
 			{
 				Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", victim.GetEncodedEHandle(), false )
 			}
+		}
 		
 		ScenariosPersistence_SendStandingsToClient( victim )
 
 		WaitFrame()
 		
-		if( settings.fs_scenarios_show_death_recap_onkilled )
-		{
+		if( !bDespawn && settings.fs_scenarios_show_death_recap_onkilled )
 			Remote_CallFunction_ByRef( victim, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" ) //Fixme
-		}
 
 		EndSignal( victim, "OnDestroy" )
 		
-		Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", 3 )
-		wait 3 //delay before sending to lobby
+		if( !bDespawn )
+		{
+			WaitRespawnTime( victim, TRANSFER_TIME )
+			//delay before sending to lobby
+		}
 		
 		// victim.p.lastRequeueUsedTime = Time()
-		soloModePlayerToWaitingList( victim )
+		
+		if( !bDespawn )
+		{
+			soloModePlayerToWaitingList( victim )
+			
+			#if DEVELOPER
+				printt( victim, "sent to waiting room and added to 'WaitingList" )
+			#endif
+		}
 	}()
 	
 	if( !group.isValid || !group.isReady ) //Do not calculate stats for players not in a round
@@ -297,7 +453,7 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 	{
 		FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
 	}
-
+	
 	FS_Scenarios_HandleGroupIsFinished( victim )
 
 	if( FS_Scenarios_GetDeathboxesEnabled() )
@@ -407,7 +563,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 
 	FS_Scenarios_HandleGroupIsFinished( player )
 
-	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
 
 	if( IsValid( group ) && group.isValid && !group.IsFinished )
 	{
@@ -419,7 +575,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 		}
 	}
 
-	if( player.p.handle in file.scenariosPlayerToGroupMap )
+	if( player.p.handle in file.scenariosPlayerToGroupMap ) //this should not be wrote manually
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 }
 
@@ -1189,21 +1345,18 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	{
 		if ( player.p.handle in file.scenariosPlayerToGroupMap ) 
 		{	
-			if( IsValid( file.scenariosPlayerToGroupMap[player.p.handle] ) )
-			{
-				
+			if( IsValid( file.scenariosPlayerToGroupMap[ player.p.handle ] ) )
 				return file.scenariosPlayerToGroupMap[ player.p.handle ]
-			}
 		}
 	}
-	catch(e)
+	catch( e )
 	{
 		#if DEVELOPER
-			sqprint("returnSoloGroupOfPlayer crash " + e)
+			sqprint("returnSoloGroupOfPlayer crash " + e )
 		#endif
 	}
 	
-	return group;
+	return group
 }
 
 void function FS_Scenarios_RespawnIn3v3Mode( entity player )
@@ -1234,7 +1387,7 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 	{	
 		try
 		{
-			DecideRespawnPlayer(player, true)
+			DecideRespawnPlayer( player, false )
 		}
 		catch (erroree)
 		{	
@@ -1244,7 +1397,7 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		}
 	
 		LocPair waitingRoomLocation = FS_Scenarios_getWaitingRoomLocation()
-		if (!IsValid(waitingRoomLocation)) return
+		if (!IsValid(waitingRoomLocation)) return //why would it be invalid. 
 		
 		// GivePlayerCustomPlayerModel( player )
 		maki_tp_player(player, waitingRoomLocation)
@@ -1259,15 +1412,15 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		return
 	}
 
-	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+	// scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
-	if( !IsValid( group ) )
-	{	
-		#if DEVELOPER
-		sqerror("group was invalid, err 007")
-		#endif
-		return
-	}
+	// if( !IsValid( group ) )
+	// {	
+		// #if DEVELOPER
+		// sqerror("group was invalid, err 007")
+		// #endif
+		// return
+	// }
 	
 	//wtf?
 }
@@ -1469,14 +1622,12 @@ void function FS_Scenarios_Main_Thread()
 			
 			entity restingPlayerEntity = GetEntityFromEncodedEHandle( restingPlayerHandle )
 			
-			if( !IsValid(restingPlayerEntity) ) continue
+			if( !IsValid( restingPlayerEntity ) ) 
+				continue
 
-			if( !IsAlive(restingPlayerEntity)  )
-			{	
-				FS_Scenarios_RespawnIn3v3Mode(restingPlayerEntity)
-			}
+			if( !IsAlive( restingPlayerEntity )  )
+				FS_Scenarios_RespawnIn3v3Mode( restingPlayerEntity )
 			
-			//TakeAllWeapons( restingPlayer )
 			HolsterAndDisableWeapons( restingPlayerEntity )
 		}
 
@@ -1812,7 +1963,9 @@ void function FS_Scenarios_Main_Thread()
 					}
 				}
 				
-				printw("spawning player in slot", spawnSlot, player )
+				#if DEVELOPER
+					printw("spawning player in slot", spawnSlot, player )
+				#endif
 
 				if ( spawnSlot == -1 ) 
 				{
@@ -1825,9 +1978,7 @@ void function FS_Scenarios_Main_Thread()
 				//in case there are more teams than the designed spawns, choose a random spawn for that team /solves a bug where it grabs locations from other zones
 
 				if( spawnSlot >= settings.fs_scenarios_teamAmount )
-				{
 					spawnSlot = RandomIntRangeInclusive( 0, settings.fs_scenarios_teamAmount - 1 )
-				}
 				
 				if( spawnSlot != oldSpawnSlot )
 					j = 0
@@ -2071,7 +2222,9 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 	if( !IsValid( player ) )
 		return
 
-	Gamemode1v1_SetPlayerGamestate( player, e1v1State.WAITING )
+	if( !IsCurrentState( player, e1v1State.RESTING ) )
+		Gamemode1v1_SetPlayerGamestate( player, e1v1State.WAITING )
+		
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
 
 	if( !IsValid( group ) || group.IsFinished || !group.isReady )
@@ -2151,7 +2304,10 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 				Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 				group.dummyEnt.Destroy()
 			}
-			printt( "Group has finished delayed" )
+			
+			#if DEVELOPER
+				printt( "Group has finished delayed" )
+			#endif
 		}()
 
 		if( group.isLastGameFromRound )
@@ -2584,3 +2740,103 @@ LocPair function NewLobbyPair(vector origin, vector angles)
 
 	return locPair
 }
+
+array<entity> function __GetGroupTeamArrayOfPlayer( entity player )
+{
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player )
+	
+	array<entity> none
+	if( !group.isValid )
+		return none
+	
+	foreach( team in group.teams )
+	{
+		if( team.players.contains( player ) )
+			return team.players
+	}
+	
+	return none
+}
+
+void function __RemovePlayerFromActiveGroup( entity player )
+{
+	array<entity> team = __GetGroupTeamArrayOfPlayer( player )
+	
+	if( team.contains( player ) )
+		team.removebyvalue( player )
+	else 
+		return 
+		
+	
+}
+
+void function WaitRespawnTime( entity player, float time )
+{
+	Remote_CallFunction_Replay( player, "Flowstate_ShowRespawnTimeUI", time )
+	wait time
+}
+
+void function FS_Scenarios_SetupPanels()
+{
+	PanelTable panels = 
+	{
+		[ "%&use% Rest (or) Enter Queue" ] 				= null,
+		[ "%&use% Toggle \"Start In Rest\" Setting" ] 	= null,
+		//["add another"] = null,
+	};
+	
+	Gamemode1v1_CreatePanels( g_waitingRoomPanelLocation.origin, g_waitingRoomPanelLocation.angles, panels )
+	DefinePanelCallbacks( panels )
+}
+
+void function DefinePanelCallbacks( PanelTable panels )
+{
+	// Start in rest setting button
+	AddCallback_OnUseEntity
+	( 
+		panels["%&use% Toggle \"Start In Rest\" Setting"],
+		
+		void function( entity panel, entity user, int input )
+		{
+			if ( !IsValid(user) ) 
+				return
+				
+			if( !CheckRate( user ) )
+				return 
+			
+			if ( user.p.start_in_rest_setting == true )
+			{
+				user.p.start_in_rest_setting = false
+				SavePlayerData( user, "start_in_rest_setting", false )
+				LocalMsg(user, "#FS_StartInRestDisabled")
+			}
+			else
+			{   
+				user.p.start_in_rest_setting = true
+				SavePlayerData( user, "start_in_rest_setting", true )
+				LocalMsg( user, "#FS_StartInRestEnabled" )
+			}
+		}
+	)
+		
+	// Rest button
+	AddCallback_OnUseEntity
+	( 
+		panels["%&use% Rest (or) Enter Queue"], 
+		
+		void function(entity panel, entity user, int input )
+		{
+			if ( !IsValid( user ) ) 
+				return     
+				
+			ClientCommand_Maki_SoloModeRest( user, [] )
+		}
+	)
+}
+
+#if TRACKER
+	void function Scenarios_PlayerDataCallbacks()
+	{
+		AddCallback_PlayerData( "start_in_rest_setting", UpdateStartInRestSetting )
+	}
+#endif 

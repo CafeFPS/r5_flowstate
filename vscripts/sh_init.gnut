@@ -142,7 +142,7 @@ void function SV_CL_Init()
 	ShItemPerPlayerState_LevelInit()
 	ShLoadouts_LevelInit_Finish()
 	ShStatsInternals_LevelInit()
-	ShStats_LevelInit()
+	ShStats_LevelInit() //before SV_CL_Onboarding_Init
 	ShChallenges_LevelInit_PostStats()
 	ShDoors_Init()
 	PlayerWaypoints_Init()
@@ -471,6 +471,9 @@ void function Client_Init()
 	CLTrackingVision_Init()
 	ClJumpPad_Init()
 	CLChroma_Init()
+	
+	//R5R.DEV
+	Tracker_ClientStats_Init()
 }
 #endif // CLIENT
 

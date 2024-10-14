@@ -1617,9 +1617,11 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 				}
 			}
 
-			bool wantsBadges = handle.isBackFace || handle.presentation == eGladCardPresentation.FRONT_DETAILS
+			bool wantsBadges = handle.isBackFace || handle.presentation == eGladCardPresentation.FRONT_DETAILS		
+			
 			if ( wantsBadges )
 			{
+				bool dev = IsValidPlayerForR5RDevBadge( FromEHI( handle.currentOwnerEHI ) )
 				for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
 				{
 					ItemFlavor ornull badgeOrNull = null
@@ -1640,8 +1642,8 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 					switch( badgeIndex ) //test itemflavors
 					{
 						case 0:
-						if( IsValidPlayerForR5RDevBadge( FromEHI( handle.currentOwnerEHI ) ) )
-							badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00097219464" ) )
+							if( dev )
+								badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00097219464" ) )
 						
 						break
 
@@ -1851,16 +1853,43 @@ bool function IsValidPlayerForR5RDevBadge( entity player )
 	if( !IsValid( player ) )
 		return false
 	
-	
-	switch( player.GetPlatformUID() )
-	{
-		case "1007946891142":
-		case "1011657326453": 
+	#if TRACKER
+		if( !Tracker_StatExists( player, "isDev" ) )
+		{
+			Tracker_PreloadStat( player, "isDev" )
+			
+			float startTime = Time()
+			while( !Tracker_StatExists( player, "isDev" ) )
+			{
+				WaitFrames( 5 )
+				if( Time() > startTime + MAX_PRELOAD_TIMEOUT )
+				{
+					#if DEVELOPER 
+						printw( "Timeout while waiting for isDev stat from player", player )
+					#endif 
+					
+					break
+				}
+			}
+		}
 		
-		return true
-	}
-	
-	return false
+		var isDev = Tracker_FetchStat( player, "isDev" )
+		
+		if( isDev != null )
+			return expect bool ( isDev )
+		
+		return false
+	#else 
+		switch( player.GetPlatformUID() )
+		{
+			case "1007946891142":
+			case "1011657326453": 
+			
+			return true
+		}
+		
+		return false
+	#endif
 }
 #endif
 

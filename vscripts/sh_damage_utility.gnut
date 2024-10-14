@@ -332,6 +332,7 @@ bool function IsInstantDeath( var damageInfo )
 
 	switch ( damageSourceID )
 	{
+		case eDamageSourceId.damagedef_despawn:
 		case eDamageSourceId.titan_execution:
 		case eDamageSourceId.human_execution:
 		case eDamageSourceId.fall:

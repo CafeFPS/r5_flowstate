@@ -334,7 +334,8 @@ function CodeCallback_RegisterClass_CPlayer()
 	{	
 		entity player = expect entity( this )	
 		
-		if( !IsValid( player )){ return }
+		if( !IsValid( player ) )
+			return
 		
 		player.p.bTextmute = expect bool ( toggle )
 		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
@@ -346,19 +347,26 @@ function CodeCallback_RegisterClass_CPlayer()
 			printt( "Sent challenge as", player.p.relayChallengeCode )
 		#endif
 		
-		thread( void function() : ( player )
-		{
-			EndSignal( player, "OnDestroy", "OnDisconnected" )
-			waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
-			
-			if( !IsValid( player ) ){ return }
-			
-			if ( !player.p.bRelayChallengeState )
+		thread
+		( 
+			void function() : ( player )
 			{
-				printt("Player acknowledgment failed.")
-				KickPlayerById( player.GetPlatformUID(), "Chat State Error" )
+				EndSignal( player, "OnDestroy", "OnDisconnected" )
+				waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
+				
+				if( !IsValid( player ) )
+					return
+				
+				if ( !player.p.bRelayChallengeState )
+				{
+					#if DEVELOPER 
+						printt( "Player acknowledgment failed." )
+					#endif 
+					
+					KickPlayerById( player.GetPlatformUID(), "Chat State Error" )
+				}
 			}
-		}())
+		)()
 	}
 	
 	function CPlayer::CommandsEnabled( toggle )

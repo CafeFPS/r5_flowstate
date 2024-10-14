@@ -217,10 +217,17 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
+	mp/tracker/commands_util.nut
 	mp/tracker/chateffects.nut
 	mp/tracker/utility.nut
 	mp/tracker/_internal.nut
 	mp/tracker/_register_stats.nut
+]
+
+When: "CLIENT"
+Scripts:
+[
+	mp/tracker/cl_stats.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -738,6 +745,7 @@ Scripts:
 	ui/dialogs/promo.nut
 	ui/dialogs/character_skills.nut
 	ui/dialogs/confirm_dialog.nut
+	ui/dialogs/confirm_rest.nut
 	ui/dialogs/confirm_exit_to_desktop.nut
 	ui/dialogs/confirm_leave_match.nut
 	ui/dialogs/confirm_keep_video_changes.nut

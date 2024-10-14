@@ -56,13 +56,16 @@ int function GetAfkState( entity player )
     float warn = file.Flowstate_antiafk_warn
 
 	float lastmove = player.p.lastmoved
-	if ( Time() > lastmove + ( localgrace - warn ) )
+	
+	if( bAfkToRest() && !isPlayerInRestingList( player ) )
 	{
-		if ( Time() > lastmove + localgrace ){
-			return eAntiAfkPlayerState.AFK
-		}
+		if ( Time() > lastmove + ( localgrace - warn ) )
+		{
+			if ( Time() > lastmove + localgrace )
+				return eAntiAfkPlayerState.AFK
 
-		return eAntiAfkPlayerState.SUSPICIOUS
+			return eAntiAfkPlayerState.SUSPICIOUS
+		}
 	}
 
     return eAntiAfkPlayerState.ACTIVE
@@ -118,8 +121,11 @@ void function CheckAfkKickThread(entity player)
 					player.p.lastmoved = Time()
 					
 					if( g_bRestEnabled() )
-						mkos_Force_Rest( player )				
-				} 
+						mkos_Force_Rest( player )
+					else 
+						mAssert( false, "Playlist has afk_to_rest enabled, but mode has rest disabled internally. Try using Gamemode1v1_SetRestEnabled()" )
+						// We WANT to assert here, because this condition will always run with no effect. 
+				}
 				else 
 				{	
 					KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )		
@@ -128,6 +134,7 @@ void function CheckAfkKickThread(entity player)
 				
 			default:
 				mAssert( false, "No valid afk rest state returned" )
+				//Scripter issue.
 				break
 		}
 		
@@ -136,10 +143,10 @@ void function CheckAfkKickThread(entity player)
     }
 }
 
-bool function AfkThread_PlayerMoved( entity player )
+bool function AfkThread_PlayerMoved( entity player ) //callback is defined as bool return func...
 {
-	if( !IsValid( player ) ) //is this needed?
-		return false
+	// if( !IsValid( player ) ) //is this needed? lets find out.
+		// return false
 	
     player.p.lastmoved = Time()
 	return true

@@ -3211,12 +3211,22 @@ void function SimpleChampionUI()
 	}
 	else
 	{
-		// #if TRACKER //onboarding handles tracker persistence multi-server based winner
-			// FlagSet( "DeterminePreviousChampion" )
-			// FlagWait( "PreviousChampionDetermined" )
-		// #else
+		#if TRACKER //onboarding handles tracker persistence multi-server based winner
+			if( GetPlayerArray().len() > 0 )
+			{
+				if( GetRound() == 1 && Tracker_IsBatchFetchQueued() )
+				{
+					FlagSet( "DeterminePreviousChampion" )
+					FlagWait( "PreviousChampionDetermined" )
+				}
+				else 
+				{
+					FSDM_ReturnBestPlayers_FromChampions( GetPlayerArray() )
+				}
+			}
+		#else
 			FSDM_ReturnBestPlayers_FromChampions( GetPlayerArray() )
-		// #endif
+		#endif
 	}
 	
 	bool presentChampion = false
@@ -4058,6 +4068,11 @@ void function SimpleChampionUI()
 	file.currentRound++
 }
 
+int function GetRound()
+{
+	return file.currentRound
+}
+
 entity function GetMainRingBoundary()
 {
 	return file.ringBoundary
@@ -4500,10 +4515,17 @@ void function AssignCharacter( entity player, int index )
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
 {
-	if( !IsValid( player )) return
-	if( !player.IsPlayer() ) return //mkos ( crash fix )
-	if ( !player.p.isConnected ) return
-	if ( ( text.len() + subText.len() ) >= 599 ) return //mkos (added code rock prevention)
+	if( !IsValid( player ) ) 
+		return
+		
+	if( !player.IsPlayer() ) 
+		return //mkos ( crash fix )
+		
+	if ( !player.p.isConnected ) 
+		return
+	
+	if ( ( text.len() + subText.len() ) >= 599 ) 
+		return
 
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )

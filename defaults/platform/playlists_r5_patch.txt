@@ -392,7 +392,16 @@ playlists
 				// It is recommended that you leave this blank and not use it, preferably use FS_PLAYLIST_MOTD at the bottom of this file
 				custom_MOTD										""
 				
+				// auto mute system 
+				opt_in_global_mute								1 		// Globally muted players on tracker will auto mute.
 				
+				opt_in_spam_mute								1		// Enables auto muting and unmuting with below settings.
+				chat_interval									60 		// window time in seconds a threshhold for messages counts ( this decreases msg total by threshold amount each loop )
+				chat_threshhold									15 		// How many messages within this window 
+				chat_timeout									"1 min" // string: time format of  "0 days 0 hours 2 mins 30 seconds" and any combination of, multiples of, or in any order. - mutes player for duration specified.
+				
+				//todo: chat_filter
+				//todo: chat_penalty
 				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Aim Assist																///////
@@ -412,9 +421,9 @@ playlists
 				logging_shipstats 								1		// Enabling this will transfer data at end of match (TODO: rename to tracker_shipstats)
 				ea_verify_server								1		// TODO: Remove before shipping.
 				use_global_stats								1		// Enabling this will use API data (which only transfers at the start/end of a match
-				use_online_motd 								0
+				use_online_motd 								0		// Still indev
 				
-				// You should configure the following in "platform/r5rdev_config.json"
+				// You should configure the following in "platform/r5rdev_config.json", but also set to 1 to enable here.
 				stats_discord_webhook_player_count				0		// Sends player join and disconnect data to a discord webhook
 				stats_discord_webhook_matches_enabled			0		// Sends recap data to a discord webhook
 
@@ -1811,7 +1820,7 @@ playlists
 				disable_core_stats								0
 				COMMAND_RATE_LIMIT								0.200 //Rate limiting for all custom client commands
 						
-				afk_to_rest_bool								0 // dont enable until rest is fixed for scenarios. makes player rest when afk instead of kick
+				afk_to_rest_bool								1 // makes player rest when afk instead of kick, but requires: flowstate_afk_kick_enable 1
 				enable_ping_kick								0 // 0 disables ping kick for this mode
 				enable_afk_thread 								1 //0 disables afk thread for this mode
 				superglide_counter_msg							1 // Shows players superglide count

@@ -9,6 +9,8 @@ global function Stats__AddPlayerStatsTable
 global function Stats__GenerateOutBoundJsonData
 global function Stats__RegisterStatOutboundData
 global function Stats__SetStatKeys
+global function Stats__GetStatKeys
+global function Stats__RawGetStat
 
 global function GetPlayerStatInt
 global function GetPlayerStatString
@@ -32,6 +34,19 @@ struct
 void function Stats__SetStatKeys( array<string> keys )
 {
 	file.statKeys = keys
+}
+
+array<string> function Stats__GetStatKeys()
+{
+	return file.statKeys
+}
+
+var function Stats__RawGetStat( string player_oid, string statname )
+{
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
+		return file.allStatsTables[ player_oid ][ statname ]
+	
+	return null
 }
 
 array<string> function Stats__AddPlayerStatsTable( string player_oid ) 

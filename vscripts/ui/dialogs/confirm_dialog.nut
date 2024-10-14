@@ -58,8 +58,10 @@ void function InitOKDialog( var newMenuArg )
 
 void function OpenConfirmDialogFromData( ConfirmDialogData dialogData )
 {
-	Assert( file.showDialogData == null )
-	Assert( dialogData.resultCallback != null, "resultCallback == null; this dialog won't do anything" )
+	#if DEVELOPER
+		mAssert( file.showDialogData == null )
+		mAssert( dialogData.resultCallback != null, "resultCallback == null; this dialog won't do anything" )
+	#endif
 
 	dialogData.dialogType = eDialogType.CONFIRM
 	dialogData.__menu = file.confirmMenu

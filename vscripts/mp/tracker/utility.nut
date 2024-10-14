@@ -40,6 +40,7 @@ global function IsSafeString
 global function GetPlaylistMaps
 global function TP
 global function Tracker_DetermineNextMap
+global function Tracker_GotoNextMap
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -1400,18 +1401,20 @@ struct {
 				
 			case "print_chat_effects":
 			
-				DEV_PrintAllChatEffects()
+				#if DEVELOPER
+					DEV_PrintAllChatEffects()
+				#endif 
+				
 				return true
 				
 			case "msgeffect":
 					
-				SendServerMessage( FindChatEffect( param ) )
+				SendServerMessage( Chat_FindEffect( param ) )
 				return true
 				
 			case "nextmap":
 			
-				string to_map = Tracker_DetermineNextMap()
-				GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
+				Tracker_GotoNextMap()
 				return true
 			
 			case "fetchsetting":
@@ -1534,21 +1537,92 @@ struct {
 				return true
 				
 			case "mute":
-			
+			case "gag":
+				
 				entity p = GetPlayer( param )				
-				if( !IsValid(p) ){ return true }	
-				ToggleMuteForAll( p, true )
-				LocalMsg( p, "#FS_MUTED", "", eMsgUI.DEFAULT, 5, "", param2 )
+				if( !IsValid( p ) )
+				{
+					if( !IsNumeric( param ) )
+					{
+						Message( player, "Invalid Player" )
+						return true
+					}
+					else 
+					{
+						Message( player, "Attempting Save", "Saving uid: " + param )
+					}
+				}
+				else 
+				{
+					string reason = Chat_FindMuteReasonInArgs( args )
+					LocalMsg( p, "#FS_MUTED", "", eMsgUI.DEFAULT, 5, "", reason )
+				}
+					
+				Chat_ToggleMuteForAll( p, true, true, args, -1, param )		
 				
 				return true
 			
 			case "unmute":
+			case "ungag":
 			
 				entity p = GetPlayer( param )				
-				if( !IsValid(p) ){ return true }	
-				ToggleMuteForAll( p, false )
-				LocalMsg( p, "#FS_UNMUTED" )
+				if( !IsValid( p ) )
+				{
+					if( !IsNumeric( param ) )
+					{
+						Message( player, "Invalid Player" )
+						return true
+					}
+					else 
+					{
+						Message( player, "Attempting Save", "Saving uid unmuted: " + param )
+					}
+				}
+				else 
+				{
+					LocalMsg( p, "#FS_UNMUTED" )
+				}
+					
+				Chat_ToggleMuteForAll( p, false )
 				
+				return true
+				
+			case "is_muted":
+				
+				entity p = GetPlayer( param )				
+				if( !IsValid( p ) )
+				{
+					Message( player, "Invalid Player" )
+					return true
+				}
+				
+				string isMuted
+				{
+					isMuted = string( p.p.bTextmute )
+					Message( player, "MUTED:", isMuted )
+				}
+				
+				return true 
+				
+			case "mute_reason":
+				
+				entity p = GetPlayer( param )
+				string uidLookup
+				
+				if( IsNumeric( param ) )
+					uidLookup = param
+					
+				if( !IsValid( p ) && !Chat_InMutedList( uidLookup ) )
+				{
+					Message( player, "Error", "player was invalid and " + uidLookup + " does not exist in the muted list" )
+					return true
+				}
+					
+				string reason = Chat_GetMutedReason( uidLookup, p )	
+				if( empty( reason ) && !IsValid( player ) && uidLookup.len() < 7 )
+					reason = "Error during lookup: player was invalid. Possible mistake with uid?"
+				
+				Message( player, "MUTED REASON:", reason )
 				return true
 				
 			case "killme":
@@ -2124,20 +2198,22 @@ void function CheckAdmin_OnConnect( entity player )
 }
 
 // WARNING, use ONLY VerifyAdmin() for permissive uses, not this.
-bool function IsTrackerAdmin( string CheckPlayer )
+bool function IsTrackerAdmin( string CheckPlayer ) //todo:deprecate
 {
 	foreach ( Player, OID in player_admins ) 
 	{
-		if ( Player == CheckPlayer || OID == CheckPlayer) 
-		{
-			return true;
-		}
+		if ( Player == CheckPlayer || OID == CheckPlayer ) 
+			return true
 	}
 	
 	return false
 }
 
-bool function IsValidOID( string str )
+//Todo: Lookup fromthe table of oid -> playerdata, include .entity (this gets created when a player joins once. )
+//
+
+
+bool function IsValidOID( string str ) //todo:deprecate
 {
 	if ( !IsNum( str ) )
 		return false
@@ -2160,7 +2236,7 @@ bool function IsValidOID( string str )
 	return false
 }
 
-entity function GetPlayerEntityByUID( string str )
+entity function GetPlayerEntityByUID( string str ) //todo:deprecate
 {
 	entity candidate
 	
@@ -2179,7 +2255,7 @@ entity function GetPlayerEntityByUID( string str )
 	return candidate
 }
 
-entity function GetPlayer( string str )
+entity function GetPlayer( string str ) //todo:deprecate
 {
 	entity candidate = GetPlayerEntityByUID( str )
 	
@@ -2189,7 +2265,7 @@ entity function GetPlayer( string str )
 	return GetPlayerEntityByName( str )	
 }
 
-entity function GetPlayer_Expensive( string str ) 
+entity function GetPlayer_Expensive( string str ) //todo:deprecate
 {
 	entity player;
 	
@@ -2205,7 +2281,7 @@ entity function GetPlayer_Expensive( string str )
 	return player
 }
 
-string function GetMap( string str ) 
+string function GetMap( string str ) //todo:deprecate
 {
 	foreach ( map in list_maps ) 
 	{
@@ -2218,7 +2294,7 @@ string function GetMap( string str )
 	return GetMapName()
 }
 
-string function GetMode( string str ) 
+string function GetMode( string str ) //todo:deprecate
 {
 	foreach ( mode in list_gamemodes ) 
 	{
@@ -2347,7 +2423,7 @@ int function WeaponToIdentifier( string weaponName )
 		return 2
 	}
 	
-	return WeaponIdentifiers[weaponName]
+	return WeaponIdentifiers[ weaponName ]
 }
 
 bool function IsWeaponValid( string weaponref )
@@ -2503,4 +2579,10 @@ string function Tracker_DetermineNextMap()
 	}
 	
 	return to_map
+}
+
+void function Tracker_GotoNextMap()
+{
+	string to_map = Tracker_DetermineNextMap()
+	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 }

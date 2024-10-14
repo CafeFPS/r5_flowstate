@@ -135,6 +135,7 @@ void function SV_CL_Onboarding_Init()
 		RespawnBehavior_Init()
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 		AddCallback_OnClientConnected( OnClientConnected )
+		AddCallback_OnClientDisconnected( OnClientDisconnected )
 		
 		#if TRACKER
 			if( Flowstate_IsTrackerSupportedMode() && bLog() )
@@ -997,6 +998,12 @@ void function ResetZiplineUseCountOnMantle( entity player )
 	
 	player.p.ziplineUsages = 0
 	Remote_CallFunction_NonReplay( player, "ServerCallback_NessyMessage", 40 )
+}
+
+void function OnClientDisconnected( entity player )
+{
+	int connectedPlayerCount = GetPlayerArray().len() - 1
+	SetGlobalNetInt( "connectedPlayerCount", connectedPlayerCount )
 }
 
 void function OnClientConnected( entity player )

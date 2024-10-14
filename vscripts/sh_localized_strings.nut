@@ -278,7 +278,12 @@ struct
 		"#FS_HALOSLAYER",
 		"#FS_AFK_ALERT",
 		"#FS_AFK_REST_MSG",
-		"#FS_AFK_KICK_MSG"
+		"#FS_AFK_KICK_MSG",
+		"#FS_REST_CONFIRM",
+		"#FS_NOT_AVAILABLE",
+		"#FS_AUTO_UNMUTED",
+		"#FS_WARNING",
+		"#FS_SPAM_MUTE"
 	]
 	
 } file
@@ -1286,6 +1291,7 @@ void function DEV_PrintLocalizationTable()
 		}
 	#endif //CLIENT
 	
+	//SHARED
 	void function DEV_Print_eMsgUI()
 	{	
 		string tableText = "\n\nglobal enum eMsgUI\n{\n"
@@ -1299,6 +1305,8 @@ void function DEV_PrintLocalizationTable()
 		tableText += "}\n\n"
 		printt( tableText )
 	}
+	//end SHARED 
+	
 #endif //DEVELOPER
 
 

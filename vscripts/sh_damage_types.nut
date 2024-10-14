@@ -331,6 +331,7 @@ global enum eDamageSourceId
 	mp_weapon_grenade_gas
 	
 	mp_weapon_decoy_grenade
+	mp_ability_cloak /* for stats */
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
