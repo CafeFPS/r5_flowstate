@@ -2052,8 +2052,10 @@ void function FS_Scenarios_Main_Thread()
 							player.MovementEnable()
 							player.UnforceStand()
 							DeployAndEnableWeapons( player )
-							player.ClearMeleeDisabled()
-							player.UnlockWeaponChange()
+							
+							UnlockWeaponsAndMelee( player )
+							EnableAllWeaponsExceptHandsOrIncap( player )
+							
 							player.ClearFirstDeployForAllWeapons()
 							// player.UnfreezeControlsOnServer()
 							ClearInvincible(player)
@@ -2094,10 +2096,12 @@ void function FS_Scenarios_Main_Thread()
 						continue
 
 					player.ForceStand()
+					
 					player.Server_TurnOffhandWeaponsDisabledOn()
-					player.SetMeleeDisabled()
-					player.LockWeaponChange()
-					// player.FreezeControlsOnServer()
+					
+					LockWeaponsAndMelee( player )
+					DisableAllWeaponsExceptHandsOrIncap( player )
+					
 					player.MovementDisable()
 					
 					entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -2171,7 +2175,10 @@ void function FS_Scenarios_Main_Thread()
 					Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
 
 					if( settings.fs_scenarios_characterselect_enabled )
+					{
 						player.SetPlayerNetBool( "characterSelectionReady", false )
+						player.Server_TurnOffhandWeaponsDisabledOn()
+					}
 					else
 						GiveLoadoutRelatedWeapons( player )
 
