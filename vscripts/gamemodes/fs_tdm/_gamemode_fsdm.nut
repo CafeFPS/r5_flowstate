@@ -1198,7 +1198,8 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 
 				if( Flowstate_IsFastInstaGib() )
 				{
-					attacker.p.lastTimeUsedRailjump = -1 //todo change in client too or maybe not necessary if the actual wait is low
+					if( attacker.IsPlayer() )
+						attacker.p.lastTimeUsedRailjump = -1 //todo change in client too or maybe not necessary if the actual wait is low
 					victim.Gib( <0,0,100> )
 				}
 
@@ -7362,4 +7363,10 @@ void function FS_Hack_CreateBulletsCollisionVolume( vector origin, float large =
 	}
 
 	Warning("Spawned collision volume with walls centered for custom map")
+	
+	//Install a oob trigger in all maps
+	file.playerSpawnedProps.append( AddOutOfBoundsTriggerWithParams( origin + <0,0,800>, large, 2000 ) )
+	
+	//Kill trigger
+	file.playerSpawnedProps.append( AddDeathTriggerWithParams( origin - <0,0,500>, large ) )
 }

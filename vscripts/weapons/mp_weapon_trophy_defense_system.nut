@@ -848,7 +848,7 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 	if(!TROPHY_DESTROY_FRIENDLY_PROJECTILES)
 	{
 		if( projectile.GetTeam() == pylonowner.GetTeam() )
-			continue
+			return
 	}
 
 	//Check if the player threw the projectile in the trigger range
