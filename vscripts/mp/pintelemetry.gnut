@@ -1084,7 +1084,6 @@ void function INIT_BATCH_FETCH()
 			{
                 oid_list += ",";
             }
-			
         }
 	
         LoadBatchSyncData__internal( oid_list, file.requestedStatsList, file.requestedSettingsList )	

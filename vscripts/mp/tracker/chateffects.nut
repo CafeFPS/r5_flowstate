@@ -79,7 +79,7 @@ void function ChatUtility_Init()
 	AddCallback_OnClientConnected( CheckOnConnect )
 	
 	if( file.opt_in_spam_mute )
-		AddCallback_OnClientConnected( Chat_SpamCheck )
+		AddCallback_OnClientConnected( Chat_SpamCheckThread )
 	
 	#if TRACKER && HAS_TRACKER_DLL
 		AddCallback_PlayerData( "unmuteTime", SetUnmuteTime ) //must be before muted
@@ -186,7 +186,7 @@ void function SetUnmuteTime_Raw( entity player, int timestamp )
 	player.p.unmuteTime = timestamp
 }
 
-void function Chat_SpamCheck( entity player )
+void function Chat_SpamCheckThread( entity player )
 {
 	if( file.chatThreshhold <= 0 )
 		return
@@ -195,12 +195,19 @@ void function Chat_SpamCheck( entity player )
 	(
 		void function() : ( player )
 		{
-			wait file.chatInterval
+			//check again since this was threaded off 
 			if( !IsValid( player ) )
 				return 
+				
+			player.EndSignal( "OnDestroy", "OnDisconnected" )
 			
-			int msgCount = player.p.msg 			
-			player.p.msg = maxint( 0, ( msgCount - file.chatThreshhold ) )
+			for( ; ; )
+			{
+				wait file.chatInterval
+				
+				int msgCount = player.p.msg 			
+				player.p.msg = maxint( 0, ( msgCount - file.chatThreshhold ) )
+			}
 		}
 	)()
 }
