@@ -199,7 +199,7 @@ void function Init_FS_Scenarios()
 	SurvivalFreefall_Init()
 	SurvivalShip_Init()
 
-	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
+	AddClientCommandCallback( "playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
 	
 	AddClientCommandCallback( "rest", Scenarios_ClientCommand_Rest )
 	Gamemode1v1_SetRestEnabled()

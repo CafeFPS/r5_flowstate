@@ -283,7 +283,8 @@ struct
 		"#FS_NOT_AVAILABLE",
 		"#FS_AUTO_UNMUTED",
 		"#FS_WARNING",
-		"#FS_SPAM_MUTE"
+		"#FS_SPAM_MUTE",
+		"#FS_SPAM_MUTE_DESC"
 	]
 	
 } file

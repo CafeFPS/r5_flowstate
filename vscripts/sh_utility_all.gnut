@@ -2667,7 +2667,10 @@ array<string> function StringToArray( string str, int arrayStringMaxLength = 128
         throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
 	}
 	
-    array<string> arr = split( str, "," )
+	bool convertBySpaceOrComma = t_str.find( " " ) && !t_str.find( "," ) ? true : false
+	string splitStr = convertBySpaceOrComma ? " " : ","
+	
+    array<string> arr = split( str, splitStr )
 	array<string> valid = []
 	
 	/*debug

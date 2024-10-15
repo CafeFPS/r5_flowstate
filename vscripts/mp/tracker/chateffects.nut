@@ -643,7 +643,7 @@ void function ChatWatchdog( entity player, array<string> args )
 		if( TooManyMessages( player ) )
 		{
 			Chat_ToggleMuteForAll( player, true, true, [], file.timeoutAmount )
-			LocalMsg( player, "#FS_MUTED", "#FS_SPAM_MUTE" )
+			LocalMsg( player, "#FS_SPAM_MUTE", "#FS_SPAM_MUTE_DESC", eMsgUI.DEFAULT, 5.0, "", string( file.timeoutAmount ) )
 			
 			#if DEVELOPER
 				printw( "player textmuted for spam: ", player, " count:", player.p.msg, "penalty of:", file.timeoutAmount )

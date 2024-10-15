@@ -3362,6 +3362,12 @@ void function Gamemode1v1_Init( int eMap )
 	INIT_PregameCallbacks()
 	INIT_1v1_sbmm()
 	
+	AddClientCommandCallback( "start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
+	AddClientCommandCallback( "wait", ClientCommand_mkos_IBMM_wait )
+	AddClientCommandCallback( "lock1v1", ClientCommand_mkos_lock1v1_setting )
+	AddClientCommandCallback( "enable_input_banner", ClientCommand_enable_input_banner )
+	AddClientCommandCallback( "challenge", ClientCommand_mkos_challenge )
+	
 	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		Flowstate_LgDuels1v1_Init()
 		
@@ -3492,6 +3498,11 @@ void function Gamemode1v1_Init( int eMap )
 			foreach( player in GetPlayerArray() )
 				Message( player, "Map Config Error", "No valid spawns defined." )
 			
+			#if DEVELOPER 
+				mAssert( false, "No valid spawns defined; Release behavior: Tracker_GotoNextMap" )
+				return
+			#endif
+			
 			Tracker_GotoNextMap()
 		}
 	}
@@ -3503,8 +3514,9 @@ void function Gamemode1v1_Init( int eMap )
 		for ( int i = 0; i < allSoloLocations.len(); i = i + GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ) ) // read SPAWNS_MAX_TEAMS from spawns?? Cafe Who cares.
 		{
 			soloLocStruct p
-
-			for ( int j = 0; j < GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ); j++  )
+			int teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 )
+			
+			for ( int j = 0; j < teamAmount; j++  )
 			{
 				p.respawnLocations.append( allSoloLocations[ i + j ].spawn )
 			}
@@ -5264,14 +5276,7 @@ void function Init_IBMM( entity player )
 	
 	if( player.p.IBMM_grace_period == -1 )
 		SetDefaultIBMM( player )
-	
-	AddClientCommandCallback( "wait", ClientCommand_mkos_IBMM_wait )
-	AddClientCommandCallback( "lock1v1", ClientCommand_mkos_lock1v1_setting )
-	AddClientCommandCallback( "start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
-	AddClientCommandCallback( "enable_input_banner", ClientCommand_enable_input_banner )
-	AddClientCommandCallback( "challenge", ClientCommand_mkos_challenge )
 }
-
 
 //Made by @CafeFPS - don't ask wtf is this just enjoy it
 //modified by mkos ( Todo: Move to code )
