@@ -439,9 +439,9 @@ string function Chat_GetMutedReason( string uid = "", entity player = null )
 	if( !empty( uid ) )
 		reason = Tracker_FetchPlayerData( uid, "muted_reason" )
 	else if( IsValid( player ) )
-		reason = Tracker_FetchPlayerData( player.p.UID, "muted_reason" )
+		reason = Tracker_FetchPlayerData( player.p.UID, "muted_reason" )	
+		#if DEVELOPER
 	else 
-		#if DEVELOPER 
 			printw( "No valid uid or player entity provided." )
 		#endif 
 		
