@@ -1089,6 +1089,10 @@ void function INIT_BATCH_FETCH()
 	
         LoadBatchSyncData__internal( oid_list, file.requestedStatsList, file.requestedSettingsList )	
     }
+	else 
+	{
+		CodeCallback_BatchStatsLoaded() // Need to call manually since native wont. Todo: Send empty list, let native handle.
+	}
 	
 	file.bBatchFetchComplete = true	
 }
@@ -1490,6 +1494,7 @@ void function PIN_Init()
 	file.superglide_msg = GetCurrentPlaylistVarString( "custom_superglide_msg", "" )
 	file.superglidetitle = file.global_stats ? "Season Glides" : "Glides";
 	
+	bool skipChampionFetch
 	//fetch global STATS
 	if ( file.global_stats )
 	{
@@ -1503,7 +1508,20 @@ void function PIN_Init()
 			file.requestedSettingsList = BuildRequestedSettingsString()
 			thread INIT_BATCH_FETCH()
 		}
+		else 
+		{
+			skipChampionFetch = true
+		}
 	}
+	else 
+	{
+		skipChampionFetch = true
+	}
+	
+	if( !skipChampionFetch )
+		AddCallback_OnBatchStatsLoaded( Tracker_SetChampionOnPersistenceLoad )
+	else
+		FlagSet( "PreviousChampionDetermined" )
 	
 	if ( GetCurrentPlaylistVarBool( "enable_voice", false ) )
 		EnableVoice()

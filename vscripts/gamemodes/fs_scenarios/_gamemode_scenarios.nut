@@ -2836,7 +2836,7 @@ void function DefinePanelCallbacks( PanelTable panels )
 			if ( !IsValid( user ) ) 
 				return     
 				
-			ClientCommand_Maki_SoloModeRest( user, [] )
+			Scenarios_ClientCommand_Rest( user, [] )
 		}
 	)
 }

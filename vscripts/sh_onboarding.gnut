@@ -136,13 +136,6 @@ void function SV_CL_Onboarding_Init()
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 		AddCallback_OnClientConnected( OnClientConnected )
 		AddCallback_OnClientDisconnected( OnClientDisconnected )
-		
-		#if TRACKER
-			if( Flowstate_IsTrackerSupportedMode() && bLog() )
-				AddCallback_OnBatchStatsLoaded( Tracker_SetChampionOnPersistenceLoad )
-			else 
-				FlagSet( "PreviousChampionDetermined" )
-		#endif
 
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
 		foreach ( character in GetAllCharacters() )
