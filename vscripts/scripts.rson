@@ -217,8 +217,8 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	mp/tracker/commands_util.nut
-	mp/tracker/chateffects.nut
+	mp/tracker/commands.nut
+	mp/tracker/chat.nut
 	mp/tracker/utility.nut
 	mp/tracker/_internal.nut
 	mp/tracker/_register_stats.nut

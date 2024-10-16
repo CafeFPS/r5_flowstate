@@ -367,10 +367,12 @@ playlists
 
 
 				///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////											///////////////////////////////////
+////////////////////////////////////  	SECTION 2: SERVER-WIDE CONFIGURATION	///////////////////////////////////
+////////////////////////////////////											///////////////////////////////////
 				///////////////////////////////////////////////////////////////////////////////////
-				//////////////////////	SECTION 2: SERVER-WIDE CONFIGURATION	///////////////////
-				///////////////////////////////////////////////////////////////////////////////////
-				///////////////////////////////////////////////////////////////////////////////////
+				
+				
 				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// General Server Settings												///////
@@ -381,6 +383,7 @@ playlists
 				banner_assets									"rui/world/flowstate1v1_banner02,rui/world/flowstate1v1_banner03,rui/world/flowstate1v1_banner04"
 				
 				cc_administration								1		// Enabling this enables admins to use 'cc' client commands
+				enable_chat_commands							1 		// allows players to type commands for mode into chat. Example: /rest
 				
 				// ADMINS for cc command (recommended to list in r5r.dev_config file if server has tracker dll)
 				// usage: "adminname-oid,anotheradmin-oid"
@@ -392,16 +395,20 @@ playlists
 				// It is recommended that you leave this blank and not use it, preferably use FS_PLAYLIST_MOTD at the bottom of this file
 				custom_MOTD										""
 				
-				// auto mute system 
+				// global auto mute system 
 				opt_in_global_mute								1 		// Globally muted players on tracker will auto mute.
 				
-				opt_in_spam_mute								1		// Enables auto muting and unmuting with below settings.
-				chat_interval									60 		// window time in seconds a threshhold for messages counts ( this decreases msg total by threshold amount each loop )
-				chat_threshhold									15 		// How many messages within this window 
-				chat_timeout									"1 min" // string: time format of  "0 days 0 hours 2 mins 30 seconds" and any combination of, multiples of, or in any order. - mutes player for duration specified.
+				// every interval, a players msg count will be decreased by the threshold or set to 0.
+				//if the players msg count reaches threshold number they are auto muted for chat_timeout time
 				
-				//todo: chat_filter
-				//todo: chat_penalty
+				opt_in_spam_mute								1		// Enables auto muting and unmuting with below settings.
+				chat_interval									12		// window time in seconds a threshhold for messages counts ( this decreases msg total by threshold amount each chat_interval completion ( this value ) )
+				chat_threshhold									5 		// How many messages within this window 
+				chat_timeout									"" 		// string: time format of  "0 days 0 hours 2 mins 30 seconds" and any combination of, multiples of, or in any order. - mutes player for duration specified. Can leave blank if using offence tiers.
+				
+				textmute_offence_tiers							"10 secs, 20 secs, 30 secs" 		// comma separated list of time strings. example: "3 secs, 10 secs, 20 secs, 30 secs"	
+				textmute_offence_decay_time						45.0 	// Time that must pass before reduce steps are -- 0 to disable
+				textmute_offence_decay_amount					1		// How many offence levels will be decreased for player each grace_time cycle
 				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Aim Assist																///////
@@ -419,7 +426,6 @@ playlists
 				logging_enabled 								1		// Enabling this will run the tracker system (TODO: rename to tracker_enabled)
 				logging_encryption								1
 				logging_shipstats 								1		// Enabling this will transfer data at end of match (TODO: rename to tracker_shipstats)
-				ea_verify_server								1		// TODO: Remove before shipping.
 				use_global_stats								1		// Enabling this will use API data (which only transfers at the start/end of a match
 				use_online_motd 								0		// Still indev
 				
@@ -1856,7 +1862,6 @@ playlists
 				give_random_legend_on_spawn			 			0 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
 				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
-				enable_chat_commands							1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				give_weapon_stack_count_amount					3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
@@ -2027,7 +2032,6 @@ playlists
 
 				enable_voice									0
 				default_enable_input_banner_setting	 			1 // display input ui default setting for players
-				enable_chat_commands							1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				give_weapon_stack_count_amount					3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
@@ -2302,7 +2306,6 @@ playlists
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
 				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
-				enable_chat_commands							1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				
@@ -2453,7 +2456,6 @@ playlists
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
 				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
-				enable_chat_commands							1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				
@@ -3930,8 +3932,8 @@ playlists
 				"DISCONNECT_STRINGCMD_OVERFLOW"	   				"Connection to server overflowed (code:skillissue)."
 				"MOTD"								  			"What's new in R5Reloaded? \n\nFlowstate Scripts now uses S21 retail scripts as base. Enjoy updated map features and hundred of bugs fixes. \n\nIt also features new modes: \nLG Duels, Cafe's Instagib, Winter Express, Zone Wars, Movement Recorder, Search and Destroy, Surf, Halo Mod and two new movement practice modes! \n\nNew maps: \n   -Kings Canyon MU2 (S5)\n    -Phase Runner\n    -World's Edge Holiday (Winter Express)\n    -mp_rr_construct (custom)\n    -Empty Map (custom) \n\n Flowstate Scripts (Gameplay) brought to you by @CafeFPS and collaborators.\nR5Reloaded (Engine) by @AmosModz and collaborators."
 				"BETA_BUILD_WATERMARK" 				  			""
-				"FS_PLAYLIST_MOTD"					  			"g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b " //Flowstate x R5Reloaded" //1000 char max [dev-note: DO NOT SHIP WITH THIS FILLED]
-				"FS_PLAYLIST_MOTD_CONTINUE"			  			"  \n\n\n\n THIS IS THE NEXT MESSAGE \n\n\n\n\n g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b 4w5b4w5b wb5g wb45b4 b45 b4w5b w45b 4w5b4w5b w4b5g wb45b4 b45 b4w5b w45b " //append to first - 1000 char limit
+				"FS_PLAYLIST_MOTD"					  			"Flowstate x R5Reloaded" 		//1000 char max
+				"FS_PLAYLIST_MOTD_CONTINUE"			  			"" 								//append to first - 1000 char limit
 			}
 		}
 	}

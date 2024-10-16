@@ -4,8 +4,8 @@ platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu
 	{
 		ControlName				Frame
 		zpos					3
-		wide					fx //f0
-		tall					fx //f0
+		wide					f0 //f0
+		tall					f0 //f0
 		autoResize				0
 		pinCorner				0
 		visible					1
@@ -43,8 +43,8 @@ platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu
 		StandingsFrame
 		{
 			ControlName				RuiPanel
-			wide					fx //%80
-			tall					fx //%90
+			wide					f0 //fx
+			tall					f0 //fx
 			rui                     "ui/basic_image.rpak"
 			visible					1
 			

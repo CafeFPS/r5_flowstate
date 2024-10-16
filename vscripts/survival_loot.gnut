@@ -667,7 +667,7 @@ void function SURVIVAL_PlaceGroundItems()
 
 	foreach( ent in itemEnts )
 	{
-		if( is3v3Mode() )
+		if( isScenariosMode() )
 		{
 			FS_Scenarios_SaveLocationFromLootSpawn( ent )
 			continue
@@ -2388,7 +2388,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		}catch(e420)
 		{
 			// newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
-			Warning( "GiveMainWeapon Error ReplaceActiveWeapon" )
+			Warning( "GiveMainWeapon Error ReplaceActiveWeapon" ) //mkos: Is this meant to be logged explicitely in beta test?
 		}
 	}
 	else
@@ -2397,7 +2397,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 			newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
 		}catch(e69)
 		{
-			Warning( "GiveMainWeapon Error GiveWeapon_NoDeploy" )
+			Warning( "GiveMainWeapon Error GiveWeapon_NoDeploy" ) //mkos: Is this meant to be logged explicitely in beta test?
 		}
 	}
 
@@ -5024,7 +5024,7 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 
 	// DO NOT PROCEED UNTIL THE SYNC MELEE IS DONE
 
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 	{
 		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 		if( IsValid( group ) )

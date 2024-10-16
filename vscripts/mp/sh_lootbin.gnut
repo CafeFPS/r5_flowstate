@@ -139,7 +139,7 @@ void function EntitiesDidLoad()
 
 void function InitLootBinFromMap( entity lootbin )
 {
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 	{
 		FS_Scenarios_SaveLootbinData( lootbin )
 		return

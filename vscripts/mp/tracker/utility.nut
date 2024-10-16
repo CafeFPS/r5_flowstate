@@ -18,8 +18,6 @@ global function ParseWeapon
 global function IsWeaponValid
 global function ClientCommand_mkos_return_data
 global function ClientCommand_mkos_admin
-global function ClientCommand_ParseSay
-global function Commands
 global function INIT_CC_MapNames
 global function INIT_CC_GameTypes
 global function INIT_CC_playeradmins
@@ -893,7 +891,7 @@ struct {
 						{				
 							string nputmsg = "Current Stats:"
 							
-							string info = Tracker_PrintAllPlayerMetrics( true )
+							string info = Tracker_BuildAllPlayerMetrics( true )
 							
 							if( (nputmsg.len() + info.len()) > 599 )
 							{
@@ -1558,6 +1556,10 @@ struct {
 					LocalMsg( p, "#FS_MUTED", "", eMsgUI.DEFAULT, 5, "", reason )
 				}
 					
+				#if TRACKER
+					Tracker_SetForceUpdatePlayerData() //does nothing if already set.
+				#endif 
+				
 				Chat_ToggleMuteForAll( p, true, true, args, -1, param )		
 				
 				return true
@@ -1583,11 +1585,16 @@ struct {
 					LocalMsg( p, "#FS_UNMUTED" )
 				}
 					
+				#if TRACKER
+					Tracker_SetForceUpdatePlayerData() //does nothing if already set.
+				#endif 
+				
 				Chat_ToggleMuteForAll( p, false )
 				
 				return true
 				
 			case "is_muted":
+			case "is_gagged":
 				
 				entity p = GetPlayer( param )				
 				if( !IsValid( p ) )
@@ -1605,6 +1612,7 @@ struct {
 				return true 
 				
 			case "mute_reason":
+			case "gag_reason":
 				
 				entity p = GetPlayer( param )
 				string uidLookup
@@ -1698,153 +1706,6 @@ struct {
 		
 		return true;
 	}
-
-
-//chat commands
-void function ClientCommand_ParseSay( entity player, array<string> args )
-{		
-    if ( !IsValid(player) || args.len() == 0 )
-		return
-	
-	Commands( player, args )
-		return		
-}
-
-void function Commands( entity player, array<string> args )
-{	
-	#if DEVELOPER
-		//print_string_array( args )
-	#endif 
-	
-	switch( args[0].tolower() )
-	{	
-		case "!wait":
-		case "/wait":
-		case "\\wait":
-			args.remove(0)
-			ClientCommand_mkos_IBMM_wait( player, args )
-			break
-			
-		case "!rest":
-		case "/rest":
-		case "\\rest":
-			ClientCommand_Maki_SoloModeRest( player, [] )
-			break
-			
-		case "!info":
-		case "/info":
-		case "\\info":
-			args[0] = "player";
-			if(args.len() < 2)
-			{
-				args.append(player.p.name)
-			}
-			ClientCommand_mkos_return_data( player, args )
-			break 
-			
-		case "!id":
-		case "/id":
-		case "\\id":
-			ClientCommand_mkos_return_data( player, ["id"] )
-			break
-			
-		case "!aa":
-		case "/aa":
-		case "\\aa":
-			ClientCommand_mkos_return_data( player, ["aa"] )
-			break
-			
-		case "!inputs":
-		case "/inputs":
-		case "\\inputs":
-			ClientCommand_mkos_return_data( player, ["inputs"] )
-			break
-		
-		case "!chal":
-		case "!chall":
-		case "/chall":
-		case "\\chall":
-		case "!challenge":
-		case "/challenge":
-		case "\\challenge":
-		case "/chal":
-		case "\\chal":
-			args[0] = "chal";
-			ClientCommand_mkos_challenge( player, args )
-			break
-		
-		case "!accept":
-		case "/accept":
-		case "\\accept":
-			args[0] = "accept";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!list":
-		case "/list":
-		case "\\list":
-			args[0] = "list";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!end":
-		case "/end":
-		case "\\end":
-			args[0] = "end";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!remove":
-		case "/remove":
-		case "\\remove":
-			args[0] = "remove";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!clear":
-		case "/clear":
-		case "\\clear":
-			args[0] = "clear";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!revoke":
-		case "/revoke":
-		case "\\revoke":
-			args[0] = "revoke";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!cycle":
-		case "/cycle":
-		case "\\cycle":
-			args[0] = "cycle";
-			ClientCommand_mkos_challenge( player, args )
-			break
-		
-		case "!swap":
-		case "/swap":
-		case "\\swap":
-			args[0] = "swap";		
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!legend":
-		case "/legend":
-		case "\\legend":
-			args[0] = "legend";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-		case "!outlist":
-		case "/outlist":
-		case "\\outlist":
-			args[0] = "outlist";
-			ClientCommand_mkos_challenge( player, args )
-			break
-			
-	}
-}
 
 void function RunUpdateMsg()
 {	
@@ -2458,14 +2319,10 @@ string function ParseWeapon( string weaponString )
 	array<string> mods = split( trim( weaponString ), " " )
 	
 	if( mods.len() < 1 )
-	{
 		return ""
-	}
 	
 	if( !IsWeaponValid( mods[0] ) || !(SURVIVAL_Loot_IsRefValid( mods[0] )) )
-	{
 		return ""
-	}
 	
 	bool removed = false
 	
@@ -2481,16 +2338,12 @@ string function ParseWeapon( string weaponString )
 	}
 	
 	if ( removed )
-	{
 		sqprint( PrintSupportedAttachpointsForWeapon( mods[0] ) )
-	}
 	
 	string return_string = ""
 	
 	foreach( mod in mods )
-	{
 		return_string += mod + " "
-	}
 	
 	return trim( return_string )
 }

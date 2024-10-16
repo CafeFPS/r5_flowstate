@@ -852,7 +852,8 @@ void function AudioMonitor( entity player, int groupId, int audioId )
 	(
 		void function() : ( player )
 		{
-			IsPlayingAudioForPlayer( player, false )
+			if( IsValid( player ) )
+				IsPlayingAudioForPlayer( player, false )
 		}
 	)
 	

@@ -28,7 +28,7 @@ struct
 	array<StatData> statDataStack
 	table< entity, table<string, bool> > lockTable
 	array< string > preloadStats
-	entity infoSignal
+	table infoSignal
 	
 } file 
 
@@ -52,9 +52,7 @@ void function Tracker_ClientStats_Init()
 	RegisterSignal( "StatDataReceived" )
 	RegisterSignal( "RequestStatFailed" )
 	RegisterSignal( "PreloadStat" )
-	
-	file.infoSignal = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, 50 )
-	
+
 	thread ClientStats_Think()
 	
 	#if DEBUG_CL_STATS

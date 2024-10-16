@@ -607,7 +607,7 @@ void function SendEntityKilledEvent( entity ent, var damageInfo )
 
 	foreach ( player in players )
 	{
-		if( is3v3Mode() && ent.IsPlayer() && !ent.DoesShareRealms( player ) )
+		if( isScenariosMode() && ent.IsPlayer() && !ent.DoesShareRealms( player ) )
 			continue
 
 		Remote_CallFunction_NonReplay( player, "ServerCallback_OnEntityKilled", attacker, ent, scriptDamageType, damageSourceId )

@@ -688,7 +688,7 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 				Assert( player in file.playerToDecoysActiveTable )
 				--file.playerToDecoysActiveTable[ player ]
 				
-				if( Flowstate_IsFS1v1() && IsValid( decoy ) || is3v3Mode() && IsValid( decoy ) )
+				if( Flowstate_IsFS1v1() && IsValid( decoy ) || isScenariosMode() && IsValid( decoy ) )
 				{
 					decoy.Destroy() //could use fancy cleanup function as well for cleaner effect
 				}

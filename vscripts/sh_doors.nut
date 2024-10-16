@@ -260,7 +260,7 @@ bool function DoorsAreEnabled()
 #if SERVER
 void function OnDoorSpawned( entity door )
 {
-	if( is3v3Mode() && door.GetTargetName() != "flowstate_realms_doors_by_cafe" )
+	if( isScenariosMode() && door.GetTargetName() != "flowstate_realms_doors_by_cafe" )
 	{
 		FS_Scenarios_SaveBigDoorData( door )
 		return
@@ -1010,7 +1010,7 @@ vector function GetBlockableDoorDesiredAngles( entity door, int goalNotch )
 #if SERVER
 void function OnCodeDoorSpawned( entity door )
 {
-	if( is3v3Mode() && door.GetScriptName() != "flowstate_door_realms" )
+	if( isScenariosMode() && door.GetScriptName() != "flowstate_door_realms" )
 	{
 		AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 		return

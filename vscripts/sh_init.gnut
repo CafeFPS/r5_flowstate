@@ -373,7 +373,7 @@ void function Server_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
 	ObjectiveResourceSystem_ServerInit()
-	ChatUtility_Init()
+	Chat_Init()
 
 	LiveAPI_Init()
 	LootHelper_Init()

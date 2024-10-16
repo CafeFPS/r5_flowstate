@@ -1097,7 +1097,7 @@ void function FirstPersonSequence( FirstPersonSequenceStruct sequence, entity pl
 		SetPlayerAnimViewEntity( player, firstPersonProxy )
 		firstPersonProxy.SetNextThinkNow()
 		SetForceDrawWhileParented( firstPersonProxy, true )
-		if( is3v3Mode() )
+		if( isScenariosMode() )
 			firstPersonProxy.Anim_SetPlaybackRate( 2.0 )
 	}
 	else if ( sequence.thirdPersonCameraAttachments.len() > 0 )

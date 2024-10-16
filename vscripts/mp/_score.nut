@@ -96,7 +96,7 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 			return
 	}
 	
-	if( is3v3Mode() || Gamemode() == eGamemodes.fs_snd )
+	if( isScenariosMode() || Gamemode() == eGamemodes.fs_snd )
 		return
 
 	if ( downed && GetGameState() >= eGameState.Playing)

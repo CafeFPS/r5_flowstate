@@ -6,7 +6,6 @@ struct {
 
 	bool RegisterCoreStats 	= true
 	bool bStatsIs1v1Type 	= false
-	bool bOptInGlobalMute 	= true
 
 } file
 
@@ -21,8 +20,6 @@ void function Tracker_Init()
 	
 	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
 	SetRegisterCoreStats( bRegisterCoreStats )
-	
-	file.bOptInGlobalMute = GetCurrentPlaylistVarBool( "opt_in_global_mute", true )
 }
 
 //////////////////////////////////////////////////
@@ -76,7 +73,7 @@ void function Script_RegisterAllStats()
 	Tracker_RegisterStat( "isDev" )
 	
 	//Global mute ( helper controlled set via web panel/mod api only & actions logged )
-	if( file.bOptInGlobalMute )
+	if( Chat_GlobalMuteEnabled() )
 		Tracker_RegisterStat( "globally_muted", Chat_CheckGlobalMute )
 
 	//Core stats - can disable for gamemode purposes.
@@ -141,14 +138,25 @@ void function Callback_CoreStatInit( entity player )
 	player.p.season_gamesplayed = player_season_gamesplayed
 	player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
 
-	int player_season_score = GetPlayerStatInt( uid, "score" )	
+	int player_season_score = GetPlayerStatInt( uid, "score" )
 	player.p.season_score = player_season_score
 	player.SetPlayerNetInt( "SeasonScore", player_season_score )
 }
 
 void function Callback_HandleScenariosStats( entity player )
 {
-	//do something, set netints etc
+	string uid = player.p.UID
+		
+	const string strSlice = "scenarios_"
+	foreach( string statKey, var statValue in Stats__GetPlayerStatsTable( uid ) ) //Todo: register by script name group
+	{
+		#if DEVELOPER
+			printw( "found statKey =", statKey, "statValue =", statValue )
+		#endif 
+		
+		if( statKey.find( strSlice ) != -1 )
+			ScenariosPersistence_SetUpOnlineData( player, statKey, statValue )
+	}
 }
 
 var function Tracker_ReturnChampion( string uid )
@@ -194,7 +202,7 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	// Tracker_SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
 	////////////////////////////////////////////////////////////////////
 	
-	AddCallback_PlayerData( "muted_reason" )
+	Chat_RegisterPlayerData()
 	
 	if( file.bStatsIs1v1Type )
 		Gamemode1v1_PlayerDataCallbacks()

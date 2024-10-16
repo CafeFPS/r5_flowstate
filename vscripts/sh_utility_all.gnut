@@ -2617,11 +2617,11 @@ FXHandle function CleanupFXHandle( FXHandle fxHandle, bool doRemoveAllParticlesN
 }
 #endif
 
-
 //more mkos func
-bool function empty( string s )
+const string E = ""
+bool function empty( string a )
 {
-	return s == ""
+	return a == E
 }
 
 #if DEVELOPER 
@@ -2658,16 +2658,13 @@ bool function empty( string s )
 
 array<string> function StringToArray( string str, int arrayStringMaxLength = 128 ) 
 {		
-	int item_index = 0
-	int length_check
 	string t_str = strip( str )
+	int length_check
 	
     if ( t_str == "" )
-	{
-        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
-	}
+        throw "Cannot convert empty string to array in " + FUNC_NAME( 1 ) + "()"
 	
-	bool convertBySpaceOrComma = t_str.find( " " ) && !t_str.find( "," ) ? true : false
+	bool convertBySpaceOrComma = ( t_str.find( " " ) != -1 ) && ( t_str.find( "," ) == -1 ) ? true : false
 	string splitStr = convertBySpaceOrComma ? " " : ","
 	
     array<string> arr = split( str, splitStr )
@@ -2680,30 +2677,24 @@ array<string> function StringToArray( string str, int arrayStringMaxLength = 128
 	}
 	*/
 	
+	int item_index = 0
     foreach ( item in arr ) 
 	{	
 		item_index++
+		
 		item = strip( item )
 		length_check = item.len()
 	
         if ( item == "" ) 
-		{   
             Warning( "Empty item in the list for item # " + ( item_index ) + " removed. " )			
-        } 
 		else if ( length_check >= arrayStringMaxLength )
-		{
 			Warning( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + arrayStringMaxLength + " chars" )	
-		} 
-		else
-		{		
+		else	
 			valid.append( item )		
-		}
     }
 	
 	if ( valid.len() <= 0 ) 
-	{
         throw "Array empty after conversion";
-    }
 
     return valid
 }
@@ -2711,11 +2702,9 @@ array<string> function StringToArray( string str, int arrayStringMaxLength = 128
 string function truncate( string str, int limit ) 
 {
     if ( str.len() > limit ) 
-	{
         return str.slice( 0, limit )
-    }
     
-    return str;
+    return str
 }
 
 bool function IsSpectator( entity player )

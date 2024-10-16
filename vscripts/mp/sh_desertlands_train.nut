@@ -106,6 +106,8 @@ const float TIME_BEFORE_FULL_STOP_TO_PLAY_DECEL_SOUND = 15.0
 const float TIME_BEFORE_FULL_STOP_TO_PLAY_STOP_SOUND = 3.0
 
 const float STATION_LOOT_MOVETO_DURATION = 7.0
+
+const bool PRINT_TRAIN_DEBUG = false
 #endif // SERVER
 
 
@@ -366,7 +368,9 @@ void function DesertlandsTrain_Init()
 
 	WORKAROUND_DESERTLANDS_TRAIN = file.train
 
-	printt( "TRAIN INITIALIZED" )
+	#if PRINT_TRAIN_DEBUG
+		printt( "TRAIN INITIALIZED" )
+	#endif
 
 	if( Gamemode() != eGamemodes.WINTEREXPRESS )
 		thread DesertlandsTrain_InitMovement()
@@ -408,7 +412,10 @@ void function SetupTrain()
 				continue
 
 			string scriptName = linkEnt.GetScriptName()
-			printt( "TRAIN Linked ENt has script name: " + scriptName )
+			
+			#if PRINT_TRAIN_DEBUG
+				printt( "TRAIN Linked ENt has script name: " + scriptName )
+			#endif
 
 			if ( scriptName == "train_particle_main_spotlight" )
 			{
@@ -567,7 +574,10 @@ void function SetupTracks()
 
 				if ( !IsValid( data.binModel ) )
 				{
-					Warning( "A train station loot bin was deleted as part of loot initialization at: " + data.mover.GetOrigin() )
+					#if PRINT_TRAIN_DEBUG 
+						Warning( "A train station loot bin was deleted as part of loot initialization at: " + data.mover.GetOrigin() )
+					#endif
+					
 					if ( IsValid( data.mover ) )
 						data.mover.Destroy()
 
@@ -606,8 +616,10 @@ void functionref( entity panel, entity player, int useInputFlags ) function Crea
 
 void function OnTrainStopPanelActivate( entity panel, entity player, int useInputFlags )
 {
-	printt( "Attempting to emergency brake. Train current state is: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
-
+	#if PRINT_TRAIN_DEBUG
+		printt( "Attempting to emergency brake. Train current state is: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
+	#endif
+	
 	// TODO: defensive fix for R5DEV-109051 with adding Train_IsMovingToTrainNode()
 	if ( file.trainCurrentState == eTrainStates.ABLE_TO_MANUALLY_DECELERATE && file.train.Train_IsMovingToTrainNode() )
 		TrainInitiateEmergencyStop()
@@ -671,7 +683,7 @@ void function ResumeTrainAfterEmergencyStop()
 #if SERVER
 void function SetTrainState( int desiredTrainState )
 {
-	#if DEVELOPER
+	#if DEVELOPER && PRINT_TRAIN_DEBUG
 		printt( "Train switching state to: %s", GetNameForEnum( eTrainStates, desiredTrainState ) )
 	#endif
 
@@ -1023,10 +1035,13 @@ void function TrainWait_Stopped()
 	{
 		entity startNode = file.currentPathNodes[0]
 		entity endNode   = file.currentPathNodes.top()
-		printt( "Train path start node pos: %f, %f, %f", startNode.GetOrigin().x, startNode.GetOrigin().y, startNode.GetOrigin().z )
-		printt( "Train path end node pos: %f, %f, %f", endNode.GetOrigin().x, endNode.GetOrigin().y, endNode.GetOrigin().z )
-		printt( "Train current state: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
-		Assert( false, "Train stopped for unknown reason. It should only stop at stations or because of the emergency brake." )
+		
+		#if PRINT_TRAIN_DEBUG
+			printt( "Train path start node pos: %f, %f, %f", startNode.GetOrigin().x, startNode.GetOrigin().y, startNode.GetOrigin().z )
+			printt( "Train path end node pos: %f, %f, %f", endNode.GetOrigin().x, endNode.GetOrigin().y, endNode.GetOrigin().z )
+			printt( "Train current state: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
+			mAssert( false, "Train stopped for unknown reason. It should only stop at stations or because of the emergency brake." )
+		#endif
 	}
 }
 

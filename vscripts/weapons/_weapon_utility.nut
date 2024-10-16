@@ -2619,7 +2619,7 @@ void function PROTO_InitTrackedProjectile( entity projectile )
 
 void function AddToTrackedEnts( entity player, entity ent )
 {
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 	{
 		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 	
 		if( IsValid( group ) )

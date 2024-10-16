@@ -302,7 +302,7 @@ int function GetCurrentRound()
 
 bool function bIs1v1Mode()
 {
-	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
+	if ( !flowstateSettings.flowstate_1v1mode && !isScenariosMode() )
 		return false
 
 	// Commenting this for now as it's returning false for scenarios //that's probably because the map wasn't enabled in playlists? ~mkos
@@ -3341,7 +3341,7 @@ void function SimpleChampionUI()
 	ResetAllPlayerStats()
 	ResetMapVotes()
 	file.winnerTeam = -1
-	if( !is3v3Mode() )
+	if( !isScenariosMode() )
 		file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
@@ -3425,7 +3425,7 @@ void function SimpleChampionUI()
 
 	g_fCurrentRoundEndTime = Time() + FlowState_RoundTime() //set global for server
 
-	if( is3v3Mode() && ( !flowstateSettings.show_short_champion_screen || !GetChampion() && flowstateSettings.show_short_champion_screen ) )
+	if( isScenariosMode() && ( !flowstateSettings.show_short_champion_screen || !GetChampion() && flowstateSettings.show_short_champion_screen ) )
 		FS_Scenarios_SetStopMatchmaking( false )
 
 	if( flowstateSettings.EndlessFFAorTDM )
@@ -3620,7 +3620,7 @@ void function SimpleChampionUI()
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	SetTdmStateToNextRound()
 	
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 	{
 		FS_DM.scoreboardShowing = true
 		FS_Scenarios_ForceAllRoundsToFinish()
@@ -3658,7 +3658,7 @@ void function SimpleChampionUI()
 		player.HolsterWeapon()
 		player.Server_TurnOffhandWeaponsDisabledOn()
 		
-		if( is3v3Mode() )
+		if( isScenariosMode() )
 		{
 			LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
 		}
@@ -3896,7 +3896,7 @@ void function SimpleChampionUI()
 	if( IsValid( file.ringBoundary ) )
 		file.ringBoundary.Destroy()
 	
-	if( !is3v3Mode() )
+	if( !isScenariosMode() )
 		SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 
 	if( is1v1EnabledAndAllowed() )
@@ -7156,7 +7156,7 @@ void function WaitForChampionToFinish()
 	while( Time() < GetGlobalNetTime( "championDisplayEndTime" ) )
 		WaitFrame()
 	
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 		FS_Scenarios_SetStopMatchmaking( false )
 }
 

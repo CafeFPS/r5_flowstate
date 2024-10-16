@@ -5,12 +5,16 @@ untyped																					//~mkos
 // INTERNAL STATS FUNCTIONS //
 //////////////////////////////
 
-global function Stats__AddPlayerStatsTable
-global function Stats__GenerateOutBoundJsonData
 global function Stats__RegisterStatOutboundData
+global function Stats__GenerateOutBoundJsonData
+
+global function Stats__AddPlayerStatsTable
+global function Stats__GetPlayerStatsTable
+global function Stats__PlayerExists
+global function Stats__RawGetStat
+
 global function Stats__SetStatKeys
 global function Stats__GetStatKeys
-global function Stats__RawGetStat
 
 global function GetPlayerStatInt
 global function GetPlayerStatString
@@ -22,14 +26,41 @@ global function SetPlayerStatString
 global function SetPlayerStatBool
 global function SetPlayerStatFloat
 
+global typedef StatsTable table< string, var >
+
 struct
 {
-	table< string, table<string, var> > allStatsTables
-	array<string> statKeys
+	table< string, StatsTable > allStatsTables
+	array< string > statKeys
 	
-	table< string, var functionref( string UID )> registeredStatOutboundValues
+	table< string, var functionref( string UID ) > registeredStatOutboundValues
+	StatsTable emptyStats
 
 } file
+
+StatsTable function Stats__GetPlayerStatsTable( string uid )
+{	
+	if( !Stats__PlayerExists( uid ) ) //Tracker_IsStatsReadyFor( entity player )
+	{
+		#if DEVELOPER
+			mAssert( false, "Attempted to use " + FUNC_NAME() + "() on a player who's stats were not yet available" )
+		#endif
+	
+		return EmptyStats()
+	}
+	
+	return file.allStatsTables[ uid ]
+}
+
+StatsTable function EmptyStats()
+{
+	return file.emptyStats
+}
+
+bool function Stats__PlayerExists( string uid )
+{
+	return ( uid in file.allStatsTables )
+}
 
 void function Stats__SetStatKeys( array<string> keys )
 {
@@ -209,7 +240,7 @@ void function Stats__RegisterStatOutboundData( string statname, var functionref(
 {
 	if( ( statname in file.registeredStatOutboundValues ) )
 	{
-		sqerror("Tried to add func " + string( func ) + "() as an outbound data func for [" + statname + "] but func " + string( file.registeredStatOutboundValues[statname] ) + "() is already defined to handle outbound data for stat.")
+		sqerror( "Tried to add func " + string( func ) + "() as an outbound data func for [" + statname + "] but func " + string( file.registeredStatOutboundValues[statname] ) + "() is already defined to handle outbound data for stat." )
 		return
 	}
 	

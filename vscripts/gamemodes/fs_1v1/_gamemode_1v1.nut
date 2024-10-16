@@ -53,7 +53,7 @@ global function SetIsUsedBoolForRealmSlot
 global function FS_SetRealmForPlayer
 global function FS_1v1_GetPlayersWaiting
 global function FS_1v1_GetPlayersResting
-global function is3v3Mode
+global function isScenariosMode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
 global function ReloadTactical
@@ -215,7 +215,7 @@ struct
 	bool bAllowAbilities = false
 	bool bChalServerMsg = false
 	bool bNoCustomWeapons = false
-	bool is3v3Mode
+	bool isScenariosMode
 	float roundTime
 	bool bAllowWeaponsMenu
 	array<string> hostSetAttachments
@@ -229,7 +229,7 @@ struct
 global bool mGroupMutexLock
 global array<LocPair> g_randomWaitingSpawns
 
-//local script vars 
+//local script vars 	//Todo:  Move non const script vars to file struct.
 array<string> Weapons = []
 array<string> WeaponsSecondary = []
 vector Gamemode1v1_NotificationPanel_Coordinates
@@ -427,9 +427,9 @@ table<int,bool> function FS_1v1_GetPlayersResting()
 	return file.soloPlayersResting
 }
 
-bool function is3v3Mode()
+bool function isScenariosMode()
 {
-	return settings.is3v3Mode
+	return settings.isScenariosMode
 }
 
 void function Gamemode1v1_SetWaitingRoomRadius( float radius )
@@ -551,7 +551,7 @@ void function INIT_PlaylistSettings()
 	settings.ibmm_wait_limit 						= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 						= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
 	settings.enableChallenges						= GetCurrentPlaylistVarBool( "enable_challenges", true )
-	settings.is3v3Mode								= Playlist() == ePlaylists.fs_scenarios
+	settings.isScenariosMode						= Playlist() == ePlaylists.fs_scenarios
 	settings.bNoCustomWeapons						= GetCurrentPlaylistVarBool( "custom_weapons_challenge_only", false )
 	settings.roundTime								= float ( FlowState_RoundTime() )
 	settings.bAllowWeaponsMenu						= !FlowState_AdminTgive()
@@ -1084,7 +1084,7 @@ void function mkos_Force_Rest( entity player )
 		return
 	} 
 	
-	if( is3v3Mode() )
+	if( isScenariosMode() )
 	{
 		FS_Scenarios_ForceRest( player )
 	}
@@ -2512,7 +2512,7 @@ void function soloModePlayerToWaitingList( entity player )
 		
 	Gamemode1v1_SetPlayerGamestate( player, e1v1State.WAITING )
 	
-	if( settings.is3v3Mode )
+	if( settings.isScenariosMode )
 	{
 		Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false, true )
 
@@ -2586,7 +2586,7 @@ void function soloModePlayerToWaitingList( entity player )
 	playerStruct.player = player
 	playerStruct.handle = player.p.handle
 	
-	if( !settings.is3v3Mode )
+	if( !settings.isScenariosMode )
 		playerStruct.waitingTime = Time() + 2
 		
 	
@@ -2612,11 +2612,11 @@ void function soloModePlayerToWaitingList( entity player )
 	//set realms for resting player
 	FS_ClearRealmsAndAddPlayerToAllRealms( player )
 	
-	if( !is3v3Mode() )
+	if( !isScenariosMode() )
 		Remote_CallFunction_ByRef( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
-	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode )
+	if ( player.p.handle in file.playerToGroupMap && !settings.isScenariosMode )
 	{
 		soloGroupStruct group = returnSoloGroupOfPlayer( player )
 		entity opponent = returnOpponentOfPlayer( player )
@@ -2808,7 +2808,7 @@ void function soloModefixDelayStart( entity player, bool bNextRoundNow = false )
 		}()
 	)
 	
-	if( settings.is3v3Mode || bNextRoundNow )
+	if( settings.isScenariosMode || bNextRoundNow )
 		return
 	
 	if( GetGameState() >= eGameState.Playing ){ wait 7 } else { wait 12 }	
@@ -3362,11 +3362,14 @@ void function Gamemode1v1_Init( int eMap )
 	INIT_PregameCallbacks()
 	INIT_1v1_sbmm()
 	
-	AddClientCommandCallback( "start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
-	AddClientCommandCallback( "wait", ClientCommand_mkos_IBMM_wait )
-	AddClientCommandCallback( "lock1v1", ClientCommand_mkos_lock1v1_setting )
-	AddClientCommandCallback( "enable_input_banner", ClientCommand_enable_input_banner )
-	AddClientCommandCallback( "challenge", ClientCommand_mkos_challenge )
+	if( !isScenariosMode() ) //intertwined D:
+	{
+		AddClientCommandCallback( "start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
+		AddClientCommandCallback( "wait", ClientCommand_mkos_IBMM_wait )
+		AddClientCommandCallback( "lock1v1", ClientCommand_mkos_lock1v1_setting )
+		AddClientCommandCallback( "enable_input_banner", ClientCommand_enable_input_banner )
+		AddClientCommandCallback( "challenge", ClientCommand_mkos_challenge )
+	}
 	
 	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		Flowstate_LgDuels1v1_Init()
@@ -3380,7 +3383,7 @@ void function Gamemode1v1_Init( int eMap )
 	else 
 		INIT_WeaponsMenu_Disabled()
 
-	if( settings.is3v3Mode )
+	if( settings.isScenariosMode )
 		Init_FS_Scenarios()
 	else
 		AddSpawnCallback( "prop_survival", Gamemode1v1_DissolveDropable )
@@ -3499,17 +3502,17 @@ void function Gamemode1v1_Init( int eMap )
 				Message( player, "Map Config Error", "No valid spawns defined." )
 			
 			#if DEVELOPER 
-				mAssert( false, "No valid spawns defined; Release behavior: Tracker_GotoNextMap" )
+				mAssert( false, "No valid spawns defined; Release behavior: Tracker_GotoNextMap.  Current Map: " + GetMapName()  )
 				return
 			#endif
-			
+
 			Tracker_GotoNextMap()
 		}
 	}
 	
 	g_randomWaitingSpawns = SpawnSystem_GenerateRandomSpawns( getWaitingRoomLocation().origin, getWaitingRoomLocation().angles, file.waitingRoomRadius, .22, 60 ) //todo(dw): scenarios origin waiting area offset is not centered for polished effect
 
-	if( settings.is3v3Mode ) //modular mode
+	if( settings.isScenariosMode ) //modular mode
 	{
 		for ( int i = 0; i < allSoloLocations.len(); i = i + GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 ) ) // read SPAWNS_MAX_TEAMS from spawns?? Cafe Who cares.
 		{
@@ -3558,11 +3561,11 @@ void function Gamemode1v1_Init( int eMap )
 		realmSlots[ i ] = false
 	}
 
-	if( settings.is3v3Mode )
+	if( settings.isScenariosMode )
 	{
 		forbiddenZoneInit( GetMapName() )
 		FS_Scenarios_SetupPanels()
-		thread FS_Scenarios_Main_Thread( )
+		thread FS_Scenarios_Main_Thread()
 		return
 	}
 	
@@ -3940,7 +3943,7 @@ bool function ValidateSpawns( array<SpawnData> allSoloLocations )
 		allSoloLocations.resize(0)
 		return false
 	}
-	else if( settings.is3v3Mode ) //(scenarios)
+	else if( settings.isScenariosMode ) //(scenarios)
 	{
 		int modeTeamCount = FS_Scenarios_GetScenariosTeamCount()
 		if( ( allSoloLocations.len() % modeTeamCount ) != 0 ) 
@@ -5194,7 +5197,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 
 	//wait 0.5
 	
-	if( settings.is3v3Mode || LEGEND_GUID_ENABLED_ULTIMATES.contains( charID ) ) 
+	if( settings.isScenariosMode || LEGEND_GUID_ENABLED_ULTIMATES.contains( charID ) ) 
 	{
 		ItemFlavor ultiamteAbility = CharacterClass_GetUltimateAbility( character )
 		player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultiamteAbility ), OFFHAND_ULTIMATE, [] )
@@ -5730,7 +5733,7 @@ void function Gamemode1v1_OnPlayerDied( entity victim, entity attacker, var dama
 		return
 	}
 	
-	if( !is3v3Mode() )
+	if( !isScenariosMode() )
 		HandleGroupIsFinished( victim ) //, damageInfo )
 
 	ClearInvincible( victim )

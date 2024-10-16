@@ -1028,6 +1028,7 @@ void function RemoteFunctions_Init_Begin()
 	// Both of these efficiency methods will reduce slot usage and buffer consumption
 	
 	RegisterServerVar( "tracker_enabled", false )
+	RegisterServerVar( "batch_fetch_complete", false )
 	Remote_RegisterUIFunction( "UI_Callback_MOTD" )
 
 	if ( IsLobby() )

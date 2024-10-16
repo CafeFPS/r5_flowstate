@@ -147,6 +147,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("FS_CloseNewMsgBox")
 	RegisterSignal("FS_1v1Banner")
 	RegisterSignal("StopCurrentEnemyThread")
+	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
 	
@@ -167,6 +168,8 @@ void function Cl_CustomTDM_Init()
 		break
 
 	}
+	
+	thread DisableChat_UntilRemoteIsReady_Thread()
 }
 
 void function Gamemode1v1_ForceLegendSelector_Deprecated() //TODO: Client-based open
@@ -207,6 +210,46 @@ void function mute( bool set )
 bool function isMuted()
 {
 	return file.muted
+}
+
+const MAX_WAIT_FOR_BATCH = 20
+const MAX_WAIT_FOR_CONNECT = 5
+void function DisableChat_UntilRemoteIsReady_Thread()
+{
+	WaitClientConnection()
+	
+	if( !GetServerVar( "tracker_enabled" ) )
+		return
+		
+	HideChat()
+
+	OnThreadEnd
+	(
+		void function()
+		{
+			ShowChat()
+		}
+	)
+	
+	entity player = GetLocalClientPlayer()
+	float startTime = Time()
+	
+	while( !GetServerVar( "batch_fetch_complete" ) )
+	{	
+		if( !IsValid( player ) )
+			return 
+		
+		if( Time() > startTime + MAX_WAIT_FOR_BATCH )
+			break
+		
+		WaitFrames( 5 )
+	}
+		
+}
+
+void function WaitClientConnection()
+{
+	FlagWait( "ClientInitComplete" )
 }
 
 void function FS_Scenarios_OnClientScriptInit( entity player ) 

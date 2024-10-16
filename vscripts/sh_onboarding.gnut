@@ -505,7 +505,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tactical ), OFFHAND_TACTICAL, [] )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimate ), OFFHAND_ULTIMATE, [] )
 
-	if( !is1v1EnabledAndAllowed() || is3v3Mode() ) // Todo: unweave gamemode logic ()
+	if( !is1v1EnabledAndAllowed() || isScenariosMode() ) // Todo: unweave gamemode logic ()
 	{
 		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )

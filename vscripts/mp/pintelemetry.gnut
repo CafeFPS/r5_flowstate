@@ -92,7 +92,8 @@ global function ClientCommand_RequestStat
 	//utility 
 	global function Tracker_IsRestrictedServer
 	global function Tracker_SetRestrictedServer
-	global function Tracker_PrintAllPlayerMetrics
+	global function Tracker_BuildAllPlayerMetrics
+	
 	#if !HAS_TRACKER_DLL
 		global function sqprint
 		global function sqerror
@@ -149,7 +150,7 @@ global function Tracker_IsBatchStatsLoaded
 
 global function Tracker_GetCurrentEventByPlayerHandle_expensive
 global function Tracker_GetCurrentEventForAttackerOnVictim
-global function Tracker_PrintAllPlayerMetrics
+global function Tracker_BuildAllPlayerMetrics
 global function Tracker_GetPlayerMetricsArray
 global function __TrackerStatsHook_Damage
 global function Tracker_RegisterStat
@@ -200,6 +201,7 @@ global function UpdateStartInRestSetting //move
 
 global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
+global function Tracker_SetForceUpdatePlayerData
 
 global function NULL_PDATA
 global function Gamemode1v1_PlayerDataCallbacks //TODO: this probably shouldn't be here, but a bit of logic needs sorted into it's gamemode file (will do soonTM)
@@ -371,7 +373,6 @@ struct
 	bool LogOn = false
 	bool LogE = true
 	bool scriptLogthreadRunning = false
-	bool bBatchFetchComplete = false
 	bool restricted_server
 	bool bSyncedGlobal
 	bool bSafeLog = true
@@ -382,6 +383,9 @@ struct
 	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
 	bool superglideDetect = false
 	bool bBatchFetchInit = false
+	bool bForceUpdatePlayerData = false
+	bool bStatsShipped = false 
+	bool stats_discord_webhook_matches_enabled
 	
 	bool sg_counter_msg
 	float FS_MaxHealth
@@ -453,7 +457,7 @@ void function CodeCallback_BatchStatsLoaded()
 
 bool function Tracker_IsBatchStatsLoaded()
 {
-	return file.bBatchFetchComplete
+	return expect bool( GetServerVar( "batch_fetch_complete" ) )
 }
 
 void function AddCallback_OnBatchStatsLoaded( void functionref() callbackFunc )
@@ -506,14 +510,14 @@ void function DEV_ManualLogKill( bool ship )
 {
 	if( ship )
 	{
-		LogEvent__internal( Tracker_PrintAllPlayerMetrics(true), file.LogE )
-		UpdateLiveStats( Tracker_PrintAllPlayerMetrics(true) )
+		LogEvent__internal( Tracker_BuildAllPlayerMetrics( true ), file.LogE )
+		__UpdateMetricsNow()
 	}
 	
 	#if LOG_ERRORS
 		DEV_WriteAllTrackerErrors()
 		#if DEVELOPER 
-			Tracker_PrintAllPlayerMetrics(false) //console
+			Tracker_BuildAllPlayerMetrics(false) //console
 		#endif 
 	#endif 
 	
@@ -695,7 +699,7 @@ bool function Tracker_GetBoolSetting( string setting, bool none = false )
 
 void function Tracker_RegisterAllSettings()
 {
-	mAssert( !file.bBatchFetchComplete, "Called Tracker_RegisterAllSettings() but query has already been made." )
+	mAssert( !GetServerVar( "batch_fetch_complete" ), "Called Tracker_RegisterAllSettings() but query has already been made." )
 	file._registerAllSettings = true
 }
 
@@ -1030,7 +1034,7 @@ void function Tracker_QueryInit()
 
 void function INIT_BATCH_FETCH() 
 {	
-	file.bBatchFetchComplete = false
+	SetServerVar( "batch_fetch_complete", false )
 	
 	array<string> oids
 	string oid_list = "";
@@ -1093,7 +1097,7 @@ void function INIT_BATCH_FETCH()
 		CodeCallback_BatchStatsLoaded() // Need to call manually since native wont. Todo: Send empty list, let native handle.
 	}
 	
-	file.bBatchFetchComplete = true	
+	SetServerVar( "batch_fetch_complete", true )
 }
 
 // if no callback is desired, use null or omit the callback func respectively
@@ -1212,7 +1216,7 @@ void function __LoadPlayerSyncData( entity player )
 
 void function __SetPlayerSyncData( entity player )
 {	
-	if( file.bBatchFetchComplete == false )
+	if( !GetServerVar( "batch_fetch_complete" ) )
 	{
 		#if DEVELOPER
 			printt( player, " = Waiting for batch fetch to complete" )
@@ -1365,10 +1369,11 @@ PlayerMetrics function Tracker_StatsMetricsByUID( string uid )
 	return Tracker_GetPlayerMetricsArray()[ GetPlayerMetricsIndexByUID( uid ) ]
 }
 
-void function DestroyStats()
+void function __DestroyStats()
 {	
 	file.bCheckShip = true
 	file.bShouldShip = false
+	file.bStatsShipped = false
 	
 	allDamageEvents.clear()
 	PlayerMetricsArray.clear()
@@ -1520,13 +1525,13 @@ void function PIN_Init()
 	if( !skipChampionFetch )
 		AddCallback_OnBatchStatsLoaded( Tracker_SetChampionOnPersistenceLoad )
 	else
+	{
 		FlagSet( "PreviousChampionDetermined" )
+		SetServerVar( "batch_fetch_complete", true )
+	}
 	
 	if ( GetCurrentPlaylistVarBool( "enable_voice", false ) )
 		EnableVoice()
-	
-	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
-		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 }
 
 bool function Tracker_IsBatchFetchQueued()
@@ -1548,15 +1553,16 @@ void function SetStartLog()
 void function Tracker_SettingsInit()
 {
 	//todo: cleanup mode related stuff
-	file.LogOn 							= GetCurrentPlaylistVarBool( "logging_enabled", false)
-	file.LogE 							= GetCurrentPlaylistVarBool( "logging_encryption", false)
-	file.bChatbotEnabled				= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
-	file.flowstateRoundtime 			= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
-	file.afk_to_rest_enabled 			= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
-	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool( "stats_discord_webhook_player_count", false )
-	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
-	file.bBotAllowed 					= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
-	file.gamemode_type_1v1 				= g_is1v1GameType() //returns true if mode is confifugred as 1v1 type
+	file.LogOn 										= GetCurrentPlaylistVarBool( "logging_enabled", false)
+	file.LogE 										= GetCurrentPlaylistVarBool( "logging_encryption", false)
+	file.bChatbotEnabled							= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
+	file.flowstateRoundtime 						= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
+	file.afk_to_rest_enabled 						= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
+	file.update_discord_player_counts 				= GetCurrentPlaylistVarBool( "stats_discord_webhook_player_count", false )
+	file.ibmm_wait_limit 							= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
+	file.bBotAllowed 								= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
+	file.gamemode_type_1v1 							= g_is1v1GameType() //returns true if mode is confifugred as 1v1 type
+	file.stats_discord_webhook_matches_enabled		= GetCurrentPlaylistVarBool( "stats_discord_webhook_matches_enabled", false )
 	
 	if( file.bChatbotEnabled )
 		file.sBotName = SQ_GetSetting__internal( "settings.CHATBOT_PREFIX" )
@@ -1642,7 +1648,7 @@ void function PlayerConnectedCallback( entity player )
 		)
 	}
 	
-	if ( file.global_stats && file.bBatchFetchComplete )
+	if ( file.global_stats && GetServerVar( "batch_fetch_complete" ) )
 		thread __LoadPlayerSyncData( player )
 	
 	if ( file.global_stats )
@@ -1661,10 +1667,19 @@ void function PlayerCounts( string state, string name, string OID, string count 
 		_STATSHOOK_UpdatePlayerCount__internal( state, name, OID, count, file.DISCORD_PLAYERS_WEBHOOK )
 }
 
-void function EndOfMatch( string recap, string DISCORD_MATCHES_WEBHOOK )
+void function __EndOfMatch( string recap, string DISCORD_MATCHES_WEBHOOK )
 {
-	if ( GetCurrentPlaylistVarBool( "stats_discord_webhook_matches_enabled", false ) )
+	#if DEVELOPER 
+		mAssert( DiscordHook_MatchesRecapEnabled(), "Spawned a thread for no reason, discordhook matches was disabled." )
+	#endif 
+	
+	if( DiscordHook_MatchesRecapEnabled() ) //In case forgets to check before calling.
 		_STATSHOOK_EndOfMatch__internal( recap, DISCORD_MATCHES_WEBHOOK )
+}
+
+bool function DiscordHook_MatchesRecapEnabled()
+{
+	return file.stats_discord_webhook_matches_enabled
 }
 
 void function __START_LOGGING()
@@ -1696,7 +1711,7 @@ void function Init_NewGame()
 		return
 	}
 	
-	DestroyStats() //make sure metrics incrued during intermediate time are not included
+	__DestroyStats() //make sure metrics incrued during intermediate time are not included
 
 	//////////////////////////////////
 	//	THIS IS HANDLED INTERNALLY	//
@@ -1934,7 +1949,7 @@ void function Init_NewGame()
 		
 		mkos_Force_Rest( player )
 		
-		if( IsValid( player ) && !file.bBatchFetchComplete )
+		if( IsValid( player ) && !GetServerVar( "batch_fetch_complete" ) )
 		{	
 			WaitSignal( svGlobal.levelEnt, "BatchFetchComplete" )
 		}
@@ -3878,14 +3893,13 @@ bool function UIDisWorldSpawn( int uid )
 // For stats added via Tracker_RegisterStat() with also having defined
 // Stats__RegisterStatOutboundData() for the stat ( param 3 of Tracker_RegisterStat() ), your stat will output 
 // based on the defined functions return data at the time of this function call
-string function Tracker_PrintAllPlayerMetrics( bool trigger = false ) 
+string function Tracker_BuildAllPlayerMetrics( bool trigger = false ) 
 {
-    string json = "[";
+    string json = "["
     foreach ( index, metrics in PlayerMetricsArray ) 
 	{
-        if ( index > 0 ) {
-            json += ", ";
-        }
+        if ( index > 0 )
+            json += ", "
 		
 		string UID = metrics.playerID
 		bool isWorldspawn = false
@@ -3910,7 +3924,7 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 		json += Stats__GenerateOutBoundJsonData( UID )
 		
 		//settings 
-		json += "\"settings\": {";
+		json += "\"settings\": {"
 	
 		if( file.requestedSettingsList.len() == 0 )
 		{
@@ -3921,9 +3935,9 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 			bool first = true	
 			if( UID in file.PlayerData )
 			{
-				foreach ( setting,value in file.PlayerData[ UID ] )
+				foreach ( setting, value in file.PlayerData[ UID ] )
 				{
-					if (!first) 
+					if ( !first ) 
 					{
 						json += ", ";
 					}
@@ -3939,11 +3953,11 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 		json += "},";
 
 		//weapons array
-        json += "\"weaponShots\": {";
+        json += "\"weaponShots\": {"
 		
-        bool wep_first = true;
+        bool wep_first = true
 		
-		string replace = "";
+		string replace = ""
 		
         foreach ( weaponSource, timestamps in metrics.WeaponShotsTimestamps ) 
 		{
@@ -3952,7 +3966,7 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 			
             if ( !wep_first ) 
 			{
-                json += ", ";
+                json += ", "
             }
 			
 			if( !exclude( weaponSource ) )
@@ -3962,26 +3976,27 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 			else
 			{
 				#if DEVELOPER
-					printt( GetRefFromDamageSourceID( weaponSource ) )
+					printt( "setting weaponSource for player:", UID, "as:", GetRefFromDamageSourceID( weaponSource ) )
 				#endif
+				
 				replace = weaponSource.tostring()
 			}
 			
             json += format( "\"%s\": %d", replace, timestamps.len() )
             wep_first = false;
         }
-        json += "}";
-        json += "}";
+        json += "}"
+        json += "}"
     }
-    json += "]";
+    json += "]"
 	
 	if ( trigger )
 	{	
-		return json;		
+		return json		
 	} 
 	else 
 	{	
-		sqprint("^|," + json + "\n")
+		sqprint( "^|," + json + "\n" )
 		return "" 		
 	}
 	
@@ -4622,7 +4637,7 @@ void function PIN_RoundEnd( int roundnum )
 	}
 }
 
-void function UpdateLiveStats( string metrics )
+void function __UpdateLiveStats_internal( string metrics )
 {
 	if( Tracker_GetBoolSetting( "verified" ) && !empty( metrics ) )
 		SQ_UpdateLiveStats__internal( metrics )
@@ -4648,7 +4663,7 @@ void function FinishGameStatsRound()
 			
 			LogEvent__internal
 			(
-				format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), Tracker_PrintAllPlayerMetrics(true) ),
+				format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), Tracker_BuildAllPlayerMetrics(true) ),
 				file.LogE
 			)
 
@@ -4660,19 +4675,25 @@ void function FinishGameStatsRound()
 			if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 			{
 				sqprint( "No stats to ship...\n" )
-				stopLogging__internal(false)
-			} 
+				stopLogging__internal( false )
+				
+				if( file.bForceUpdatePlayerData )
+					__UpdateMetricsNow()
+			}
 			else
 			{
-				stopLogging__internal( Logging_ShipStats() ) //IMPORTANT
+				bool ship = !file.bStatsShipped && Logging_ShipStats()
+				stopLogging__internal( ship ) //IMPORTANT
 				
 				//update live global stats for match making (verified only)
-				string metrics = Tracker_PrintAllPlayerMetrics( true )
-				UpdateLiveStats( metrics )
+				__UpdateMetricsNow()
 				
-				//send to discord:
-				string recap = Tracker_WinnerByKillsAndDamage()
-				thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
+				//send to discord:		
+				if( DiscordHook_MatchesRecapEnabled() )
+				{
+					string recap = Tracker_WinnerByKillsAndDamage()
+					thread __EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
+				}
 				
 				if( Logging_ShipStats() )
 				{
@@ -4687,13 +4708,24 @@ void function FinishGameStatsRound()
 			}
 		}
 		
-		UpdateRoundStats_GlobalsCarryOver()
-		DestroyStats()
-		process_end_round_complete = true;	
-		file.PIN_GameState_Start = false;		
+		UpdateRoundStats_GlobalsCarryOver()	
+		__DestroyStats()
+		process_end_round_complete = true
+		file.PIN_GameState_Start = false		
 	} 
 }
 
+void function __UpdateMetricsNow()
+{
+	if( file.bStatsShipped )
+	{
+		printw( "Tried to ship stats more than once." )
+		return
+	}
+		
+	file.bStatsShipped = true
+	__UpdateLiveStats_internal( Tracker_BuildAllPlayerMetrics( true ) )
+}
 
 void function PIN_GameEnd()
 {	
@@ -5182,6 +5214,11 @@ float function Tracker_DecideTimeRemaining()
 	return potentialTime
 }
 
+void function Tracker_SetForceUpdatePlayerData()
+{	
+	file.bForceUpdatePlayerData = true
+}
+
 #endif //END TRACKER DEFINE
 
 
@@ -5408,7 +5445,7 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int attack
 DamageEvent function Tracker_GetCurrentEventForAttackerOnVictim( int attackerHandle, int victimHandle ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }
 bool function Tracker_IsRestrictedServer(){ return false }
 void function Tracker_SetRestrictedServer( bool _ ){}
-string function Tracker_PrintAllPlayerMetrics( bool _ ){ return "" }
+string function Tracker_BuildAllPlayerMetrics( bool _ ){ return "" }
 array<entity> function ArrayRemoveBot( array<entity> _ ){ return _ }
 
 void function PIN_Init()
@@ -5425,11 +5462,6 @@ void function PIN_Init()
 		INIT_CC_GameTypes()
 		INIT_CC_playeradmins()
 		AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
-	}
-
-	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
-	{
-		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
 	
 	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "" )

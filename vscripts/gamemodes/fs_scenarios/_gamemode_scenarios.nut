@@ -27,6 +27,7 @@ global function FS_Scenarios_GetScenariosTeamCount
 global function FS_Scenarios_getWaitingRoomLocation
 global function FS_Scenarios_ForceRest
 global function FS_Scenarios_SetupPanels
+global function FS_Scenarios_ClientCommand_Rest
 
 #if TRACKER 
 	global function Scenarios_PlayerDataCallbacks
@@ -201,7 +202,7 @@ void function Init_FS_Scenarios()
 
 	AddClientCommandCallback( "playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
 	
-	AddClientCommandCallback( "rest", Scenarios_ClientCommand_Rest )
+	AddClientCommandCallback( "rest", FS_Scenarios_ClientCommand_Rest )
 	Gamemode1v1_SetRestEnabled()
 
 	RegisterSignal( "FS_Scenarios_GroupIsReady" )
@@ -268,7 +269,7 @@ void function FS_Scenarios_ForceRest( entity player )
 	player.p.lastRestUsedTime = Time()
 }
 
-bool function Scenarios_ClientCommand_Rest( entity player, array<string> args )
+bool function FS_Scenarios_ClientCommand_Rest( entity player, array<string> args )
 {
 	if( Time() < player.p.lastRestUsedTime + 3 )
 	{
@@ -2836,7 +2837,7 @@ void function DefinePanelCallbacks( PanelTable panels )
 			if ( !IsValid( user ) ) 
 				return     
 				
-			Scenarios_ClientCommand_Rest( user, [] )
+			FS_Scenarios_ClientCommand_Rest( user, [] )
 		}
 	)
 }

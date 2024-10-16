@@ -21,9 +21,11 @@ global function Scenarios_RegisterNetworking
 	
 	global function ScenariosPersistence_SendStandingsToClient
 	global function ScenariosPersistence_ClearAllData
+	global function ScenariosPersistence_SetUpOnlineData
+	global function ScenariosPersistence_FetchOnlineStatInt
 	
 	//Fetcher functions for backend
-	#if TRACKER 
+	#if TRACKER
 		global function TrackerStats_ScenariosScore
 		global function TrackerStats_ScenariosKills
 		global function TrackerStats_ScenariosDeaths
@@ -37,7 +39,6 @@ global function Scenarios_RegisterNetworking
 	#if DEVELOPER 
 		global function DEV_PrintScores
 	#endif 
-	
 #endif //SERVER
 
 #if CLIENT 
@@ -56,6 +57,7 @@ global const int SCORE_BOMBCARRIERKILLED = 100
 
 
 typedef ScenariosStructType table<string, table<int, int> > 
+typedef ScenariosOnlineStats table< string, table< string, int > >
 
 struct
 {
@@ -64,8 +66,10 @@ struct
 	#if SERVER
 		ScenariosStructType scenariosPlayerScorePersistence
 		ScenariosStructType scenariosPlayerRoundStandings
-		table<int,int> __scoreTemplate
-	#endif 
+		
+		ScenariosOnlineStats onlineStats	
+		table< int,int > __scoreTemplate
+	#endif
 	
 	#if CLIENT 
 		bool isTransmitting
@@ -516,6 +520,55 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			
 		ScenariosPersistence_SendStandingsToClient( player )
 		return true
+	}
+	
+	const bool PRINT_ONLINE_STAT_LOAD = true
+	void function ScenariosPersistence_SetUpOnlineData( entity player, string statKey, var statValue )
+	{
+		const string STAT_TYPE_INT = "int"
+		
+		string type = typeof( statValue )
+		if( type != STAT_TYPE_INT )
+		{
+			#if DEVELOPER
+				printw( "stat \"" + statKey + "\" was not an int. discarding. Type:", type  )
+			#endif
+			
+			return
+		}
+		
+		if( !Stats__GetStatKeys().contains( statKey ) )
+		{
+			#if DEVELOPER
+				printw( "Key not found: \"" + statKey + "\"" )
+			#endif
+			
+			return
+		}
+		
+		string uid = player.p.UID
+		if( !( uid in file.onlineStats ) )
+			file.onlineStats[ uid ] <- {}
+		
+		if( !( statKey in file.onlineStats[ uid ] ) )
+			file.onlineStats[ uid ][ statKey ] <- expect int( statValue )
+		else 
+			file.onlineStats[ uid ][ statKey ] = expect int( statValue)
+			
+		#if DEVELOPER && PRINT_ONLINE_STAT_LOAD
+			printt( " stat for uid \"" + uid + "\"", "statkey =", statKey, "statValue =", statValue,"loaded in scenarios for player", player  )
+		#endif
+	}
+	
+	int function ScenariosPersistence_FetchOnlineStatInt( string uid, string statKey )
+	{
+		if( !( uid in file.onlineStats ) )
+			return -1
+			
+		if( !( statKey in file.onlineStats[ uid ] ) )
+			return -1
+			
+		return file.onlineStats[ uid ][ statKey ]
 	}
 	
 	#if DEVELOPER 

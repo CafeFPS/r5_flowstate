@@ -16,6 +16,9 @@ global function UpdatePlayerStatusCounts
 global function UpdateCoreFX
 global function InitCrosshair
 
+global function HideChat
+global function ShowChat
+
 global function IsWatchingReplay
 
 global const MAX_ACTIVE_TRAPS_DISPLAYED = 5
@@ -52,6 +55,9 @@ struct
 
 	var  rodeoRUI //Primarily because cl_rodeo_titan needs to update the rodeo rui
 	bool trackingDoF = false
+	
+	bool hideChat = false
+	
 } file
 
 void function ClMainHud_Init()
@@ -957,10 +963,22 @@ void function UpdateChatHUDVisibility()
 
 	Hud_SetAboveBlur( chat, true )
 
-	if ( isMuted() || IsLobby() || clGlobal.isMenuOpen )
+	if ( isMuted() || IsLobby() || clGlobal.isMenuOpen || file.hideChat )
 		chat.Hide()
 	else
 		chat.Show()
+}
+
+void function HideChat()
+{
+	HudElement( "IngameTextChat" ).Hide()
+	file.hideChat = true
+}
+
+void function ShowChat()
+{
+	HudElement( "IngameTextChat" ).Show()
+	file.hideChat = false
 }
 
 bool function IsWatchingReplay()
