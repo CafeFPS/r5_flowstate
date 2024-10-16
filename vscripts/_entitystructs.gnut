@@ -1143,6 +1143,7 @@ global struct ServerPlayerStruct
 	float lastTimeUsedRailjump
 	
 	int  weaponsAndMeleeLockedCount
+	float timeWaitingInLobby
 }
 
 global struct ChallengeScore

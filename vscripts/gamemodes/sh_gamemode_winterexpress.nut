@@ -1127,6 +1127,38 @@ void function ResetObjectiveOwnership()
 void function OnWaitingForPlayers_Server()
 {
 	SurvivalCommentary_SetHost( eSurvivalHostType.MIRAGE )
+
+	thread function () : ()
+	{
+		int max_teams = GetCurrentPlaylistVarInt( "max_teams", 3 )
+		int max_players = GetCurrentPlaylistVarInt( "max_players", 9 )
+		int max_time_waiting = 60
+		int min_players = 3
+		
+		//Force start and assign teams
+		while( GetGameState() == eGameState.WaitingForPlayers && GetPlayerArray().len() < max_players )
+		{
+			int playersThatForceMatchmaking = 0
+			foreach( player in GetPlayerArray() )
+			{
+				if( Time() - player.p.timeWaitingInLobby > max_time_waiting )
+					playersThatForceMatchmaking++
+			}
+			
+			if( playersThatForceMatchmaking >= min_players && playersThatForceMatchmaking == GetPlayerArray().len() )
+			{
+				foreach( int i, entity player in GetPlayerArray() )
+				{
+					SetTeam( player, TEAM_IMC + i %  max_teams )
+				}
+				
+				SetGameState( eGameState.Playing )
+				break
+			}
+			
+			wait 0.5
+		}
+	}()
 }
 
 void function OnGameStatePlaying()
@@ -2057,7 +2089,7 @@ void function GivePlayerLoadoutOnGameStart( entity player )
 	if ( !IsValid( player ) )
 		return
 
-	// player.DisableWeaponTypes( WPT_MELEE )
+	DisableMeleeWeapons( player )
 
 	wait 4.0
 
@@ -2073,7 +2105,7 @@ void function GivePlayerLoadoutOnGameStart( entity player )
 		if ( !isPlayerOnHoverTankAtStart || isPlayerOnHoverTankAtStart && file.playersOnHovertank.contains( player ) )
 		{
 			PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
-			// player.EnableWeaponTypes( WPT_MELEE )
+			EnableMeleeWeapons( player )
 		}
 		
 		// Still only give the player armor and equipment( no weapons) if they were on the hovertank at the start ( since we don't want to give them weapons while skydiving, they will get them on landing)
@@ -4160,7 +4192,10 @@ void function SetupPlayerThread( entity player )
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-
+	
+	if( GetGameState() == eGameState.WaitingForPlayers )
+		player.p.timeWaitingInLobby = Time()
+	
 	while ( !IsValidPlayer(player) || !IsAlive(player) || GetGameState() != eGameState.Playing )
 		WaitFrame()
 
