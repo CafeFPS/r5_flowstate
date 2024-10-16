@@ -248,6 +248,8 @@ void function Stats__RegisterStatOutboundData( string statname, var functionref(
 }
 #else //TRACKER && HAS_TRACKER_DLL
 
+global function Stats__GetStatKeys
+
 global function GetPlayerStatInt
 global function GetPlayerStatString
 global function GetPlayerStatBool
@@ -258,6 +260,8 @@ global function SetPlayerStatString
 global function SetPlayerStatBool
 global function SetPlayerStatFloat
 
+array<string> function Stats__GetStatKeys(){ return [] }
+
 int function GetPlayerStatInt( string player, string statname ){ return 0 }
 string function GetPlayerStatString( string player, string statname ){ return "" }
 bool function GetPlayerStatBool( string player, string statname ){ return false }
@@ -267,5 +271,4 @@ void function SetPlayerStatInt( string player, string statname, int value ){}
 void function SetPlayerStatString( string player, string statname, string value ){}
 void function SetPlayerStatBool( string player, string statname, bool value ){}
 void function SetPlayerStatFloat( string player, string statname, float value ){}
-
 #endif // ELSE !TRACKER && !HAS_TRACKER_DLL
