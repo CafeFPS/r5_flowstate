@@ -393,13 +393,14 @@ playlists
 				enable_motd 									1		// Enables message of the day for server
 				
 				// It is recommended that you leave this blank and not use it, preferably use FS_PLAYLIST_MOTD at the bottom of this file
-				custom_MOTD										""
+				//custom_MOTD										""
 				
 				// global auto mute system 
 				opt_in_global_mute								1 		// Globally muted players on tracker will auto mute.
 				
-				// every interval, a players msg count will be decreased by the threshold or set to 0.
-				//if the players msg count reaches threshold number they are auto muted for chat_timeout time
+				// every interval, a players msg count will be decreased by the threshold or set to 0 ( whichever is greater ).
+				// if the players msg count reaches threshold number they are auto muted for chat_timeout time or
+				// respective textmute_offence_tiers for that player's offence count based on decay time/amount
 				
 				opt_in_spam_mute								1		// Enables auto muting and unmuting with below settings.
 				chat_interval									12		// window time in seconds a threshhold for messages counts ( this decreases msg total by threshold amount each chat_interval completion ( this value ) )
@@ -407,8 +408,8 @@ playlists
 				chat_timeout									"" 		// string: time format of  "0 days 0 hours 2 mins 30 seconds" and any combination of, multiples of, or in any order. - mutes player for duration specified. Can leave blank if using offence tiers.
 				
 				textmute_offence_tiers							"10 secs, 20 secs, 30 secs" 		// comma separated list of time strings. example: "3 secs, 10 secs, 20 secs, 30 secs"	
-				textmute_offence_decay_time						45.0 	// Time that must pass before reduce steps are -- 0 to disable
-				textmute_offence_decay_amount					1		// How many offence levels will be decreased for player each grace_time cycle
+				textmute_offence_decay_time						45.0 	// Time that must pass before players offence tier is reduced by decay_amount -- 0 to disable
+				textmute_offence_decay_amount					1		// How many offence levels will be decreased for player each decay_time cycle
 				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Aim Assist																///////
@@ -423,11 +424,12 @@ playlists
 				//// THE FOLLOWING SETTINGS REQUIRE TRACKER DLL (add-on mod)				///////
 				///////////////////////////////////////////////////////////////////////////////////
 				
-				logging_enabled 								1		// Enabling this will run the tracker system (TODO: rename to tracker_enabled)
+				logging_enabled 								1		// Enabling this will run the tracker system ( TODO: rename to tracker_enabled )
 				logging_encryption								1
-				logging_shipstats 								1		// Enabling this will transfer data at end of match (TODO: rename to tracker_shipstats)
-				use_global_stats								1		// Enabling this will use API data (which only transfers at the start/end of a match
-				use_online_motd 								0		// Still indev
+				logging_shipstats 								1		// Enabling this will transfer data at end of match ( TODO: rename to tracker_shipstats )
+				use_global_stats								1		// Enabling this will use API data ( which only transfers at the start/end of a match or when a non batched player connects for stat queries )
+				use_online_motd 								0		// Still indev ( don't enable )
+				tracker_max_wait								7.0		// Max wait for batch load. Reducing means faster loading of data, at the trade off of missing some connecting players still loading, who will get individually queue tasks to fetch stats and codecallback when complete for each player respectively.
 				
 				// You should configure the following in "platform/r5rdev_config.json", but also set to 1 to enable here.
 				stats_discord_webhook_player_count				0		// Sends player join and disconnect data to a discord webhook

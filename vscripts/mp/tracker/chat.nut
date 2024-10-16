@@ -265,6 +265,9 @@ void function Chat_Init()
 	file.chatMutePenaltyDecayTime 	= GetCurrentPlaylistVarFloat( "textmute_offence_decay_time", 45.0 )
 	file.chatMutePenaltyDecayAmount	= GetCurrentPlaylistVarInt( "textmute_offence_decay_amount", 1 )
 	
+	//Signals 
+	RegisterSignal( "MuteStateChanged" )
+	
 	//Callbacks
 	AddClientCommandCallback( "FS_TT", SetRelayChallenge )
 	AddClientCommandCallbackNew( "say", ChatWatchdog )
@@ -383,11 +386,10 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 			}
 			else
 			{
-				//mAssert( cmdStringArgs.len(), "empty cmdStringArgs"  )
 				int determinedTime = ParseTimeString( cmdStringArgs )
 				
 				if( determinedTime > 0 )
-					timestamp = GetUnixTimestamp() + file.DetermineTimeOut( player, determinedTime )
+					timestamp = GetUnixTimestamp() + determinedTime //file.DetermineTimeOut( player, determinedTime )
 				else 
 					timestamp = determinedTime
 			}
@@ -528,7 +530,9 @@ string function Chat_FindMuteReasonInArgs( array<string> args )
 		} 
 		else 
 		{
-			printw( "Error: Missing value for command", "\"" + arg + "\"" )	
+			#if DEVELOPER && PRINT_TIME_STRING_ARGS
+				printw( "Error: Missing value for command", "\"" + arg + "\"" )
+			#endif
 			break
 		}
 	}
@@ -548,7 +552,7 @@ void function __Commands( entity player, array<string> args )
 	if( empty( baseCmd ) )
 		return 
 		
-	CommandHandle handle = Commands_GetCommandHandler( baseCmd )
+	CommandCallback handler = Commands_GetCommandHandler( baseCmd )
 	
 	if( Commands_RequiresValidPlayer( baseCmd ) )
 	{
@@ -556,7 +560,7 @@ void function __Commands( entity player, array<string> args )
 			return
 	}
 	
-	handle( baseCmd, args, player )
+	handler( baseCmd, args, player )
 }
 
 /////////////////////
@@ -599,7 +603,7 @@ void function __OffenceArray_IncrementCount( entity player )
 	}
 		
 	int offenceLevel = __OffenceArray_GetOffenceLevel( player )	
-	offenceLevel = maxint( file.offencePenaltyTierCount, offenceLevel + 1 )
+	offenceLevel = minint( file.offencePenaltyTierCount, offenceLevel + 1 )
 	
 	__OffenceArray_SetOffenceLevel( player, offenceLevel )
 }
@@ -613,7 +617,7 @@ void function __OffenceArray_DecrementCount( entity player, int steps = 1 )
 	}
 		
 	int offenceLevel = __OffenceArray_GetOffenceLevel( player )	
-	offenceLevel = minint( 0, offenceLevel - steps )
+	offenceLevel = maxint( 0, offenceLevel - steps )
 	
 	__OffenceArray_SetOffenceLevel( player, offenceLevel )
 }
@@ -714,7 +718,7 @@ table<string,int> function GetMutedList()
 }
 
 int function ParseTimeString( array<string> args )
-{	
+{
 	int argLen = args.len()
 	
 	if( argLen < 1 )
@@ -832,6 +836,10 @@ int function ParseTimeString( array<string> args )
 				#endif
 				return -1
 		}
+		
+		#if DEVELOPER && PRINT_TIME_STRING_ARGS
+			printt( "addtime =", addTime )
+		#endif
 	}
 	
 	return addTime
@@ -847,12 +855,13 @@ void function AutoUnmuteAtTime( entity player, int unmuteTime, string uid )
 	if( !IsValid( player ) )
 		return
 		
-	EndSignal( player, "OnDestroy", "OnDisconnected" )
-	int currentTime = GetUnixTimestamp() 
+	player.Signal( "MuteStateChanged" )
+	EndSignal( player, "OnDestroy", "OnDisconnected", "MuteStateChanged" )
 	
 	if( INFINITE_MUTE_TIMES.contains( unmuteTime ) )
 		return 
 	
+	int currentTime = GetUnixTimestamp() 
 	if( unmuteTime > currentTime )
 		wait ( unmuteTime - currentTime )
 	else 
@@ -864,16 +873,27 @@ void function AutoUnmuteAtTime( entity player, int unmuteTime, string uid )
 		return
 	}
 	
-	if( !Chat_InMutedList( uid ) ) //maybe a manual unmute
-		return
-	
-	if( MutedList_GetUnmuteTime( uid ) > 0 && MutedList_GetUnmuteTime( uid ) < GetUnixTimestamp() )
+	for( ; ; )
 	{
-		#if DEVELOPER 
-			printw( "New muted time", MutedList_GetUnmuteTime( uid ), " is less thhan current time", GetUnixTimestamp(), "for player", player )
-		#endif
+		if( !Chat_InMutedList( uid ) ) //maybe a manual unmute
+			return
 		
-		return
+		int currentTimeStamp = GetUnixTimestamp()
+		int newUnmuteTime = MutedList_GetUnmuteTime( uid )
+		
+		if( newUnmuteTime > 0 && newUnmuteTime > currentTimeStamp )
+		{
+			#if DEVELOPER 
+				printw( "New muted time", MutedList_GetUnmuteTime( uid ), " is less thhan current time", currentTimeStamp, "for player", player )
+			#endif
+			
+			wait newUnmuteTime - currentTimeStamp
+			continue
+		}
+		else 
+		{
+			break
+		}
 	}
 	
 	//recheck from wait.

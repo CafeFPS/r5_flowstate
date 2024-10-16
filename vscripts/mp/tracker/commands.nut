@@ -19,13 +19,13 @@ global function Commands_GetArgAliases
 global function Commands_ArgDoesExist
 global function Commands_SetupArg					
 
-global typedef CommandHandle void functionref( string, array<string>, entity )
+global typedef CommandCallback void functionref( string, array<string>, entity )
 
 const bool PRINT_REGISTERED = true
 
 struct CommandData
 {
-	CommandHandle handle
+	CommandCallback handler
 	array<string> aliases
 	bool bRequiresValidPlayer
 }
@@ -37,7 +37,7 @@ struct ArgData
 
 struct 
 {
-	table< string, CommandData > commandHandlers
+	table< string, CommandData > commandCallbacks
 	table< string, string > cmdAliasLookupTable
 	
 	table< string, ArgData > argTable
@@ -52,29 +52,39 @@ void function nullreturn( string cmd, array<string> args, entity activator )
 	#endif
 }
 
+/*
+	Purpose:
+	
+	Tie a callback to handle a registered command and script it's functioinality such that
+	When a user does a chat command of /rest, it does some checks and calls the function that 
+	handles the args / request. These can be enabled conditionally once inside of a gamemodes
+	own script file.
+	
+	All functions with Commands_ are global and can be used to make other features like chat commands.
+*/
 
 ///////////////////////////////////////////////////////
 ///////					Commands				///////
 ///////////////////////////////////////////////////////
 
-void function Commands_Register( string cmd, CommandHandle ornull handlerFunctionOrNull = null, array<string> aliases = [], bool bRequiresValidPlayer = true ) 
+void function Commands_Register( string cmd, CommandCallback ornull handlerFunctionOrNull = null, array<string> aliases = [], bool bRequiresValidPlayer = true ) 
 {
 	mAssert( !empty( cmd ), "Cannot register empty command" )
 	
 	if ( !Commands_DoesExist( cmd ) )
 	{
-		CommandHandle handlerFunction = nullreturn
+		CommandCallback handlerFunction = nullreturn
 		
 		if( handlerFunctionOrNull != null )
-			handlerFunction = expect CommandHandle ( handlerFunctionOrNull )
+			handlerFunction = expect CommandCallback ( handlerFunctionOrNull )
 		
 		CommandData data
 		
-		data.handle = handlerFunction
+		data.handler = handlerFunction
 		data.aliases = aliases
 		data.bRequiresValidPlayer = bRequiresValidPlayer
 		
-		file.commandHandlers[ cmd ] <- data	
+		file.commandCallbacks[ cmd ] <- data	
 		
 		#if DEVELOPER && PRINT_REGISTERED
 			printw( "== Registered command:", cmd, " handler: " + string( handlerFunction ) + "() ==" )
@@ -92,13 +102,13 @@ void function Commands_Register( string cmd, CommandHandle ornull handlerFunctio
 
 bool function Commands_DoesExist( string cmd )
 {
-	return ( cmd in file.commandHandlers )
+	return ( cmd in file.commandCallbacks )
 }
 
-CommandHandle function Commands_GetCommandHandler( string cmd ) 
+CommandCallback function Commands_GetCommandHandler( string cmd ) 
 {
-	if ( cmd in file.commandHandlers )
-		return file.commandHandlers[ cmd ].handle
+	if ( cmd in file.commandCallbacks )
+		return file.commandCallbacks[ cmd ].handler
 		
 	return nullreturn
 }
@@ -117,7 +127,7 @@ bool function Commands_CmdAliasPointsTo( string alias, string cmd )
 array<string> function Commands_GetCommandAliases( string cmd )
 {
 	if( Commands_DoesExist( cmd ) )
-		return file.commandHandlers[ cmd ].aliases
+		return file.commandCallbacks[ cmd ].aliases
 		
 	array<string> emptyArray
 	return emptyArray
@@ -133,8 +143,8 @@ string function Commands_ReturnBaseCmdForAlias( string cmdAlias )
 
 bool function Commands_RequiresValidPlayer( string cmd )
 {
-	if ( cmd in file.commandHandlers )
-		return file.commandHandlers[ cmd ].bRequiresValidPlayer
+	if ( cmd in file.commandCallbacks )
+		return file.commandCallbacks[ cmd ].bRequiresValidPlayer
 		
 	return false
 }
@@ -172,6 +182,14 @@ void function __CmdAliasTable_CheckSlot( string alias, string cmd )
 	#endif
 }
 
+/*
+	Purpose:
+	
+	Like Commands, arg setup is currently only used to customize aliases for args and take 
+	advantage of separating gamemode logic into it's own files without conditionals. 
+	
+	All functions with Commands_ are global and can be used to make other features like custom arg aliases.
+*/
 
 ///////////////////////////////////////////////////////
 ///////					Args					///////
