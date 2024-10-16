@@ -577,7 +577,7 @@ void function Flowstate_DMTimer_Thread( float endtime )
 
 		UIPos basepos = REPLACEHud_GetBasePos( frame )	
 		UISize screenSize = GetScreenSize()
-		Hud_SetPos( frame, basepos.x - 5 * screenSize.width / 1920.0, basepos.y + 50 * screenSize.height / 1080.0 ) //text is parented to the frame so not need to change text pos
+		Hud_SetPos( frame, basepos.x - 5 * screenSize.width / 1920.0, basepos.y - 50 * screenSize.height / 1080.0 ) //text is parented to the frame so not need to change text pos
 		break
 	}
 
