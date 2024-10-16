@@ -4558,6 +4558,9 @@ void function FS_ReloadScoreHUD()
 
 void function FS_CreateScoreHUD()
 {
+	if( GetCurrentPlaylistVarBool( "winter_express_disable_custom_score_ui", true ) )
+		return
+	
 	if( settings.scoreLimit != 3 )
 		return
 
@@ -4665,6 +4668,9 @@ array<int> function GetTeamsIndexesForPlayers( array<entity> playersToUse )
 
 void function FS_ToggleVisibilityScoreHUD( bool visible )
 {
+	if( GetCurrentPlaylistVarBool( "winter_express_disable_custom_score_ui", true ) )
+		return
+	
 	if( file.localTeam != null )
 		Hud_SetVisible( file.localTeam, visible)
 	
@@ -4693,6 +4699,9 @@ bool function IsValidName( string name )
 }
 void function FS_UpdateScoreForTeam( int team, int score )
 {
+	if( GetCurrentPlaylistVarBool( "winter_express_disable_custom_score_ui", true ) )
+		return
+	
 	if( team < 0 || score < 0 )
 		return
 
