@@ -504,7 +504,7 @@ const array<string> SINGLE_ARGS =
 	"forever",
 	"infinite"
 ]
-const string TEXT_MUTE_ARG = "-r"
+const string TEXT_MUTE_REASON_ARG = "-r"
 string function Chat_FindMuteReasonInArgs( array<string> args ) 
 {
 	int i = 0
@@ -516,7 +516,7 @@ string function Chat_FindMuteReasonInArgs( array<string> args )
 		if ( i + 1 < args.len() ) 
 		{
             string value = args[ i + 1 ]
-			if ( Commands_ArgAliasPointsTo( arg, TEXT_MUTE_ARG ) )
+			if ( Commands_ArgAliasPointsTo( arg, TEXT_MUTE_REASON_ARG ) )
                 return value
 			
 			int nextIndex = 2
@@ -983,8 +983,8 @@ void function SetUnmuteTime_Raw( entity player, int timestamp )
 
 bool function IsTimeInSameMatch( int timestamp )
 {
-	if( ( GetUnixTimestamp() + FlowState_RoundTime() ) > timestamp )
-		return true 
+	if( ( Tracker_GetStartUnixTime() + ( FlowState_RoundTime() * Flowstate_AutoChangeLevelRounds() ) ) > timestamp )
+		return true
 		
 	return false
 }

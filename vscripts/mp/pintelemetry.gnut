@@ -93,6 +93,7 @@ global function ClientCommand_RequestStat
 	global function Tracker_IsRestrictedServer
 	global function Tracker_SetRestrictedServer
 	global function Tracker_BuildAllPlayerMetrics
+	global function Tracker_GetStartUnixTime
 	
 	#if !HAS_TRACKER_DLL
 		global function sqprint
@@ -202,6 +203,7 @@ global function UpdateStartInRestSetting //move
 global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
 global function Tracker_SetForceUpdatePlayerData
+global function Tracker_GetStartUnixTime
 
 global function NULL_PDATA
 global function Gamemode1v1_PlayerDataCallbacks //TODO: this probably shouldn't be here, but a bit of logic needs sorted into it's gamemode file (will do soonTM)
@@ -423,6 +425,7 @@ struct
 	bool DefaultStartInRestSetting
 	
 	int flowstateRoundtime
+	int launchStartUnixTime
 	
 	//restricted settings ( configure in playlists file )
 	int restricted_gamesplayed = 0
@@ -1410,6 +1413,8 @@ void function __CONTROLLED_LogInit()
 
 void function PIN_Init()
 {
+	file.launchStartUnixTime = GetUnixTimestamp()
+	
 	#if !SERVER
 		return
 	#endif 
@@ -5219,6 +5224,10 @@ void function Tracker_SetForceUpdatePlayerData()
 	file.bForceUpdatePlayerData = true
 }
 
+int function Tracker_GetStartUnixTime()
+{ 
+	return file.launchStartUnixTime 
+}
 #endif //END TRACKER DEFINE
 
 
@@ -5422,6 +5431,7 @@ struct {
 	bool global_stats = false
 	bool afk_to_rest_enabled = false
 	string localFlowstate_MOTD = ""
+	int launchStartUnixTime
 
 } file
 
@@ -5447,11 +5457,18 @@ bool function Tracker_IsRestrictedServer(){ return false }
 void function Tracker_SetRestrictedServer( bool _ ){}
 string function Tracker_BuildAllPlayerMetrics( bool _ ){ return "" }
 array<entity> function ArrayRemoveBot( array<entity> _ ){ return _ }
+int function Tracker_GetStartUnixTime(){ return file.launchStartUnixTime }
 
 void function PIN_Init()
 {
+	#if CLIENT 
+		return 
+	#endif 
+	
 	if( IsLobby() )
 		return
+
+	file.launchStartUnixTime = GetUnixTimestamp()
 	
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
