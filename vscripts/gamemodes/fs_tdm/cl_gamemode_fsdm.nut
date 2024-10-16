@@ -483,6 +483,13 @@ void function ForceShow1v1Scoreboard()
 
 void function Cl_OnResolutionChanged()
 {
+	if( FS_GetScoreEventTopo() != null )
+	{
+		UISize screenSize = GetScreenSize()
+		TopologyCreateData tcd = BuildTopologyCreateData( true, false )
+		RuiTopology_UpdatePos( FS_GetScoreEventTopo(), tcd.org + <0,screenSize.height * -0.618,0>, tcd.right, tcd.down)
+	}
+	
 	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
 	{
 		Flowstate_ShowRoundEndTimeUI( -1 )
