@@ -352,7 +352,7 @@ void function Chat_CheckGlobalMute( entity player )
 		MuteFromPersistence( player, YES )
 }
 
-void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmdLine = false, array<string> cmdStringArgs = [], int timeoutAmount = -1, string uid = "" )
+void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmdLine = false, array<string> cmdStringArgs = [], int timeoutAmount = 0, string uid = "" )
 {
 	int eHandle
 	bool bSyncToPlayers = true
@@ -377,7 +377,7 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 
 		if( cmdLine )
 		{
-			if( timeoutAmount > -1 )
+			if( timeoutAmount > 0 ) //-1
 			{
 				timestamp = GetUnixTimestamp() + timeoutAmount
 			}
