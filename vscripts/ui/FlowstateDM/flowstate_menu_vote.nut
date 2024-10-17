@@ -313,8 +313,8 @@ void function Close_FSDM_VoteMenu()
 	
 	//CloseAllMenus() 
 	
-	//we should specifically only close the fsdm vote menu from the ui menu stack? 
-	//work around incase remote call logic flow needs this to remain a close all menu behavior. ~mkos
+	//(mk): we should specifically only close the fsdm vote menu from the ui menu stack? 
+	//(mk): work around incase remote call logic flow needs this to remain a close all menu behavior.
 	
 	var ignoreCloseMenu = GetMenu( "SERVER_MOTD" )
 	

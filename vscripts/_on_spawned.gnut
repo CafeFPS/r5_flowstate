@@ -279,7 +279,7 @@ void function CodeCallback_OnSpawned( entity ent )
 		if ( !ent._entityVars )
 			InitEntityVars( ent )
 
-		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" ) //I hope this is handled already.. ~mkos
+		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" ) //(mk): I hope this is handled already..
 	}
 
 	if( ent.kv.teamnumber == null )
@@ -394,7 +394,7 @@ function RunSpawnCallbacks( entity self )
 
 	foreach ( spawnCallbackFuncArray funcArray in svGlobal.spawnCallbackFuncs )
 	{
-		if ( funcArray.entityClassname == classname )//seriously? no getter function with hash table?? ~mkos
+		if ( funcArray.entityClassname == classname )
 		{
 			foreach ( func in funcArray.callbackArray )
 			{
@@ -489,8 +489,7 @@ void function RunScriptNoteworthyCallbacks( entity ent )
 			func( ent )
 		}
 
-		break // ??? break?
-		//This is ridiculous, iterate an array of callback funcs but break when you find the first one? ~mkos
+		break
 	}
 }
 

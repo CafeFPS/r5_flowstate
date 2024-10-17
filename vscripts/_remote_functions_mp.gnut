@@ -27,9 +27,9 @@ struct
 	
 } file
 
-// Do not include any aliased funcs that CAN BE exploited. 
+// (mk): Do not include any aliased funcs that CAN BE exploited. 
 // If they 100% must be executed by client when server calls them, 
-// then register the actual function ~mkos
+// then register the actual function
 
 void function SetupRemoteFuncAliases()
 {
@@ -207,7 +207,7 @@ string function FindFuncName_ByID( int funcID )
 #endif
 
 
-//NOTICE: Param ranges are NON-INCLUSIVE ~mkos
+//(mk): NOTICE: Param ranges are NON-INCLUSIVE
 void function RemoteFunctions_Init_Begin()
 {
 	Remote_BeginRegisteringFunctions()
@@ -322,14 +322,14 @@ void function RemoteFunctions_Init_Begin()
 				RegisterNetworkedVariable( "FS_Scenarios_gameStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_timePlayerEnteredInLobby", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 			
-				Scenarios_RegisterNetworking() //mkos
+				Scenarios_RegisterNetworking() //(mk)
 			}
 			
 			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 			{
 				RegisterNetworkedVariable( "accuracy", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 				
-				//offset, r, g, b | enemy offset, r, g, b ~mkos
+				//offset, r, g, b | enemy offset, r, g, b (mk)
 				Remote_RegisterClientFunction( "ServerCallback_SetLGDuelPesistenceSettings", "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999 )
 			}
 			
@@ -412,7 +412,7 @@ void function RemoteFunctions_Init_Begin()
 			
 			break
 		
-		case eGamemodes.fs_snd: //can save 15 slots byRef ~mkos
+		case eGamemodes.fs_snd: //(mk): can save 15 slots byRef
 			Remote_RegisterClientFunction("Sh_SetAttackingLocations", "int", 0, 10)
 			Remote_RegisterClientFunction("Sh_SetAttackerTeam", "int", 0, 10, "int", INT_MIN, INT_MAX)
 			Remote_RegisterClientFunction("SND_HintCatalog", "int", 0, 20, "int", INT_MIN, INT_MAX)
@@ -698,12 +698,12 @@ void function RemoteFunctions_Init_Begin()
 	//RegisterNetworkedVariable( "ultimateCredits", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
 	Remote_RegisterClientFunction( "ServerCallback_Mirage_DecoysDeployed", "bool" )
 	Remote_RegisterClientFunction( "ServerCallback_MatchEndAnnouncement", "bool", "int", INT_MIN, INT_MAX )
-	//Remote_RegisterClientFunction( "ServerCallback_DestroyEndAnnouncement" ) //moved to byRef ~mkos (needs verified as safe, delete this parenthesis after confirming)
+	//Remote_RegisterClientFunction( "ServerCallback_DestroyEndAnnouncement" ) //(mk): moved to byRef (needs verified as safe, delete this parenthesis after confirming)
 	
 	Remote_RegisterClientFunction( "ServerCallback_SquadEliminated", "int", TEAM_INVALID, 126 )
 	
-	//Remote_RegisterClientFunction( "ServerCallback_ShowDeathScreen" ) //moved to byRef ~mkos
-	//Remote_RegisterClientFunction( "ServerCallback_DeathScreenSwitchTab" ) //moved to byRef ~mkos (also wasn't used)
+	//Remote_RegisterClientFunction( "ServerCallback_ShowDeathScreen" ) //(mk): moved to byRef
+	//Remote_RegisterClientFunction( "ServerCallback_DeathScreenSwitchTab" ) //(mk): moved to byRef (also wasn't used)
 	//Remote_RegisterClientFunction( "ServerCallback_ShowFlowstateDeathRecapNoSpectate" ) //moved to byRef
 
 	Remote_RegisterClientFunction( "ServerCallback_SendDeathRecapData", "int", -1, INT_MAX, "int", -1, INT_MAX, "int", -1, INT_MAX, "int", INT_MIN, INT_MAX, "int", -1, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "float", 0.0, 1.0, 32, "float", 0.0, 1.0, 32, "float", 0.0, 86400.0, 32, "int", -1, INT_MAX, "int", -1, INT_MAX )
@@ -718,7 +718,7 @@ void function RemoteFunctions_Init_Begin()
 
 	Remote_RegisterClientFunction( "ServerCallback_DisplayWaitingForRespawn", "entity", "float", 0.0, 5000.0, 32, "float", 0.0, 5000.0, 32 )
 	Remote_RegisterClientFunction( "ServerCallback_RespawnPodStarted", "float", 0.0, 5000.0, 32 )
-	//Remote_RegisterClientFunction( "ServerCallback_RespawnDNAHint" ) //moved to byRef ~mkos
+	//Remote_RegisterClientFunction( "ServerCallback_RespawnDNAHint" ) //(mk): moved to byRef
 
 	//RegisterNetworkedVariable( "hasDataKnife", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
@@ -987,18 +987,18 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_CreateTextInfoPanelWithID_Localized", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", 0.0, 100.0, 32, "int", INT_MIN, INT_MAX )
 
 	// Experiment -- This will be moved to code.
-	Remote_RegisterClientFunction( "FS_Toggle_Mute", "int", 9999999, 100000000, "bool" )
+	Remote_RegisterClientFunction( "FS_Toggle_Mute", "bool" ) //"int", 9999999, 100000000, "bool" )
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
 	
 	// Client-side helper (not permissive)
-	
 	RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 	
 	//r5r.dev player stats
 	Remote_RegisterClientFunction( "Tracker_SetPlayerStatBool", "entity", "bool" )
 	Remote_RegisterClientFunction( "Tracker_SetPlayerStatInt", "entity", "int", INT_MIN, INT_MAX )
 	Remote_RegisterClientFunction( "Tracker_SetPlayerStatFloat", "entity", "float", -999999.0, 999999.0, 32 )
-	
+		
+	//Todo(mk): Move to client fetch( for cards ), remove networked vars
 	RegisterNetworkedVariable( "SeasonScore", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0  )
 	RegisterNetworkedVariable( "SeasonKills", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
 	RegisterNetworkedVariable( "SeasonDeaths", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0, 0, INT_MAX )
@@ -1021,8 +1021,7 @@ void function RemoteFunctions_Init_Begin()
 	// Don't reenable until you confirm that the gamemodes work or find a solution for this. Cafe
 	// Commenting this one fixes prophunt loading
 	
-	// Mkos:
-	// Both of these were simply at the limit. 
+	// (mk): Both of these were simply at the limit. 
 	// Disabling mode specific remote calls when not in the mode and reducing overall usage is the solution.
 	// Functions with many parameters fills up the buffer.
 	// Both of these efficiency methods will reduce slot usage and buffer consumption

@@ -1010,7 +1010,7 @@ void function UpdateScreensContent( array<ApexScreenState> screenList )
 		
 		//because this block sets the screen.rui to null on the same frame, the needstartup condition can potentially 
 		//execute due to the screen.rui being null and bool shouldshow being true
-		//TEMP FIX: moved shutdown after startup check. Needs more tracking to determine why shouldShow is not handling this (todo after release) ~mkos
+		//(mk): TEMP FIX: moved shutdown after startup check. Needs more tracking to determine why shouldShow is not handling this (todo after release)
 		bool needShutdown = ((screen.rui != null) && (!shouldShow || (screen.ruiToCreate != screen.ruiLastCreated)))
 		if ( needShutdown )
 		{

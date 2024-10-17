@@ -177,7 +177,7 @@ bool function IsVideoChannelAvailable()
 	
 	RunClientScript( "SetVideoChannelReport", false )
 	return false
-	// todo(dw): make this available in the CLIENT VM //to respawn: done. ~mkos
+	// todo(dw): make this available in the CLIENT VM - (mk): done
 }
 #endif
 

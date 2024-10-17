@@ -239,7 +239,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 
 void function PlayerLifeThread( entity player )
 {
-	//don't register signals in repeat game logic ~mkos
+	//(mk): don't register signals in repeat game logic
 	//RegisterSignal( "OnPostDeathLogicEnd" )
 	
 	// this thread will run for the span of the player's life plus a little bit extra
@@ -885,7 +885,7 @@ void function AddCallback_OnWeaponAttack( void functionref( entity, entity, stri
 
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
-	//mkos - modified to support multiple functions for a single command
+	//(mk): modified to support multiple functions for a single command
 	//Warning("AddClientCommandCallbackNew: " + commandString )
 	
 	if( commandString in svGlobal.clientCommandCallbacksNew )

@@ -23,7 +23,7 @@ void function CreatePanelText( entity player, string title, string text, vector 
 	}
 	else 
 	{		
-		// This allows old calls to the function without adding ID - mkos
+		// (mk):This allows old calls to the function without adding ID
 		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )	
 	}
 }

@@ -85,7 +85,7 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 			int charID = ItemFlavor_GetGUID( character )
 			
 			//switch( charRef )
-			switch( charID ) //changed to guid compare ~mkos
+			switch( charID ) //(mk): changed to guid compare
 			{
 				//case "character_wraith":
 				case 827049897:

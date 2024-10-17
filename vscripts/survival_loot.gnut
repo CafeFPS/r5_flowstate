@@ -71,7 +71,7 @@ global function RemoveCallback_OnPlayerWeaponAttachmentChanged
 
 global function GetGroundPosition
 
-const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this //wtf lmao ~mkos
+const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this //(mk): wtf lmao
 
 global const LOOT_COLLISION_GROUP = 1
 global const int LOOT_TRACE = TRACE_MASK_PLAYERSOLID | TRACE_MASK_OPAQUE
@@ -1874,7 +1874,7 @@ void function AddCallback_OnPlayerWeaponAttachmentChanged( void functionref( ent
 void function RemoveCallback_OnPlayerWeaponAttachmentChanged( void functionref( entity, entity, string, string ) callbackFunc )
 {
 	if( file.Callbacks_OnPlayerWeaponAttachmentChanged.contains( callbackFunc ) )
-		file.Callbacks_OnPlayerWeaponAttachmentChanged.fastremovebyvalue( callbackFunc ) //hopfully order doesn't matter ~mkos
+		file.Callbacks_OnPlayerWeaponAttachmentChanged.fastremovebyvalue( callbackFunc ) //(mk): hopfully order doesn't matter
 }
 
 void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
@@ -2118,7 +2118,7 @@ entity function SURVIVAL_ThrowLootFromPoint( vector dropOrg, vector fwd, string 
 
 void function RemovePlayerExtraWeaponMods( entity player, array<string> mods )
 {
-	//Todo: reverse forloop would be cheaper ~mkos 
+	//Todo(mk): reverse forloop would be cheaper
 	array<string> modsCopy = clone mods
 	array extraPlayerWeaponMods = player.GetExtraWeaponMods()
 	if ( extraPlayerWeaponMods.len() <= 0 )
@@ -2388,7 +2388,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		}catch(e420)
 		{
 			// newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
-			Warning( "GiveMainWeapon Error ReplaceActiveWeapon" ) //mkos: Is this meant to be logged explicitely in beta test?
+			Warning( "GiveMainWeapon Error ReplaceActiveWeapon" )
 		}
 	}
 	else
@@ -2397,7 +2397,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 			newWeapon = player.GiveWeapon_NoDeploy( pickup.GetWeaponName(), slot, [], firstDeploy )
 		}catch(e69)
 		{
-			Warning( "GiveMainWeapon Error GiveWeapon_NoDeploy" ) //mkos: Is this meant to be logged explicitely in beta test?
+			Warning( "GiveMainWeapon Error GiveWeapon_NoDeploy" )
 		}
 	}
 
@@ -2697,7 +2697,7 @@ void function SURVIVAL_TransferBetterModsToOtherWeapon( entity player, entity we
 	array<string> otherWeaponMods = otherWeapon.GetMods()
 	array<string> otherWeaponRemovedMods
 
-	array<string> modsCopy = clone modsOnWeapon //Todo: reverse forloop would be cheaper on original array ~mkos
+	array<string> modsCopy = clone modsOnWeapon //Todo(mk): reverse forloop would be cheaper on original array
 
 	bool fromWeaponIsAttachmentLocked = SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref )
 	bool toWeaponIsAttachmentLocked   = SURVIVAL_Weapon_IsAttachmentLocked( otherWeaponData.ref )

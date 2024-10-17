@@ -207,7 +207,7 @@ int function FireMastiff( WeaponPrimaryAttackParams attackParams, bool playerFir
 	return 1
 }
 
-// weapon cancels reload ~mkos [ HACK, needs native managed reload cancel ]
+//HACK(mk): weapon cancels reload [ needs native managed reload cancel ]
 void function WeaponMastiff_Init()
 {
 	//AddClientCommandCallbackNew( "AttemptCancelReload_Mastiff", OnReloadCancel_weapon_mastiff )

@@ -464,7 +464,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			}
 		}
 
-		//was missing damage history for shields for non-players ~mkos
+		//(mk): was missing damage history for shields for non-players
 		float actualDamageDone = damage ? damage : DamageInfo_GetDamage( damageInfo )
 		
 		if( !ent.IsPlayer() && file.register_dummie_kill_as_actual_kill && !file.firingrange_aimtrainerbycolombia )

@@ -241,9 +241,9 @@ int function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	player.SetShieldHealth( max( remainingShieldHealth, 0 ) )
 
-	// Regular notification and damage calculation is handled by main codecallback for damage.
+	// (mk): Regular notification and damage calculation is handled by main codecallback for damage.
 	// We only need to add and notify shield damage since we hijacked breakthrough damage into shield bypass and set damageinfo 
-	// to effect player health ~mkos	
+	// to effect player health	
 	if( bPermDamage )
 	{
 		if( IsValid( attacker ) && attacker.IsPlayer() )

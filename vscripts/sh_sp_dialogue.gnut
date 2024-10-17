@@ -312,7 +312,7 @@ void function Dialog_RegisterNetworking()
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnEnvironmentSpeakers, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, INT_MAX, "entity", "int", -1, NUM_TOTAL_DIALOGUE_QUEUES )
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnEnvironmentSpeakersNoResponse, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, INT_MAX, "int", -1, NUM_TOTAL_DIALOGUE_QUEUES )
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnCustomSpeakers, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, NUM_CUSTOM_QUEUES )
-	//Remote_RegisterClientFunction( FUNCNAME_AbortCurrentDialogue ) //moved to byRef ~mkos
+	//Remote_RegisterClientFunction( FUNCNAME_AbortCurrentDialogue ) //(mk): moved to byRef
 }
 
 

@@ -446,7 +446,7 @@ void function WinterExpress_Init()
 void function FS_WinterExpress_OnClientScriptInit( entity player ) 
 {
 	#if DEVELOPER && MKOS
-		return //mkos: I need my debugs lol -.- 
+		return //(mk): I need my debugs lol -.- 
 	#endif
 	
 	//I don't want these things in user screen even if they launch in debug

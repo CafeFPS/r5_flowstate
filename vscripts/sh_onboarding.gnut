@@ -128,7 +128,7 @@ void function SV_CL_Onboarding_Init()
 	OnboardingPlaylistSettings_Init()
 	
 	#if SERVER
-		SetAutoReloadState( false ) //let native know ~mkos
+		SetAutoReloadState( false ) //(mk): let native know
 		RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 		FlagInit( "MinPlayersReached", false )
 		
@@ -147,7 +147,7 @@ void function SV_CL_Onboarding_Init()
 			thread Sequence_WaitingForPlayers()
 		
 		if( Gamemode() == eGamemodes.SURVIVAL )
-			AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
+			AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //(mk): check for native reload
 	#endif
 }
 
@@ -564,7 +564,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	if ( IsAlive( player ) )
 	 	TakeLoadoutRelatedWeapons( player )
 		
-	//This calls the definitive native code to respawn player, which will first fire "OnRespawnPlayer", and then fire signal "OnSpawned" in CodeCallback_OnPlayerRespawned ~mkos
+	//(mk): This calls the definitive native code to respawn player, which will first fire "OnRespawnPlayer", and then fire signal "OnSpawned" in CodeCallback_OnPlayerRespawned
 	DoRespawnPlayer( player, null )
 
 	player.p.lastRespawnTime = Time()
@@ -637,7 +637,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	{
 		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
 	}	
-	//commented, already signaled in code callback after DoRespawnPlayer fires ~mkos
+	//(mk): commented, already signaled in code callback after DoRespawnPlayer fires
 	
 	// if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
 		// player.Signal("OnRespawned")		

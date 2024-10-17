@@ -63,7 +63,7 @@ void function CodeCallback_OnPlayerInputAxisChanged( entity player, float horizA
 {
 	//printt( "AXIS CHANGED: ", player, horizAxis, vertAxis )
 	//printt( "Axis Changed: X: " + horizAxis + " Y: " + vertAxis )
-	/* //commented out for now - mkos (rewrite)
+	/* //(mk): commented out for now (rewrite)
 	
 	if (!IsValid(player)) 
 			return
@@ -388,7 +388,7 @@ void function AddPlayerPressedBackCallback( entity player, bool functionref( ent
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
 	
-	//was commented out - mkos
+	//(mk): was commented out
 	callbackStruct.callbackFunc = callbackFunc
 
 	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
@@ -584,7 +584,7 @@ bool function IsValidPlayerInputAxisEventCallbackStruct( PlayerInputAxisEventCal
 
 void function RunPlayerInputAxisCallbackFunc( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
 {
-	//un commented - mkos
+	//(mk): uncommented / fixed
 
 	 bool callbackResult = callbackStruct.callbackFunc( player ) // TODO: FIX "SCRIPT ERROR: [SERVER] attempt to call 'null'"
 	 if ( callbackResult )

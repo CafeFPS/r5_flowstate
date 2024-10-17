@@ -154,7 +154,7 @@ void function OnPlayerConnected( entity player )
 
 		if ( inputHint.triggerButtonEnum == IN_FORWARD )
 		{
-			//comented out for function ref type change to bool - mkos
+			//(mk): comented out for function ref type change to bool
 			//AddPlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
 			//AddPlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
 		}
@@ -193,7 +193,7 @@ void function TutorialContextPlayerThink( entity player )
 
 				if ( inputHint.triggerButtonEnum == IN_FORWARD )
 				{	
-					//comented out for function ref type change to bool - mkos
+					//(mk): comented out for function ref type change to bool
 					//RemovePlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
 					//RemovePlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
 				}

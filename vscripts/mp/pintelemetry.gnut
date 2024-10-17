@@ -532,7 +532,7 @@ void function DEV_ManualLogKill( bool ship )
 void function NULL_PDATA( entity player, string data ){}
 
 #if DEVELOPER
-	const table<string,string> PlayerMetricsExpect =
+	const table<string,string> PLAYER_METRICS_EXPECT =
 	{
 		[ "playerID" ] = "string",
 		[ "playername" ] = "string",
@@ -546,7 +546,7 @@ void function NULL_PDATA( entity player, string data ){}
 
 	bool function DEV_SetMetricSafe( string uid, string metricKey, ... )
 	{
-		if( !( metricKey in PlayerMetricsExpect ) )
+		if( !( metricKey in PLAYER_METRICS_EXPECT ) )
 		{
 			Warning( "Key \"" + metricKey + "\" does not exist in PlayerMetrics struct." )
 			return false
@@ -555,7 +555,7 @@ void function NULL_PDATA( entity player, string data ){}
 		if( vargc < 1 )
 			return false
 		
-		string expected = PlayerMetricsExpect[ metricKey ]
+		string expected = PLAYER_METRICS_EXPECT[ metricKey ]
 		string dataType = typeof vargv[ 0 ]
 		
 		if( dataType != expected )
@@ -1937,11 +1937,10 @@ void function Init_NewGame()
 	{
 		EndSignal( player, "OnDisconnected", "OnDestroy" )
 		
-		player.FreezeControlsOnServer()
-		player.ForceStand()
-		
 		while( IsValid( player ) )
-		{				
+		{	
+			player.FreezeControlsOnServer()
+			player.ForceStand()
 			mkos_Force_Rest( player )
 			wait 0.5
 		}	
@@ -1955,19 +1954,13 @@ void function Init_NewGame()
 		mkos_Force_Rest( player )
 		
 		if( IsValid( player ) && !GetServerVar( "batch_fetch_complete" ) )
-		{	
 			WaitSignal( svGlobal.levelEnt, "BatchFetchComplete" )
-		}
 		
 		if( IsValid( player ) && !Tracker_IsStatsReadyFor( player ) )
-		{	
 			WaitSignal( player, "SyncDataFullyLoaded" )
-		}
 		
 		if( !IsValid( player) )
-		{
 			return
-		}
 
 		//this int must be set after stats have loaded
 		int access_status = CheckIfPlayerHasAccess( player )
@@ -5469,9 +5462,10 @@ void function PIN_Init()
 		return
 
 	file.launchStartUnixTime = GetUnixTimestamp()
-	
+	SetServerVar( "batch_fetch_complete", true ) //lets users use chat.
+		
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
-	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
+	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false ) //later checked against mode/compatibility settings.
 	
 	if ( GetCurrentPlaylistVarBool( "cc_administration", false ) )
 	{ 
@@ -5513,7 +5507,7 @@ void function FireRemoteMotd( entity player )
 					wait 5
 					
 				if( IsValid( player ) )
-					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message //todo: move to client
 			}
 		}
 	)()

@@ -1151,7 +1151,7 @@ void function Sequence_Epilogue()
 	}
 	
 	
-	//WaitForever() //There's really no reason to keep this thread alive, as it does nothing more and nothing when it closes (no OnThreadEnd ) ~mkos
+	//WaitForever() //(mk): There's really no reason to keep this thread alive, as it does nothing more and nothing when it closes
 	
 	// if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
 		// wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
@@ -1740,7 +1740,7 @@ void function OnClientConnected( entity player )
 		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.LEAVE_GROUND, LSM_OnPlayerLeaveGround )
 	}
 
-	AddEntityCallback_OnPostDamaged( player, OnPlayerDamaged ) //changed to post damage ~mkos
+	AddEntityCallback_OnPostDamaged( player, OnPlayerDamaged ) //(mk): changed to post damage
 
 	if ( IsFiringRangeGameMode() )
 	{

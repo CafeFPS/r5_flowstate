@@ -356,7 +356,7 @@ void function GasExposureUpdate( entity target, int emitterTeam = -1 )
 	
 	if( emitterTeam == -1 || !IsFriendlyTeam( targetTeam, emitterTeam ) )
 	{
-		//only setup slots if not on caustic's team ~mkos
+		//(mk): only setup slots if not on caustic's team
 		statusEffectHandles[eStatusEffect.move_slow] <- -1
 		statusEffectHandles[eStatusEffect.turn_slow] <- -1
 	}
@@ -398,7 +398,7 @@ void function GasExposureUpdate( entity target, int emitterTeam = -1 )
 			
 			if( target.IsPlayer() )
 			{
-				if( !bIsFriendlyTeam ) //these wont exist for friendlies ~mkos
+				if( !bIsFriendlyTeam ) //(mk): these wont exist for friendlies
 				{
 					if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
 						StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
@@ -468,7 +468,7 @@ void function GasExposureUpdate( entity target, int emitterTeam = -1 )
 
 void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEffectHandles, float effectScalar, bool bIsFriendly = false )
 {
-	//commenting this because it's terrible, more modular approach below ~mkos
+	//(mk): commenting this because it's terrible, more modular approach below
 	//also, it would be better to simply extend the current effect rather than reapplying it for certain effects
 
 	// if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )

@@ -138,7 +138,7 @@ void function CheckAfkKickThread(entity player)
 				break
 		}
 		
-		wait 1 //?
+		wait 1
 		
     }
 }

@@ -240,8 +240,10 @@ void function EntitiesDidLoad()
 
 void function FS_Scenarios_ForceRest( entity player )
 {
-	if( IsBotEnt( player ) ) //Todo: Remove after mvoe to code
-		return
+	#if TRACKER
+		if( IsBotEnt( player ) ) //temporary messagebot bullcrap hack ( all of these need removed )
+			return
+	#endif
 		
 	_CleanupPlayerEntities( player )
 	FS_Scenarios_HandleGroupIsFinished( player )
@@ -505,7 +507,7 @@ void function FS_Scenarios_OnPlayerConnected( entity player )
 
 	ValidateDataTable( player, "datatable/flowstate_scenarios_score_system.rpak" )
 
-	AddEntityCallback_OnPostDamaged( player, FS_Scenarios_OnPlayerDamaged ) //changed to post damage ~mkos
+	AddEntityCallback_OnPostDamaged( player, FS_Scenarios_OnPlayerDamaged ) //(mk): changed to post damage
 }
 
 void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
@@ -576,7 +578,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 		}
 	}
 
-	if( player.p.handle in file.scenariosPlayerToGroupMap ) //this should not be wrote manually
+	if( player.p.handle in file.scenariosPlayerToGroupMap )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 }
 
@@ -1742,7 +1744,7 @@ void function FS_Scenarios_Main_Thread()
 
 	
 		//This iterates over all players in lobby to assign them a team ( a game has to be created )
-		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
+		// mkos please add proper matchmaking for teams lol	- (mk): will do.
 		for( int i = waitingPlayers.len() - 1; i >= 0 ; i-- )
 		{
 			entity player = waitingPlayers[i]
@@ -2064,10 +2066,9 @@ void function FS_Scenarios_Main_Thread()
 
 							if( !newGroup.IsFinished )
 							{
-								//this is just a test to see how spawn metadata would be used for a game mode ~mkos
-								string spawnName = newGroup.groupLocStruct.name
+								//string spawnName = newGroup.groupLocStruct.name
 								string ids = newGroup.groupLocStruct.ids
-								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 ) //, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids ) //Why is this needed? Looks like useless debug info for the end user [Cafe]
+								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 ) //, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids ) //Why is this needed? Looks like useless debug info for the end user [Cafe] - //(mk): this was just a test to see how spawn metadata would be used for a game mode
 							}
 							
 							if( settings.fs_scenarios_characterselect_enabled )
@@ -2668,9 +2669,7 @@ void function FS_Scenarios_SendRecapData( scenariosGroupStruct group ) //mkos
 {
 	//Cafe
 	foreach( player in FS_Scenarios_GetAllPlayersForGroup( group ) )
-	{
-		ScenariosPersistence_SendStandingsToClient( player )
-	}
+		ScenariosPersistence_SendStandingsToClient( player ) //lol
 }
 
 void function Scenarios_SetWaitingRoomRadius( int radius )
@@ -2788,8 +2787,8 @@ void function FS_Scenarios_SetupPanels()
 {
 	PanelTable panels = 
 	{
-		[ "%&use% Rest (or) Enter Queue" ] 				= null,
-		[ "%&use% Toggle \"Start In Rest\" Setting" ] 	= null,
+		[ "#FS_START_REST_TOGGLE" ] 	= null,
+		[ "#FS_REST_TOGGLE" ] 			= null,
 		//["add another"] = null,
 	};
 	
@@ -2802,7 +2801,7 @@ void function DefinePanelCallbacks( PanelTable panels )
 	// Start in rest setting button
 	AddCallback_OnUseEntity
 	( 
-		panels["%&use% Toggle \"Start In Rest\" Setting"],
+		panels["#FS_START_REST_TOGGLE"],
 		
 		void function( entity panel, entity user, int input )
 		{
@@ -2830,7 +2829,7 @@ void function DefinePanelCallbacks( PanelTable panels )
 	// Rest button
 	AddCallback_OnUseEntity
 	( 
-		panels["%&use% Rest (or) Enter Queue"], 
+		panels["#FS_REST_TOGGLE"], 
 		
 		void function(entity panel, entity user, int input )
 		{
@@ -2843,7 +2842,7 @@ void function DefinePanelCallbacks( PanelTable panels )
 }
 
 #if TRACKER
-	void function Scenarios_PlayerDataCallbacks()
+	void function Scenarios_PlayerDataCallbacks() //todo move to convar
 	{
 		AddCallback_PlayerData( "start_in_rest_setting", UpdateStartInRestSetting )
 	}

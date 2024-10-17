@@ -1180,7 +1180,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 				
 				Remote_CallFunction_ByRef( victim, "ForceScoreboardLoseFocus" )
 				
-				// I originally intended this to be apart of a lifestate change or YouDied callback, and setting UpdateNextRespawnTime( entity player, float time ), client using: GetNextRespawnTime( player )  but due to various mode behavior, it's better left as a remote func call. ~mkos
+				//(mk): I originally intended this to be apart of a lifestate change or YouDied callback, and setting UpdateNextRespawnTime( entity player, float time ), client using: GetNextRespawnTime( player )  but due to various mode behavior, it's better left as a remote func call.
 				Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", int( DEATHCAM_TIME_SHORT + decidedWaitTime ) )//+ DEATHCAM_TIME_SHORT ) )
 
 				if( flowstateSettings.is_halo_gamemode )
@@ -1404,7 +1404,7 @@ void function CheckForObservedTarget(entity player)
 	}
 }
 
-//Todo: Unweave mode specific logic, set each mode to it's own handlerespawn func ~mkos
+//Todo(mk): Unweave mode specific logic, set each mode to it's own handlerespawn func
 void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 {
     if ( !IsValid( player ) || !player.IsPlayer() ) 
@@ -3272,7 +3272,7 @@ void function SimpleChampionUI()
 		if( presentChampion )
 			Remote_CallFunction_ByRef( player, "Tracker_ShowChampion" )
 			
-		FSDM_SetMatchPersistentVarsForPlayer( player ) //sets current round stats since we are about to clear that data. ~mkos
+		FSDM_SetMatchPersistentVarsForPlayer( player ) //(mk): sets current round stats since we are about to clear that data.
 			
 		SetPlayerStatBool( player.GetPlatformUID(), "previous_champion", false )
 
@@ -3351,7 +3351,7 @@ void function SimpleChampionUI()
 
 	if( flowstateSettings.hackersVsPros )
 	{
-		// ResetAllPlayerStats() //was already performed? ~mkos
+		// ResetAllPlayerStats() //(mk): was already performed? 
 		int i
 		int maxHackers = 3
 		
@@ -3684,7 +3684,7 @@ void function SimpleChampionUI()
 	////	 	CHAMPION	 	////
 	////////////////////////////////
 	
-	//set the champion even if reloading the map ~mkos
+	//(mk): set the champion even if reloading the map
 	int TeamWon = 69
 	
 	if( GetPlayerArray().len() == 1 && IsValid( gp()[0] ) )
@@ -3877,7 +3877,7 @@ void function SimpleChampionUI()
 		//////// 	NEXT MAP 	////////
 		////////////////////////////////
 		
-		//cycle map /mkos
+		//(mk): cycle map
 		string to_map = GetMapName()
 
 		if ( flowstateSettings.rotate_map )
@@ -6851,7 +6851,7 @@ void function Tracker_SetChampionOnPersistenceLoad()
 	)()
 }
 
-//Todo: Probably use better or custom new pdef fields. ~mkos
+//Todo(mk): Probably use better or custom new pdef fields.
 void function FSDM_SetMatchPersistentVarsForPlayer( entity player )
 {
 	GameSummarySquadData statSummaryData = GameSummary_GetPlayerData( player )

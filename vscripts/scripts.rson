@@ -19,7 +19,7 @@ GAMEMODE_at		True of the given game mode is being loaded
 When: " SERVER || CLIENT || UI "
 Scripts:
 [
-	sh_mapname_playlist_gamemode_enums.gnut //init this early ~mkos
+	sh_mapname_playlist_gamemode_enums.gnut //(mk): init this early
 	sh_assert.nut
 	feature_flags_script.gnut
 	root_asset_lists.gnut

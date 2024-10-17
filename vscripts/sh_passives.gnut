@@ -172,7 +172,7 @@ void function PassivesShared_Init()
 		// specific passive stuff (should perhaps be moved out of this generic passive file)
 		RegisterSignal( "EndPilotBloodThread" )
 		RegisterSignal( "EndSparkOfGeniusThread" )
-		//AddCallback_OnPlayerKilled( Passives_OnPlayerKilled ) //not used yet? ~mkos
+		//AddCallback_OnPlayerKilled( Passives_OnPlayerKilled ) //(mk): not used yet?
 		AddCallback_OnPlayerAssist( Passives_OnPlayerAssist )
 		Bleedout_AddCallback_OnPlayerStartBleedout( Passives_OnPlayerStartBleedout )
 		AddCallback_OnPassiveChanged( ePassives.PAS_FAST_HEAL, PassiveToggleFastHeal )

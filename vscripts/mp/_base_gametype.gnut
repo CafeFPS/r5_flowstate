@@ -187,7 +187,7 @@ function AddFlinch( entity attackedEnt, damageInfo )
 
 	Assert( IsValid_ThisFrame( attackedEnt ), "attackedEnt not valid this frame" )
 
-	//next flinch time block was commented , uncommented ~mkos
+	//(mk): next flinch time block was commented , uncommented
 	if ( !( "nextFlinchTime" in attackedEnt.s ) )
 		attackedEnt.s.nextFlinchTime <- 0
 	if ( Time() < attackedEnt.s.nextFlinchTime )
@@ -492,8 +492,8 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 
 	float damageMult_location = 1.0
 
-	//removing the following code, as weaponName is not used, and we don't need 
-	//spectre / stalker currently ~mkos
+	//(mk): removing the following code, as weaponName is not used, and we don't need 
+	//spectre / stalker currently
 	
 	// var weaponName // TODO: If set to type string, will cause errors because weaponName can be ""
 	// if ( DamageInfo_GetWeapon( damageInfo ) )
@@ -1068,7 +1068,7 @@ function DoRespawnPlayer( entity player, entity spawnPoint )
 		return
 
 	player.p.lastSpawnPoint = spawnPoint
-	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread // Also sends OnRespawnPlayer first ~mkos
+	player.RespawnPlayer( spawnPoint ) //(mk): This will send "OnRespawned" signal, killing the thread if started from PostDeathThread // Also sends OnRespawnPlayer first
 }
 
 function SetupPilotSpawnOnRematch( entity player )
@@ -2253,7 +2253,7 @@ void function OnOOBTriggerLeave( entity trigger, entity ent )
 	EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
 }
 
-//ranges may need tweaked during playtests ~mkos
+//(mk): ranges may need tweaked during playtests
 void function RingDamagePunch( entity ent, var damageInfo )
 {
 	if( !ent.IsPlayer() )

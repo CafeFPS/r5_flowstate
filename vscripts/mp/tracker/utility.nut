@@ -52,8 +52,8 @@ table<string, string> player_admins
 table<string,int> WeaponIdentifiers = {}
 
 //arrays 
-array< array< string > > list_maps
-array< array< string > > list_gamemodes
+array< array< string > > list_maps //todo deprecate
+array< array< string > > list_gamemodes //todo deprecate
 
 struct {
 
@@ -109,23 +109,19 @@ struct {
 			if ( !CheckRate( player ) ) 
 				return false
 			
-			player.p.messagetime = Time()
-			
 			if ( args.len() < 1)
 			{	
 				Message( player, "\n\n\nUsage: ", " showdata argument \n\n\n Arguments:\n map - Shows current map name \n round - Shows current round number \n input - Shows a list of players and their current input", 5 )
-				return true;	
+				return true	
 			}
 			
-			string requestedData = args[0];
-			string param = "";
+			string requestedData = args[ 0 ]
+			string param = ""
 			
 			if ( args.len() >= 2 )
-			{
-				param = args[1]
-			}
+				param = args[ 1 ]
 
-			switch(requestedData)
+			switch( requestedData )
 			{
 
 				case "map":
@@ -222,18 +218,18 @@ struct {
 				case "input":
 						
 						
-						string handicap = "";
-						string p_input = "";					
-						string data = "";
-						string inputmsg = "Current Player Inputs";
+						string handicap = ""
+						string p_input = ""					
+						string data = ""
+						string inputmsg = "Current Player Inputs"
 						
 						try 
 						{
 							foreach ( active_player in GetPlayerArray() )
 							{	
-								handicap = active_player.p.p_damage == 2 ? "On" : "Off";
-								p_input = active_player.p.input > 0 ? "Controller" : "MnK"; 
-								data += "Player: " + active_player.GetPlayerName() + " is using: " + p_input + " ---- Handicap: " + handicap + "\n"; 
+								handicap = active_player.p.p_damage == 2 ? "On" : "Off"
+								p_input = active_player.p.input > 0 ? "Controller" : "MnK"
+								data += "Player: " + active_player.GetPlayerName() + " is using: " + p_input + " ---- Handicap: " + handicap + "\n"
 							}
 							
 							
@@ -243,11 +239,11 @@ struct {
 								return true;
 							}
 							
-							Message( player, inputmsg, data, 20);	
+							Message( player, inputmsg, data, 20 )	
 						} 
-						catch (show_err) 
+						catch ( show_err ) 
 						{
-							Message(player, "Failed", "Command failed because of: \n\n " + show_err )
+							Message( player, "Failed", "Command failed because of: \n\n " + show_err )
 							return false			
 						}
 						
@@ -309,19 +305,19 @@ struct {
 							}
 							
 							
-							if( (inputmsg.len() + data.len()) > 599 )
+							if( ( inputmsg.len() + data.len()) > 599 )
 							{
 								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
-								return true;
+								return true
 							}
 							
-							Message( player, inputmsg, data, 20);
+							Message( player, inputmsg, data, 20 )
 						
 						} 
-						catch (show_err2) 
+						catch ( show_err2 ) 
 						{
 		
-							Message(player, "Failed", "Command failed because of: \n\n " + show_err2 )
+							Message( player, "Failed", "Command failed because of: \n\n " + show_err2 )
 							return false
 									
 						}
@@ -337,22 +333,22 @@ struct {
 						try 
 						{
 							
-							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0.0 ) );
-							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0 ) );
+							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat( "aimassist_magnet", 0.0 ) )
+							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0 ) )
 									
 							if( (inputmsg.len() + data.len()) > 599 )
 							{	
 								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
-								return true;		
+								return true		
 							}
 							
-							Message( player, inputmsg, data, 20);
+							Message( player, inputmsg, data, 20 )
 						
 						} 
-						catch (show_err3) 
+						catch ( show_err3 ) 
 						{
 		
-							Message(player, "Failed", "Command failed because of: \n\n " + show_err3 )
+							Message( player, "Failed", "Command failed because of: \n\n " + show_err3 )
 							return false
 									
 						}
@@ -377,13 +373,13 @@ struct {
 							return true;		
 						}
 						
-						Message( player, inputmsg, data, 20);
+						Message( player, inputmsg, data, 20 )
 					
 					} 
-					catch (show_err4) 
+					catch ( show_err4 ) 
 					{
 
-						Message(player, "Failed", "Command failed because of: \n\n " + show_err4 )
+						Message( player, "Failed", "Command failed because of: \n\n " + show_err4 )
 						return false
 								
 					}
@@ -398,7 +394,8 @@ struct {
 					Message( player, "Failed: ", "Usage: show argument \n", 5 )
 					return true;
 			}
-			return false;
+			
+			return false
 		}
 		
 		
@@ -478,8 +475,6 @@ struct {
 		if( !VerifyAdmin( PlayerName, PlayerUID ) )
 			return false
 			
-		player.p.messagetime = Time()	
-		
 		string command = "";
 		string param = "";
 		string param2 = "";
@@ -973,29 +968,39 @@ struct {
 							if ( !Is_Bool(a_str) )
 							{	
 								Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
-								return false;	
+								return false	
 							}
 							
-							entity select_player =  GetPlayer( param )
+							entity selectPlayer =  GetPlayer( param )
 							
-							if ( !IsValid(select_player) )
+							if ( !IsValid( selectPlayer ) )
 							{
 								Message( player, "Failed", "Player: " + param + " - is invalid. ")
-								return true;
+								return true
 							}
 							
-							select_player.p.input = a_str.tointeger();
+							const array<string> inputs =[ "MnK", "Controller" ]
+							int currentInput = selectPlayer.p.input
+							int newInput = a_str.tointeger()
+							string sayInput = newInput > 0 ? inputs[ 1 ] : inputs [ 0 ] 
 							
-							string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
-							
-							Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
-							return true;
+							if( newInput != currentInput )
+							{
+								selectPlayer.p.input = newInput							
+								selectPlayer.Signal( "InputChanged" )						
+								Message( player, "Success", "Player " + selectPlayer.GetPlayerName() + "  was changed to input: " + sayInput  )
+								return true
+							}
+							else 
+							{
+								Message( player, "Failed", "Player is already input type: " + sayInput )
+							}
 						
 						} 
-						catch (errj) 
+						catch( errj ) 
 						{		
 							Message( player, "Failed", "Command failed because of: \n\n " + errj )
-							return false;
+							return false
 						}
 						
 			case "listhandles":
@@ -1427,13 +1432,9 @@ struct {
 				}
 				
 				if( IsValid( p ) )
-				{
 					Message( player, "Data for: " + param, Tracker_FetchPlayerData( p.p.UID, param2 ) )
-				}
 				else 
-				{
 					Message( player, "Error", format( "Player: %s was invalid", sanitize(param) ), 7 )
-				}
 				
 			#endif
 				return true
@@ -1482,7 +1483,7 @@ struct {
 			
 				#if DEVELOPER 
 				
-					printt("Drawing...")
+					printt("DisableDrawing...")
 					foreach( s_player in GetPlayerArray() )
 					{
 						Remote_CallFunction_ByRef( s_player, "Minimap_DisableDraw_Internal" )
@@ -1560,7 +1561,8 @@ struct {
 					Tracker_SetForceUpdatePlayerData() //does nothing if already set.
 				#endif 
 				
-				Chat_ToggleMuteForAll( p, true, true, args, -1, param )		
+				if( !Chat_ToggleMuteForAll( p, true, true, args, -1, param ) )
+					Message( player, "Failed" )
 				
 				return true
 			
@@ -1582,14 +1584,35 @@ struct {
 				}
 				else 
 				{
-					LocalMsg( p, "#FS_UNMUTED" )
+					if( !Chat_InMutedList( player.p.UID ) )
+					{
+						Message( player, "Failed", "Player is in server but not muted" )
+						return true
+					}
 				}
 					
 				#if TRACKER
 					Tracker_SetForceUpdatePlayerData() //does nothing if already set.
 				#endif 
 				
-				Chat_ToggleMuteForAll( p, false )
+				string uid = IsValid( p ) ? p.p.UID : param
+				if( Chat_ToggleMuteForAll( p, false, true, args ) )
+				{
+					LocalMsg( p, "#FS_UNMUTED" )
+					Message( player, "Player " + uid, "UNMUTED" )
+				}
+				else 
+				{
+					string msg
+					if( empty( param2 ) )
+						msg = " FAILED to Unmute."
+					else if( IsValid( player ) )
+						msg = " SET to Unmute."
+					else 
+						msg = " SAVED to be unmuted."
+						
+					Message( player, "Player " + uid, msg )
+				}
 				
 				return true
 				

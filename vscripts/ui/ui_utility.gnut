@@ -609,7 +609,6 @@ int function GetGameState()
 
 array<var> function GetPanelElementsByClassname( var panel, string className )
 {
-	//Todo: cheaper reverse for loop ~mkos (verify iteration doesn't need to be performed on a clone)
 	array<var> allElements = GetElementsByClassname( GetParentMenu( panel ), className )
 	foreach ( element in clone allElements )
 	{

@@ -55,7 +55,7 @@ void function ErrorServer( string errorMsg )
 void function WaitValidStateThenClose( string errorMsg )
 {
 	if( shGlobalErrorCheck() )
-		wait 1 //Todo(dw): Needs proper timing ~mkos
+		wait 1 //Todo(mk): Needs proper timing
 	
 	if ( GetPlayerArray().len() > 0 )
 	{

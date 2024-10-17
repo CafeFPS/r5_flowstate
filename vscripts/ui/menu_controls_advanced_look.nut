@@ -55,7 +55,7 @@ void function InitAdvancedLookControlsPanel( var panel )
 	AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
 	file.enableItems.append( perScopeButton )
 
-	// ( element, nameToken, descriptionToken, conVar, textElement ) ~mkos
+	//(mk): ( element, nameToken, descriptionToken, conVar, textElement )
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC",			"gamepad_custom_hip_yaw",			"TextGamepadCustomHipYaw" )
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipPitch" ),		"#GAMEPADCUSTOM_HIP_PITCH",			"#GAMEPADCUSTOM_HIP_PITCH_DESC",		"gamepad_custom_hip_pitch",			"TextGamepadCustomHipPitch" )
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipTurnYaw" ),	"#GAMEPADCUSTOM_HIP_TURN_YAW",		"#GAMEPADCUSTOM_HIP_TURN_YAW_DESC",		"gamepad_custom_hip_turn_yaw",		"TextGamepadCustomHipTurnYaw" )

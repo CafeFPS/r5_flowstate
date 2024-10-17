@@ -254,7 +254,8 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			printt( "FS_Scenarios_ForceUpdatePlayerCount", players.len() )
 			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
 			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )
-		} else if( statusRui != null )
+		} 
+		else if( statusRui != null )
 		{
 			RuiSetString( statusRui, "gameModeString", "FS ZONE WARS" )
 			RuiSetString( statusRui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
@@ -262,7 +263,10 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			
 			array<entity> players = GetPlayerArray()
 			
-			printt( "setting to ", GetPlayerArray().len() )
+			#if DEVELOPER
+				printt( "setting to ", GetPlayerArray().len() )
+			#endif 
+			
 			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
 			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )
 		}
@@ -374,7 +378,7 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	
 	int function ScenariosPersistence_GetCount( string uid, int type )
 	{
-		if( !ScenariosPersistence_PlayerExists( uid ) ) //Todo(dw): remove the need to check
+		if( !ScenariosPersistence_PlayerExists( uid ) ) //Todo(mk): remove the need to check
 			return 0
 		
 		return file.scenariosPlayerScorePersistence[ uid ][ type ]

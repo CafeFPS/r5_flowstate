@@ -711,7 +711,7 @@ bool function DamageSourceIDHasString( int index )
 	return (index in file.damageSourceIDToString)
 }
 
-//for adding invalids in stat calc ~mkos
+//(mk): for adding invalids in stat calc
 string function DamageSourceIDToString( int index )
 {
 	return file.damageSourceIDToString[ index ]
@@ -722,7 +722,7 @@ table<int,string> function DamageSourceIDToStringTable()
 	return file.damageSourceIDToString
 }
 
-// for adding custom wep ~mkos
+//(mk): for adding custom wep
 void function RegisterCustomWeaponDamageDef( string weaponRef, string name = "Unknown", string imgAssetString = "$\"\"" )
 {
 	int sourceID = file.damageSourceIDToString.len()

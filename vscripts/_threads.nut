@@ -110,7 +110,7 @@ string function VM_NAME()
 	#endif
 }
 
-string function FUNC_NAME( int up = 0 ) //mkos~ this is required inorder to prevent null accessing of func in raw debug
+string function FUNC_NAME( int up = 0 ) //(mk): this is required inorder to prevent null accessing of func in raw debug
 {
 	if( getstackinfos( 2 + up ) != null )
 	{

@@ -521,5 +521,5 @@ void function RefreshAdminStatus()
 void function ResetDefaults()
 {
 	uiGlobal.bIsServerAdmin = false
-	RunClientScript( "FS_Toggle_Mute", 0, false )
+	RunClientScript( "FS_Toggle_Mute", false )
 }

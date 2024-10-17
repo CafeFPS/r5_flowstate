@@ -575,7 +575,7 @@ bool function Waypoint_IsPOI( entity wp )
 	return wp.GetWaypointType() == eWaypoint.BASIC_POI
 }
 
-//this is convulted as fuck ~mkos ( need to just write two Waypoint_FindPingByTicketID(), for client/server respectively )
+//(mk): this is convulted as fuck ( need to just write two Waypoint_FindPingByTicketID(), for client/server respectively )
 entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 {
 #if SERVER

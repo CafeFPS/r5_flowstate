@@ -213,7 +213,7 @@ void function MpAbilityCryptoDrone_Init()
 	#if SERVER
 		RegisterSignal( "ExitCameraView" )
 		RegisterSignal( "FinishDroneRecall" )
-		//AddDamageCallback( "player", OnPlayerTookDamage ) //added when entering drone view ~mkos
+		//AddDamageCallback( "player", OnPlayerTookDamage ) //(mk): commented, added when entering drone view
 		AddClientCommandCallbackNew( "ShouldExitDrone", ClientCommand_ShouldExitDrone )
 		file.neurolinkRegisteredPropScriptsArrayID = CreateScriptManagedEntArray()
 		file.empDamageArrayID = CreateScriptManagedEntArray()
@@ -716,7 +716,7 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	}
 
 	if( PlayerHasPassive( damagedEnt, ePassives.PAS_CRYPTO ) )
-		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening ~mkos
+		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //(mk): possibly get a clientsided ondamaged shared callback happening
 }
 #endif // SERVER
 
@@ -939,7 +939,7 @@ void function Drone_AttemptUse( entity player )
 			}
 			success = true
 		}
-		//fixme. Cafe -- more info? ~mkos -- Just read it? Cafe
+		//fixme. Cafe
 
 		// else if ( trace.hitEnt.GetTargetName() == PASSIVE_REINFORCE_REBUILT_DOOR_SCRIPT_NAME && IsReinforced( trace.hitEnt ) && IsFriendlyTeam( camera.GetTeam(), trace.hitEnt.GetTeam() ) )
 		// {
@@ -1175,7 +1175,7 @@ bool function Crypto_TryDestroyDroneProjectile( entity cameraVehicle, bool useFa
       
 
                     
-int function CryptoDrone_GetUpgradedHealth() //not called yet ~mkos
+int function CryptoDrone_GetUpgradedHealth() //(mk): not called yet
 {
 	return file.crypto_drone_upgraded_health
 }
@@ -1786,7 +1786,7 @@ void function SwapToCameraView_Thread( entity owner, entity activeCamera )
 	entity currentlyReloadingWeapon = null
 	float reloadEndTime = -1.0
 
-	AddEntityCallback_OnDamaged( owner, OnPlayerTookDamage ) //adding damage callback here.. ~mkos
+	AddEntityCallback_OnDamaged( owner, OnPlayerTookDamage ) //(mk): adding damage callback here..
 	#if DEVELOPER 
 		//printt( "Crypto AddEntityCallback_OnDamaged:", owner )
 	#endif 
@@ -2271,7 +2271,7 @@ void function Camera_OnBeginView_Think( entity player, int statusEffect, bool ac
 		}
 		WaitFrame()
 		
-		if ( Time() - preventInfiniteLoop > 3 ) //for if all entities get destroyed at a bad time (for say at the execution of this loop) ~mkos
+		if ( Time() - preventInfiniteLoop > 3 ) //(mk): for if all entities get destroyed at a bad time (for say at the execution of this loop)
 		{
 			Warning("infinite loop prevented in " + FUNC_NAME() + "()  -- file: " + FILE_NAME() )
 			return
@@ -2824,7 +2824,7 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 			camera.e.scanSoundPlaying = true
 		}
 
-		//CLEAN THIS UP - For loop with index to not use fastremovebyvalue. One iteration probably all that's necessary. //---- To whom it may concern.. DONE ~mkos
+		//CLEAN THIS UP - For loop with index to not use fastremovebyvalue. One iteration probably all that's necessary. //----(mk): DONE
 		float now = Time()
 
 		foreach ( nearbyEnt in nearbyEntities )

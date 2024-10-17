@@ -22,7 +22,7 @@ struct
 
 function ClassWallrun_Init()
 {
-	//use local copy of values instead of lookups ~mkos
+	//(mk): use local copy of values instead of lookups
 	
 	file.flowstate_enable_bullet_slow = GetCurrentPlaylistVarBool( "flowstate_enable_bullet_slow", false )
 	file.flowstate_headshots_only_gamemode = GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false )

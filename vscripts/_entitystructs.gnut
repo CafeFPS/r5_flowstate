@@ -808,9 +808,9 @@ global struct ServerPlayerStruct
 	string inputmode 			= ""
 	bool challengenotify 		= false //need to make a notify system
 	entity entLastChallenger
+	float lastInputChangeTime
 	float last_input_time
 	float IBMM_grace_period 	= -1 // <= 0 is disabled
-	float messagetime			= 0
 	int movevalue 				= 0
 	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name (TODO: DEPRECATE)
 	int season_kills 			= 0 //(TODO: DEPRECATE)

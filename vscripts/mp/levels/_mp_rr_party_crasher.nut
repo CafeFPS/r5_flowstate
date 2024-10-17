@@ -788,7 +788,7 @@ void function PartyCrasherOnEntitiesDidLoad()
     CreateMapEditorProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1660.0360, 2679.8460, 952.5771 > + startingorg, < 0.0000, -152.5263, 90.0000 >, true, 50000, -1, 1);
     CreateMapEditorProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < 2322.5040, 2554.2150, 919.0002 > + startingorg, < 0.0000, -148.8894, 0.0000 >, true, 50000, -1, 1);
 
-	Patch_mp_rr_party_crasher() //spawn LOS flagged props ~mkos
+	Patch_mp_rr_party_crasher() //(mk): spawn LOS flagged props
 }
 
 array<entity> function PerfectZipline(vector startPos,vector endPos,bool pathfinder_model)

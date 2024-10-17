@@ -82,6 +82,8 @@ struct
 	float chatMutePenaltyDecayTime
 	int chatMutePenaltyDecayAmount
 	
+	bool chatCommandsEnabled
+	
 } file
 
 ////////////////
@@ -94,7 +96,6 @@ void function RegisterAllChatCommands() //if chat commands enabled.
 	mAssert( GetCurrentPlaylistVarBool( "enable_chat_commands", true ), FUNC_NAME() + "() was called but enable_chat_commands is set to false" )
 	
 	//common
-	Commands_Register( "!info", cmd_info, [ "/info", "\\info" ] )
 	Commands_Register( "!id", cmd_id, [ "/id", "\\id" ] )
 	Commands_Register( "!aa", cmd_aa, [ "/aa", "\\aa" ] )
 	Commands_Register( "!inputs", cmd_inputs, [ "/inputs", "\\input" ] )
@@ -111,6 +112,7 @@ void function RegisterAllChatCommands() //if chat commands enabled.
 			
 			Commands_Register( "!wait", cmd_wait, [ "/wait", "\\wait" ] )
 			Commands_Register( "!rest", cmd_rest, [ "/rest", "\\rest" ] )
+			Commands_Register( "!info", cmd_info, [ "/info", "\\info" ] )
 			
 			if( GetCurrentPlaylistVarBool( "enable_challenges", true ) )
 			{
@@ -145,16 +147,16 @@ void function cmd_rest( string tag, array<string> args, entity activator )
 	if( !g_bRestEnabled() )
 		return
 		
-	switch( Playlist() )
+	switch( Playlist() )// only two varients use rest, as it was a 1v1 feature originally.
 	{
 		case ePlaylists.fs_scenarios:
 			
-			FS_Scenarios_ClientCommand_Rest( activator, [] )
+			FS_Scenarios_ClientCommand_Rest( activator, args )
 			break
 			
 		case ePlaylists.fs_1v1:
 		
-			ClientCommand_Maki_SoloModeRest( activator, [] )	
+			ClientCommand_Maki_SoloModeRest( activator, args )	
 			break
 	}
 }
@@ -264,58 +266,57 @@ void function Chat_Init()
 	file.opt_in_spam_mute 			= GetCurrentPlaylistVarBool( "opt_in_spam_mute", true )
 	file.chatMutePenaltyDecayTime 	= GetCurrentPlaylistVarFloat( "textmute_offence_decay_time", 45.0 )
 	file.chatMutePenaltyDecayAmount	= GetCurrentPlaylistVarInt( "textmute_offence_decay_amount", 1 )
+	file.chatCommandsEnabled		= GetCurrentPlaylistVarBool( "enable_chat_commands", true )
 	
 	//Signals 
 	RegisterSignal( "MuteStateChanged" )
 	
 	//Callbacks
-	AddClientCommandCallback( "FS_TT", SetRelayChallenge )
+	//AddClientCommandCallback( "FS_TT", SetRelayChallenge )
 	AddClientCommandCallbackNew( "say", ChatWatchdog )
-	AddCallback_OnClientConnected( CheckOnConnect )
+	AddCallback_OnClientConnected( CheckForTextMute )
 	
 	//Commands
 	Commands_SetupArg( "-r", [ "r", "-reason", "reason" ] )
 	
-	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
+	if( file.chatCommandsEnabled )
 	{
 		RegisterAllChatCommands()
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
-	}
 	
-	if( file.opt_in_spam_mute )
-	{
-		if( file.chatThreshhold <= 0 )
-			mAssert( false, "Opt in mute was enaled, but threshold was " + string( file.chatThreshhold ) + ". must be greater than 0" )
-		else 
-			AddCallback_OnClientConnected( Chat_SpamCheck_StartThread )
-			
-		file.offensePenaltyTiers = CheckAndGenerateOffenceTierArray()
-			
-		array<string> args = []
-		string timeString
-		
-		if( Chat_OffenceTiersEnabled() )//must contain one item
-		{
-			file.timeoutAmount = GetOffenceArray()[ 0 ]
-			file.DetermineTimeOut = DetermineTimeOutFunction_Steps
-			AddCallback_OnClientConnected( SetupForTiers )
-		}
-		else 
-		{
-			timeString = GetCurrentPlaylistVarString( "chat_timeout", "" )
-			file.DetermineTimeOut = DetermineTimeOutFunction_Common
-			
-			if( !empty( timeString ) )
-			{
-				args = split( timeString, " " )
-				file.timeoutAmount = ParseTimeString( args )
+		if( file.opt_in_spam_mute )
+		{		
+			file.offensePenaltyTiers = CheckAndGenerateOffenceTierArray()
 				
-				if( file.timeoutAmount == -1 )
-					mAssert( false, "Timeout was set to -1. Was the timeout string correctly formatted in playlists? Use 0 for infinite." )
+			array<string> args = []
+			string timeString
+			
+			if( Chat_OffenceTiersEnabled() )//must contain one item
+			{
+				file.timeoutAmount = GetOffenceArray()[ 0 ]
+				file.DetermineTimeOut = DetermineTimeOutFunction_Steps
+				AddCallback_OnClientConnected( SetupForTiers )
 			}
+			else 
+			{
+				timeString = GetCurrentPlaylistVarString( "chat_timeout", "" )
+				file.DetermineTimeOut = DetermineTimeOutFunction_Common
+				
+				if( !empty( timeString ) )
+				{
+					args = split( timeString, " " )
+					file.timeoutAmount = ParseTimeString( args )
+					
+					if( file.timeoutAmount == -1 )
+						mAssert( false, "Timeout was set to -1. Was the timeout string correctly formatted in playlists? Use 0 for infinite." )
+				}
+			}
+			
+			if( file.chatThreshhold <= 0 )
+				mAssert( false, "Opt in mute was enabled, but threshold was " + string( file.chatThreshhold ) + ". must be greater than 0" ) //let host know: config error
+			else
+				AddCallback_OnClientConnected( Chat_SpamCheck_StartThread )
 		}
-
-
 	}
 }
 
@@ -355,7 +356,7 @@ void function Chat_CheckGlobalMute( entity player )
 		MuteFromPersistence( player, YES )
 }
 
-void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmdLine = false, array<string> cmdStringArgs = [], int timeoutAmount = 0, string uid = "" )
+bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmdLine = false, array<string> cmdStringArgs = [], int timeoutAmount = 0, string uid = "" )
 {
 	int eHandle
 	bool bSyncToPlayers = true
@@ -366,13 +367,9 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 		uid = player.p.UID
 	}
 	else if( !empty( uid ) )
-	{
 		bSyncToPlayers = false //attempt list update only
-	}
 	else 
-	{
-		return
-	}
+		return false
 	
 	if ( toggle )
 	{
@@ -389,7 +386,7 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 				int determinedTime = ParseTimeString( cmdStringArgs )
 				
 				if( determinedTime > 0 )
-					timestamp = GetUnixTimestamp() + determinedTime //file.DetermineTimeOut( player, determinedTime )
+					timestamp = GetUnixTimestamp() + determinedTime
 				else 
 					timestamp = determinedTime
 			}
@@ -407,18 +404,24 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 			RemoveFromChatMuteIgnoreList( uid )
 		}
 		else if( bSyncToPlayers )
-		{
 			timestamp = GetEntityUnmuteTimestamp( player )
-		}
 		else 
-		{
 			timestamp = MutedList_GetUnmuteTime( uid )
-		}
 			
 		MutedList_Update( uid, timestamp )
 	}
 	else
-	{
+	{		
+		int timeToWait = ParseTimeString( cmdStringArgs )
+		int unmuteTime = GetUnixTimestamp() + timeToWait
+		
+		if( timeToWait > 0 && IsTimeInSameMatch( unmuteTime ) )
+		{
+			MutedList_Update( uid, unmuteTime )
+			thread AutoUnmuteAtTime( player, unmuteTime, uid )	
+			return false
+		}	
+		
 		if( cmdLine )
 			AddToChatMuteIgnoreList( uid )
 			
@@ -437,6 +440,8 @@ void function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 			Remote_CallFunction_NonReplay( s_player, "FS_Silence", toggle, eHandle )
 		}
 	}
+	
+	return true
 }
 
 string function Chat_GetMutedReason( string uid = "", entity player = null )
@@ -477,7 +482,7 @@ void function Chat_SpamCheck_StartThread( entity player )
 		}
 	)()
 	
-	if( file.chatMutePenaltyDecayTime )
+	if( Chat_OffenceTiersEnabled() )
 	{
 		thread 
 		(
@@ -542,9 +547,9 @@ string function Chat_FindMuteReasonInArgs( array<string> args )
 
 void function __Commands( entity player, array<string> args )
 {	
-	#if DEVELOPER
-		//print_string_array( args )
-	#endif 
+	// #if DEVELOPER
+		// print_string_array( args )
+	// #endif 
 	
 	string userCmd = args[ 0 ]
 	string baseCmd = Commands_ReturnBaseCmdForAlias( userCmd )
@@ -554,7 +559,7 @@ void function __Commands( entity player, array<string> args )
 		
 	CommandCallback handler = Commands_GetCommandHandler( baseCmd )
 	
-	if( Commands_RequiresValidPlayer( baseCmd ) )
+	if( Commands_RequiresPlayersCommandsEnabled( baseCmd ) )
 	{
 		if( !IsCommandsEnabled( player ) )
 			return
@@ -642,7 +647,7 @@ OffenceTiers function CheckAndGenerateOffenceTierArray()
 		
 		try
 		{
-			playlistOffenceTiers = StringToArray( playlistString )
+			playlistOffenceTiers = StringToArray( playlistString, 1000 )
 		
 			foreach( string timeString in playlistOffenceTiers )
 			{
@@ -744,7 +749,8 @@ int function ParseTimeString( array<string> args )
 	//compatibility hack for usage in admin cc
 	switch( param )
 	{
-		case "mute":  
+		case "mute":
+		case "unmute":
 		
 			if( argLen >= 4 )
 				startIndex = 2
@@ -875,7 +881,7 @@ void function AutoUnmuteAtTime( entity player, int unmuteTime, string uid )
 	
 	for( ; ; )
 	{
-		if( !Chat_InMutedList( uid ) ) //maybe a manual unmute
+		if( !Chat_InMutedList( uid ) ) //maybe a manual unmute occurred
 			return
 		
 		int currentTimeStamp = GetUnixTimestamp()
@@ -892,7 +898,10 @@ void function AutoUnmuteAtTime( entity player, int unmuteTime, string uid )
 		}
 		else 
 		{
-			break
+			if( newUnmuteTime <= 0 )
+				return //infinite mute time change applied
+			else //(newUnmuteTime < currentTimeStamp)
+				break //break and unmute
 		}
 	}
 	
@@ -924,11 +933,11 @@ void function MuteFromPersistence( entity player, string setting )
 		if ( !Chat_InMutedList( uid ) )
 			MutedList_Update( uid, GetEntityUnmuteTimestamp( player ) )
 		
-		CheckOnConnect( player )
+		CheckForTextMute( player )
 	}
 }
 
-void function CheckOnConnect( entity player )
+void function CheckForTextMute( entity player )
 {
 	if( !IsValid( player ) )
 		return
@@ -983,7 +992,7 @@ void function SetUnmuteTime( entity player, string potentialTimestamp )
 	
 	try
 	{
-		timestamp = potentialTimestamp.tointeger() //Todo(dw): server-based persistence vars need typed like global stats.
+		timestamp = potentialTimestamp.tointeger() //Todo(mk): server-based persistence vars need typed like global stats.
 	}
 	catch( e )
 	{
@@ -1027,42 +1036,42 @@ void function SetupForTiers( entity player )
 		file.offenceLevel[ player.p.UID ] = 0
 }
 
-bool function SetRelayChallenge( entity player, array<string> args )
-{
-	if( !IsValid( player ) )
-		return false
+// bool function SetRelayChallenge( entity player, array<string> args )
+// {
+	// if( !IsValid( player ) )
+		// return false
 	
-	if( args.len() < 1 )
-		return true
+	// if( args.len() < 1 )
+		// return true
 	
-	string challengeCode = args[0]
+	// string challengeCode = args[0]
 	
-	if( !IsNumeric( challengeCode, 10000000, 99999999 ) )
-		return true
+	// if( !IsNumeric( challengeCode, 10000000, 99999999 ) )
+		// return true
 	
-	if( challengeCode.len() != 8 )
-		return true
+	// if( challengeCode.len() != 8 )
+		// return true
 	
-	int compCode = -1
+	// int compCode = -1
 	
-	try
-	{
-		compCode = challengeCode.tointeger()
-	}
-	catch(e){ return true }
+	// try
+	// {
+		// compCode = challengeCode.tointeger()
+	// }
+	// catch(e){ return true }
 	
-	if( compCode != player.p.relayChallengeCode )
-	{
-		return true 
-	}
-	else
-	{
-		player.p.bRelayChallengeState = true
-		player.Signal( "ChallengeReceived" )
-	}
+	// if( compCode != player.p.relayChallengeCode )
+	// {
+		// return true 
+	// }
+	// else
+	// {
+		// player.p.bRelayChallengeState = true
+		// player.Signal( "ChallengeReceived" )
+	// }
 	
-	return true
-}
+	// return true
+// }
 
 void function ChatWatchdog( entity player, array<string> args )
 {
@@ -1080,10 +1089,7 @@ void function ChatWatchdog( entity player, array<string> args )
 	if( wordCount && !GetServerVar( "batch_fetch_complete" ) )
 		Chat_ToggleMuteForAll( player, true, true, [ "-reason", "Attempting to bypass precheck" ], 30 )
 	
-	if( !file.opt_in_spam_mute )
-		return
-	
-	if( wordCount > 0 )
+	if( file.chatCommandsEnabled && file.opt_in_spam_mute && wordCount > 0 )
 	{
 		player.p.msg++
 		
@@ -1125,7 +1131,6 @@ void function ClientCommand_ParseSay( entity player, array<string> args )
 		return
 	
 	__Commands( player, args )
-	return
 }
 
 #if DEVELOPER 
@@ -1165,11 +1170,3 @@ void function MutedList_Remove( string uid )
 	if( Chat_InMutedList( uid ) )
 		delete GetMutedList()[ uid ]
 }
-
-
-
-
-
-
-
-

@@ -24,7 +24,7 @@ const bool DEBUG_REGISTER_ASSETS = false
 
 struct
 {
-	//these must match on server/client ( until a transfer sdk implemention this is static )
+	//these must exist on client. Populated by playlists specified assets temporarily until a new transfer method is provided.
 	array<string> assets
 	
 	#if SERVER

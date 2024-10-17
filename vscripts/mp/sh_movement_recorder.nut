@@ -1,6 +1,6 @@
 // Made by @CafeFPS ( original idea and code template )
 // mkos - multiplayer compatibility overhaul, code refactor, features
-// Todo: QOL Update-- Allow each slot to have a set playback rate per player, with a ui slider/input field to modify per-slot. 0 for inf or frozen. ~mkos
+// Todo(mk): QOL Update-- Allow each slot to have a set playback rate per player, with a ui slider/input field to modify per-slot. 0 for inf or frozen.
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
@@ -81,7 +81,7 @@ void function Sh_FS_MovementRecorder_Init()
 	
 	#if SERVER
 		//Todo: Dynmaically create all templates from one source
-		disableoverwrite( file._playbackAmounts__Template ) //prevent modifying template ~mkos
+		disableoverwrite( file._playbackAmounts__Template ) //(mk): prevent modifying template
 		disableoverwrite( file._dummyMaps__Template )
 		//disableoverwrite( file._playbackDuration__Template )
 		
@@ -184,10 +184,10 @@ string function slotname( int slot )
 
 #if CLIENT
 
-// Todo: Create BindSystem_ framework for any game mode to use during development for client scripts, 
+// Todo(mk): Create BindSystem_ framework for any game mode to use during development for client scripts, 
 // saves current bindings, adds a disconnect callback to restore binds, proper checking.. etc 
 // will need to handle gamepad as well as various bind types (held) etc. 
-// save for next release, for now, this recorder specific logic. ~mkos
+// save for next release, for now, this recorder specific logic.
 
 const table<string,string> RECORDER_BINDINGS = 
 {
@@ -725,7 +725,7 @@ void function StartRecordingAnimation( entity player )
 		}
 	)
 	
-	// Recording animations disappear after 2:30, hard-set limit of 3000 frames. ~mkos
+	//(mk): Recording animations disappear after 2:30, hard-set limit of 3000 frames.
 	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
 
@@ -891,7 +891,7 @@ void function PlayRandomAnimation( entity player )
 			
 		PlayAnimInSlot( player, slot, false, false, true )
 		
-		//No need to wait, PlayAnimInSlot() will wait this thread as well. ~mkos
+		//(mk): No need to wait, PlayAnimInSlot() will wait this thread as well.
 		//MovementRecorder_WaitForAnimToFinish( anim ) 
 		
 		wait 0.1
@@ -1048,7 +1048,7 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 void function MovementRecorder_WaitForAnimToFinish( var anim )
 {
 	Assert( IsThreadTop(), "not thread top" )
-	//Todo: Implement wait based on playback rate setting for this player, for this slot. (currently global setting) ~mkos
+	//Todo(mk): Implement wait based on playback rate setting for this player, for this slot. (currently global setting)
 	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate )
 }
 
@@ -1060,7 +1060,7 @@ void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 	if( IsValid( player ) && file.playerDummyMaps[ player.p.handle ][ slot ].contains( dummy ) )
 		file.playerDummyMaps[ player.p.handle ][ slot ].removebyvalue( dummy )
 
-	if( dummy.IsEntAlive() ) //only destroy if dummy was still alive, else let damagecode handle ~mkos
+	if( dummy.IsEntAlive() ) //(mk): only destroy if dummy was still alive, else let damagecode handle
 		dummy.Destroy()
 	
 	file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
@@ -1255,7 +1255,7 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 	}
 }
 
-//TODO: Preferably we use more performant budget management strategy in the future, for now.. this. ~mkos
+//TODO(mk): Preferably we use more performant budget management strategy in the future, for now.. this.
 bool function IsOverBudget( entity player, int amountToPlay = 1 )
 {
 	if ( ( GetEntArrayByClass_Expensive( "npc_dummie" ).len() + amountToPlay ) < MAX_NPC_BUDGET )

@@ -427,7 +427,7 @@ void function BannerAssets_ModifyGroupData( string groupName, table tbl )
 				if( group.isVisible != visibility )
 				{
 					group.isVisible	= visibility
-					Signal( file.dummyEnt, "VisibilityChanged" ) //Todo(dw): potential concurrency issues where thread instances
+					Signal( file.dummyEnt, "VisibilityChanged" ) //Todo(mk): potential concurrency issues where thread instances
 				}
 					
 				break
@@ -1184,7 +1184,9 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		if( ogBannersLen != banners.len() )
 		{
 			//tell server something?
-			Warning( "Some audio files were removed from the queue as the client does not have them." )
+			#if DEVELOPER && DEBUG_BANNER_ASSET
+				Warning( "Some audio files were removed from the queue as the client does not have them." )
+			#endif
 		}
 		
 		thread __AudioQueue( player, baseBannerVideo, groupData )

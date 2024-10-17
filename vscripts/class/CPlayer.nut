@@ -338,35 +338,35 @@ function CodeCallback_RegisterClass_CPlayer()
 			return
 		
 		player.p.bTextmute = expect bool ( toggle )
-		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
-		player.p.bRelayChallengeState = false
+		// player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
+		// player.p.bRelayChallengeState = false
 		
-		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
+		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", toggle ) //player.p.relayChallengeCode, toggle )
 		
-		#if DEVELOPER
-			printt( "Sent challenge as", player.p.relayChallengeCode )
-		#endif
+		// #if DEVELOPER
+			// printt( "Sent challenge as", player.p.relayChallengeCode )
+		// #endif
 		
-		thread
-		( 
-			void function() : ( player )
-			{
-				EndSignal( player, "OnDestroy", "OnDisconnected" )
-				waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
+		// thread
+		// ( 
+			// void function() : ( player )
+			// {
+				// EndSignal( player, "OnDestroy", "OnDisconnected" )
+				// waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
 				
-				if( !IsValid( player ) )
-					return
+				// if( !IsValid( player ) )
+					// return
 				
-				if ( !player.p.bRelayChallengeState )
-				{
-					#if DEVELOPER 
-						printt( "Player acknowledgment failed." )
-					#endif 
+				// if ( !player.p.bRelayChallengeState )
+				// {
+					// #if DEVELOPER 
+						// printt( "Player acknowledgment failed." )
+					// #endif 
 					
-					KickPlayerById( player.GetPlatformUID(), "Chat State Error" )
-				}
-			}
-		)()
+					// KickPlayerById( player.GetPlatformUID(), "Chat State Error" )
+				// }
+			// }
+		// )()
 	}
 	
 	function CPlayer::CommandsEnabled( toggle )
@@ -383,7 +383,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	//			GET			//
 	//////////////////////////
 	
-	//TODO: Replace with code entity function ~mkos
+	//TODO(mk): Replace with code entity function
 	
 	#document( "CPlayer::GetPlayerStatString", "Fetch player stat string from player's stat table max.len(30)" )
 	function CPlayer::GetPlayerStatString( statname )
@@ -414,7 +414,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	//			SET			//
 	//////////////////////////
 	
-	//TODO: Replace with code entity function ~mkos
+	//TODO(mk): Replace with code entity function
 	
 	#document( "CPlayer::SetPlayerStatString", "Set player stat string from player's stat table max.len(30)" )
 	function CPlayer::SetPlayerStatString( statname, value )

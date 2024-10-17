@@ -2560,7 +2560,7 @@ void function WaitFrames( int frames )
 	}
 }
 
-string function ArrayToString( array<string> arr ) //~mkos
+string function ArrayToString( array<string> arr )//(mk)
 {
 	string result = ""
 	
@@ -2693,7 +2693,7 @@ array<string> function StringToArray( string str, int arrayStringMaxLength = 128
 			valid.append( item )		
     }
 	
-	if ( valid.len() <= 0 ) 
+	if ( !valid.len() ) 
         throw "Array empty after conversion";
 
     return valid

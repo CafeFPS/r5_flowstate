@@ -378,8 +378,7 @@ void function OnWeaponZoomIn_ModdedPistol(  entity weapon )
 
 	weapon.HideWeapon()
 	
-	//use Flowstate_IsHaloMode() ~mkos
-	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// if( !Flowstate_IsHaloMode() && GetMapName() == "mp_flowstate" )
 	// {
 		Minimap_DisableDraw()
 	// }
@@ -407,8 +406,7 @@ void function OnWeaponZoomOut_ModdedPistol(  entity weapon )
 
 	weapon.ShowWeapon()
 
-	//use Flowstate_IsHaloMode() ~mkos
-	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// if( !Flowstate_IsHaloMode() && GetMapName() == "mp_flowstate" )
 	// {
 		Minimap_EnableDraw()
 	// }
