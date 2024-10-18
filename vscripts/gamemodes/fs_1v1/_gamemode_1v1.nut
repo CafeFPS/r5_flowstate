@@ -1596,8 +1596,9 @@ void function INIT_playerChallengesStruct( entity player )
 		mAssert( !isChalValid( getChallengeListForPlayer( player ) ), "Chal struct already appended for player " + string( player ) )
 	#endif
 	
-	ChallengesStruct chalStruct;
+	ChallengesStruct chalStruct
 	chalStruct.player = player
+	chalStruct.isValid = true
 	file.allChallenges.append( chalStruct )
 }
 
