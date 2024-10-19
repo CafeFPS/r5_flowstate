@@ -964,7 +964,7 @@ void function CheckForTextMute( entity player )
 	}
 }
 
-/// purpose: prevent resyncing online data overriding manual new mutes //Todo: Use tracker player GetIgnoreSync flag
+/// purpose: prevent resyncing online data overriding manual new mutes
 void function AddToChatMuteIgnoreList( string uid )
 {
 	if( !ChatMuteIgnoreList_Contains( uid ) )

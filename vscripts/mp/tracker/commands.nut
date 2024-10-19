@@ -28,6 +28,7 @@ struct CommandData
 	CommandCallback handler
 	array<string> aliases
 	bool bRequiresCommandsEnabled
+	bool isValid
 }
 
 struct ArgData
@@ -166,6 +167,7 @@ void function Commands_Register( string cmd, CommandCallback ornull handlerFunct
 		data.handler = handlerFunction
 		data.aliases = aliases
 		data.bRequiresCommandsEnabled = bRequiresCommandsEnabled
+		data.isValid = true //for returning CommandData instances
 		
 		file.commandHandlers[ cmd ] <- data	
 		
