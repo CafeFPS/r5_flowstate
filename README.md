@@ -4,7 +4,7 @@ Get ready to experience Apex Legends like never before with exciting new game mo
 With a year's worth of improvements and additions, capturing everything would be overwhelming, so we've highlighted the most important updates without getting into the technical details. Enjoy!  
 
 ## New Playlists & Modes
-* Winter Express – The return of the fan favorite now with a wide range of settings available for server hosters, expect fun and crazy games!
+* Winter Express – The return of the fan favorite now with a wide range of settings available for server admins, expect fun and crazy games!
 * Zone Wars – A fast paced final ring simulator with global leaderboard.
 * Movement Recorder – Practice your movements and analyze them to improve, combat versus other players’ recordings.
 * LG Duels – 1v1 duels using the new Flowstate Lightning Gun in automatic mode, damage heals and your movement speed is increased.
