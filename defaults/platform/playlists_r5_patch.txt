@@ -1717,10 +1717,10 @@ playlists
 			{
 				visible											1
 				
-				name							   				"Scenarios"
-				description										"Scenarios"
-				abbreviation					   				"Scenarios"
-				lobbytitle						 				"Scenarios"
+				name							   				"Zone Wars"
+				description										"Zone Wars"
+				abbreviation					   				"Zone Wars"
+				lobbytitle						 				"Zone Wars"
 			
 				image							  				worlds_edge
 				video							  				worlds_edge
@@ -3932,7 +3932,7 @@ playlists
 				"DISCONNECT_SEND_OVERFLOW"						"Connection to server overflowed (code:dam)."
 				"DISCONNECT_NETCHAN_OVERFLOW"		 			"Connection to server overflowed (code:vulkan)."
 				"DISCONNECT_STRINGCMD_OVERFLOW"	   				"Connection to server overflowed (code:skillissue)."
-				"MOTD"								  			"What's new in R5Reloaded? \n\nFlowstate Scripts now uses S21 retail scripts as base. Enjoy updated map features and hundred of bugs fixes. \n\nIt also features new modes: \nLG Duels, Cafe's Instagib, Winter Express, Zone Wars, Movement Recorder, Search and Destroy, Surf, Halo Mod and two new movement practice modes! \n\nNew maps: \n   -Kings Canyon MU2 (S5)\n    -Phase Runner\n    -World's Edge Holiday (Winter Express)\n    -mp_rr_construct (custom)\n    -Empty Map (custom) \n\n Flowstate Scripts (Gameplay) brought to you by @CafeFPS and collaborators.\nR5Reloaded (Engine) by @AmosModz and collaborators."
+				"MOTD"								  			"What's new in R5Reloaded? \n\nFlowstate Scripts now uses S21 retail scripts as base. Enjoy updated map features and hundred of bugs fixes. \n\nIt also features new modes: \nLG Duels, Cafe's Instagib, Winter Express, Zone Wars, Movement Recorder, Search and Destroy, Surf, Halo Mod and two new movement practice modes! \n\nNew maps: \n   -Kings Canyon MU2 (S5)\n    -Phase Runner\n    -World's Edge Holiday (Winter Express)\n    -mp_rr_construct (custom)\n    -Empty Map (custom) \n\n Flowstate Scripts (Gameplay) brought to you by @CafeFPS, @ttvmkos and collaborators.\nR5Reloaded (Engine) by @AmosModz and collaborators."
 				"BETA_BUILD_WATERMARK" 				  			""
 				"FS_PLAYLIST_MOTD"					  			"Flowstate x R5Reloaded" 		//1000 char max
 				"FS_PLAYLIST_MOTD_CONTINUE"			  			"" 								//append to first - 1000 char limit
