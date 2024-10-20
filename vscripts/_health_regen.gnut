@@ -260,7 +260,7 @@ int function PilotShieldModifyDamage( entity player, var damageInfo )
 		}
 	}
 	
-	if( IsValid( attacker ) && attacker.IsPlayer() )
+	if( IsValid( attacker ) )
 		StoreDamageHistoryAndUpdate( player, file.maxDamageHistoryTime, shieldDamage + normalDamage, attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ) & ~DF_SHIELD_DAMAGE, DamageInfo_GetDamageSourceIdentifier( damageInfo ), attacker )
 	
 	return shieldDamage
