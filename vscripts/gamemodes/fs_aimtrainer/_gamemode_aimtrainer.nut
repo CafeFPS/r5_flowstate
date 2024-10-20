@@ -3558,23 +3558,20 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	if( InfiniteAmmoEnabled() )
 		SetupInfiniteAmmoForWeapon( player, weaponent )
+	else if( GetCurrentPlaylistVarInt( "give_weapon_stack_count_amount", 0 ) != 0 )
+	{	
+		player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
 
-	ItemFlavor ornull weaponSkinOrNull = null
-	array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
-	int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
-	ItemFlavor ornull weaponCharmOrNull = GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) == false ? null : GetItemFlavorByGUID( chosenCharm )
-	ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+		SetupPlayerReserveAmmo( player, weaponent )
 
-	if( weaponFlavor != null )
-	{
-		array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
-		if( weaponLegendaryIndexMap.len() > 1 && GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
-			weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+		player.ClearFirstDeployForAllWeapons()
+		player.DeployWeapon()
+
+		if( weaponent.UsesClipsForAmmo() )
+			weaponent.SetWeaponPrimaryClipCount( weaponent.GetWeaponPrimaryClipCountMax() )	
 	}
 
-	WeaponCosmetics_Apply( weaponent, weaponSkinOrNull, weaponCharmOrNull )
-	
-	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+	if( Playlist() == ePlaylists.fs_aimtrainer )
 	{
 		switch( weaponent.GetWeaponClassName() )
 		{
@@ -3630,6 +3627,24 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		}
 	}
 
+	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+	{
+		ItemFlavor ornull weaponSkinOrNull = null
+		array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+		int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+		ItemFlavor ornull weaponCharmOrNull = GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) == false ? null : GetItemFlavorByGUID( chosenCharm )
+		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+
+		if( weaponFlavor != null )
+		{
+			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+			if( weaponLegendaryIndexMap.len() > 1 && GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+		}
+
+		WeaponCosmetics_Apply( weaponent, weaponSkinOrNull, weaponCharmOrNull )
+	}
+	
 	return true
 }
 
