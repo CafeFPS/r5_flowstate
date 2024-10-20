@@ -14,15 +14,19 @@ struct
 	float healthRegenRate
 	float healthRegenStartDelay
 	float healthRegenTickTime
+	
+	float maxDamageHistoryTime
 } file
 
 void function HealthRegen_Init()
 {
-		file.healthRegenRate = 1.85 //values that seems to fit with retail
-		file.healthRegenTickTime = 0.60 //values that seems to fit with retail
-		file.healthRegenStartDelay = 5.0
-		AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
-		RegisterSignal( "PilotHealthRegenThink" )
+	file.healthRegenRate = 1.85 //values that seems to fit with retail
+	file.healthRegenTickTime = 0.60 //values that seems to fit with retail
+	file.healthRegenStartDelay = 5.0
+	AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
+	RegisterSignal( "PilotHealthRegenThink" )
+	
+	file.maxDamageHistoryTime = GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME )
 }
 
 bool function IsHealActive( entity player )
@@ -255,6 +259,9 @@ int function PilotShieldModifyDamage( entity player, var damageInfo )
 			PlayerDamageFeedback( player, damageInfo, ShieldDmgFloat )
 		}
 	}
+	
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+		StoreDamageHistoryAndUpdate( player, file.maxDamageHistoryTime, shieldDamage + normalDamage, attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ) & ~DF_SHIELD_DAMAGE, DamageInfo_GetDamageSourceIdentifier( damageInfo ), attacker )
 	
 	return shieldDamage
 }

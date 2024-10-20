@@ -781,11 +781,10 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	{
 		float damageHistoryTime = file.maxDamageHistoryTime
 
-		if ( shieldDamage > 0 )
-			StoreDamageHistoryAndUpdate( player, damageHistoryTime, float( shieldDamage ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker )
-		if ( DamageInfo_GetDamage( damageInfo ) != 0 )
-			StoreDamageHistoryAndUpdate( player, damageHistoryTime, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ) & ~DF_SHIELD_DAMAGE, damageSourceId, attacker )
-
+		if ( shieldDamage == 0 && DamageInfo_GetDamage( damageInfo ) != 0 && IsValid( attacker ) ) //only send flesh damage here, shield damage send in Wallrun_PlayerTookDamage. Cafe
+		{
+			StoreDamageHistoryAndUpdate( player, damageHistoryTime, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker )
+		}
 	}
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
