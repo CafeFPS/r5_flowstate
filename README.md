@@ -63,6 +63,22 @@ Explore new environments with these map additions:
 * Titan Sword
 * Flight Core
 
+## New NPCs
+* Legends as dummy
+	* Rampart
+	* Ballistic
+	* Horizon
+   	* Loba
+   	* Catalyst
+   	* Valk
+* Marvin
+* Prowler
+* Spider
+* Spectre
+* Stalker
+* Infected Soldier
+* Elite Pilot
+
 ## Core Gameplay System Updates
 Makeshift systems have been replaced with robust, original scripts, greatly improving performance and stability. These updates cover abilities, base gameplay systems and map features, now powered by retail S21 scripts.
 
