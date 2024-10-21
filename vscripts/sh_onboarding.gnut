@@ -573,7 +573,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+	// Already executed in CodeCallback_OnPlayerRespawned
+	// Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 
 	PlayerStopSpectating( player )
 
