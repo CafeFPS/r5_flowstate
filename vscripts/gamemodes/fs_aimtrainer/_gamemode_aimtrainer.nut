@@ -2776,11 +2776,13 @@ void function OnPlayerDeathCallbackThread( entity player )
 {
 	if( !player.p.isChallengeActivated )
 		return
+		
+	EndSignal( player, "OnDestroy" )
 
 	wait 1
 	
 	Signal(player, "ChallengeTimeOver")
-	SetupPlayer( player )
+	thread SetupPlayer( player )
 }
 
 int function ReturnShieldAmountForDesiredLevel()
@@ -2875,7 +2877,7 @@ void function PreChallengeStart(entity player, int challenge)
 	if( IsAlive( player ) )
 		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 	
-	SetupPlayer( player )
+	thread SetupPlayer( player )
 	player.FreezeControlsOnServer()
 
 	player.p.storedWeapons = StoreWeapons(player)
@@ -3650,6 +3652,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 void function SetupPlayer( entity player, bool fromSelector = false )
 {
+	EndSignal( player, "OnDestroy" )
+	WaitEndFrame() //has to wait until player dies
+	
 	DecideRespawnPlayer( player, false )
 
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
@@ -3712,7 +3717,7 @@ void function SetupPlayer( entity player, bool fromSelector = false )
 
 bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 {
-	SetupPlayer( player, true )
+	thread SetupPlayer( player, true )
 
 	player.SetOrigin(AimTrainer_startPos)
 	player.SetAngles(AimTrainer_startAngs)

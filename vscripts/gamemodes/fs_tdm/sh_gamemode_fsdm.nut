@@ -1890,6 +1890,12 @@ void function RedishHighlight_Thread( entity player )
 {
 	if( !RedishHighlightEnabled() )
 		return
+
+	#if SERVER
+	player.EndSignal( "OnRespawned" )
+	#elseif CLIENT
+	clGlobal.levelEnt.EndSignal( "LocalClientPlayerRespawned" )
+	#endif
 	
 	EndSignal( player, "OnDestroy", "OnDeath" )
 

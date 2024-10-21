@@ -188,8 +188,6 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 
 	Assert( !IsPlayerEliminated( player ), "An eliminated player respawned." )
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
-
 	SetHumanRagdollImpactTable( player )
 
 	player.p.respawnCount++
@@ -205,6 +203,8 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.Show()
 
 	player.Signal( "OnRespawned" )
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 
 	// Added via AddCallback_OnPlayerRespawned
 	foreach ( callbackFunc in svGlobal.onPlayerRespawnedCallbacks )
