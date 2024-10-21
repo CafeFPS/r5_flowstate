@@ -386,6 +386,10 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/halo"
 		break
 		
+		case "fs_dm_fast_instagib":
+		emblemImage = $"rui/flowstatecustom/cafesinstagib"
+		break
+		
 		case "fs_scenarios":
 		emblemImage = $""
 		break
