@@ -50,7 +50,7 @@ struct
 	UISize& originalRes
 	bool changedViewPlayer = false
 	
-	bool is_hiswattson_ltm
+	bool flowstate_evo_shields
 	
 } file
 
@@ -95,7 +95,7 @@ void function ClHealthHud_Init()
 	AddCallback_OnViewPlayerChanged( HealthHUD_ViewPlayerChanged )
 	AddCallback_EntitiesDidLoad( HealthHUD_EntitiesDidLoad )
 	
-	file.is_hiswattson_ltm = GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false )
+	file.flowstate_evo_shields = GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
 }
 
 void function HealthHUD_EntitiesDidLoad()
@@ -312,7 +312,7 @@ void function HealthHUD_Update( entity player )
 
 void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayerChanged = false )
 {
-	if( !file.is_hiswattson_ltm || GetGameState() != eGameState.Playing || Flowstate_IsHaloMode() )
+	if( !file.flowstate_evo_shields || GetGameState() != eGameState.Playing || Flowstate_IsHaloMode() )
 		return
 
 	if( viewPlayerChanged && GetLocalClientPlayer() != GetLocalViewPlayer() && !file.changedViewPlayer )
@@ -345,7 +345,7 @@ void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayer
 
 void function Flowstate_HUD_UpdateShieldHealthForPlayer()
 {
-	if( !file.is_hiswattson_ltm || GetGameState() != eGameState.Playing )
+	if( !file.flowstate_evo_shields || GetGameState() != eGameState.Playing )
 		return
 	
 	entity player = GetLocalViewPlayer()

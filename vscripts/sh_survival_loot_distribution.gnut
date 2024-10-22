@@ -205,15 +205,15 @@ array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGr
 		group.append(ref)
     }
 
-	// if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
-		// foreach( itemRef in group )
-		// {
-			// if( itemRef == "armor_pickup_lv2" || itemRef == "armor_pickup_lv3" || itemRef == "armor_pickup_lv4" || itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
-			// {
-				// printt( "lootbin armor replaced with white armor, was " + itemRef )
-				// itemRef = "armor_pickup_lv1"
-			// }
-		// }
+	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		foreach( itemRef in group )
+		{
+			if( itemRef == "armor_pickup_lv2" || itemRef == "armor_pickup_lv3" || itemRef == "armor_pickup_lv4" || itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
+			{
+				printt( "lootbin armor replaced with white armor, was " + itemRef )
+				itemRef = "armor_pickup_lv1"
+			}
+		}
 
     return group
 }

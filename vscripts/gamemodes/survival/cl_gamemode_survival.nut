@@ -911,7 +911,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if( Gamemode() != eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) ) //TODO playlist init to struct
+	if( Gamemode() != eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) ) //TODO playlist init to struct
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )

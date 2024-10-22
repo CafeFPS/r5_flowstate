@@ -627,8 +627,6 @@ playlists
 
 				//Flowstate by CafeFPS
 
-				flowstate_give_hiswattson_charm					0
-				is_hiswattson_ltm								0 //Add hiswattson ltm logo, removes beta watermark
 				flowstate_armed_and_dangerous_ltm				0
 				flowstate_disable_all_map_triggers				0
 
@@ -2672,7 +2670,6 @@ playlists
 
 				is_halo_gamemode								1
 				enable_oddball_gamemode							1
-				is_hiswattson_ltm								1
 
 				//For FFA classic mode
 				//specific weapons and abilities settings
@@ -2720,8 +2717,7 @@ playlists
 				flowstateDoorsRegen								0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
 				enable_afk_thread 								1 //0 disables afk thread for this mode
 		
-				//visuals		
-				is_hiswattson_ltm								1
+				//visuals
 				battlechatter_enabled							0
 				flowstateRandomCharacterOnSpawn					0
 		

@@ -807,6 +807,12 @@ void function OnGroundLootSpawned( entity ent )
 				}
 			}
 
+			if( lootData.lootType == eLootType.ARMOR && settings.flowstate_evo_shields )
+			{
+				i--
+				continue
+			}
+			
 			if( settings.lsm_mod1 )
 			{
 				if (  lootData.lootType == eLootType.ARMOR || lootData.lootType == eLootType.MAINWEAPON || lootData.tier >= 2 )
