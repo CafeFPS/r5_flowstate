@@ -608,7 +608,7 @@ void function FS_TrackPlayersPositionInScoreboard()
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if( !IsCommandsEnabled( player ) ) 
+	if( !IsCommandsEnabled( player ) && args[0] != "say" ) 
 		return
 		
 	//TODO: Track down Why VModEnable is being called from code?

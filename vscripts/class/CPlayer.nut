@@ -482,8 +482,4 @@ void function DisableDemigod( entity player )
 void function ToggleMute( entity player, bool toggle )
 {
 	player.ToggleMute( toggle )
-	
-	#if TRACKER && HAS_TRACKER_DLL
-		Tracker_SavePlayerData( player.p.UID, "muted", toggle )
-	#endif
 }

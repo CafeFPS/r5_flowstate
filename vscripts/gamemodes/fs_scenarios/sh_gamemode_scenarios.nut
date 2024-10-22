@@ -639,12 +639,12 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			
 			string playerName = player.GetPlayerName()
 			
-			//todo: remove with bot nuke
-			string botCheck = playerName.slice( 0, 1 ) //don't .find entire string.
-			
-			if( botCheck.find( "[" ) != -1 )
-				continue
-			//end remove
+			//Todo(mk): remove with bot nuke
+			{				
+				string botCheck = playerName.slice( 0, 1 ) //don't .find entire string.	
+				if( botCheck.find( "[" ) != -1 )
+					continue
+			}
 				
 			RunUIScript( "Scenarios_ClientToUi_ScoreLeaders", playerName, player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" ) )
 		}

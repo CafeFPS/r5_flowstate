@@ -10,6 +10,7 @@ global function Chat_CheckGlobalMute
 
 global function Chat_GetMutedReason
 global function Chat_FindMuteReasonInArgs
+global function Chat_ReadableUnmuteTime
 
 global function Chat_GetAllEffects
 global function Chat_FindEffect
@@ -63,9 +64,7 @@ const bool PRINT_TIME_STRING_ARGS = false
 
 struct 
 {
-	table< string, int > mutedPlayers //uid -> unix unmute time
-	array< string > ignoreUidList
-	
+	table< string, int > mutedPlayers //uid -> unix unmute time	
 	table< string, int > offenceLevel
 	OffenceTiers offensePenaltyTiers
 	bool bOffenceTierTblGenerated
@@ -371,7 +370,7 @@ bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 	else 
 		return false
 	
-	if ( toggle )
+	if ( toggle ) //mute
 	{
 		int timestamp = -1
 
@@ -390,18 +389,24 @@ bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 				else 
 					timestamp = determinedTime
 			}
+			
+			#if TRACKER
+				table<string, string> settings //todo:_typed
 				
-			string reason = Chat_FindMuteReasonInArgs( cmdStringArgs )
-			Tracker_SavePlayerData( uid, "muted_reason", reason )
-			Tracker_SavePlayerData( uid, "unmuteTime", timestamp )
+				string reason = Chat_FindMuteReasonInArgs( cmdStringArgs )	 	
+
+				settings[ "muted_reason" ] 	<- reason
+				settings[ "unmuteTime" ] 	<- timestamp.tostring()
+				settings[ "muted" ] 		<- "1"
+				
+				tracker.SavePlayerData( uid, settings, !bSyncToPlayers )
+			#endif
 			
 			if( IsTimeInSameMatch( timestamp ) )
 				thread AutoUnmuteAtTime( player, timestamp, uid )
 				
 			if( bSyncToPlayers )
 				SetUnmuteTime_Raw( player, timestamp )
-				
-			RemoveFromChatMuteIgnoreList( uid )
 		}
 		else if( bSyncToPlayers )
 			timestamp = GetEntityUnmuteTimestamp( player )
@@ -410,7 +415,7 @@ bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 			
 		MutedList_Update( uid, timestamp )
 	}
-	else
+	else //unmute
 	{		
 		int timeToWait = ParseTimeString( cmdStringArgs )
 		int unmuteTime = GetUnixTimestamp() + timeToWait
@@ -423,7 +428,25 @@ bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 		}	
 		
 		if( cmdLine )
-			AddToChatMuteIgnoreList( uid )
+		{
+			#if TRACKER
+				table<string, string> settings
+				
+				string reason = Chat_FindMuteReasonInArgs( cmdStringArgs )	 	
+				if( reason != "{none}" )
+					if( reason != Tracker_FetchPlayerData( uid, "muted_reason" ) )
+						settings[ "muted_reason" ] <- reason //ship reason as new unmute reason
+				
+				settings[ "muted" ] <- "0"
+				settings[ "unmuteTime" ] <- "NA"
+				
+				tracker.SavePlayerData( uid, settings, !bSyncToPlayers )
+			#endif
+		}
+		else 
+		{
+			Tracker_SavePlayerData( uid, "muted", "0" ) //save for endgame update
+		}
 			
 		MutedList_Remove( uid )
 	}
@@ -431,6 +454,12 @@ bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmd
 	if( bSyncToPlayers )
 	{
 		ToggleMute( player, toggle )
+		
+		if( !cmdLine && toggle )
+		{
+			string reason = Tracker_FetchPlayerData( player.p.UID, "muted_reason" )
+			LocalMsg( player, "#FS_SPAM_MUTE", "", eMsgUI.DEFAULT, 5, "", reason )
+		}					//Token name is misleading..just trust.
 		
 		foreach ( s_player in GetPlayerArray() )
 		{
@@ -851,6 +880,60 @@ int function ParseTimeString( array<string> args )
 	return addTime
 }
 
+string function Chat_ReadableUnmuteTime( int unmuteTime )
+{
+	int currentTime = GetUnixTimestamp()	
+	int diff = unmuteTime - currentTime
+
+	if ( diff <= 0 )
+		return "Already unmuted " + diff + " seconds ago."
+
+	int years = diff / 31557600
+	diff %= 31557600
+
+	int months = diff / 2629800
+	diff %= 2629800
+
+	int days = diff / 86400
+	diff %= 86400
+
+	int hours = diff / 3600
+	diff %= 3600
+
+	int minutes = diff / 60
+	int seconds = diff % 60
+
+	array<string> result = []
+
+	if ( years > 0 ) 
+		result.append( years + " " + ( years == 1 ? "year" : "years" ) )
+
+	if ( months > 0 ) 
+		result.append( months + " " + ( months == 1 ? "month" : "months" ) )
+
+	if ( days > 0 ) 
+		result.append( days + " " + ( days == 1 ? "day" : "days" ) )
+
+	if ( hours > 0 ) 
+		result.append( hours + " " + ( hours == 1 ? "hour" : "hours" ) )
+
+	if ( minutes > 0 ) 
+		result.append( minutes + " " + ( minutes == 1 ? "minute" : "minutes" ) )
+
+	if ( seconds > 0 ) 
+		result.append( seconds + " " + ( seconds == 1 ? "second" : "seconds" ) )
+
+	int rLen = result.len()
+	
+	if ( rLen == 1 )
+		return result[ 0 ]
+	else if ( rLen > 1 )
+		return result.slice( 0, rLen - 1 ).join( ", " ) + " and " + result[ rLen - 1 ]
+
+	return "Less than a second"
+}
+
+
 const array<int> INFINITE_MUTE_TIMES =
 [
 	0,
@@ -908,12 +991,13 @@ void function AutoUnmuteAtTime( entity player, int unmuteTime, string uid )
 	//recheck from wait.
 	if( IsValid( player ) )
 	{
-		Chat_ToggleMuteForAll( player, false ) //saves player data in process.
+		Chat_ToggleMuteForAll( player, false ) //saves player data in process for endgame update.
 		LocalMsg( player, "#FS_AUTO_UNMUTED" )
 	}
 	else
 	{
-		Tracker_SavePlayerData( uid, "muted", false ) //player disconnected. Save it and ship anyway.
+		MutedList_Remove( uid ) //Todo(mk): verify this
+		Tracker_SavePlayerData( uid, "muted", false, true ) //player disconnected. Save it and ship now.
 	}
 	
 	#if DEVELOPER 
@@ -928,7 +1012,7 @@ void function MuteFromPersistence( entity player, string setting )
 	
 	string uid = player.p.UID
 	
-	if( setting == YES && !ChatMuteIgnoreList_Contains( uid ) )
+	if( setting == YES )
 	{
 		if ( !Chat_InMutedList( uid ) )
 			MutedList_Update( uid, GetEntityUnmuteTimestamp( player ) )
@@ -963,24 +1047,6 @@ void function CheckForTextMute( entity player )
 		Chat_ToggleMuteForAll( player )
 	}
 }
-
-/// purpose: prevent resyncing online data overriding manual new mutes
-void function AddToChatMuteIgnoreList( string uid )
-{
-	if( !ChatMuteIgnoreList_Contains( uid ) )
-		file.ignoreUidList.append( uid )
-}
-
-bool function ChatMuteIgnoreList_Contains( string uid )
-{
-	return ( file.ignoreUidList.contains( uid ) )
-}
-
-void function RemoveFromChatMuteIgnoreList( string uid )
-{
-	file.ignoreUidList.fastremovebyvalue( uid )
-}
-///
 
 #if TRACKER && HAS_TRACKER_DLL
 void function SetUnmuteTime( entity player, string potentialTimestamp )

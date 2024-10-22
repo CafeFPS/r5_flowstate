@@ -8,7 +8,6 @@ global function IsNum
 global function GetPlayer
 global function GetPlayerEntityByUID
 global function GetPlayerEntityByName
-global function IsValidOID
 global function Is_Bool
 global function sanitize
 global function LineBreak
@@ -1493,7 +1492,8 @@ struct {
 				#endif 
 				
 				return true 
-				
+			
+#if DEVELOPER			
 			case "stoplog":
 			
 				#if TRACKER && HAS_TRACKER_DLL
@@ -1529,21 +1529,22 @@ struct {
 					}
 					else 
 					{
-						Message( player, "LOG IS DISABLED IN PLAYLISTS" )
+						Message( player, "TRACKER IS DISABLED" )
 					}
 				#endif
 				
 				return true
-				
+#endif 
+
 			case "mute":
 			case "gag":
 				
 				entity p = GetPlayer( param )				
 				if( !IsValid( p ) )
 				{
-					if( !IsNumeric( param ) )
+					if( !IsNum( param ) )
 					{
-						Message( player, "Invalid Player" )
+						Message( player, "Error", "Invalid player & non-numeric uid." )
 						return true
 					}
 					else 
@@ -1563,6 +1564,8 @@ struct {
 				
 				if( !Chat_ToggleMuteForAll( p, true, true, args, -1, param ) )
 					Message( player, "Failed" )
+				else
+					Message( player, "Muted " + param )
 				
 				return true
 			
@@ -1572,9 +1575,9 @@ struct {
 				entity p = GetPlayer( param )				
 				if( !IsValid( p ) )
 				{
-					if( !IsNumeric( param ) )
+					if( !IsNum( param ) )
 					{
-						Message( player, "Invalid Player" )
+						Message( player, "Error", "Invalid player & non-numeric uid." )
 						return true
 					}
 					else 
@@ -1643,17 +1646,35 @@ struct {
 				if( IsNumeric( param ) )
 					uidLookup = param
 					
-				if( !IsValid( p ) && !Chat_InMutedList( uidLookup ) )
-				{
-					Message( player, "Error", "player was invalid and " + uidLookup + " does not exist in the muted list" )
-					return true
-				}
+				if( IsValid( p ) )
+					uidLookup = p.p.UID
 					
 				string reason = Chat_GetMutedReason( uidLookup, p )	
 				if( empty( reason ) && !IsValid( player ) && uidLookup.len() < 7 )
 					reason = "Error during lookup: player was invalid. Possible mistake with uid?"
 				
 				Message( player, "MUTED REASON:", reason )
+				return true
+				
+			case "unmute_time":
+			case "ungag_time":
+			
+				entity p = GetPlayer( param )
+				string uidLookup
+				
+				if( IsNumeric( param ) )
+					uidLookup = param
+					
+				if( IsValid( p ) )
+					uidLookup = p.p.UID
+					
+				string unmuteTimestamp 	= Tracker_FetchPlayerData( uidLookup, "unmuteTime" )
+				string timestring 		= "0"
+				
+				if( IsNumeric( unmuteTimestamp ) )
+					timestring = Chat_ReadableUnmuteTime( unmuteTimestamp.tointeger() )
+				
+				Message( player, "UNMUTE TIME: " + unmuteTimestamp, timestring )
 				return true
 				
 			case "killme":
@@ -1733,30 +1754,20 @@ struct {
 void function RunUpdateMsg()
 {	
 	
-	string update_title = GetCurrentPlaylistVarString("update_title","Server about to UPDATE");
-	string update_msg = GetCurrentPlaylistVarString("update_msg","Server will go down briefly");
+	string update_title = GetCurrentPlaylistVarString( "update_title","Server about to UPDATE" )
+	string update_msg = GetCurrentPlaylistVarString( "update_msg","Server will go down briefly" )
 	
-	while(true)
-	{	
-		WaitFrame()
-		
-		if ( file.stop_update_msg_flag == true )
+	while( !file.stop_update_msg_flag )
+	{		
+		foreach( player in GetPlayerArray() )
 		{
-			break
-		}
-		
-		foreach ( player in GetPlayerArray())
-		{
-			if (!IsValid( player ))
-			{
+			if ( !IsValid( player ) )
 				continue
-			}
 			
 			Message( player, update_title, update_msg, 3 )
 		}
 		
-		SendServerMessage(update_title)
-		
+		SendServerMessage( update_title )	
 		wait 3.6
 	}
 }
@@ -2075,7 +2086,7 @@ entity function GetPlayerEntityByName( string name )
 void function CheckAdmin_OnConnect( entity player )
 {
 	if( !IsValid( player ) ) 
-		return 
+		return
 	
 	if( IsTrackerAdmin( player.GetPlatformUID() ) )
 		player.SetPlayerNetBool( "IsAdmin", true )
@@ -2094,49 +2105,28 @@ bool function IsTrackerAdmin( string CheckPlayer ) //todo:deprecate
 }
 
 //Todo: Lookup fromthe table of oid -> playerdata, include .entity (this gets created when a player joins once. )
-//
 
-
-bool function IsValidOID( string str ) //todo:deprecate
+entity function GetPlayerEntityByUID( string str )
 {
-	if ( !IsNum( str ) )
-		return false
-	
-	string oid;
+	#if TRACKER //Todo: direct global hook in client connected and lookups for name/uid to struct of name,uid,entity,etc
+		return Tracker_StatsMetricsByUID( str ).ent
+	#else
+		entity candidate
 		
-	foreach ( player in GetPlayerArray() )
-	{
-		if ( !IsValid( player ) )
+		if ( !IsNum( str ) )
+			return candidate
+		
+		foreach ( player in GetPlayerArray() )
 		{
-			continue
+			if ( !IsValid( player ) )
+				continue
+
+			if ( player.GetPlatformUID() == str )
+				return player	
 		}
 		
-		oid = player.GetPlatformUID()
-		
-		if ( oid == str )
-			return true	
-	}
-	
-	return false
-}
-
-entity function GetPlayerEntityByUID( string str ) //todo:deprecate
-{
-	entity candidate
-	
-	if ( !IsNum( str ) )
 		return candidate
-	
-	foreach ( player in GetPlayerArray() )
-	{
-		if ( !IsValid( player ) )
-			continue
-
-		if ( player.GetPlatformUID() == str )
-			return player	
-	}
-	
-	return candidate
+	#endif
 }
 
 entity function GetPlayer( string str ) //todo:deprecate
@@ -2147,22 +2137,6 @@ entity function GetPlayer( string str ) //todo:deprecate
 		return candidate
 		
 	return GetPlayerEntityByName( str )	
-}
-
-entity function GetPlayer_Expensive( string str ) //todo:deprecate
-{
-	entity player;
-	
-	if ( IsValidOID( str ) )
-	{
-		return GetPlayerEntityByUID( str )	
-	}
-	else
-	{
-		return GetPlayerEntityByName( str )	
-	}
-	
-	return player
 }
 
 string function GetMap( string str ) //todo:deprecate

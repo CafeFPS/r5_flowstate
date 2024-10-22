@@ -172,21 +172,21 @@ struct
 	float SBMM_kd_difference
 	
 	//playerHandle -> soloPlayerStruct
-	table <int, soloPlayerStruct> soloPlayersWaiting = {} //moved to table for O(1) add/delete/lookup without shifting arrays, looping/scanning
+	table <int, soloPlayerStruct > soloPlayersWaiting = {} //moved to table for O(1) add/delete/lookup without shifting arrays, looping/scanning
 
 	//playerHandle -> soloGroupStruct
-	table<int, soloGroupStruct> playerToGroupMap = {} //map for quick assessment
+	table< int, soloGroupStruct > playerToGroupMap = {} //map for quick assessment
 
 	//groupHandle -> soloGroupStruct
-	table<int, soloGroupStruct> groupsInProgress = {} //group map to group
+	table< int, soloGroupStruct > groupsInProgress = {} //group map to group
 
 	//playerHandle -> struct resting
-	table <int,bool> soloPlayersResting = {}
+	table< int, bool > soloPlayersResting = {}
 	
 	bool APlayerHasMessage = false
 	
-	array<ChallengesStruct> allChallenges
-	table<int,entity> acceptedChallenges //(player handle challenger -> player challenged )
+	array< ChallengesStruct > allChallenges
+	table< int, entity > acceptedChallenges //(player handle challenger -> player challenged )
 	
 	array<ItemFlavor> characters
 	int minLegendRange = 0
@@ -194,11 +194,11 @@ struct
 	
 	bool bRestEnabled = false
 	
-	array <string> custom_weapons_primary
-	array <string> custom_weapons_secondary
+	array< string > custom_weapons_primary
+	array< string > custom_weapons_secondary
 	array< bool > realmSlots
-	array<string> Weapons
-	array<string> WeaponsSecondary
+	array< string > Weapons
+	array< string > WeaponsSecondary
 
 	LocPair WaitingRoom
 	float restGrace
@@ -207,8 +207,8 @@ struct
 	vector notificationPanel_Angles
 	
 	#if DEVELOPER 
-		table<string, int> e1v1StateNameToIntMap = {}
-		table<int, string> e1v1StateIDToNameMap = {}
+		table< string, int > e1v1StateNameToIntMap = {}
+		table< int, string > e1v1StateIDToNameMap = {}
 	#endif 
 	
 } file
@@ -1633,7 +1633,7 @@ int function addToChallenges( entity challenger, entity challengedPlayer )
 
 bool function isChalValid( ChallengesStruct chalStruct )
 {
-	return ( IsValid( chalStruct ) && chalStruct.isValid && IsValid( chalStruct.player ) )
+	return ( chalStruct.isValid && IsValid( chalStruct.player ) )
 }
 
 
@@ -2219,7 +2219,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 	if( Time() < player.p.lastRestUsedTime + 3 )
 	{
 		//Message(player, "REST COOLDOWN")
-		LocalMsg( player, "#FS_RESTCOOLDOWN" )
+		LocalEventMsg( player, "#FS_RESTCOOLDOWN" )
 		return false
 	}
 	

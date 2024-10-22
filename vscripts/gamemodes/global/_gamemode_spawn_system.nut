@@ -249,9 +249,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	settings.spawnOptions[ "use_custom_playlist" ] 	<- use_custom_playlist
 	
 	if( use_custom_playlist && !empty( customSpawnPlaylist ) )
-	{
 		SpawnSystem_SetCustomPlaylist( customSpawnPlaylist )
-	}
 	
 	if( preferred > 1 )
 	{
@@ -262,9 +260,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	}
 	
 	foreach ( callbackFunc in file.spawnSettingsCallbacks )
-	{
 		callbackFunc()
-	}
 	
 	settings.bOptionsAreSet = true
 }
@@ -560,6 +556,7 @@ array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1
 					#if DEVELOPER 
 						Warning("Spawns overriden with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 					#endif 
+					
 					customSpawns = SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData )
 					file.overrideSpawns = true
 				}
@@ -691,7 +688,7 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 		#if DEVELOPER
 			string print_data = "\n\n spawnset: " + spawnset + "\n--- LOCATIONS ---\n\n"
 		#endif
-		for ( int i = 0; i < spawnsCount; i++ )
+		for ( int i = 0; i < spawnsCount; i++ )//change to row 1, add map / count info. add meta deta to spawns. 
 		{		
 			vector origin = GetDataTableVector( datatable, i, originCol ) + originOffset
 			vector angles = GetDataTableVector( datatable, i, anglesCol ) + anglesOffset

@@ -85,10 +85,10 @@ struct AudioHistory
 
 struct
 {
-	table<string, table< int, AudioHistory > > audioHistoryMap
+	table< string, table< int, AudioHistory > > audioHistoryMap
 	table< string, BannerGroupData > groupDataMap
 	table< string, bool > groupSignals
-	array<int> __channelRequiredGroups
+	array< int > __channelRequiredGroups
 	
 	void functionref() groupsInitCallbackFunc
 	void functionref() runImageAppendtoGroupsFunc

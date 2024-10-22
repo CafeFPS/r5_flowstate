@@ -12,9 +12,6 @@ global function AllGamemodesArray
 global function AllPlaylistsArray
 global function shGlobalErrorCheck
 
-//const:
-global const PRINT_GAMEMODE_DEBUGS = true
-
 //mode functions:
 global function g_is1v1GameType
 global function g_bSinglePlayerChampion
@@ -165,6 +162,7 @@ const array<int> gamemode1v1Types = [
 
 ]
 
+const PRINT_GAMEMODE_DEBUGS = false
 //////////////////////////////////////////
 // 			internal functions			//
 //////////////////////////////////////////
@@ -211,9 +209,10 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 	int gamemodesArrayCount = SH_globals.gamemodes.len() - 1
 	int gamemodesEnumsCount = eGamemodes._GAMEMODES_COUNT
 	
-	mAssert( playlistsArrayCount == playlistsEnumsCount, format( "Playlists not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", playlistsArrayCount, playlistsEnumsCount ) )
-	mAssert( mapnamesArrayCount == mapnamesEnumsCount, format( "Maps not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", mapnamesArrayCount, mapnamesEnumsCount ) )
-	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gamemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
+	//deprecated from old
+	// mAssert( playlistsArrayCount == playlistsEnumsCount, format( "Playlists not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", playlistsArrayCount, playlistsEnumsCount ) )
+	// mAssert( mapnamesArrayCount == mapnamesEnumsCount, format( "Maps not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", mapnamesArrayCount, mapnamesEnumsCount ) )
+	// mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gamemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
 	
 	#if SERVER || CLIENT
 		string level = GetMapName()
@@ -428,6 +427,12 @@ void function PassivesAllowed_Init()
 //
 void function TrackerSupportedMode_Init()
 {	
+	if( !GetConVarInt( "sv_onlineAuthEnable" ) )
+	{
+		modeSettings.trackerSupportedMode = false
+		return
+	}
+	
 	array<int> supportedTrackerPlaylists = 
 	[
 		ePlaylists.fs_1v1,

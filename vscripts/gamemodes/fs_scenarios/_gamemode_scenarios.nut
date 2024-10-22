@@ -275,7 +275,7 @@ bool function FS_Scenarios_ClientCommand_Rest( entity player, array<string> args
 {
 	if( Time() < player.p.lastRestUsedTime + 3 )
 	{
-		LocalMsg( player, "#FS_RESTCOOLDOWN" )
+		LocalEventMsg( player, "#FS_RESTCOOLDOWN" )
 		return false
 	}
 	
