@@ -352,7 +352,10 @@ void function Chat_CheckGlobalMute( entity player )
 	bool globalMute = GetPlayerStatBool( player.GetPlatformUID(), "globally_muted" )
 	
 	if( globalMute )
+	{
+		LocalMsg( player, "#FS_SPAM_MUTE", "", eMsgUI.DEFAULT, 5, "", "GLOBAL" )
 		MuteFromPersistence( player, YES )
+	}
 }
 
 bool function Chat_ToggleMuteForAll( entity player, bool toggle = true, bool cmdLine = false, array<string> cmdStringArgs = [], int timeoutAmount = 0, string uid = "" )
