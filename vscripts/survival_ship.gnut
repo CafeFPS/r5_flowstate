@@ -359,7 +359,12 @@ void function GiveBasicSurvivalItems( entity player )
 		player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
 	}
 	// todo: find why it's not playing fx on cockpit
-	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
+	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )
+	
+	if( Playlist() == ePlaylists.fs_ltm_mortalevoshields )
+	{
+		Message(player, "MORTAL EVOSHIELDS", "Kill enemies to evolve your shields infinitely.", 8) // todo move this to localization. Cafe
+	}
 }
 
 float function SURVIVAL_GetAirburstHeight()

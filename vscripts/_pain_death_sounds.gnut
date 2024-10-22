@@ -77,7 +77,8 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 			ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
 			//string charRef = ItemFlavor_GetHumanReadableRef( character )
 			
-			if( Playlist() == ePlaylists.fs_lgduels_1v1 || Flowstate_IsHaloMode() ) //GetCurrentPlaylistVarBool( "is_halo_gamemode", false )
+			//Disable ragdolls. todo make a playlist var for this. Cafe
+			if( Playlist() == ePlaylists.fs_dm_fast_instagib || Playlist() == ePlaylists.fs_lgduels_1v1 || Flowstate_IsHaloMode() )
 			{
 				return eBodyTypes.NPC_SPECTRE 
 			}

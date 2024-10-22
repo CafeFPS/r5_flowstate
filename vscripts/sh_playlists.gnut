@@ -371,6 +371,7 @@ asset function GetModeEmblemImage( string playlistName )
 		break
 		
 		case "fs_survival_solos":
+		case "fs_ltm_mortalevoshields":
 		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
 

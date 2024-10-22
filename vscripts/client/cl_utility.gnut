@@ -825,7 +825,7 @@ void function Dev_PrintClientMessage( float duration )
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( Playlist() == ePlaylists.fs_movementgym || Playlist() == ePlaylists.fs_scenarios || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_survival_solos || Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_snd )
+	if( Playlist() == ePlaylists.fs_movementgym || Playlist() == ePlaylists.fs_scenarios || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_survival_solos || Playlist() == ePlaylists.fs_ltm_mortalevoshields || Playlist() == ePlaylists.fs_dm_fast_instagib || Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_snd )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )
