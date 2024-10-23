@@ -1587,7 +1587,7 @@ struct {
 				}
 				else 
 				{
-					if( !Chat_InMutedList( player.p.UID ) )
+					if( !Chat_InMutedList( p.p.UID ) )
 					{
 						Message( player, "Failed", "Player is in server but not muted" )
 						return true
@@ -1601,7 +1601,8 @@ struct {
 				string uid = IsValid( p ) ? p.p.UID : param
 				if( Chat_ToggleMuteForAll( p, false, true, args ) )
 				{
-					LocalMsg( p, "#FS_UNMUTED" )
+					string reason = Chat_FindMuteReasonInArgs( args )			
+					LocalMsg( p, "#FS_UNMUTED", "", eMsgUI.DEFAULT, 5, "", reason )
 					Message( player, "Player " + uid, "UNMUTED" )
 				}
 				else 

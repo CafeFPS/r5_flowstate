@@ -3675,6 +3675,8 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 	
 	if ( !empty( playerID ) && IsPlayerMetricsInitialized( playerID ) ) 
 	{	
+		return GetPlayerMetricsIndexByUID( playerID )
+		
 		#if DEVELOPER
 			sqerror( "Metrics already initialized for player: " + ( byID ? playerID : player.GetPlayerName() ) )
 		#endif
