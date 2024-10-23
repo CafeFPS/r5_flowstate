@@ -263,6 +263,10 @@ void function Turret_OnDamaged(entity proxy, var damageInfo)
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if (!attacker.IsPlayer()) return
 	entity ent = proxy.GetParent()
+	
+	if( !IsValid( ent ) )
+		return
+	
 	float damage = DamageInfo_GetDamage( damageInfo )
 	attacker.NotifyDidDamage
 	(
