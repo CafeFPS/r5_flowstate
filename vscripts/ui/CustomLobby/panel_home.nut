@@ -129,14 +129,15 @@ void function InitHomePanel( var panel )
 	var miniPromo = Hud_GetChild( file.panel, "MiniPromo" )
 	Hud_AddEventHandler( miniPromo, UIE_GET_FOCUS, MiniPromoButton_OnGetFocus )
 	Hud_AddEventHandler( miniPromo, UIE_LOSE_FOCUS, MiniPromoButton_OnLoseFocus )
-
+	Hud_AddEventHandler( Hud_GetChild( file.panel, "R5RVersionButton"), UIE_CLICK, TestNewButton)
+	
 	file.matchStatusRuis = GetElementsByClassnameForMenus( "MatchmakingStatusRui", uiGlobal.allMenus )
 }
 
 void function Play_SetupUI()
 {
 	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "                 SEE FULL CHANGELOG" )
-	AddButtonEventHandler( Hud_GetChild( file.panel, "R5RVersionButton"), UIE_CLICK, TestNewButton)
+	
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "playerName", GetPlayerName() )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountLevel", GetAccountDisplayLevel( 100 ) )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountBadge", $"rui/gladiator_cards/badges/account_t21" )
