@@ -21,6 +21,7 @@ global function Flowstate_PlayerDoesRespawn
 global function Flowstate_MapHasTrain
 global function Flowstate_ModeDissolveItems
 global function Flowstate_IsHaloMode
+global function Flowstate_ModeDisablesRagdolls
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 //																						//
@@ -367,6 +368,7 @@ void function AllModeConditionals_Init()
 	GamemodeHasSinglePlayerChampion()
 	ModeDissolvesDrops_Init()
 	IsHaloGamemode_Init()
+	RagdollsDisabled_Init() //must be after IsHaloGamemode_Init()
 }
 
 
@@ -383,20 +385,21 @@ struct
 	bool bSinglePlayerChampion	= false
 	bool dissolveDrops			= false
 	bool bIsHaloGamemode		= false
+	bool bRagdollsDisabled		= false
 	
 } modeSettings
 
 //
 void function PassivesAllowed_Init()
 {
-	array<int> allowedPassiveGamemodes = 
+	const array<int> allowedPassiveGamemodes = 
 	[
 		eGamemodes.SURVIVAL,
 		eGamemodes.WINTEREXPRESS,
 		eGamemodes.fs_dm
 	]
 	
-	array<int> allowedPassivePlaylists = 
+	const array<int> allowedPassivePlaylists = 
 	[
 		ePlaylists.fs_1v1,
 		ePlaylists.fs_scenarios,
@@ -433,7 +436,7 @@ void function TrackerSupportedMode_Init()
 		return
 	}
 	
-	array<int> supportedTrackerPlaylists = 
+	const array<int> supportedTrackerPlaylists = 
 	[
 		ePlaylists.fs_1v1,
 		ePlaylists.fs_dm,
@@ -478,7 +481,7 @@ void function TrackerSupportedMode_Init()
 //
 void function PlayerRespawnModes_Init()
 {
-	array<int> playerRespawnModes = 
+	const array<int> playerRespawnModes = 
 	[
 		ePlaylists.fs_movementrecorder
 	]
@@ -489,7 +492,7 @@ void function PlayerRespawnModes_Init()
 //
 void function MapHasTrain_Init()
 {
-	array<int> trainEnabledMaps = 
+	const array<int> trainEnabledMaps = 
 	[
 		eMaps.mp_rr_desertlands_64k_x_64k,
 		eMaps.mp_rr_desertlands_64k_x_64k_nx,
@@ -503,7 +506,7 @@ void function MapHasTrain_Init()
 //
 void function GamemodeHasSinglePlayerChampion()
 {
-	array<int> singlePlayerChampionPlaylists =
+	const array<int> singlePlayerChampionPlaylists =
 	[
 		ePlaylists.fs_scenarios,
 		ePlaylists.fs_1v1
@@ -515,7 +518,7 @@ void function GamemodeHasSinglePlayerChampion()
 //
 void function ModeDissolvesDrops_Init()
 {
-	array<int> dissolveDropsPlaylists = 
+	const array<int> dissolveDropsPlaylists = 
 	[
 		ePlaylists.fs_1v1,
 		ePlaylists.fs_dm,
@@ -524,7 +527,7 @@ void function ModeDissolvesDrops_Init()
 		ePlaylists.fs_haloMod_oddball
 	]
 
-	array<int> dissolveDropsGamemodes = 
+	const array<int> dissolveDropsGamemodes = 
 	[
 		eGamemodes.fs_dm,
 		eGamemodes.SURVIVAL
@@ -538,7 +541,7 @@ void function ModeDissolvesDrops_Init()
 
 void function IsHaloGamemode_Init()
 {
-	array<int> haloPlaylists =
+	const array<int> haloPlaylists =
 	[
 		ePlaylists.fs_haloMod,
 		ePlaylists.fs_haloMod_ctf,
@@ -547,6 +550,18 @@ void function IsHaloGamemode_Init()
 	
 	bool result = GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || haloPlaylists.contains( Playlist() )
 	modeSettings.bIsHaloGamemode = result
+}
+
+void function RagdollsDisabled_Init()
+{
+	const array<int> playlistDisablesRagdolls =
+	[
+		ePlaylists.fs_dm_fast_instagib,
+		ePlaylists.fs_lgduels_1v1	
+	]
+	
+	bool result = Flowstate_IsHaloMode() || playlistDisablesRagdolls.contains( Playlist() )
+	modeSettings.bRagdollsDisabled = result
 }
 
 //////////////////////////////////////////
@@ -598,4 +613,9 @@ bool function Flowstate_ModeDissolveItems()
 bool function Flowstate_IsHaloMode()
 {
 	return modeSettings.bIsHaloGamemode
+}
+
+bool function Flowstate_ModeDisablesRagdolls()
+{
+	return modeSettings.bRagdollsDisabled
 }

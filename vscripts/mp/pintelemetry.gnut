@@ -471,6 +471,9 @@ struct //Todo: move appropriate to tracker.var
 	string restricted_whitelist_message = "You are whitelisted to play on this restricted server."
 	string restricted_admin_message = "You are an admin."
 	
+	table<int,float> DamagePerBullet = {}
+	table<int,int> SpecialWeaponsBulletsPerShot = {}
+	
 	//debug 
 	array<string> errorArray
 	
@@ -3140,55 +3143,48 @@ int function SetWeaponSettingsFromFile( string weaponRef, string setting )
 	return 0
 }
 
-table<int,float> DamagePerBullet = {}
-table<int,int> SpecialWeaponsBulletsPerShot = {}
 
-// todo: decide and possibly remove manual logic and determine from
-// eWeaponVar of weapon for damageinfo during event building
-// (more verbose that way but easier to mod/balance from file)
+// Checks from DamageSourceIDToStringTable as janu framework registered weapons 
+// assign to these tables at runtime. 
 void function WeaponSettings_Init()
 {
 	string pps = "projectiles_per_shot"
 	string dnv = "damage_near_value"
-	
-	array<string> weapons =
-	[
-		"mp_weapon_shotgun",
-		"mp_weapon_mastiff",
-		"mp_weapon_energy_shotgun",
-		"mp_weapon_doubletake",
-		"mp_weapon_shotgun_pistol",
-		"mp_weapon_haloshotgun"	
-	]
-	
-	foreach( weapon in weapons )
-	{
-		int id = GetEnumValue( "eDamageSourceId", weapon )
-		DamagePerBullet[ id ] <- float( SetWeaponSettingsFromFile( weapon, dnv ) )
-		SpecialWeaponsBulletsPerShot[ id ] <- SetWeaponSettingsFromFile( weapon, pps )
 		
-		#if DEVELOPER
-			printt( "Added multiple projectile eDamageSourceId: '", id, "' for weapon:'", weapon, "'" )
-		#endif
+	foreach( int id, string weapon in DamageSourceIDToStringTable() )
+	{
+		if( !WeaponIsPrecached( weapon ) ) //wont have a set file / wont be used.
+			continue
+		
+		int projectiles_per_shot = SetWeaponSettingsFromFile( weapon, pps )	
+		if( projectiles_per_shot > 1 )
+		{
+			file.DamagePerBullet[ id ] <- float( SetWeaponSettingsFromFile( weapon, dnv ) )
+			file.SpecialWeaponsBulletsPerShot[ id ] <- projectiles_per_shot
+			
+			#if DEVELOPER
+				printt( "Added multiple projectile eDamageSourceId: '", id, "' for weapon:'", weapon, "'" )
+			#endif
+		}
 	}
 }
 
 int function GetBulletsPerShot( int weaponSource ) 
 {
-	return SpecialWeaponsBulletsPerShot[ weaponSource ]
+	return file.SpecialWeaponsBulletsPerShot[ weaponSource ]
 }
 
 float function GetDamagePerBullet( int weaponSource ) 
 {
-	if( weaponSource in DamagePerBullet )
-		return DamagePerBullet[ weaponSource ]
+	if( weaponSource in file.DamagePerBullet )
+		return file.DamagePerBullet[ weaponSource ]
 	
 	return 1
 }
 
 bool function IsSpecialWeapon( int weaponSource )
 {
-	if ( weaponSource in SpecialWeaponsBulletsPerShot )
+	if ( weaponSource in file.SpecialWeaponsBulletsPerShot )
 		return true
 	
 	return false 

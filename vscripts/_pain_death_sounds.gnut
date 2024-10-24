@@ -78,7 +78,7 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 			//string charRef = ItemFlavor_GetHumanReadableRef( character )
 			
 			//Disable ragdolls. todo make a playlist var for this. Cafe
-			if( Playlist() == ePlaylists.fs_dm_fast_instagib || Playlist() == ePlaylists.fs_lgduels_1v1 || Flowstate_IsHaloMode() )
+			if( Flowstate_ModeDisablesRagdolls() )
 			{
 				return eBodyTypes.NPC_SPECTRE 
 			}

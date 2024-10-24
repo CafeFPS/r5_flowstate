@@ -1630,10 +1630,17 @@ struct {
 					return true
 				}
 				
+				//todo muted list fetch for server 
+				
 				string isMuted
 				{
+					string info
 					isMuted = string( p.p.bTextmute )
-					Message( player, "MUTED:", isMuted )
+					
+					if( p.p.bTextmute )
+						info += GetPlayerStatBool( p.p.UID, "globally_muted" ) ? " -- Global mute" : " -- Local mute"
+						
+					Message( player, "MUTED:", isMuted + info )
 				}
 				
 				return true 

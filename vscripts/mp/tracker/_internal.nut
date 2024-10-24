@@ -211,24 +211,25 @@ string function Stats__GenerateOutBoundJsonData( string UID )
 	{
 		if( statKey in file.registeredStatOutboundValues )
 		{		
-			string vType = typeof( file.registeredStatOutboundValues[ statKey ]( UID ) )
+			var data = file.registeredStatOutboundValues[ statKey ]( UID )
+			string vType = typeof( data )
 			
 			switch( vType )
 			{
 				case "string":
-					json += "\"" + statKey + "\": \"" + expect string( file.registeredStatOutboundValues[ statKey ]( UID ) ) + "\", ";
+					json += "\"" + statKey + "\": \"" + expect string( data ) + "\", ";
 					break 
 				
 				case "int":
-					json += "\"" + statKey + "\": " + expect int( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect int( data ).tostring() + ", ";
 					break
 					
 				case "float":
-					json += "\"" + statKey + "\": " + expect float( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect float( data ).tostring() + ", ";
 					break
 				
 				case "bool":
-					json += "\"" + statKey + "\": " + expect bool( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect bool( data ).tostring() + ", ";
 			}
 		}
 	}

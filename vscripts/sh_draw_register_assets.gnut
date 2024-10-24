@@ -278,6 +278,15 @@ void function WorldDrawAsset_RegisterAllAssets()
 				entity player = GetLocalClientPlayer()
 				player.EndSignal( "OnDestroy", "OnDisconnected" )
 		
+				OnThreadEnd
+				(
+					void function() : ( player )
+					{
+						if( IsValid( player ) )
+							player.Signal( "RemoteAssetsLoaded" )
+					}
+				)
+				
 				float startTime = Time()
 				
 				while( !IsDownloadedFileReadyForPakLoad( rpakName ) )
@@ -315,10 +324,7 @@ void function WorldDrawAsset_RegisterAllAssets()
 					return
 				
 				if( expect bool( result.success ) && expect int( result.handle ) == handle ) 
-				{
 					file.assets.extend( assetList )
-					player.Signal( "RemoteAssetsLoaded" )
-				} 
 			}
 		)()		
 	}

@@ -781,7 +781,7 @@ void function __AudioQueue( entity player, BannerImageData baseBannerVideo, Bann
 		{
 			bannerImageId = AudioQueue_Pop( player )
 		}
-		else 
+		else
 		{
 			table results = player.WaitSignal( "AudioQueue_Pop" )	
 			
@@ -883,10 +883,12 @@ AudioHistory function CheckAudioTrackingForPlayer( entity player, int assetIdRef
 
 int function AudioQueue_Pop( entity player )
 {
-	if( player.p.audioQueue.len() == 0 )
-		mAssert( false, "Tried to pop audio queue with no items in it." )
-		
-	return player.p.audioQueue.pop()
+	#if DEVELOPER
+		if( player.p.audioQueue.len() == 0 )
+			mAssert( false, "Tried to pop audio queue with no items in it." )
+	#endif 
+	
+	return player.p.audioQueue.remove(0) //pop()
 }
 
 void function AudioQueue_Append( entity player, int audio )
