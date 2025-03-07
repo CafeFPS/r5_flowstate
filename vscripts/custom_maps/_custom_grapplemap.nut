@@ -68,7 +68,7 @@ function grapplemap_player_setup(entity player) {
 
     player.SetPersistentVar("gen", 0)
 
-    LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "It Hurts Map", "By: Loy Takian", "", false)
+    LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "Grapple Map", "By: Loy Takian", "", false)
 
     thread
     (
@@ -432,11 +432,11 @@ function grapplemap_load() {
                     user.p.isTimerActive = true
                     user.p.startTime = floor(Time()).tointeger()
                     user.SetVelocity(<0,0,0>)
-                    LocalMsg(user, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
+                    LocalMsg(user, "#HUB_TIMER_START", "", 4, 1.0, "", "", "", false)
                 } else {
                     user.SetPersistentVar("gen", 0)
                     user.p.isTimerActive = false
-                    LocalMsg(user, "#FS_STRING_VAR", "", 4, 1.0, "Timer Stopped", "", "", false)
+                    LocalMsg(user, "#HUB_TIMER_STOP", "", 4, 1.0, "", "", "", false)
                 }
             }
         })
@@ -452,10 +452,10 @@ function grapplemap_load() {
                     float minutes = final_time / 60
                     float seconds = final_time % 60
 
-                    LocalMsg(user, "#FS_STRING_VAR", "", 2, 5.0, format("%d:%02d", minutes, seconds), "FINAL TIME", "", false)
+                    LocalMsg(user, "#FS_STRING_VAR", "#HUB_FINAL_TIME", 2, 5.0, format("%d:%02d", minutes, seconds), "", "", false)
                     user.SetPersistentVar("gen", 0)
                 } else {
-                    LocalMsg(user, "#FS_STRING_VAR", "", 2, 5.0, "YOU FINISHED!", "CONGRATULATIONS", "", false)
+                    LocalMsg(user, "#HUB_YOU_FINISHED", "#HUB_CONGRATULATIONS", 2, 5.0, "", "", "", false)
                 }
 
                 if (user.p.isTimerActive == true) {

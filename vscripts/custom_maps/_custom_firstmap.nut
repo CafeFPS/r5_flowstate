@@ -76,7 +76,7 @@ function Firstmap_player_setup(entity player) {
 
     player.SetPersistentVar("gen", 0)
 
-    LocalMsg(player, "#FS_STRING_VAR", "", 9, 5.0, "First Map", "By: Treeree & JayTheYggDrasil & Loy", "", false)
+    LocalMsg(player, "#HUB_MAP_FIRST", "", 9, 5.0, "", "By: Treeree & JayTheYggDrasil & Loy", "", false)
 
     thread
     (
