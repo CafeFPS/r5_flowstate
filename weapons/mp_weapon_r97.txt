@@ -78,7 +78,7 @@ WeaponData
                                               
                                   
      
-	"ammo_clip_size"   								"17"
+	"ammo_clip_size"   								"18" //17
 
     "ammo_stockpile_max"					        "36"
     "ammo_default_total"					        "0"
@@ -422,19 +422,19 @@ WeaponData
 
 		bullets_mag_l1
 		{
-            "ammo_clip_size"   							"20" //21
+            "ammo_clip_size"   							"21" //20
 		}
 		bullets_mag_l2
 		{
-            "ammo_clip_size"   							"23" //24
+            "ammo_clip_size"   							"24" //23
 		}
 		bullets_mag_l3
 		{
-            "ammo_clip_size"   							"26" //27
+            "ammo_clip_size"   							"27" //26
 		}
         bullets_mag_l4
         {
-            "ammo_clip_size"   							"26" //27
+            "ammo_clip_size"   							"27" //26
         }
 
 		legendary1

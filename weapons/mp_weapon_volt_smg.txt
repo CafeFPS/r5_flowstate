@@ -142,7 +142,7 @@ WeaponData
                                                          
 
          
-        "ammo_clip_size"                                "19"
+        "ammo_clip_size"                                "20" //19
         "ammo_stockpile_max"							"30"
         "ammo_default_total"							"0"
         "ammo_no_remove_from_stockpile"					"0"
@@ -433,22 +433,22 @@ WeaponData
 
 		energy_mag_l1
 		{
-			"ammo_clip_size"   							"21"
+			"ammo_clip_size"   							"22" //21
 		}
 
 		energy_mag_l2
 		{
-			"ammo_clip_size"   							"23"
+			"ammo_clip_size"   							"24" //23
 		}
 
 		energy_mag_l3
 		{
-			"ammo_clip_size"   							"26"
+			"ammo_clip_size"   							"27" //26
 		}
                      
         energy_mag_l4
         {
-            "ammo_clip_size"   		        	        "26"
+            "ammo_clip_size"   		        	        "27" //26
         }
       
 	}

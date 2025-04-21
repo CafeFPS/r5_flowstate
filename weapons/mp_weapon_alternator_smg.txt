@@ -98,7 +98,7 @@ WeaponData
 	"fire_rate"   									"10"
 
 	// Ammo
-	"ammo_clip_size"   								"19"
+	"ammo_clip_size"   								"20" //19
     "ammo_default_total"							"0"
     "ammo_stockpile_max"							"24"
     "ammo_no_remove_from_stockpile"					"0"
@@ -303,20 +303,20 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   						"22"
+			"ammo_clip_size"   						"24" //23
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   						"25"
+			"ammo_clip_size"   						"27" //26
 		}
 		bullets_mag_l3
 		{
 			//Extended Ammo
-			"ammo_clip_size"   						"27"
+			"ammo_clip_size"   						"29" //28
 		}
         bullets_mag_l4
         {
-            "ammo_clip_size"   						"27"
+            "ammo_clip_size"   						"29" //28
         }
 
 		// // NOTE: override barrel FX for both Alternator barrels
